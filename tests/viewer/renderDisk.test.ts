@@ -18,4 +18,5 @@ it('개념 데이터를 읽어 뷰어 HTML과 CSS를 디스크에 쓴다', async
   expect(existsSync(join(root, 'docs/conceptpowers/concepts/viewer/index.html'))).toBe(true)
   expect(existsSync(join(root, 'docs/conceptpowers/concepts/viewer/auth/admin-role.html'))).toBe(true)
   expect(readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/index.html'), 'utf8')).toContain('Admin Role')
+  expect(existsSync(join(root, 'docs/conceptpowers/concepts/viewer/assets/concept.css'))).toBe(true)
 })

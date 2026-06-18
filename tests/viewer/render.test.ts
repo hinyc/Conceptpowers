@@ -31,4 +31,13 @@ describe('renderViewer', () => {
     expect(out['auth/admin-role.html']).not.toContain('<script>x</script>')
     expect(out['auth/admin-role.html']).toContain('&lt;script&gt;')
   })
+  it('그룹 개념 페이지 CSS href는 "../assets/concept.css"이다 (회귀)', () => {
+    const out = renderViewer([c])
+    expect(out['auth/admin-role.html']).toContain('href="../assets/concept.css"')
+  })
+  it('그룹 없는 개념 페이지 CSS href는 "assets/concept.css"이다 (회귀)', () => {
+    const ungrouped: Concept = { ...c, group: undefined, slug: 'solo' }
+    const out = renderViewer([ungrouped])
+    expect(out['solo.html']).toContain('href="assets/concept.css"')
+  })
 })

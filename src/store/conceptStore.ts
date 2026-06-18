@@ -1,5 +1,6 @@
 // src/store/conceptStore.ts
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
+import type { Dirent } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { cpPaths } from '../paths.js'
 import { parseConcept, type Concept } from '../schema/concept.js'
@@ -18,7 +19,7 @@ export async function writeConcept(root: string, input: unknown): Promise<Concep
 }
 
 async function walkJson(dir: string): Promise<string[]> {
-  let entries: Awaited<ReturnType<typeof readdir>>
+  let entries: Dirent[]
   try { entries = await readdir(dir, { withFileTypes: true }) } catch { return [] }
   const out: string[] = []
   for (const e of entries) {

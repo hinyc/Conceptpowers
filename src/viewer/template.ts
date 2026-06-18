@@ -18,7 +18,7 @@ export function conceptPage(c: Concept): string {
 <html lang="ko"><head><meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${esc(c.title)} · concept</title>
-<link rel="stylesheet" href="${cssHref(depth + 1)}"/></head>
+<link rel="stylesheet" href="${cssHref(depth)}"/></head>
 <body><div class="wrap">
 <header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>
 <h1>${esc(c.title)}</h1><p>${esc(c.description.definition)}</p>
