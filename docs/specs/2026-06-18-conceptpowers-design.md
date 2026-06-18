@@ -60,6 +60,8 @@
 3. **위배 시 중단**: 변경이 개념을 위배하면 코드를 수정하지 않는다. 사용자가 개념을 바꾸거나 기능을 분리해야 한다.
 4. **`docs/conceptpowers/` 전체가 기준(baseline)이며 사용자 전속 수정**: 이 폴더의 모든 내용(init 마커, 기능 명세, 개념, 아키텍처, 인프라)은 프로젝트의 **판단 기준**이다. 따라서 사용자가 **명시적으로 요청**하거나 **직접 수정**할 때만 변경된다. 에이전트는 일반 코드 작업 중 이 폴더를 **임의로 수정하지 않는다**(읽기 전용으로 취급해 위배를 판단). 새 항목 생성(예: 없는 개념 정의)은 사용자가 그 기능을 추가하려는 명시적 흐름 안에서, 사용자 확인을 거쳐 전용 스킬로만 이루어진다.
 5. **매핑 동기화**: 에이전트가 코드를 수정할 때는 `@concept` 태그/매핑도 **항상 함께** 갱신한다. (매핑 태그는 코드 측 산출물이므로 baseline 수정 제약의 예외)
+6. **개념 범위는 포괄적(구멍 없음)**: 개념은 기능·동작뿐 아니라 **역할(role)·권한(permission)**, 그리고 프로젝트에서 특정 대상·기능을 지칭하는 **용어/표현(terminology)**까지 포함한다. 다소 까다롭더라도 지칭 표현이 모호하게 남지 않도록(=구멍이 없도록) 명확히 정의하는 것을 지향한다.
+7. **개념 간 무모순(consistency) 강제**: 개념을 **추가/수정할 때마다** 기존의 다른 개념들과 **충돌(conflict)·위배(violation)** 여부를 항상 검토한다. 충돌·위배가 **하나도 없을 때만** 생성·수정이 허용된다. 충돌이 있으면 생성·수정을 중단하고 사용자에게 해소(개념 조정/분리)를 요청한다.
 
 ## 4. 확정된 설계 결정 (Decisions)
 
@@ -74,6 +76,8 @@
 | D7 | HTML 뷰어 렌더링 | **데이터 저장 시 정적 HTML 재생성** | 서버 불필요, 파일 열면 바로 보임 |
 | D8 | 배포 채널 | **자체 마켓플레이스** (`.claude-plugin/marketplace.json`) | `superpowers`의 `obra/superpowers-marketplace` 방식 차용 |
 | D9 | baseline 폴더 구성 | `docs/conceptpowers/` = **init / features / concepts / architecture / infra** 5요소 | 전체가 사용자 전속 수정 대상(기준). `mapping.json`은 캐시로 분리 |
+| D10 | 개념 범주 | `feature` · `behavior` · `role` · `permission` · `term` (복수 가능) | 역할·권한·용어까지 포괄해 구멍 없게 |
+| D11 | 개념 무모순 게이트 | 개념 추가/수정 시 **기존 개념과 충돌·위배 검사 통과 시에만** 커밋 | 위반 시 중단·사용자 해소 요청 |
 
 ## 5. 아키텍처
 
@@ -158,9 +162,20 @@ init (1) 허용 게이트                                         ▲
 
 보여준 LGEHS `Admin Role` HTML 예시의 구조를 데이터화한다. (Zod로 검증)
 
+개념은 다음 **범주(category)** 중 하나 이상을 가진다 (구멍 없이 포괄, 규칙 6):
+
+| category | 의미 | 예 |
+|----------|------|----|
+| `feature` | 기능 | "토큰 사용량 대시보드" |
+| `behavior` | 동작 규칙 | "역할 회수 시 키 폐기와 권한 회수를 한 번에 처리" |
+| `role` | 역할 | "Admin Role", "Agent Developer Role" |
+| `permission` | 권한 | "에이전트 단위 개발 권한", "API Key 발급 가능 상태" |
+| `term` | 용어/표현 | "에이전트", "위임", "공동 개발자" — 지칭이 모호하지 않도록 정의 |
+
 ```jsonc
 {
   "slug": "admin-role",
+  "category": ["role"],          // feature | behavior | role | permission | term (복수 가능)
   "number": 3,
   "title": "Admin Role",
   "eyebrow": "운영자 역할",
@@ -204,9 +219,10 @@ init (1) 허용 게이트                                         ▲
 |------|--------|------|
 | `conceptpowers` (진입) | 세션 시작 / 사용법 질문 | Conceptpowers 사용법·규칙 안내, 다른 스킬로 라우팅 |
 | `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 5요소 스캐폴딩(init·features·concepts·architecture·infra + viewer/css) → 강제 활성화 |
-| `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | `features/` 명세를 기반으로 구조화된 개념(설명/목적/핵심행동/운영원칙)을 대화로 정의 → `concepts/data/` JSON·MD 저장 + 뷰어 정적 재생성 |
-| `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념을 찾아 변경의 위배 여부 판단. 위배 시 중단 안내 (baseline은 읽기 전용) |
-| `conceptpowers:update-baseline` | **사용자 명시 요청 시에만** | baseline(개념·기능명세·아키텍처·인프라) 수정. 에이전트 임의 수정 금지 |
+| `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | `features/` 명세 기반으로 구조화 개념(범주 포함: feature/behavior/role/permission/term)을 대화로 정의 → **무모순 검사 통과 시에만** `concepts/data/` 저장 + 뷰어 재생성 |
+| `conceptpowers:check-consistency` | define/update 시 자동 (내부 게이트) | 새/수정 개념을 **기존 모든 개념과 대조**해 충돌·위배 탐지. 통과해야만 커밋 (규칙 7) |
+| `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념(코드↔개념)을 찾아 **코드 변경**의 위배 여부 판단. 위배 시 중단 안내 (baseline은 읽기 전용) |
+| `conceptpowers:update-baseline` | **사용자 명시 요청 시에만** | baseline(개념·기능명세·아키텍처·인프라) 수정. 에이전트 임의 수정 금지. 개념 수정 시 `check-consistency` 통과 필수 |
 | `conceptpowers:update-mapping` | 코드 수정 시 자동 + 수동 호출 | `@concept` 태그/`mapping.json` 캐시 갱신 (baseline 아님) |
 
 ### 5.5 훅 (Hooks)
