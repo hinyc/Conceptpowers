@@ -3,7 +3,7 @@ export declare const ConceptCategory: z.ZodEnum<["feature", "behavior", "role", 
 export type ConceptCategory = z.infer<typeof ConceptCategory>;
 export declare const ConceptSchema: z.ZodObject<{
     slug: z.ZodString;
-    group: z.ZodDefault<z.ZodString>;
+    group: z.ZodDefault<z.ZodUnion<[z.ZodString, z.ZodLiteral<"">]>>;
     category: z.ZodArray<z.ZodEnum<["feature", "behavior", "role", "permission", "term"]>, "many">;
     number: z.ZodOptional<z.ZodNumber>;
     title: z.ZodString;

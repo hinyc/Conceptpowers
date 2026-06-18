@@ -10,6 +10,11 @@ function fileFor(root, c) {
 export async function writeConcept(root, input) {
     const concept = parseConcept(input);
     const target = fileFor(root, concept);
+    const existing = await listConcepts(root);
+    const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
+    if (duplicate) {
+        throw new Error(`slug 중복: ${concept.slug} 은(는) 이미 존재합니다 (전역 고유)`);
+    }
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, JSON.stringify(concept, null, 2) + '\n', 'utf8');
     return concept;

@@ -1,12 +1,27 @@
 // src/hooks/preToolUse.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { isInitialized } from "../init/scaffold.js";
 import { auditIntegrity } from "../audit/audit.js";
+const execFileAsync = promisify(execFile);
 const isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
+async function stagedFiles(root) {
+    try {
+        const { stdout } = await execFileAsync("git", ["--no-pager", "diff", "--cached", "--name-only"], { cwd: root });
+        return stdout
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean);
+    }
+    catch {
+        return [];
+    }
+}
 export async function decidePreToolUse(root, ev) {
     if (!(await isInitialized(root)))
         return null;
     if (ev.tool === "Bash" && isGitCommit(ev.input.command)) {
-        const files = ev.changedFiles ?? [];
+        const files = ev.changedFiles ?? (await stagedFiles(root));
         const report = await auditIntegrity(root, files);
         if (!report.ok) {
             const detail = report.unknownTags

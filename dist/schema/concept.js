@@ -3,7 +3,7 @@ export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permissio
 const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug는 kebab-case여야 합니다');
 export const ConceptSchema = z.object({
     slug,
-    group: z.string().default(''),
+    group: z.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(z.literal('')).default(''),
     category: z.array(ConceptCategory).min(1, 'category는 최소 1개'),
     number: z.number().int().positive().optional(),
     title: z.string().min(1),
