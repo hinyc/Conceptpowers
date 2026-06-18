@@ -84,6 +84,7 @@
 | D14 | 테스트 코드 개념 검증 | 테스트 작성 시 개념 참조, 위배 시 사용자 알림 (개념 임의수정 금지) | `check-concept` 검증 대상에 테스트 포함 |
 | D15 | 활성화 방식 | 플러그인 번들 **SessionStart 훅이 `init.json` 마커 자동 탐색**으로 활성화 | **CLAUDE.md 수정 불필요**. 설치만 하면 자동, init 안 한 프로젝트는 무동작 |
 | D16 | 진행 중 프로젝트 백필 | 기본 **점진적(incremental)** — init은 스캐폴드+마커만, 구멍은 audit 리포트로 안내하고 코드 건드릴 때 점진 백필 | `strict`(즉시 전체 강제)는 `init.json`의 옵트인 설정으로 선택 가능 |
+| D17 | 커밋 게이트 | `git commit` 요청 시 **자동**으로 `check-concept`(+개념 변경 포함 시 `check-consistency`) 실행, **0건일 때만 커밋** | PreToolUse(Bash) 훅으로 가로챔. 구멍 없이 코드·개념 양쪽 검증 |
 
 ## 5. 아키텍처
 
@@ -242,6 +243,7 @@ init (1) 허용 게이트                                         ▲
 |----|------|------|
 | SessionStart | 세션 시작 | 플러그인이 **자동으로** `docs/conceptpowers/init.json` 마커를 탐색. 존재하면 Conceptpowers 강제 컨텍스트 주입(활성화), 없으면 아무것도 안 함 |
 | PreToolUse (Edit/Write) | 코드 파일 수정 직전 | init된 프로젝트에서 새 기능·동작 변경이면 `check-concept` 수행을 강제하는 리마인더/게이트 |
+| PreToolUse (Bash: `git commit`) | 커밋 요청 직전 | init된 프로젝트에서 **커밋 게이트 자동 실행**: 스테이징된 diff에 대해 `check-concept`(코드↔개념), diff에 개념 변경이 포함되면 `check-consistency`(개념↔개념)도 실행. **위배·충돌 0건일 때만 커밋 진행**, 아니면 차단·해소 안내 |
 
 > 훅은 **의미 판단을 하지 않는다**(불가능). 훅은 게이트·리마인더 역할만 하고,
 > 실제 개념 검증·위배 판단은 **스킬(에이전트의 추론)**이 수행한다. (하이브리드)
