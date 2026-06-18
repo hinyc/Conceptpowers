@@ -51,4 +51,12 @@ describe('scaffoldInit', () => {
     expect(readFileSync(join(b, 'architecture/architecture.md'), 'utf8')).toContain('# Architecture')
     expect(readFileSync(join(b, 'infra/infra.md'), 'utf8')).toContain('# Infrastructure')
   })
+  it('init 시 빈 상태 뷰어(index.html + css)를 미리 생성한다', async () => {
+    await scaffoldInit(root, { locale: 'en' })
+    const v = join(root, 'docs/conceptpowers/concepts/viewer')
+    expect(existsSync(join(v, 'index.html'))).toBe(true)
+    expect(existsSync(join(v, 'assets/concept.css'))).toBe(true)
+    const html = readFileSync(join(v, 'index.html'), 'utf8')
+    expect(html).toContain('<html lang="en"') // locale 반영
+  })
 })

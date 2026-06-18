@@ -12,7 +12,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 // src/init/scaffold.ts
-import { mkdir, writeFile, access } from "node:fs/promises";
+import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4084,18 +4084,8 @@ var InitConfigSchema = external_exports.object({
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile, writeFile as writeFile2, readdir } from "node:fs/promises";
+import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import { join as join2, dirname } from "node:path";
 
 // src/schema/concept.ts
@@ -4168,6 +4158,16 @@ async function listConcepts(root) {
     }
   }
   return concepts;
+}
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // src/mapping/scan.ts

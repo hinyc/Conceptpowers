@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { cpPaths } from '../paths.js'
 import { parseInitConfig, type Locale } from '../schema/initConfig.js'
 import { seedTemplates } from '../i18n/messages.js'
+import { renderViewerToDisk } from '../viewer/render.js'
 
 export interface ScaffoldOptions { backfillMode?: 'incremental' | 'strict'; name?: string; description?: string; locale?: Locale }
 
@@ -29,4 +30,6 @@ export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise
   const seed = seedTemplates[locale]
   await writeFile(join(p.architecture, 'architecture.md'), seed.architecture, 'utf8')
   await writeFile(join(p.infra, 'infra.md'), seed.infra, 'utf8')
+  // data 포맷이 고정이므로 빈 상태 뷰어(index.html + css)를 미리 생성해 둔다.
+  await renderViewerToDisk(root)
 }

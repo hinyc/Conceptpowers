@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/init/scaffold.ts
-import { mkdir, writeFile, access } from "node:fs/promises";
-import { join as join2 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
+import { join as join4 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -7154,37 +7154,9 @@ var seedTemplates = {
   }
 };
 
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
-async function scaffoldInit(root, opts) {
-  const p = cpPaths(root);
-  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir(d, { recursive: true });
-  if (await isInitialized(root)) return;
-  const locale = opts.locale ?? "ko";
-  const config = parseInitConfig({
-    version: "0.1.0",
-    enabled: true,
-    backfillMode: opts.backfillMode ?? "incremental",
-    locale,
-    project: { name: opts.name ?? "", description: opts.description ?? "" }
-  });
-  await writeFile(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
-  const seed = seedTemplates[locale];
-  await writeFile(join2(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile(join2(p.infra, "infra.md"), seed.infra, "utf8");
-}
-
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile3 } from "node:fs/promises";
-import { join as join4, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir2, writeFile as writeFile2, readFile as readFile3 } from "node:fs/promises";
+import { join as join3, dirname as dirname2 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/template.ts
@@ -7236,8 +7208,8 @@ function indexPage(concepts, locale = "ko") {
 }
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile, writeFile as writeFile2, readdir } from "node:fs/promises";
-import { join as join3, dirname } from "node:path";
+import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
+import { join as join2, dirname } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -7292,7 +7264,7 @@ async function walkJson(dir) {
   }
   const out = [];
   for (const e of entries) {
-    const full = join3(dir, e.name);
+    const full = join2(dir, e.name);
     if (e.isDirectory()) out.push(...await walkJson(full));
     else if (e.name.endsWith(".json")) out.push(full);
   }
@@ -7336,7 +7308,7 @@ async function readBundledCss() {
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile3(join4(dir, "assets", "concept.css"), "utf8");
+      return await readFile3(join3(dir, "assets", "concept.css"), "utf8");
     } catch {
       const parent = dirname2(dir);
       if (parent === dir) break;
@@ -7351,13 +7323,42 @@ async function renderViewerToDisk(root) {
   const files = renderViewer(concepts, locale);
   const viewer = cpPaths(root).conceptsViewer;
   for (const [rel, html] of Object.entries(files)) {
-    const target = join4(viewer, rel);
-    await mkdir3(dirname2(target), { recursive: true });
-    await writeFile3(target, html, "utf8");
+    const target = join3(viewer, rel);
+    await mkdir2(dirname2(target), { recursive: true });
+    await writeFile2(target, html, "utf8");
   }
   const cssTarget = cpPaths(root).cssTarget;
-  await mkdir3(dirname2(cssTarget), { recursive: true });
-  await writeFile3(cssTarget, await readBundledCss(), "utf8");
+  await mkdir2(dirname2(cssTarget), { recursive: true });
+  await writeFile2(cssTarget, await readBundledCss(), "utf8");
+}
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function scaffoldInit(root, opts) {
+  const p = cpPaths(root);
+  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
+    await mkdir3(d, { recursive: true });
+  if (await isInitialized(root)) return;
+  const locale = opts.locale ?? "ko";
+  const config = parseInitConfig({
+    version: "0.1.0",
+    enabled: true,
+    backfillMode: opts.backfillMode ?? "incremental",
+    locale,
+    project: { name: opts.name ?? "", description: opts.description ?? "" }
+  });
+  await writeFile3(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  const seed = seedTemplates[locale];
+  await writeFile3(join4(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile3(join4(p.infra, "infra.md"), seed.infra, "utf8");
+  await renderViewerToDisk(root);
 }
 
 // src/mapping/scan.ts

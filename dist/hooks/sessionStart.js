@@ -4089,15 +4089,45 @@ function parseInitConfig(input) {
 // src/i18n/messages.ts
 var localeLabel = { ko: "Korean", en: "English" };
 
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
+// src/schema/concept.ts
+var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
+var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var ConceptSchema = external_exports.object({
+  slug,
+  group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
+  category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
+  number: external_exports.number().int().positive().optional(),
+  title: external_exports.string().min(1),
+  eyebrow: external_exports.string().default(""),
+  description: external_exports.object({
+    definition: external_exports.string().min(1),
+    analogy: external_exports.string().default(""),
+    components: external_exports.array(external_exports.string()).default([]),
+    example: external_exports.string().default("")
+  }),
+  purpose: external_exports.object({
+    reason: external_exports.string().min(1),
+    benefits: external_exports.array(external_exports.string()).default([]),
+    vision: external_exports.string().default(""),
+    painPoints: external_exports.array(external_exports.string()).default([])
+  }),
+  actions: external_exports.object({
+    allow: external_exports.array(external_exports.string()).default([]),
+    restrict: external_exports.array(external_exports.string()).default([]),
+    interaction: external_exports.string().default("")
+  }),
+  principle: external_exports.object({
+    immutableRules: external_exports.array(external_exports.string()).default([]),
+    tradeoffs: external_exports.string().default(""),
+    lifecycle: external_exports.array(external_exports.string()).default([])
+  }),
+  relations: external_exports.object({
+    prev: external_exports.string().default(""),
+    next: external_exports.string().default(""),
+    related: external_exports.array(external_exports.string()).default([])
+  }).default({}),
+  codeLinks: external_exports.array(external_exports.string()).default([])
+});
 
 // src/init/readConfig.ts
 import { readFile } from "node:fs/promises";
@@ -4107,6 +4137,16 @@ async function readInitConfig(root) {
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
+  }
+}
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
   }
 }
 
