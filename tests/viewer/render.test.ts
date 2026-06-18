@@ -40,4 +40,20 @@ describe('renderViewer', () => {
     const out = renderViewer([ungrouped])
     expect(out['solo.html']).toContain('href="assets/concept.css"')
   })
+  it('기본(ko) locale이면 뷰어 라벨과 lang이 한글이다', () => {
+    const out = renderViewer([c])
+    expect(out['auth/admin-role.html']).toContain('설명')
+    expect(out['auth/admin-role.html']).toContain('허용 행동')
+    expect(out['auth/admin-role.html']).toContain('lang="ko"')
+    expect(out['index.html']).toContain('개념 목록')
+  })
+  it('en locale이면 뷰어 라벨과 lang이 영어다', () => {
+    const out = renderViewer([c], 'en')
+    const page = out['auth/admin-role.html']
+    expect(page).toContain('Description')
+    expect(page).toContain('Allowed')
+    expect(page).toContain('Restricted')
+    expect(page).toContain('lang="en"')
+    expect(out['index.html']).toContain('Concepts')
+  })
 })

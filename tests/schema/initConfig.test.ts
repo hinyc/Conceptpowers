@@ -12,4 +12,13 @@ describe('InitConfig', () => {
   it('enabled가 true가 아니면 거부한다', () => {
     expect(() => parseInitConfig({ version: '0.1.0', enabled: false })).toThrow()
   })
+  it('기본 locale은 ko', () => {
+    expect(parseInitConfig({ version: '0.1.0', enabled: true }).locale).toBe('ko')
+  })
+  it('en locale을 허용한다', () => {
+    expect(parseInitConfig({ version: '0.1.0', enabled: true, locale: 'en' }).locale).toBe('en')
+  })
+  it('알 수 없는 locale을 거부한다', () => {
+    expect(() => parseInitConfig({ version: '0.1.0', enabled: true, locale: 'fr' })).toThrow()
+  })
 })

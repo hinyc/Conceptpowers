@@ -18,7 +18,7 @@ export async function writeConcept(root: string, input: unknown): Promise<Concep
     (c) => c.slug === concept.slug && fileFor(root, c) !== target
   )
   if (duplicate) {
-    throw new Error(`slug 중복: ${concept.slug} 은(는) 이미 존재합니다 (전역 고유)`)
+    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`)
   }
   await mkdir(dirname(target), { recursive: true })
   await writeFile(target, JSON.stringify(concept, null, 2) + '\n', 'utf8')
@@ -42,7 +42,7 @@ export async function listConcepts(root: string): Promise<Concept[]> {
   const concepts: Concept[] = []
   for (const f of files) {
     try { concepts.push(parseConcept(JSON.parse(await readFile(f, 'utf8')))) }
-    catch (error) { throw new Error(`개념 파일 파싱 실패: ${f} — ${(error as Error).message}`) }
+    catch (error) { throw new Error(`Failed to parse concept file: ${f} — ${(error as Error).message}`) }
   }
   return concepts
 }

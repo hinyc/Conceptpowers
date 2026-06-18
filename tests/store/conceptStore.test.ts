@@ -35,7 +35,7 @@ describe('conceptStore', () => {
     await writeConcept(root, { ...base, slug: 'admin-role', group: 'auth' } as any)
     await expect(
       writeConcept(root, { ...base, slug: 'admin-role', group: 'billing' } as any)
-    ).rejects.toThrow('slug 중복')
+    ).rejects.toThrow('Duplicate slug')
   })
   it('동일 경로에 동일 slug 덮어쓰기는 허용한다 (I1)', async () => {
     await writeConcept(root, { ...base, slug: 'admin-role', group: 'auth', title: 'v1' } as any)

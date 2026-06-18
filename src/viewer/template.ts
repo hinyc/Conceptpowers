@@ -1,5 +1,7 @@
 // src/viewer/template.ts
 import type { Concept } from '../schema/concept.js'
+import type { Locale } from '../schema/initConfig.js'
+import { viewerStrings } from '../i18n/messages.js'
 
 export function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -12,10 +14,11 @@ function list(items: string[]): string {
 
 const cssHref = (depth: number) => `${'../'.repeat(depth)}assets/concept.css`
 
-export function conceptPage(c: Concept): string {
+export function conceptPage(c: Concept, locale: Locale = 'ko'): string {
   const depth = c.group ? 1 : 0
+  const t = viewerStrings[locale]
   return `<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8"/>
+<html lang="${locale}"><head><meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${esc(c.title)} · concept</title>
 <link rel="stylesheet" href="${cssHref(depth)}"/></head>
@@ -23,18 +26,18 @@ export function conceptPage(c: Concept): string {
 <header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>
 <h1>${esc(c.title)}</h1><p>${esc(c.description.definition)}</p>
 <p class="cats">${c.category.map(esc).join(' · ')}</p></header>
-<section class="section"><h2>설명</h2><p>${esc(c.description.definition)}</p>
+<section class="section"><h2>${t.description}</h2><p>${esc(c.description.definition)}</p>
 ${c.description.analogy ? `<p class="analogy">${esc(c.description.analogy)}</p>` : ''}
 ${list(c.description.components)}</section>
-<section class="section"><h2>목적</h2><p>${esc(c.purpose.reason)}</p>${list(c.purpose.benefits)}</section>
-<section class="section cols"><div class="col-card col-card--allow"><h3>허용 행동</h3>${list(c.actions.allow)}</div>
-<div class="col-card col-card--restrict"><h3>제한 행동</h3>${list(c.actions.restrict)}</div></section>
-<section class="section"><h2>운영 원칙</h2>${list(c.principle.immutableRules)}
+<section class="section"><h2>${t.purpose}</h2><p>${esc(c.purpose.reason)}</p>${list(c.purpose.benefits)}</section>
+<section class="section cols"><div class="col-card col-card--allow"><h3>${t.allow}</h3>${list(c.actions.allow)}</div>
+<div class="col-card col-card--restrict"><h3>${t.restrict}</h3>${list(c.actions.restrict)}</div></section>
+<section class="section"><h2>${t.principle}</h2>${list(c.principle.immutableRules)}
 ${c.principle.tradeoffs ? `<p>${esc(c.principle.tradeoffs)}</p>` : ''}</section>
 </div></body></html>\n`
 }
 
-export function indexPage(concepts: Concept[]): string {
+export function indexPage(concepts: Concept[], locale: Locale = 'ko'): string {
   const byGroup = new Map<string, Concept[]>()
   for (const c of concepts) {
     const g = c.group || '(ungrouped)'
@@ -45,7 +48,8 @@ export function indexPage(concepts: Concept[]): string {
       const href = c.group ? `${esc(c.group)}/${esc(c.slug)}.html` : `${esc(c.slug)}.html`
       return `<li><a href="${href}">${esc(c.title)}</a> <small>${c.category.map(esc).join(', ')}</small></li>`
     }).join('')}</ul></section>`).join('')
-  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"/>
-<title>개념 목록 · Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
-<body><div class="wrap"><header class="hero"><h1>개념 목록</h1></header>${sections}</div></body></html>\n`
+  const title = viewerStrings[locale].conceptList
+  return `<!DOCTYPE html><html lang="${locale}"><head><meta charset="UTF-8"/>
+<title>${title} · Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
+<body><div class="wrap"><header class="hero"><h1>${title}</h1></header>${sections}</div></body></html>\n`
 }

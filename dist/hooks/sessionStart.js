@@ -4073,13 +4073,21 @@ var coerce = {
 var NEVER = INVALID;
 
 // src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
+  locale: LocaleSchema.default("ko"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
+function parseInitConfig(input) {
+  return InitConfigSchema.parse(input);
+}
+
+// src/i18n/messages.ts
+var localeLabel = { ko: "Korean", en: "English" };
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
@@ -4091,20 +4099,33 @@ async function isInitialized(root) {
   }
 }
 
+// src/init/readConfig.ts
+import { readFile } from "node:fs/promises";
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 // src/hooks/sessionStart.ts
 async function buildSessionStartOutput(root, pluginRoot) {
   if (!await isInitialized(root)) return null;
   const cli = join2(pluginRoot, "dist", "cli.js");
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
-    "\uC774 \uD504\uB85C\uC81D\uD2B8\uB294 Conceptpowers \uAC70\uBC84\uB10C\uC2A4\uAC00 \uD65C\uC131\uD654\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4(docs/conceptpowers/init.json \uC874\uC7AC).",
-    "\uADDC\uCE59:",
-    "- \uC0C8 \uAE30\uB2A5\xB7\uB3D9\uC791 \uBCC0\uACBD \uC804 conceptpowers:check-concept \uC2A4\uD0AC\uB85C \uAD00\uB828 \uAC1C\uB150 \uC704\uBC30 \uC5EC\uBD80\uB97C \uAC80\uC99D\uD55C\uB2E4.",
-    "- \uAD00\uB828 \uAC1C\uB150\uC774 \uC5C6\uC73C\uBA74 conceptpowers:define-concept\uB85C \uBA3C\uC800 \uC815\uC758\uD55C\uB2E4.",
-    "- \uC704\uBC30 \uC2DC \uCF54\uB4DC\uB97C \uC218\uC815\uD558\uC9C0 \uC54A\uACE0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uAC1C\uB150 \uC5C5\uB370\uC774\uD2B8/\uAE30\uB2A5 \uBD84\uB9AC\uB97C \uC694\uCCAD\uD55C\uB2E4.",
-    "- docs/conceptpowers/ \uC804\uCCB4\uB294 \uC77D\uAE30 \uC804\uC6A9 \uAE30\uC900\uC774\uB2E4. \uC218\uC815\uC740 \uC0AC\uC6A9\uC790 \uBA85\uC2DC \uC694\uCCAD \uC2DC conceptpowers:update-baseline\uC73C\uB85C\uB9CC.",
-    `- \uACB0\uC815\uB860\uC801 \uC791\uC5C5\uC6A9 CLI: node "${cli}" <init|status|render|map|audit>`,
-    "\uBCF4\uC644 \uAD00\uACC4: Conceptpowers\uB294 superpowers\uC758 \uC6CC\uD06C\uD50C\uB85C(brainstorming\u2192writing-plans\u2192TDD)\uB97C \uB300\uCCB4\uD558\uC9C0 \uC54A\uACE0 \uBCF4\uC644\uD55C\uB2E4. \uAC1C\uB150 \uC815\uC758/\uAC80\uC99D \uAC8C\uC774\uD2B8\uB9CC \uCD94\uAC00\uD558\uBA70, \uD504\uB85C\uC138\uC2A4 \uC2A4\uD0AC\uC740 superpowers\uB97C \uADF8\uB300\uB85C \uB530\uB978\uB2E4.",
+    "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
+    "Rules:",
+    "- Before adding a feature or changing behavior, verify related concepts with the conceptpowers:check-concept skill.",
+    "- If no related concept exists, define it first with conceptpowers:define-concept.",
+    "- On a violation, do not modify code; ask the user to update the concept or split the feature.",
+    "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
+    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit>`,
+    `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
+    "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>"
   ].join("\n");
   return {

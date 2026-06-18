@@ -49,13 +49,13 @@ export async function decidePreToolUse(
     const report = await auditIntegrity(root, files);
     if (!report.ok) {
       const detail = report.unknownTags
-        .map((t) => `${t.file} → @concept:${t.slug}(없음)`)
+        .map((t) => `${t.file} → @concept:${t.slug} (undefined)`)
         .join(", ");
       return {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
-          permissionDecisionReason: `커밋 차단: 정의되지 않은 개념 태그 — ${detail}. 개념을 정의(define-concept)하거나 태그를 수정하세요.`,
+          permissionDecisionReason: `Commit blocked: undefined concept tag(s) — ${detail}. Define the concept (define-concept) or fix the tag.`,
         },
       };
     }
@@ -64,7 +64,7 @@ export async function decidePreToolUse(
         hookEventName: "PreToolUse",
         permissionDecision: "allow",
         additionalContext:
-          "커밋 게이트(D17): 스테이징 변경에 대해 check-concept(코드↔개념)와, 개념 변경 포함 시 check-consistency(개념↔개념)를 수행했는지 확인하고, 위배·충돌 0건일 때만 커밋하세요.",
+          "Commit gate (D17): For the staged changes, confirm you ran check-concept (code↔concept) and, when concepts changed, check-consistency (concept↔concept); commit only when there are zero violations and conflicts.",
       },
     };
   }
@@ -74,7 +74,7 @@ export async function decidePreToolUse(
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         additionalContext:
-          "새 기능·동작 변경이면 먼저 conceptpowers:check-concept로 관련 개념 위배 여부를 검증하고, 코드 수정 시 @concept 태그/매핑을 함께 갱신하세요.",
+          "If this is a new feature or behavior change, first run conceptpowers:check-concept to verify related concepts aren't violated, and update the @concept tags/mapping together with the code change.",
       },
     };
   }
@@ -96,7 +96,7 @@ if (isMain) {
       const out = await decidePreToolUse(process.cwd(), ev);
       if (out) process.stdout.write(JSON.stringify(out));
     } catch {
-      /* 무동작 */
+      /* no-op */
     }
     process.exit(0);
   });

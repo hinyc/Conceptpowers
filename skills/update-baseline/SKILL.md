@@ -3,20 +3,22 @@ name: conceptpowers-update-baseline
 description: Use ONLY when the user explicitly asks to modify the baseline (a concept, feature spec, architecture, or infra) in a Conceptpowers-active project. The agent never modifies baseline on its own.
 ---
 
-# Conceptpowers: Update Baseline (사용자 전속)
+# Conceptpowers: Update Baseline (user-only)
 
-baseline(`docs/conceptpowers/` 전체)을 수정한다. (규칙 4)
+Modify the baseline (all of `docs/conceptpowers/`) (rule 4).
 
-## 전제
+## Precondition
 
-- **사용자가 명시적으로 수정을 요청**했을 때만 실행한다. 코드 작업 도중 임의 수정 금지.
+- Run only when the **user explicitly requests** the change. No arbitrary edits during coding work.
 
-## 절차
+## Steps
 
-1. 어떤 baseline을 바꾸는지 확인한다: 개념 / 기능명세 / 아키텍처 / 인프라.
-2. **개념을 수정하는 경우**:
-   - 변경안을 적용하기 전에 `conceptpowers-check-consistency`로 다른 개념과 충돌·위배를 검사한다.
-   - 충돌 0건일 때만 저장하고 뷰어를 재생성한다: `node "<cli>" render --root .`
-   - 개념 변경이 기존 코드(@concept 연결)에 영향을 주면, 영향 범위를 사용자에게 보고한다.
-3. **아키텍처/인프라/기능명세를 수정하는 경우**: 해당 변경이 개념을 바꿔야 하는지 사용자와 함께 검토한다(상위 기준이 하위 개념을 제약, D9).
-4. 변경 내역을 사용자에게 요약 보고한다.
+1. Confirm which baseline is changing: concept / feature spec / architecture / infra.
+2. **When modifying a concept**:
+   - Before applying the change, run `conceptpowers-check-consistency` to check for conflicts/violations
+     against other concepts.
+   - Save only when there are zero conflicts, then regenerate the viewer: `node "<cli>" render --root .`
+   - If the concept change affects existing code (@concept links), report the impact scope to the user.
+3. **When modifying architecture/infra/feature spec**: review with the user whether the change should also
+   change a concept (the high-level basis constrains lower-level concepts, D9).
+4. Report a summary of the changes to the user.

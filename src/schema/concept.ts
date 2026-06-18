@@ -3,12 +3,12 @@ import { z } from 'zod'
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term'])
 export type ConceptCategory = z.infer<typeof ConceptCategory>
 
-const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug는 kebab-case여야 합니다')
+const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
 
 export const ConceptSchema = z.object({
   slug,
   group: z.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(z.literal('')).default(''),
-  category: z.array(ConceptCategory).min(1, 'category는 최소 1개'),
+  category: z.array(ConceptCategory).min(1, 'category must have at least one item'),
   number: z.number().int().positive().optional(),
   title: z.string().min(1),
   eyebrow: z.string().default(''),

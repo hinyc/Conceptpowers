@@ -4074,11 +4074,13 @@ var coerce = {
 var NEVER = INVALID;
 
 // src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
+  locale: LocaleSchema.default("ko"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 
@@ -4098,11 +4100,11 @@ import { join as join2, dirname } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
-var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug\uB294 kebab-case\uC5EC\uC57C \uD569\uB2C8\uB2E4");
+var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
-  category: external_exports.array(ConceptCategory).min(1, "category\uB294 \uCD5C\uC18C 1\uAC1C"),
+  category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
   number: external_exports.number().int().positive().optional(),
   title: external_exports.string().min(1),
   eyebrow: external_exports.string().default(""),
@@ -4162,7 +4164,7 @@ async function listConcepts(root) {
     try {
       concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
     } catch (error) {
-      throw new Error(`\uAC1C\uB150 \uD30C\uC77C \uD30C\uC2F1 \uC2E4\uD328: ${f} \u2014 ${error.message}`);
+      throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
   }
   return concepts;
@@ -4220,12 +4222,12 @@ async function decidePreToolUse(root, ev) {
     const files = ev.changedFiles ?? await stagedFiles(root);
     const report = await auditIntegrity(root, files);
     if (!report.ok) {
-      const detail = report.unknownTags.map((t) => `${t.file} \u2192 @concept:${t.slug}(\uC5C6\uC74C)`).join(", ");
+      const detail = report.unknownTags.map((t) => `${t.file} \u2192 @concept:${t.slug} (undefined)`).join(", ");
       return {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
-          permissionDecisionReason: `\uCEE4\uBC0B \uCC28\uB2E8: \uC815\uC758\uB418\uC9C0 \uC54A\uC740 \uAC1C\uB150 \uD0DC\uADF8 \u2014 ${detail}. \uAC1C\uB150\uC744 \uC815\uC758(define-concept)\uD558\uAC70\uB098 \uD0DC\uADF8\uB97C \uC218\uC815\uD558\uC138\uC694.`
+          permissionDecisionReason: `Commit blocked: undefined concept tag(s) \u2014 ${detail}. Define the concept (define-concept) or fix the tag.`
         }
       };
     }
@@ -4233,7 +4235,7 @@ async function decidePreToolUse(root, ev) {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "allow",
-        additionalContext: "\uCEE4\uBC0B \uAC8C\uC774\uD2B8(D17): \uC2A4\uD14C\uC774\uC9D5 \uBCC0\uACBD\uC5D0 \uB300\uD574 check-concept(\uCF54\uB4DC\u2194\uAC1C\uB150)\uC640, \uAC1C\uB150 \uBCC0\uACBD \uD3EC\uD568 \uC2DC check-consistency(\uAC1C\uB150\u2194\uAC1C\uB150)\uB97C \uC218\uD589\uD588\uB294\uC9C0 \uD655\uC778\uD558\uACE0, \uC704\uBC30\xB7\uCDA9\uB3CC 0\uAC74\uC77C \uB54C\uB9CC \uCEE4\uBC0B\uD558\uC138\uC694."
+        additionalContext: "Commit gate (D17): For the staged changes, confirm you ran check-concept (code\u2194concept) and, when concepts changed, check-consistency (concept\u2194concept); commit only when there are zero violations and conflicts."
       }
     };
   }
@@ -4241,7 +4243,7 @@ async function decidePreToolUse(root, ev) {
     return {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
-        additionalContext: "\uC0C8 \uAE30\uB2A5\xB7\uB3D9\uC791 \uBCC0\uACBD\uC774\uBA74 \uBA3C\uC800 conceptpowers:check-concept\uB85C \uAD00\uB828 \uAC1C\uB150 \uC704\uBC30 \uC5EC\uBD80\uB97C \uAC80\uC99D\uD558\uACE0, \uCF54\uB4DC \uC218\uC815 \uC2DC @concept \uD0DC\uADF8/\uB9E4\uD551\uC744 \uD568\uAED8 \uAC31\uC2E0\uD558\uC138\uC694."
+        additionalContext: "If this is a new feature or behavior change, first run conceptpowers:check-concept to verify related concepts aren't violated, and update the @concept tags/mapping together with the code change."
       }
     };
   }

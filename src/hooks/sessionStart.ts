@@ -1,6 +1,8 @@
 // src/hooks/sessionStart.ts
 import { join } from "node:path";
 import { isInitialized } from "../init/scaffold.js";
+import { readInitConfig } from "../init/readConfig.js";
+import { localeLabel } from "../i18n/messages.js";
 
 export interface SessionStartOutput {
   hookSpecificOutput: {
@@ -15,16 +17,18 @@ export async function buildSessionStartOutput(
 ): Promise<SessionStartOutput | null> {
   if (!(await isInitialized(root))) return null;
   const cli = join(pluginRoot, "dist", "cli.js");
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
-    "이 프로젝트는 Conceptpowers 거버넌스가 활성화되어 있습니다(docs/conceptpowers/init.json 존재).",
-    "규칙:",
-    "- 새 기능·동작 변경 전 conceptpowers:check-concept 스킬로 관련 개념 위배 여부를 검증한다.",
-    "- 관련 개념이 없으면 conceptpowers:define-concept로 먼저 정의한다.",
-    "- 위배 시 코드를 수정하지 않고 사용자에게 개념 업데이트/기능 분리를 요청한다.",
-    "- docs/conceptpowers/ 전체는 읽기 전용 기준이다. 수정은 사용자 명시 요청 시 conceptpowers:update-baseline으로만.",
-    `- 결정론적 작업용 CLI: node "${cli}" <init|status|render|map|audit>`,
-    "보완 관계: Conceptpowers는 superpowers의 워크플로(brainstorming→writing-plans→TDD)를 대체하지 않고 보완한다. 개념 정의/검증 게이트만 추가하며, 프로세스 스킬은 superpowers를 그대로 따른다.",
+    "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
+    "Rules:",
+    "- Before adding a feature or changing behavior, verify related concepts with the conceptpowers:check-concept skill.",
+    "- If no related concept exists, define it first with conceptpowers:define-concept.",
+    "- On a violation, do not modify code; ask the user to update the concept or split the feature.",
+    "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
+    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit>`,
+    `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
+    "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",
   ].join("\n");
   return {

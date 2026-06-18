@@ -1,29 +1,32 @@
 ---
 name: conceptpowers-define-concept
-description: Use BEFORE adding a new feature/behavior/role/permission/term when no concept covers it in a Conceptpowers-active project. Defines a structured concept (설명/목적/핵심행동/운영원칙) and saves it after a consistency check.
+description: Use BEFORE adding a new feature/behavior/role/permission/term when no concept covers it in a Conceptpowers-active project. Defines a structured concept (description/purpose/core actions/operating principles) and saves it after a consistency check.
 ---
 
 # Conceptpowers: Define Concept
 
-새 기능·동작·역할·권한·용어에 해당하는 개념이 없을 때, 개념을 먼저 정의한다. (규칙 2/6)
+When no concept exists for a new feature/behavior/role/permission/term, define the concept first (rules 2/6).
 
-## 절차 (대화형)
+Write the concept content in the project's output language (the `locale` from `init.json`).
 
-1. `features/`의 관련 기능 명세를 확인한다. 없으면 사용자와 함께 한 줄 명세부터 정한다.
-2. 개념의 **범주(category)**를 정한다: feature | behavior | role | permission | term (복수 가능).
-3. 다음 구조를 사용자와 함께 채운다 (LGEHS Admin Role 예시 구조):
-   - **설명**: 핵심 정의, 비유, 구성요소, 예시
-   - **목적**: 존재 이유, 기대효과, 비전, 페인포인트
-   - **핵심 행동**: 허용(allow) / 제한(restrict) / 상호작용
-   - **운영 원칙**: 불변 원칙, 트레이드오프, 라이프사이클
-4. slug(kebab-case, 전역 고유)과 group(도메인)을 정한다.
-5. **무모순 검사**: `conceptpowers-check-consistency` 스킬을 실행해 기존 개념과 충돌·위배가 없는지 확인한다.
-   - 충돌이 있으면 **저장하지 않고** 사용자에게 해소(개념 조정/분리)를 요청한다. (규칙 7)
-6. 통과 시 JSON으로 저장한다. 개념 데이터 파일을 직접 쓰거나, 저장 후 뷰어를 재생성한다:
+## Steps (interactive)
+
+1. Check the related feature spec in `features/`. If none exists, agree on a one-line spec with the user first.
+2. Decide the concept's **category**: feature | behavior | role | permission | term (multiple allowed).
+3. Fill in the following structure together with the user:
+   - **Description** (`description`): core definition, analogy, components, example
+   - **Purpose** (`purpose`): reason for existence, benefits, vision, pain points
+   - **Core actions** (`actions`): allow / restrict / interaction
+   - **Operating principles** (`principle`): immutable rules, tradeoffs, lifecycle
+4. Decide the slug (kebab-case, globally unique) and group (domain).
+5. **Consistency check**: run the `conceptpowers-check-consistency` skill to confirm no conflict or
+   violation against existing concepts.
+   - On a conflict, **do not save**; ask the user to resolve it (adjust or split the concept) (rule 7).
+6. On pass, save as JSON. Write the concept data file directly, then regenerate the viewer:
    `node "<cli>" render --root .`
-7. 정의한 개념을 코드와 연결할 때 `@concept:<slug>` 태그를 사용하도록 안내한다.
+7. Guide the user to link the concept to code with a `@concept:<slug>` tag.
 
-## 산출물
+## Outputs
 
-- `docs/conceptpowers/concepts/data/<group>/<slug>.json` (스키마 준수)
-- 갱신된 뷰어 HTML
+- `docs/conceptpowers/concepts/data/<group>/<slug>.json` (schema-compliant)
+- Updated viewer HTML

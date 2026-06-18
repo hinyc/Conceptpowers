@@ -1,31 +1,112 @@
 # Conceptpowers
 
-개념(Concept) 기반 개발 거버넌스 Claude Code 플러그인.
-코드를 바꾸기 전에 개념을 정의하고, 변경이 개념을 위배하지 않는지 강제 검증한다.
+> **Define the concept before you change the code.** Concept-Driven Development (CDD) governance for Claude Code — your concepts become machine-checkable rules that are enforced on every edit and commit.
 
-## 설치 (자체 마켓플레이스)
+*Read this in [한국어](README.ko.md).*
+
+---
+
+## Why Conceptpowers?
+
+As a codebase grows, the **intent** behind it gets lost. The rules ("admins can never be deleted", "prices are immutable after checkout") live in someone's head, in a stale wiki, or nowhere at all. Code silently drifts from its original concept — and AI coding agents, moving fast, make changes that quietly violate rules no one wrote down.
+
+Conventional approaches don't solve this:
+
+- 📄 **Docs & wikis** go stale the moment code changes. Nothing enforces them.
+- 💬 **Code review** catches violations only if a human happens to remember the rule.
+- 🤖 **AI agents** have no durable memory of *why* the code is the way it is.
+
+**Concept-Driven Development** flips this. You define a concept *first* — its purpose, what it allows, what it restricts, what is immutable — as structured, versioned data. From then on, Conceptpowers:
+
+- ✅ checks proposed changes against the concept **before** code is written,
+- 🔒 **blocks commits** that reference undefined concepts,
+- 🔍 **audits** the whole project for code that drifted away from its concept.
+
+The "why" stops being tribal knowledge and becomes an enforced contract.
+
+---
+
+## Quick Start
+
+Inside Claude Code, three commands get you running:
 
 ```bash
-/plugin marketplace add <user>/Conceptpowers
-/plugin install conceptpowers@conceptpowers-dev
+/plugin marketplace add hinyc/Conceptpowers   # 1. add the marketplace
+/plugin install conceptpowers@conceptpowers-dev # 2. install the plugin
+/conceptpowers-init                             # 3. enable it in your project
 ```
 
-## 사용
+`/conceptpowers-init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
 
-1. 프로젝트에서 활성화: `conceptpowers init` 스킬 호출 → `docs/conceptpowers/` 생성
-2. 이후 새 기능·동작 변경 시 개념 검증이 자동 강제됨 (SessionStart 훅이 마커 자동 탐색)
-3. 전체 점검: `conceptpowers audit`
+---
 
-## 구조
+## How it Works
 
-- 개념 데이터: `docs/conceptpowers/concepts/data/<group>/<slug>.json`
-- 뷰어: `docs/conceptpowers/concepts/viewer/index.html`
-- baseline 전체는 사용자 전속 수정.
+Conceptpowers keeps concepts and code in lockstep through a simple loop:
 
-자세한 설계: `docs/specs/2026-06-18-conceptpowers-design.md`
+```mermaid
+flowchart LR
+    A["📐 Define concept<br/>(define-concept)"] --> B["✏️ Write / change code"]
+    B --> C{"🔎 check-concept<br/>violates a rule?"}
+    C -- "yes" --> B
+    C -- "no" --> D["🏷️ Tag code with @concept"]
+    D --> E{"🚦 Commit gate<br/>(PreToolUse hook)"}
+    E -- "undefined @concept tag" --> B
+    E -- "clean" --> F["✅ Commit"]
+    F --> G["🔍 audit / update-mapping<br/>keep links in sync"]
+    G -. "drift found" .-> A
+```
 
-## superpowers와 함께 쓰기
+1. **Define** a concept as structured data (`/conceptpowers-define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
+2. **Check** before changing code (`/conceptpowers-check-concept`). The agent finds the related concept and judges whether the change violates it.
+3. **Enforce** automatically. The SessionStart hook loads active concepts into context; the PreToolUse hook blocks any commit that references an undefined `@concept`.
+4. **Audit** anytime (`/conceptpowers-audit`) to find concept-less code and verify every `@concept` link still resolves.
 
-Conceptpowers는 [superpowers](https://github.com/obra/superpowers)와 충돌 없이 보완한다.
-superpowers가 개발 프로세스(아이디어→스펙→계획→TDD)를 이끌고, Conceptpowers가 개념 정의/검증 게이트를 더한다.
-자세한 흐름: `docs/superpowers-interop.md`.
+All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
+
+### Skills
+
+| Skill | Description |
+| --- | --- |
+| `conceptpowers-init` | Enable governance, scaffold `docs/conceptpowers` and the marker |
+| `conceptpowers-define-concept` | Define a structured concept for a new feature/role/permission/term |
+| `conceptpowers-check-concept` | Find related concepts and judge allow/restrict/immutable violations before changes |
+| `conceptpowers-check-consistency` | Compare new/changed concepts against existing ones to detect conflicts (commit gate) |
+| `conceptpowers-update-mapping` | Sync `@concept` tags and the mapping cache |
+| `conceptpowers-audit` | Audit concept-less code (gaps) and `@concept` link integrity |
+| `conceptpowers-update-baseline` | Modify the baseline only when the user explicitly asks |
+
+### Project structure
+
+`/conceptpowers-init` creates:
+
+```
+docs/conceptpowers/
+├── init.json                       # activation marker
+├── features/                       # feature specs
+├── concepts/
+│   ├── data/<group>/<slug>.json    # concept data
+│   └── viewer/index.html           # browsable concept viewer
+├── architecture/architecture.md    # architecture template
+├── infra/infra.md                  # infra template
+└── .cache/mapping.json             # auto mapping cache (do not edit)
+```
+
+The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
+
+Detailed design: `docs/specs/2026-06-18-conceptpowers-design.md`.
+
+### Using with superpowers
+
+Conceptpowers complements [superpowers](https://github.com/obra/superpowers) without conflict. superpowers drives the development *process* (idea → spec → plan → TDD); Conceptpowers adds the concept definition / verification *gates*. Detailed flow: `docs/superpowers-interop.md`.
+
+---
+
+## License & Community
+
+- **License:** MIT — see [`LICENSE`](LICENSE).
+- **Issues & ideas:** open a [GitHub Issue](../../issues) — bug reports, concept-schema proposals, and CDD workflow ideas are all welcome.
+- **Contributing:** PRs welcome. The engine lives in `src/` (TypeScript, ESM); run `pnpm build` and `pnpm test` (80%+ coverage) before submitting.
+- **Korean users:** see [README.ko.md](README.ko.md) for the full Korean guide.
+
+If Conceptpowers helps you keep intent and code in sync, a ⭐ on the repo helps others find it.

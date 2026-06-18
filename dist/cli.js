@@ -7111,16 +7111,48 @@ var coerce = {
 var NEVER = INVALID;
 
 // src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
+  locale: LocaleSchema.default("ko"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
 }
+
+// src/i18n/messages.ts
+var viewerStrings = {
+  ko: {
+    description: "\uC124\uBA85",
+    purpose: "\uBAA9\uC801",
+    allow: "\uD5C8\uC6A9 \uD589\uB3D9",
+    restrict: "\uC81C\uD55C \uD589\uB3D9",
+    principle: "\uC6B4\uC601 \uC6D0\uCE59",
+    conceptList: "\uAC1C\uB150 \uBAA9\uB85D"
+  },
+  en: {
+    description: "Description",
+    purpose: "Purpose",
+    allow: "Allowed",
+    restrict: "Restricted",
+    principle: "Operating Principles",
+    conceptList: "Concepts"
+  }
+};
+var seedTemplates = {
+  ko: {
+    architecture: "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n",
+    infra: "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n"
+  },
+  en: {
+    architecture: "# Architecture\n\n<!-- Fill in: the high-level basis for concepts -->\n",
+    infra: "# Infrastructure\n\n<!-- Fill in -->\n"
+  }
+};
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
@@ -7136,19 +7168,22 @@ async function scaffoldInit(root, opts) {
   for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
     await mkdir(d, { recursive: true });
   if (await isInitialized(root)) return;
+  const locale = opts.locale ?? "ko";
   const config = parseInitConfig({
     version: "0.1.0",
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
+    locale,
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
   await writeFile(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
-  await writeFile(join2(p.architecture, "architecture.md"), "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n", "utf8");
-  await writeFile(join2(p.infra, "infra.md"), "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n", "utf8");
+  const seed = seedTemplates[locale];
+  await writeFile(join2(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile(join2(p.infra, "infra.md"), seed.infra, "utf8");
 }
 
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile2 } from "node:fs/promises";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile3 } from "node:fs/promises";
 import { join as join4, dirname as dirname2 } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7160,10 +7195,11 @@ function list(items) {
   return items.length ? `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
 }
 var cssHref = (depth) => `${"../".repeat(depth)}assets/concept.css`;
-function conceptPage(c) {
+function conceptPage(c, locale = "ko") {
   const depth = c.group ? 1 : 0;
+  const t = viewerStrings[locale];
   return `<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8"/>
+<html lang="${locale}"><head><meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${esc(c.title)} \xB7 concept</title>
 <link rel="stylesheet" href="${cssHref(depth)}"/></head>
@@ -7171,18 +7207,18 @@ function conceptPage(c) {
 <header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>
 <h1>${esc(c.title)}</h1><p>${esc(c.description.definition)}</p>
 <p class="cats">${c.category.map(esc).join(" \xB7 ")}</p></header>
-<section class="section"><h2>\uC124\uBA85</h2><p>${esc(c.description.definition)}</p>
+<section class="section"><h2>${t.description}</h2><p>${esc(c.description.definition)}</p>
 ${c.description.analogy ? `<p class="analogy">${esc(c.description.analogy)}</p>` : ""}
 ${list(c.description.components)}</section>
-<section class="section"><h2>\uBAA9\uC801</h2><p>${esc(c.purpose.reason)}</p>${list(c.purpose.benefits)}</section>
-<section class="section cols"><div class="col-card col-card--allow"><h3>\uD5C8\uC6A9 \uD589\uB3D9</h3>${list(c.actions.allow)}</div>
-<div class="col-card col-card--restrict"><h3>\uC81C\uD55C \uD589\uB3D9</h3>${list(c.actions.restrict)}</div></section>
-<section class="section"><h2>\uC6B4\uC601 \uC6D0\uCE59</h2>${list(c.principle.immutableRules)}
+<section class="section"><h2>${t.purpose}</h2><p>${esc(c.purpose.reason)}</p>${list(c.purpose.benefits)}</section>
+<section class="section cols"><div class="col-card col-card--allow"><h3>${t.allow}</h3>${list(c.actions.allow)}</div>
+<div class="col-card col-card--restrict"><h3>${t.restrict}</h3>${list(c.actions.restrict)}</div></section>
+<section class="section"><h2>${t.principle}</h2>${list(c.principle.immutableRules)}
 ${c.principle.tradeoffs ? `<p>${esc(c.principle.tradeoffs)}</p>` : ""}</section>
 </div></body></html>
 `;
 }
-function indexPage(concepts) {
+function indexPage(concepts, locale = "ko") {
   const byGroup = /* @__PURE__ */ new Map();
   for (const c of concepts) {
     const g = c.group || "(ungrouped)";
@@ -7192,9 +7228,10 @@ function indexPage(concepts) {
     const href = c.group ? `${esc(c.group)}/${esc(c.slug)}.html` : `${esc(c.slug)}.html`;
     return `<li><a href="${href}">${esc(c.title)}</a> <small>${c.category.map(esc).join(", ")}</small></li>`;
   }).join("")}</ul></section>`).join("");
-  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"/>
-<title>\uAC1C\uB150 \uBAA9\uB85D \xB7 Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
-<body><div class="wrap"><header class="hero"><h1>\uAC1C\uB150 \uBAA9\uB85D</h1></header>${sections}</div></body></html>
+  const title = viewerStrings[locale].conceptList;
+  return `<!DOCTYPE html><html lang="${locale}"><head><meta charset="UTF-8"/>
+<title>${title} \xB7 Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
+<body><div class="wrap"><header class="hero"><h1>${title}</h1></header>${sections}</div></body></html>
 `;
 }
 
@@ -7204,11 +7241,11 @@ import { join as join3, dirname } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
-var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug\uB294 kebab-case\uC5EC\uC57C \uD569\uB2C8\uB2E4");
+var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
-  category: external_exports.array(ConceptCategory).min(1, "category\uB294 \uCD5C\uC18C 1\uAC1C"),
+  category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
   number: external_exports.number().int().positive().optional(),
   title: external_exports.string().min(1),
   eyebrow: external_exports.string().default(""),
@@ -7268,18 +7305,29 @@ async function listConcepts(root) {
     try {
       concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
     } catch (error) {
-      throw new Error(`\uAC1C\uB150 \uD30C\uC77C \uD30C\uC2F1 \uC2E4\uD328: ${f} \u2014 ${error.message}`);
+      throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
   }
   return concepts;
 }
 
+// src/init/readConfig.ts
+import { readFile as readFile2 } from "node:fs/promises";
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile2(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 // src/viewer/render.ts
-function renderViewer(concepts) {
-  const out = { "index.html": indexPage(concepts) };
+function renderViewer(concepts, locale = "ko") {
+  const out = { "index.html": indexPage(concepts, locale) };
   for (const c of concepts) {
     const rel = c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
-    out[rel] = conceptPage(c);
+    out[rel] = conceptPage(c, locale);
   }
   return out;
 }
@@ -7288,18 +7336,19 @@ async function readBundledCss() {
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile2(join4(dir, "assets", "concept.css"), "utf8");
+      return await readFile3(join4(dir, "assets", "concept.css"), "utf8");
     } catch {
       const parent = dirname2(dir);
       if (parent === dir) break;
       dir = parent;
     }
   }
-  throw new Error(`concept.css\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 (\uD0D0\uC0C9 \uC2DC\uC791: ${start})`);
+  throw new Error(`concept.css not found (search start: ${start})`);
 }
 async function renderViewerToDisk(root) {
   const concepts = await listConcepts(root);
-  const files = renderViewer(concepts);
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const files = renderViewer(concepts, locale);
   const viewer = cpPaths(root).conceptsViewer;
   for (const [rel, html] of Object.entries(files)) {
     const target = join4(viewer, rel);
@@ -7312,7 +7361,7 @@ async function renderViewerToDisk(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
 import { join as join5, dirname as dirname3 } from "node:path";
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 async function scanTags(root, files) {
@@ -7320,7 +7369,7 @@ async function scanTags(root, files) {
   for (const rel of files) {
     let content;
     try {
-      content = await readFile3(join5(root, rel), "utf8");
+      content = await readFile4(join5(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -7360,8 +7409,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
   let code = 0;
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").action(async (o) => {
-    await scaffoldInit(o.root, { backfillMode: o.mode });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
+    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
     if (o.mode === "strict") await renderViewerToDisk(o.root);
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {

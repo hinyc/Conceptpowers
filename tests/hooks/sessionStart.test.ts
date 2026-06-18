@@ -22,5 +22,20 @@ describe("buildSessionStartOutput", () => {
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain("Conceptpowers");
     expect(ctx).toContain("/plugin/dist/cli.js");
+    expect(ctx).toContain("check-concept");
+  });
+  it("ko면 Output language 디렉티브가 Korean이다 (기본)", async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, "/plugin");
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("Output language");
+    expect(ctx).toContain("Korean");
+  });
+  it("en이면 Output language 디렉티브가 English이다", async () => {
+    await scaffoldInit(root, { locale: "en" });
+    const o = await buildSessionStartOutput(root, "/plugin");
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("Output language");
+    expect(ctx).toContain("English");
   });
 });

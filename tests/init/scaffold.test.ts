@@ -33,4 +33,22 @@ describe('scaffoldInit', () => {
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
     expect(cfg.backfillMode).toBe('strict') // 보존
   })
+  it('init.json에 locale을 기록한다 (기본 ko)', async () => {
+    await scaffoldInit(root, {})
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
+    expect(cfg.locale).toBe('ko')
+  })
+  it('ko seed 템플릿은 한글로 작성된다', async () => {
+    await scaffoldInit(root, { locale: 'ko' })
+    const b = join(root, 'docs/conceptpowers')
+    expect(readFileSync(join(b, 'architecture/architecture.md'), 'utf8')).toContain('# 아키텍처')
+    expect(readFileSync(join(b, 'infra/infra.md'), 'utf8')).toContain('# 인프라')
+  })
+  it('en seed 템플릿은 영어로 작성되고 locale을 기록한다', async () => {
+    await scaffoldInit(root, { locale: 'en' })
+    const b = join(root, 'docs/conceptpowers')
+    expect(JSON.parse(readFileSync(join(b, 'init.json'), 'utf8')).locale).toBe('en')
+    expect(readFileSync(join(b, 'architecture/architecture.md'), 'utf8')).toContain('# Architecture')
+    expect(readFileSync(join(b, 'infra/infra.md'), 'utf8')).toContain('# Infrastructure')
+  })
 })

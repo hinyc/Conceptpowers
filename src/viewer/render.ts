@@ -3,15 +3,17 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Concept } from '../schema/concept.js'
+import type { Locale } from '../schema/initConfig.js'
 import { conceptPage, indexPage } from './template.js'
 import { listConcepts } from '../store/conceptStore.js'
+import { readInitConfig } from '../init/readConfig.js'
 import { cpPaths } from '../paths.js'
 
-export function renderViewer(concepts: Concept[]): Record<string, string> {
-  const out: Record<string, string> = { 'index.html': indexPage(concepts) }
+export function renderViewer(concepts: Concept[], locale: Locale = 'ko'): Record<string, string> {
+  const out: Record<string, string> = { 'index.html': indexPage(concepts, locale) }
   for (const c of concepts) {
     const rel = c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`
-    out[rel] = conceptPage(c)
+    out[rel] = conceptPage(c, locale)
   }
   return out
 }
@@ -30,12 +32,13 @@ async function readBundledCss(): Promise<string> {
       dir = parent
     }
   }
-  throw new Error(`concept.css를 찾을 수 없습니다 (탐색 시작: ${start})`)
+  throw new Error(`concept.css not found (search start: ${start})`)
 }
 
 export async function renderViewerToDisk(root: string): Promise<void> {
   const concepts = await listConcepts(root)
-  const files = renderViewer(concepts)
+  const locale = (await readInitConfig(root))?.locale ?? 'ko'
+  const files = renderViewer(concepts, locale)
   const viewer = cpPaths(root).conceptsViewer
   for (const [rel, html] of Object.entries(files)) {
     const target = join(viewer, rel)
