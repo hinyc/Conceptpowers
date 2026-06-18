@@ -56,4 +56,17 @@ describe('renderViewer', () => {
     expect(page).toContain('lang="en"')
     expect(out['index.html']).toContain('Concepts')
   })
+  it('red 개념은 미승인 배지를 표시한다 (ko)', () => {
+    const red = { ...c, status: 'red' } as Concept
+    const out = renderViewer([red])
+    expect(out['auth/admin-role.html']).toContain('badge--red')
+    expect(out['auth/admin-role.html']).toContain('미승인')
+    expect(out['index.html']).toContain('badge--red')
+  })
+  it('green 개념은 승인됨 배지를 표시한다 (en)', () => {
+    const green = { ...c, status: 'green' } as Concept
+    const out = renderViewer([green], 'en')
+    expect(out['auth/admin-role.html']).toContain('badge--green')
+    expect(out['auth/admin-role.html']).toContain('Approved')
+  })
 })

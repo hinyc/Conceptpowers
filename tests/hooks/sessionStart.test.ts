@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildSessionStartOutput } from "../../src/hooks/sessionStart.js";
 import { scaffoldInit } from "../../src/init/scaffold.js";
+import { writeConcept } from "../../src/store/conceptStore.js";
 
 let root: string;
 beforeEach(() => {
@@ -37,5 +38,16 @@ describe("buildSessionStartOutput", () => {
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain("Output language");
     expect(ctx).toContain("English");
+  });
+  it("미승인(red) 개념 수와 approvalMode 규칙을 컨텍스트에 담는다", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "red-one", category: ["feature"], title: "R",
+      description: { definition: "d" }, purpose: { reason: "r" }, actions: {}, principle: {}, status: "red",
+    } as any);
+    const o = await buildSessionStartOutput(root, "/plugin");
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("red-one");
+    expect(ctx).toContain("approvalMode");
   });
 });

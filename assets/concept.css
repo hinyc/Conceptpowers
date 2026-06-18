@@ -139,3 +139,67 @@ li::marker { color: var(--muted); }
 }
 .group a:hover { text-decoration: underline; }
 .group small { color: var(--muted); font-size: .82rem; margin-left: .4rem; }
+
+/* 승인 상태 배지 */
+.badge {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  padding: .12rem .5rem;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+.badge--green { background: #e6f5ea; color: #1a7f37; border: 1px solid #aee0bd; }
+.badge--red { background: #fdeaea; color: #b42318; border: 1px solid #f3b4ae; }
+.hero .badge { margin-left: .5rem; }
+.group li .badge { margin-right: .4rem; }
+
+/* 관련 링크 목록 (관련 기능 / 관련 개념) */
+.links { list-style: none; padding-left: 0; }
+.links li { margin: .25rem 0; }
+.links a { color: var(--link); text-decoration: none; font-weight: 600; }
+.links a:hover { text-decoration: underline; }
+.muted { color: var(--muted); }
+
+/* 구현 경로 */
+.paths { list-style: none; padding-left: 0; }
+.paths li { margin: .3rem 0; }
+.paths code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .12rem .4rem;
+  color: var(--fg);
+}
+
+/* 페이지 내 내비게이션 */
+.pagenav { margin-top: 8px; font-size: .9rem; color: var(--muted); }
+.pagenav a { color: var(--link); text-decoration: none; }
+.pagenav a:hover { text-decoration: underline; }
+.graph-link { font-weight: 600; }
+
+/* 지식 그래프 페이지 */
+.graph-body { margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.graph-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 16px; height: 56px; flex: 0 0 auto;
+  border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.graph-bar .back { color: var(--link); text-decoration: none; font-weight: 600; }
+.graph-bar strong { font-size: 1rem; }
+.graph-bar .legend { margin-left: auto; display: flex; gap: 14px; color: var(--muted); font-size: .85rem; }
+.graph-bar .lg { display: inline-flex; align-items: center; gap: .35rem; }
+.dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.dot--concept { background: var(--link); }
+.dot--feature { background: var(--allow); }
+.dot--file { background: var(--muted); }
+.graph { flex: 1 1 auto; width: 100%; height: 100%; display: block; background: var(--bg); }
+.gedge { stroke: var(--border); stroke-width: 1.2; }
+.gnode text { fill: var(--fg-soft); font-size: 12px; }
+.gnode circle { stroke: var(--bg); stroke-width: 2; }
+.gnode--concept circle { fill: var(--link); }
+.gnode--feature circle { fill: var(--allow); }
+.gnode--file circle { fill: var(--muted); }

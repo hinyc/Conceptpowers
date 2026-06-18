@@ -25,6 +25,7 @@ describe("end-to-end", () => {
       purpose: { reason: "r" },
       actions: {},
       principle: {},
+      status: "green", // 승인된 개념 → 커밋 게이트 통과
     });
     expect(await runCli(["render", "--root", root])).toBe(0);
     expect(

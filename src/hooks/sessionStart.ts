@@ -2,6 +2,7 @@
 import { join } from "node:path";
 import { isInitialized } from "../init/scaffold.js";
 import { readInitConfig } from "../init/readConfig.js";
+import { listConcepts } from "../store/conceptStore.js";
 import { localeLabel } from "../i18n/messages.js";
 
 export interface SessionStartOutput {
@@ -17,7 +18,16 @@ export async function buildSessionStartOutput(
 ): Promise<SessionStartOutput | null> {
   if (!(await isInitialized(root))) return null;
   const cli = join(pluginRoot, "dist", "cli.js");
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const config = await readInitConfig(root);
+  const locale = config?.locale ?? "ko";
+  const approvalMode = config?.approvalMode ?? "manual";
+  const reds = (await listConcepts(root))
+    .filter((c) => (c.status ?? "red") === "red")
+    .map((c) => c.slug);
+  const pendingLine =
+    reds.length > 0
+      ? `- Pending approval (status=red, ${reds.length}): ${reds.join(", ")}. These concepts are auto/unconfirmed; guide the user to review and approve them.`
+      : "- All defined concepts are approved (status=green).";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
     "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
@@ -26,8 +36,10 @@ export async function buildSessionStartOutput(
     "- If no related concept exists, define it first with conceptpowers:define-concept.",
     "- On a violation, do not modify code; ask the user to update the concept or split the feature.",
     "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
-    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit>`,
+    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
+    `- Concept approval: status is green(approved)/red(unapproved). approvalMode='${approvalMode}'. In 'manual' mode you MUST NOT change a concept's status — the user edits it directly (or sets approvalMode='cli' to allow the conceptpowers:approve flow). Never auto-approve.`,
+    pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",
   ].join("\n");

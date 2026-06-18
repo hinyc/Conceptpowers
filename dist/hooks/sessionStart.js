@@ -8,10 +8,10 @@ var __export = (target, all) => {
 };
 
 // src/hooks/sessionStart.ts
-import { join as join2 } from "node:path";
+import { join as join3 } from "node:path";
 
 // src/init/scaffold.ts
-import { mkdir, writeFile, access } from "node:fs/promises";
+import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4074,12 +4074,14 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -4089,14 +4091,20 @@ function parseInitConfig(input) {
 // src/i18n/messages.ts
 var localeLabel = { ko: "Korean", en: "English" };
 
+// src/store/conceptStore.ts
+import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
+import { join as join2, dirname } from "node:path";
+
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var ConceptStatus = external_exports.enum(["green", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
   category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
   number: external_exports.number().int().positive().optional(),
+  status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
   eyebrow: external_exports.string().default(""),
   description: external_exports.object({
@@ -4128,12 +4136,56 @@ var ConceptSchema = external_exports.object({
   }).default({}),
   codeLinks: external_exports.array(external_exports.string()).default([])
 });
+function parseConcept(input) {
+  return ConceptSchema.parse(input);
+}
+
+// src/store/conceptStore.ts
+async function walkJson(dir) {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    const full = join2(dir, e.name);
+    if (e.isDirectory()) out.push(...await walkJson(full));
+    else if (e.name.endsWith(".json")) out.push(full);
+  }
+  return out;
+}
+async function listConcepts(root) {
+  const files = await walkJson(cpPaths(root).conceptsData);
+  const concepts = [];
+  for (const f of files) {
+    try {
+      concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
+    } catch (error) {
+      throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
+    }
+  }
+  return concepts;
+}
+
+// src/schema/feature.ts
+var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
+var FeatureSchema = external_exports.object({
+  slug: slug2,
+  group,
+  title: external_exports.string().min(1),
+  description: external_exports.string().default(""),
+  concepts: external_exports.array(slug2).default([]),
+  codePaths: external_exports.array(external_exports.string()).default([])
+});
 
 // src/init/readConfig.ts
-import { readFile } from "node:fs/promises";
+import { readFile as readFile2 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile(cpPaths(root).initFile, "utf8");
+    const raw = await readFile2(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -4153,8 +4205,12 @@ async function isInitialized(root) {
 // src/hooks/sessionStart.ts
 async function buildSessionStartOutput(root, pluginRoot) {
   if (!await isInitialized(root)) return null;
-  const cli = join2(pluginRoot, "dist", "cli.js");
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const cli = join3(pluginRoot, "dist", "cli.js");
+  const config = await readInitConfig(root);
+  const locale = config?.locale ?? "ko";
+  const approvalMode = config?.approvalMode ?? "manual";
+  const reds = (await listConcepts(root)).filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
+  const pendingLine = reds.length > 0 ? `- Pending approval (status=red, ${reds.length}): ${reds.join(", ")}. These concepts are auto/unconfirmed; guide the user to review and approve them.` : "- All defined concepts are approved (status=green).";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
     "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
@@ -4163,8 +4219,10 @@ async function buildSessionStartOutput(root, pluginRoot) {
     "- If no related concept exists, define it first with conceptpowers:define-concept.",
     "- On a violation, do not modify code; ask the user to update the concept or split the feature.",
     "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
-    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit>`,
+    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
+    `- Concept approval: status is green(approved)/red(unapproved). approvalMode='${approvalMode}'. In 'manual' mode you MUST NOT change a concept's status \u2014 the user edits it directly (or sets approvalMode='cli' to allow the conceptpowers:approve flow). Never auto-approve.`,
+    pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>"
   ].join("\n");
@@ -4178,7 +4236,7 @@ async function buildSessionStartOutput(root, pluginRoot) {
 var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   const root = process.cwd();
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join2(process.cwd());
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join3(process.cwd());
   buildSessionStartOutput(root, pluginRoot).then((o) => {
     if (o) process.stdout.write(JSON.stringify(o));
     process.exit(0);

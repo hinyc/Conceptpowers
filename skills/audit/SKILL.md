@@ -18,7 +18,10 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
    - If no concept exists → suggest define-concept.
 3. **Verify existing links (semantic judgment)**: for each `@concept` link, sample-check that the code
    complies with the concept's allow/restrict/immutable rules (reuse check-concept).
-4. **Report**: present the list of gaps + violations + recommended actions to the user.
+4. **Unapproved concepts (status)**: the CLI audit also returns `unapproved` (all `red` concepts) and
+   `unapprovedRefs` (red concepts referenced by the scanned files). List them and recommend the user
+   review and approve each (see `conceptpowers-approve`). Auto-inferred concepts start `red`.
+5. **Report**: present the list of gaps + violations + unapproved (red) concepts + recommended actions.
    - The baseline is read-only, so create/modify concepts only after user confirmation.
 
 ## Backfill modes

@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { cpPaths } from '../paths.js'
-import { parseConcept, type Concept } from '../schema/concept.js'
+import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js'
 
 function fileFor(root: string, c: Concept): string {
   const dataDir = cpPaths(root).conceptsData
@@ -53,4 +53,15 @@ export async function readConcept(root: string, slug: string): Promise<Concept |
 
 export async function slugExists(root: string, slug: string): Promise<boolean> {
   return (await readConcept(root, slug)) !== null
+}
+
+// 개념의 승인 상태를 불변으로 갱신한다(읽기 → 새 객체 → 쓰기).
+export async function setConceptStatus(
+  root: string,
+  slug: string,
+  status: ConceptStatus,
+): Promise<Concept> {
+  const concept = await readConcept(root, slug)
+  if (!concept) throw new Error(`Concept not found: ${slug}`)
+  return writeConcept(root, { ...concept, status })
 }

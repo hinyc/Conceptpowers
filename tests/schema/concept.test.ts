@@ -37,4 +37,13 @@ describe('ConceptSchema', () => {
     expect(() => parseConcept({ ...valid, group: '' })).not.toThrow()
     expect(() => parseConcept({ ...valid, group: 'my-group/sub-section' })).not.toThrow()
   })
+  it('status 기본값은 red(미승인)이다', () => {
+    expect(parseConcept(valid).status).toBe('red')
+  })
+  it('status green을 허용한다', () => {
+    expect(parseConcept({ ...valid, status: 'green' }).status).toBe('green')
+  })
+  it('알 수 없는 status 값을 거부한다', () => {
+    expect(() => parseConcept({ ...valid, status: 'yellow' })).toThrow()
+  })
 })

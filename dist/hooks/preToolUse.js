@@ -4075,12 +4075,14 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 
@@ -4091,11 +4093,13 @@ import { join as join2, dirname } from "node:path";
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var ConceptStatus = external_exports.enum(["green", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
   category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
   number: external_exports.number().int().positive().optional(),
+  status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
   eyebrow: external_exports.string().default(""),
   description: external_exports.object({
@@ -4160,6 +4164,18 @@ async function listConcepts(root) {
   return concepts;
 }
 
+// src/schema/feature.ts
+var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
+var FeatureSchema = external_exports.object({
+  slug: slug2,
+  group,
+  title: external_exports.string().min(1),
+  description: external_exports.string().default(""),
+  concepts: external_exports.array(slug2).default([]),
+  codePaths: external_exports.array(external_exports.string()).default([])
+});
+
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
@@ -4192,13 +4208,24 @@ async function scanTags(root, files) {
 
 // src/audit/audit.ts
 async function auditIntegrity(root, files) {
-  const known = new Set((await listConcepts(root)).map((c) => c.slug));
+  const concepts = await listConcepts(root);
+  const known = new Set(concepts.map((c) => c.slug));
+  const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
   const tags = await scanTags(root, files);
   const unknownTags = [];
+  const refRed = /* @__PURE__ */ new Set();
   for (const [file, slugs] of Object.entries(tags))
-    for (const slug2 of slugs)
-      if (!known.has(slug2)) unknownTags.push({ slug: slug2, file });
-  return { ok: unknownTags.length === 0, unknownTags };
+    for (const slug3 of slugs) {
+      if (!known.has(slug3)) unknownTags.push({ slug: slug3, file });
+      else if (red.has(slug3)) refRed.add(slug3);
+    }
+  return {
+    ok: unknownTags.length === 0,
+    // 미승인(red)은 정합성을 막지 않음(경고만)
+    unknownTags,
+    unapproved: [...red],
+    unapprovedRefs: [...refRed]
+  };
 }
 
 // src/hooks/preToolUse.ts
@@ -4228,6 +4255,16 @@ async function decidePreToolUse(root, ev) {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
           permissionDecisionReason: `Commit blocked: undefined concept tag(s) \u2014 ${detail}. Define the concept (define-concept) or fix the tag.`
+        }
+      };
+    }
+    if (report.unapprovedRefs.length > 0) {
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "ask",
+          permissionDecisionReason: `\u26A0\uFE0F UNAPPROVED CONCEPTS (status=red): ${report.unapprovedRefs.join(", ")}. The staged changes touch concepts the user has NOT approved yet. Review them and approve (set status=green) before committing. Commit anyway?`,
+          additionalContext: "Commit gate (D17): For the staged changes, confirm you ran check-concept (code\u2194concept) and, when concepts changed, check-consistency (concept\u2194concept). Some referenced concepts are still red (unapproved) \u2014 surface this prominently and let the user decide whether to commit."
         }
       };
     }

@@ -21,10 +21,15 @@ Write the concept content in the project's output language (the `locale` from `i
 4. Decide the slug (kebab-case, globally unique) and group (domain).
 5. **Consistency check**: run the `conceptpowers-check-consistency` skill to confirm no conflict or
    violation against existing concepts.
-   - On a conflict, **do not save**; ask the user to resolve it (adjust or split the concept) (rule 7).
-6. On pass, save as JSON. Write the concept data file directly, then regenerate the viewer:
-   `node "<cli>" render --root .`
-7. Guide the user to link the concept to code with a `@concept:<slug>` tag.
+6. **Set the `status`** based on origin and the consistency result:
+   - User-authored via this skill **with no conflict** → `status: green` (the user defining it counts
+     as approval).
+   - User-authored **with a conflict**, OR auto-inferred during a full scan → `status: red`
+     (unapproved). On a conflict, **do not silently save a green**; surface the conflict and let the
+     user resolve it (adjust or split) (rule 7). Auto-inferred concepts are always `red`.
+7. Save as JSON (include the `status` field). Write the concept data file directly, then regenerate
+   the viewer: `node "<cli>" render --root .`
+8. Guide the user to link the concept to code with a `@concept:<slug>` tag.
 
 ## Outputs
 

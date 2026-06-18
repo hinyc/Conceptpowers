@@ -1902,10 +1902,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
         args = args.slice();
         let launchWithNode = false;
         const sourceExt = [".js", ".ts", ".tsx", ".mjs", ".cjs"];
-        function findFile(baseDir, baseName) {
-          const localBin = path.resolve(baseDir, baseName);
+        function findFile(baseDir, baseName2) {
+          const localBin = path.resolve(baseDir, baseName2);
           if (fs.existsSync(localBin)) return localBin;
-          if (sourceExt.includes(path.extname(baseName))) return void 0;
+          if (sourceExt.includes(path.extname(baseName2))) return void 0;
           const foundExt = sourceExt.find(
             (ext) => fs.existsSync(`${localBin}${ext}`)
           );
@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/init/scaffold.ts
-import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { mkdir as mkdir4, writeFile as writeFile5, access } from "node:fs/promises";
+import { join as join6 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -7112,12 +7112,14 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -7132,7 +7134,19 @@ var viewerStrings = {
     allow: "\uD5C8\uC6A9 \uD589\uB3D9",
     restrict: "\uC81C\uD55C \uD589\uB3D9",
     principle: "\uC6B4\uC601 \uC6D0\uCE59",
-    conceptList: "\uAC1C\uB150 \uBAA9\uB85D"
+    conceptList: "\uAC1C\uB150 \uBAA9\uB85D",
+    statusApproved: "\uC2B9\uC778\uB428",
+    statusUnapproved: "\uBBF8\uC2B9\uC778",
+    featureList: "\uAE30\uB2A5 \uBAA9\uB85D",
+    relatedFeatures: "\uAD00\uB828 \uAE30\uB2A5",
+    relatedConcepts: "\uAD00\uB828 \uAC1C\uB150",
+    implementationPaths: "\uAD6C\uD604 \uACBD\uB85C",
+    featureEyebrow: "\uAE30\uB2A5",
+    graphTitle: "\uC9C0\uC2DD \uADF8\uB798\uD504",
+    openGraph: "\uC9C0\uC2DD \uADF8\uB798\uD504 \uBCF4\uAE30",
+    conceptNode: "\uAC1C\uB150",
+    featureNode: "\uAE30\uB2A5",
+    fileNode: "\uD30C\uC77C"
   },
   en: {
     description: "Description",
@@ -7140,7 +7154,19 @@ var viewerStrings = {
     allow: "Allowed",
     restrict: "Restricted",
     principle: "Operating Principles",
-    conceptList: "Concepts"
+    conceptList: "Concepts",
+    statusApproved: "Approved",
+    statusUnapproved: "Unapproved",
+    featureList: "Features",
+    relatedFeatures: "Related Features",
+    relatedConcepts: "Related Concepts",
+    implementationPaths: "Implementation",
+    featureEyebrow: "Feature",
+    graphTitle: "Knowledge Graph",
+    openGraph: "View Knowledge Graph",
+    conceptNode: "Concept",
+    featureNode: "Feature",
+    fileNode: "File"
   }
 };
 var seedTemplates = {
@@ -7155,8 +7181,8 @@ var seedTemplates = {
 };
 
 // src/viewer/render.ts
-import { mkdir as mkdir2, writeFile as writeFile2, readFile as readFile3 } from "node:fs/promises";
-import { join as join3, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile4 } from "node:fs/promises";
+import { join as join4, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/template.ts
@@ -7166,17 +7192,28 @@ function esc(s) {
 function list(items) {
   return items.length ? `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
 }
+function statusBadge(c, t) {
+  const status = c.status ?? "red";
+  const label = status === "green" ? t.statusApproved : t.statusUnapproved;
+  return `<span class="badge badge--${status}">${esc(label)}</span>`;
+}
+var depthOf = (rel) => rel.split("/").length - 1;
+var upTo = (rel) => "../".repeat(depthOf(rel));
 var cssHref = (depth) => `${"../".repeat(depth)}assets/concept.css`;
-function conceptPage(c, locale = "ko") {
-  const depth = c.group ? 1 : 0;
+var conceptRel = (c) => c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
+var featureRel = (f) => f.group ? `features/${f.group}/${f.slug}.html` : `features/${f.slug}.html`;
+function conceptPage(c, locale = "ko", relatedFeatures = []) {
+  const rel = conceptRel(c);
+  const up = upTo(rel);
   const t = viewerStrings[locale];
+  const related = relatedFeatures.length ? `<section class="section"><h2>${t.relatedFeatures}</h2><ul class="links">${relatedFeatures.map((f) => `<li><a href="${up}${esc(featureRel(f))}">${esc(f.title)}</a></li>`).join("")}</ul></section>` : "";
   return `<!DOCTYPE html>
 <html lang="${locale}"><head><meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${esc(c.title)} \xB7 concept</title>
-<link rel="stylesheet" href="${cssHref(depth)}"/></head>
+<link rel="stylesheet" href="${cssHref(depthOf(rel))}"/></head>
 <body><div class="wrap">
-<header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>
+<header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>${statusBadge(c, t)}
 <h1>${esc(c.title)}</h1><p>${esc(c.description.definition)}</p>
 <p class="cats">${c.category.map(esc).join(" \xB7 ")}</p></header>
 <section class="section"><h2>${t.description}</h2><p>${esc(c.description.definition)}</p>
@@ -7187,25 +7224,170 @@ ${list(c.description.components)}</section>
 <div class="col-card col-card--restrict"><h3>${t.restrict}</h3>${list(c.actions.restrict)}</div></section>
 <section class="section"><h2>${t.principle}</h2>${list(c.principle.immutableRules)}
 ${c.principle.tradeoffs ? `<p>${esc(c.principle.tradeoffs)}</p>` : ""}</section>
+${related}
+<nav class="pagenav"><a href="${up}index.html">${esc(t.conceptList)}</a> \xB7 <a href="${up}graph.html">${esc(t.graphTitle)}</a></nav>
 </div></body></html>
 `;
 }
-function indexPage(concepts, locale = "ko") {
+function featurePage(f, locale = "ko", concepts = /* @__PURE__ */ new Map()) {
+  const rel = featureRel(f);
+  const up = upTo(rel);
+  const t = viewerStrings[locale];
+  const conceptLinks = f.concepts.map((slug3) => {
+    const c = concepts.get(slug3);
+    return c ? `<li><a href="${up}${esc(conceptRel(c))}">${esc(c.title)}</a></li>` : `<li><span class="muted">${esc(slug3)}</span></li>`;
+  }).join("");
+  const paths = f.codePaths.length ? `<ul class="paths">${f.codePaths.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : "";
+  return `<!DOCTYPE html>
+<html lang="${locale}"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>${esc(f.title)} \xB7 feature</title>
+<link rel="stylesheet" href="${cssHref(depthOf(rel))}"/></head>
+<body><div class="wrap">
+<header class="hero"><span class="hero__eyebrow">${esc(t.featureEyebrow)}</span>
+<h1>${esc(f.title)}</h1>${f.description ? `<p>${esc(f.description)}</p>` : ""}</header>
+<section class="section"><h2>${t.relatedConcepts}</h2><ul class="links">${conceptLinks}</ul></section>
+<section class="section"><h2>${t.implementationPaths}</h2>${paths}</section>
+<nav class="pagenav"><a href="${up}index.html">${esc(t.conceptList)}</a> \xB7 <a href="${up}graph.html">${esc(t.graphTitle)}</a></nav>
+</div></body></html>
+`;
+}
+function indexPage(concepts, locale = "ko", features = []) {
   const byGroup = /* @__PURE__ */ new Map();
   for (const c of concepts) {
     const g = c.group || "(ungrouped)";
     byGroup.set(g, [...byGroup.get(g) ?? [], c]);
   }
+  const t = viewerStrings[locale];
   const sections = [...byGroup.entries()].map(([g, cs]) => `<section class="group"><h2>${esc(g)}</h2><ul>${cs.map((c) => {
-    const href = c.group ? `${esc(c.group)}/${esc(c.slug)}.html` : `${esc(c.slug)}.html`;
-    return `<li><a href="${href}">${esc(c.title)}</a> <small>${c.category.map(esc).join(", ")}</small></li>`;
+    const href = conceptRel(c);
+    return `<li>${statusBadge(c, t)} <a href="${esc(href)}">${esc(c.title)}</a> <small>${c.category.map(esc).join(", ")}</small></li>`;
   }).join("")}</ul></section>`).join("");
-  const title = viewerStrings[locale].conceptList;
+  const featureSection = features.length ? `<section class="group"><h2>${esc(t.featureList)}</h2><ul>${features.map((f) => `<li><a href="${esc(featureRel(f))}">${esc(f.title)}</a> <small>${f.codePaths.length}</small></li>`).join("")}</ul></section>` : "";
+  const title = t.conceptList;
   return `<!DOCTYPE html><html lang="${locale}"><head><meta charset="UTF-8"/>
 <title>${title} \xB7 Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
-<body><div class="wrap"><header class="hero"><h1>${title}</h1></header>${sections}</div></body></html>
+<body><div class="wrap"><header class="hero"><h1>${title}</h1>
+<nav class="pagenav"><a class="graph-link" href="graph.html">${esc(t.openGraph)} \u2192</a></nav></header>
+${sections}${featureSection}</div></body></html>
 `;
 }
+
+// src/viewer/graph.ts
+function reverseFeatureIndex(features) {
+  const idx = /* @__PURE__ */ new Map();
+  for (const f of features) {
+    for (const slug3 of f.concepts) {
+      idx.set(slug3, [...idx.get(slug3) ?? [], f]);
+    }
+  }
+  return idx;
+}
+var conceptHref = (c) => c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
+var featureHref = (f) => f.group ? `features/${f.group}/${f.slug}.html` : `features/${f.slug}.html`;
+var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
+function buildGraphData(concepts, features) {
+  const conceptSlugs = new Set(concepts.map((c) => c.slug));
+  const nodes = [];
+  const edges = [];
+  const seen = /* @__PURE__ */ new Set();
+  const add = (n) => {
+    if (seen.has(n.id)) return;
+    seen.add(n.id);
+    nodes.push(n);
+  };
+  for (const c of concepts) {
+    add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+  }
+  for (const f of features) {
+    add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
+    for (const slug3 of f.concepts) {
+      if (!conceptSlugs.has(slug3)) continue;
+      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
+    }
+    for (const path of f.codePaths) {
+      const id = `p:${path}`;
+      add({ id, label: baseName(path), type: "file", href: "", title: path });
+      edges.push({ source: `f:${f.slug}`, target: id, kind: "feature-file" });
+    }
+  }
+  return { nodes, edges };
+}
+function embed(data) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+function graphPage(data, locale = "ko") {
+  const t = viewerStrings[locale];
+  const legend = `<span class="lg"><i class="dot dot--concept"></i>${esc(t.conceptNode)}</span><span class="lg"><i class="dot dot--feature"></i>${esc(t.featureNode)}</span><span class="lg"><i class="dot dot--file"></i>${esc(t.fileNode)}</span>`;
+  return `<!DOCTYPE html>
+<html lang="${locale}"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>${esc(t.graphTitle)} \xB7 Conceptpowers</title>
+<link rel="stylesheet" href="assets/concept.css"/></head>
+<body class="graph-body">
+<header class="graph-bar"><a class="back" href="index.html">\u2190 ${esc(t.conceptList)}</a>
+<strong>${esc(t.graphTitle)}</strong><span class="legend">${legend}</span></header>
+<svg id="graph" class="graph"></svg>
+<script>${GRAPH_SCRIPT}</script>
+<script>window.__cpRenderGraph(${embed(data)});</script>
+</body></html>
+`;
+}
+var GRAPH_SCRIPT = `
+window.__cpRenderGraph = function (data) {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('graph');
+  function size() { return { w: svg.clientWidth || window.innerWidth, h: svg.clientHeight || (window.innerHeight - 56) }; }
+  var dim = size(), W = dim.w, H = dim.h;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var n = data.nodes.length || 1;
+  var nodes = data.nodes.map(function (d, i) {
+    var a = i / n * Math.PI * 2, R = Math.min(W, H) * 0.32;
+    return { id: d.id, label: d.label, type: d.type, href: d.href, title: d.title,
+      x: W / 2 + Math.cos(a) * R, y: H / 2 + Math.sin(a) * R, vx: 0, vy: 0, fixed: false, drag: false };
+  });
+  var byId = {}; nodes.forEach(function (d) { byId[d.id] = d; });
+  var edges = data.edges.map(function (e) { return { s: byId[e.source], t: byId[e.target] }; })
+    .filter(function (e) { return e.s && e.t; });
+  var gE = document.createElementNS(NS, 'g'); svg.appendChild(gE);
+  var gN = document.createElementNS(NS, 'g'); svg.appendChild(gN);
+  var lines = edges.map(function () { var l = document.createElementNS(NS, 'line'); l.setAttribute('class', 'gedge'); gE.appendChild(l); return l; });
+  function toLocal(ev) { var r = svg.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H }; }
+  var groups = nodes.map(function (d) {
+    var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'gnode gnode--' + d.type);
+    var c = document.createElementNS(NS, 'circle'); c.setAttribute('r', d.type === 'file' ? 5 : 9); g.appendChild(c);
+    var tx = document.createElementNS(NS, 'text'); tx.setAttribute('x', 13); tx.setAttribute('y', 4); tx.textContent = d.label; g.appendChild(tx);
+    var tt = document.createElementNS(NS, 'title'); tt.textContent = d.title || d.label; g.appendChild(tt);
+    g.addEventListener('mousedown', function (ev) {
+      ev.preventDefault(); d.fixed = true; d.drag = false;
+      function mv(e2) { var p = toLocal(e2); d.x = p.x; d.y = p.y; d.drag = true; }
+      function up() { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); setTimeout(function () { d.drag = false; }, 0); }
+      window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+    });
+    if (d.href) { g.style.cursor = 'pointer'; g.addEventListener('click', function () { if (!d.drag) window.location.href = d.href; }); }
+    gN.appendChild(g); return g;
+  });
+  function tick() {
+    for (var i = 0; i < nodes.length; i++) for (var j = i + 1; j < nodes.length; j++) {
+      var a = nodes[i], b = nodes[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + 0.01, dd = Math.sqrt(d2), f = 2600 / d2;
+      a.vx += dx / dd * f; a.vy += dy / dd * f; b.vx -= dx / dd * f; b.vy -= dy / dd * f;
+    }
+    edges.forEach(function (e) {
+      var dx = e.t.x - e.s.x, dy = e.t.y - e.s.y, dd = Math.sqrt(dx * dx + dy * dy) + 0.01, f = (dd - 96) * 0.02;
+      e.s.vx += dx / dd * f; e.s.vy += dy / dd * f; e.t.vx -= dx / dd * f; e.t.vy -= dy / dd * f;
+    });
+    nodes.forEach(function (d) {
+      d.vx += (W / 2 - d.x) * 0.002; d.vy += (H / 2 - d.y) * 0.002; d.vx *= 0.85; d.vy *= 0.85;
+      if (!d.fixed) { d.x += d.vx; d.y += d.vy; }
+      d.x = Math.max(24, Math.min(W - 24, d.x)); d.y = Math.max(24, Math.min(H - 24, d.y));
+    });
+    lines.forEach(function (l, i) { var e = edges[i]; l.setAttribute('x1', e.s.x); l.setAttribute('y1', e.s.y); l.setAttribute('x2', e.t.x); l.setAttribute('y2', e.t.y); });
+    groups.forEach(function (g, i) { g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')'); });
+    requestAnimationFrame(tick);
+  }
+  if (data.nodes.length) requestAnimationFrame(tick);
+};
+`;
 
 // src/store/conceptStore.ts
 import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
@@ -7214,11 +7396,13 @@ import { join as join2, dirname } from "node:path";
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var ConceptStatus = external_exports.enum(["green", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
   category: external_exports.array(ConceptCategory).min(1, "category must have at least one item"),
   number: external_exports.number().int().positive().optional(),
+  status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
   eyebrow: external_exports.string().default(""),
   description: external_exports.object({
@@ -7255,6 +7439,24 @@ function parseConcept(input) {
 }
 
 // src/store/conceptStore.ts
+function fileFor(root, c) {
+  const dataDir = cpPaths(root).conceptsData;
+  return c.group ? join2(dataDir, c.group, `${c.slug}.json`) : join2(dataDir, `${c.slug}.json`);
+}
+async function writeConcept(root, input) {
+  const concept = parseConcept(input);
+  const target = fileFor(root, concept);
+  const existing = await listConcepts(root);
+  const duplicate = existing.find(
+    (c) => c.slug === concept.slug && fileFor(root, c) !== target
+  );
+  if (duplicate) {
+    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
+  }
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, JSON.stringify(concept, null, 2) + "\n", "utf8");
+  return concept;
+}
 async function walkJson(dir) {
   let entries;
   try {
@@ -7282,12 +7484,68 @@ async function listConcepts(root) {
   }
   return concepts;
 }
+async function readConcept(root, slug3) {
+  return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
+}
+async function setConceptStatus(root, slug3, status) {
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  return writeConcept(root, { ...concept, status });
+}
+
+// src/store/featureStore.ts
+import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
+import { join as join3, dirname as dirname2 } from "node:path";
+
+// src/schema/feature.ts
+var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
+var FeatureSchema = external_exports.object({
+  slug: slug2,
+  group,
+  title: external_exports.string().min(1),
+  description: external_exports.string().default(""),
+  concepts: external_exports.array(slug2).default([]),
+  codePaths: external_exports.array(external_exports.string()).default([])
+});
+function parseFeature(input) {
+  return FeatureSchema.parse(input);
+}
+
+// src/store/featureStore.ts
+async function walkJson2(dir) {
+  let entries;
+  try {
+    entries = await readdir2(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    const full = join3(dir, e.name);
+    if (e.isDirectory()) out.push(...await walkJson2(full));
+    else if (e.name.endsWith(".json")) out.push(full);
+  }
+  return out;
+}
+async function listFeatures(root) {
+  const files = await walkJson2(cpPaths(root).features);
+  const features = [];
+  for (const file of files) {
+    try {
+      features.push(parseFeature(JSON.parse(await readFile2(file, "utf8"))));
+    } catch (error) {
+      throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
+    }
+  }
+  return features;
+}
 
 // src/init/readConfig.ts
-import { readFile as readFile2 } from "node:fs/promises";
+import { readFile as readFile3 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile2(cpPaths(root).initFile, "utf8");
+    const raw = await readFile3(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -7295,22 +7553,29 @@ async function readInitConfig(root) {
 }
 
 // src/viewer/render.ts
-function renderViewer(concepts, locale = "ko") {
-  const out = { "index.html": indexPage(concepts, locale) };
+function renderViewer(concepts, locale = "ko", features = []) {
+  const reverse = reverseFeatureIndex(features);
+  const conceptBySlug = new Map(concepts.map((c) => [c.slug, c]));
+  const out = {
+    "index.html": indexPage(concepts, locale, features),
+    "graph.html": graphPage(buildGraphData(concepts, features), locale)
+  };
   for (const c of concepts) {
-    const rel = c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
-    out[rel] = conceptPage(c, locale);
+    out[conceptRel(c)] = conceptPage(c, locale, reverse.get(c.slug) ?? []);
+  }
+  for (const f of features) {
+    out[featureRel(f)] = featurePage(f, locale, conceptBySlug);
   }
   return out;
 }
 async function readBundledCss() {
-  const start = dirname2(fileURLToPath(import.meta.url));
+  const start = dirname3(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile3(join3(dir, "assets", "concept.css"), "utf8");
+      return await readFile4(join4(dir, "assets", "concept.css"), "utf8");
     } catch {
-      const parent = dirname2(dir);
+      const parent = dirname3(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -7319,17 +7584,52 @@ async function readBundledCss() {
 }
 async function renderViewerToDisk(root) {
   const concepts = await listConcepts(root);
+  const features = await listFeatures(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
-  const files = renderViewer(concepts, locale);
+  const files = renderViewer(concepts, locale, features);
   const viewer = cpPaths(root).conceptsViewer;
   for (const [rel, html] of Object.entries(files)) {
-    const target = join3(viewer, rel);
-    await mkdir2(dirname2(target), { recursive: true });
-    await writeFile2(target, html, "utf8");
+    const target = join4(viewer, rel);
+    await mkdir3(dirname3(target), { recursive: true });
+    await writeFile3(target, html, "utf8");
   }
   const cssTarget = cpPaths(root).cssTarget;
-  await mkdir2(dirname2(cssTarget), { recursive: true });
-  await writeFile2(cssTarget, await readBundledCss(), "utf8");
+  await mkdir3(dirname3(cssTarget), { recursive: true });
+  await writeFile3(cssTarget, await readBundledCss(), "utf8");
+}
+
+// src/init/packageScript.ts
+import { readFile as readFile5, writeFile as writeFile4 } from "node:fs/promises";
+import { join as join5 } from "node:path";
+var VIEWER_SCRIPT_NAME = "concepts:view";
+var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
+function openCommand(platform) {
+  if (platform === "win32") return `start "" ${VIEWER_INDEX}`;
+  if (platform === "darwin") return `open ${VIEWER_INDEX}`;
+  return `xdg-open ${VIEWER_INDEX}`;
+}
+async function addViewerScript(root, platform = process.platform) {
+  const pkgPath = join5(root, "package.json");
+  let raw;
+  try {
+    raw = await readFile5(pkgPath, "utf8");
+  } catch {
+    return false;
+  }
+  let pkg;
+  try {
+    pkg = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`package.json \uD30C\uC2F1 \uC2E4\uD328: ${error.message}`);
+  }
+  const scripts = pkg.scripts ?? {};
+  if (scripts[VIEWER_SCRIPT_NAME]) return false;
+  const next = {
+    ...pkg,
+    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: openCommand(platform) }
+  };
+  await writeFile4(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  return true;
 }
 
 // src/init/scaffold.ts
@@ -7344,7 +7644,7 @@ async function isInitialized(root) {
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
   for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir3(d, { recursive: true });
+    await mkdir4(d, { recursive: true });
   if (await isInitialized(root)) return;
   const locale = opts.locale ?? "ko";
   const config = parseInitConfig({
@@ -7352,25 +7652,30 @@ async function scaffoldInit(root, opts) {
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
     locale,
+    approvalMode: opts.approvalMode ?? "manual",
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile3(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile5(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile3(join4(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile3(join4(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile5(join6(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile5(join6(p.infra, "infra.md"), seed.infra, "utf8");
   await renderViewerToDisk(root);
+  try {
+    await addViewerScript(root);
+  } catch {
+  }
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
-import { join as join5, dirname as dirname3 } from "node:path";
+import { readFile as readFile6, mkdir as mkdir5, writeFile as writeFile6 } from "node:fs/promises";
+import { join as join7, dirname as dirname4 } from "node:path";
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 async function scanTags(root, files) {
   const result = {};
   for (const rel of files) {
     let content;
     try {
-      content = await readFile4(join5(root, rel), "utf8");
+      content = await readFile6(join7(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -7384,25 +7689,48 @@ async function buildMapping(root, files) {
   const tags = await scanTags(root, files);
   const mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
-    for (const slug2 of slugs) mapping[slug2] = [...mapping[slug2] ?? [], file];
+    for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
   }
   return mapping;
 }
 async function writeMappingCache(root, mapping) {
   const target = cpPaths(root).mappingCache;
-  await mkdir4(dirname3(target), { recursive: true });
-  await writeFile4(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
+  await mkdir5(dirname4(target), { recursive: true });
+  await writeFile6(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
 
 // src/audit/audit.ts
 async function auditIntegrity(root, files) {
-  const known = new Set((await listConcepts(root)).map((c) => c.slug));
+  const concepts = await listConcepts(root);
+  const known = new Set(concepts.map((c) => c.slug));
+  const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
   const tags = await scanTags(root, files);
   const unknownTags = [];
+  const refRed = /* @__PURE__ */ new Set();
   for (const [file, slugs] of Object.entries(tags))
-    for (const slug2 of slugs)
-      if (!known.has(slug2)) unknownTags.push({ slug: slug2, file });
-  return { ok: unknownTags.length === 0, unknownTags };
+    for (const slug3 of slugs) {
+      if (!known.has(slug3)) unknownTags.push({ slug: slug3, file });
+      else if (red.has(slug3)) refRed.add(slug3);
+    }
+  return {
+    ok: unknownTags.length === 0,
+    // 미승인(red)은 정합성을 막지 않음(경고만)
+    unknownTags,
+    unapproved: [...red],
+    unapprovedRefs: [...refRed]
+  };
+}
+
+// src/concept/approve.ts
+async function approveConcept(root, slug3) {
+  const config = await readInitConfig(root);
+  const mode = config?.approvalMode ?? "manual";
+  if (mode !== "cli") {
+    throw new Error(
+      `Approval via CLI is disabled (approvalMode='${mode}'). Set "approvalMode": "cli" in init.json to enable the approve flow, or edit the concept's "status" field to "green" manually.`
+    );
+  }
+  return setConceptStatus(root, slug3, "green");
 }
 
 // src/cli.ts
@@ -7410,14 +7738,18 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
   let code = 0;
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
-    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--approval <mode>", "manual|cli", "manual").action(async (o) => {
+    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, approvalMode: o.approval });
     if (o.mode === "strict") await renderViewerToDisk(o.root);
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify({ initialized: await isInitialized(o.root) }));
   });
   program2.command("render").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    await renderViewerToDisk(o.root);
+  });
+  program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
+    await approveConcept(o.root, slug3);
     await renderViewerToDisk(o.root);
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {

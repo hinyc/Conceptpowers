@@ -26,4 +26,17 @@ describe('auditIntegrity', () => {
     expect(r.unknownTags).toEqual([{ slug: 'ghost', file: 'src/a.ts' }])
     expect(r.ok).toBe(false)
   })
+  it('미승인(red) 개념을 unapproved로 보고하지만 ok는 막지 않는다', async () => {
+    await writeConcept(root, { slug: 'red-one', category: ['feature'], title: 'R', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'red' })
+    await writeConcept(root, { slug: 'green-one', category: ['feature'], title: 'G', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'green' })
+    const r = await auditIntegrity(root, [])
+    expect(r.unapproved).toEqual(['red-one'])
+    expect(r.ok).toBe(true) // red는 정합성을 막지 않음(경고만)
+  })
+  it('스테이징 파일이 참조하는 red 개념을 unapprovedRefs로 보고한다', async () => {
+    await writeConcept(root, { slug: 'red-one', category: ['feature'], title: 'R', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'red' })
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:red-one\n')
+    const r = await auditIntegrity(root, ['src/a.ts'])
+    expect(r.unapprovedRefs).toEqual(['red-one'])
+  })
 })

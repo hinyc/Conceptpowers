@@ -59,6 +59,17 @@ export async function decidePreToolUse(
         },
       };
     }
+    if (report.unapprovedRefs.length > 0) {
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "ask",
+          permissionDecisionReason: `⚠️ UNAPPROVED CONCEPTS (status=red): ${report.unapprovedRefs.join(", ")}. The staged changes touch concepts the user has NOT approved yet. Review them and approve (set status=green) before committing. Commit anyway?`,
+          additionalContext:
+            "Commit gate (D17): For the staged changes, confirm you ran check-concept (code↔concept) and, when concepts changed, check-consistency (concept↔concept). Some referenced concepts are still red (unapproved) — surface this prominently and let the user decide whether to commit.",
+        },
+      };
+    }
     return {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",

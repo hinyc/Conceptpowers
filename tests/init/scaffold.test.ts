@@ -38,6 +38,16 @@ describe('scaffoldInit', () => {
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
     expect(cfg.locale).toBe('ko')
   })
+  it('init.json에 approvalMode를 기록한다 (기본 manual)', async () => {
+    await scaffoldInit(root, {})
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
+    expect(cfg.approvalMode).toBe('manual')
+  })
+  it('cli approvalMode를 기록한다', async () => {
+    await scaffoldInit(root, { approvalMode: 'cli' })
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
+    expect(cfg.approvalMode).toBe('cli')
+  })
   it('ko seed 템플릿은 한글로 작성된다', async () => {
     await scaffoldInit(root, { locale: 'ko' })
     const b = join(root, 'docs/conceptpowers')

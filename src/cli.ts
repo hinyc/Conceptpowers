@@ -3,6 +3,7 @@ import { scaffoldInit, isInitialized } from "./init/scaffold.js";
 import { renderViewerToDisk } from "./viewer/render.js";
 import { buildMapping, writeMappingCache } from "./mapping/scan.js";
 import { auditIntegrity } from "./audit/audit.js";
+import { approveConcept } from "./concept/approve.js";
 
 type Out = (s: string) => void;
 
@@ -19,8 +20,9 @@ export async function runCli(
     .option("--root <dir>", "project root", process.cwd())
     .option("--mode <mode>", "incremental|strict", "incremental")
     .option("--lang <lang>", "ko|en", "ko")
+    .option("--approval <mode>", "manual|cli", "manual")
     .action(async (o) => {
-      await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+      await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, approvalMode: o.approval });
       if (o.mode === "strict") await renderViewerToDisk(o.root);
     });
 
@@ -35,6 +37,15 @@ export async function runCli(
     .command("render")
     .option("--root <dir>", "project root", process.cwd())
     .action(async (o) => {
+      await renderViewerToDisk(o.root);
+    });
+
+  program
+    .command("approve")
+    .option("--root <dir>", "project root", process.cwd())
+    .argument("<slug>")
+    .action(async (slug, o) => {
+      await approveConcept(o.root, slug);
       await renderViewerToDisk(o.root);
     });
 

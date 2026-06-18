@@ -15,10 +15,20 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    - **Term conflict**: is the same term defined differently?
    - **Immutable-rule violation**: does the target concept break another concept's immutableRules?
    - **Interaction contradiction**: do behavior descriptions disagree between concepts linked via relations?
-3. If there is **any** conflict → **stop** the create/modify and ask the user to resolve it, with the conflict list.
-4. Proceed with save/commit only when there are zero conflicts.
+3. Apply the **status-aware resolution rule** when a conflict is found:
+   - **green is the source of truth.** When a newly approved (green) concept conflicts with a `red`
+     (unapproved) concept, the red one yields: revise it to remove the contradiction, or re-flag it
+     `red` for the user. The green concept is not weakened to accommodate a red one.
+   - **green ↔ green conflict → stop and ask the user.** Two user-approved concepts contradicting each
+     other is a real contradiction the agent must not auto-resolve. Present both and the conflict.
+   - **red ↔ red conflict** → report both as unresolved proposals; resolve when the user approves one.
+4. Proceed with save/commit only when there are zero unresolved conflicts.
 
 ## Commit gate (D17)
 
 - On `git commit`, if the staged set (`git diff --cached --name-only`) includes concept-data changes, run this check.
 - check-concept covers code changes and this skill covers concept changes, so the commit is verified **with no gaps**.
+- **Unapproved (red) concepts do not hard-block a commit**, but the commit gate surfaces them with an
+  emphasized warning (`⚠️ UNAPPROVED CONCEPTS`). When you see it, show the warning prominently and ask
+  the user "commit anyway?" — proceed only on explicit confirmation. Approving the concepts first
+  (manual edit, or `conceptpowers-approve` in cli mode) is preferred.

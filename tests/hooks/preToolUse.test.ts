@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decidePreToolUse } from "../../src/hooks/preToolUse.js";
 import { scaffoldInit } from "../../src/init/scaffold.js";
+import { writeConcept } from "../../src/store/conceptStore.js";
 
 let root: string;
 beforeEach(() => {
@@ -50,6 +51,21 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.additionalContext).toContain(
       "check-consistency",
     );
+  });
+  it("staged 파일이 미승인(red) 개념을 참조하면 경고하며 ask로 확인을 요구한다", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "red-one", category: ["feature"], title: "R",
+      description: { definition: "d" }, purpose: { reason: "r" }, actions: {}, principle: {}, status: "red",
+    } as any);
+    writeFileSync(join(root, "src/a.ts"), "// @concept:red-one\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["src/a.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("red-one");
   });
   it("changedFiles 미제공 시 스테이징된 파일을 직접 조회하여 unknownTag가 있으면 deny한다 (C1)", async () => {
     await scaffoldInit(root, {});

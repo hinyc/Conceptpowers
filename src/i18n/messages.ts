@@ -11,6 +11,18 @@ export interface ViewerStrings {
   restrict: string
   principle: string
   conceptList: string
+  statusApproved: string
+  statusUnapproved: string
+  featureList: string
+  relatedFeatures: string
+  relatedConcepts: string
+  implementationPaths: string
+  featureEyebrow: string
+  graphTitle: string
+  openGraph: string
+  conceptNode: string
+  featureNode: string
+  fileNode: string
 }
 
 export const viewerStrings: Record<Locale, ViewerStrings> = {
@@ -20,7 +32,19 @@ export const viewerStrings: Record<Locale, ViewerStrings> = {
     allow: '허용 행동',
     restrict: '제한 행동',
     principle: '운영 원칙',
-    conceptList: '개념 목록'
+    conceptList: '개념 목록',
+    statusApproved: '승인됨',
+    statusUnapproved: '미승인',
+    featureList: '기능 목록',
+    relatedFeatures: '관련 기능',
+    relatedConcepts: '관련 개념',
+    implementationPaths: '구현 경로',
+    featureEyebrow: '기능',
+    graphTitle: '지식 그래프',
+    openGraph: '지식 그래프 보기',
+    conceptNode: '개념',
+    featureNode: '기능',
+    fileNode: '파일'
   },
   en: {
     description: 'Description',
@@ -28,7 +52,19 @@ export const viewerStrings: Record<Locale, ViewerStrings> = {
     allow: 'Allowed',
     restrict: 'Restricted',
     principle: 'Operating Principles',
-    conceptList: 'Concepts'
+    conceptList: 'Concepts',
+    statusApproved: 'Approved',
+    statusUnapproved: 'Unapproved',
+    featureList: 'Features',
+    relatedFeatures: 'Related Features',
+    relatedConcepts: 'Related Concepts',
+    implementationPaths: 'Implementation',
+    featureEyebrow: 'Feature',
+    graphTitle: 'Knowledge Graph',
+    openGraph: 'View Knowledge Graph',
+    conceptNode: 'Concept',
+    featureNode: 'Feature',
+    fileNode: 'File'
   }
 }
 

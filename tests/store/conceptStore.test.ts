@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { writeConcept, listConcepts, readConcept, slugExists } from '../../src/store/conceptStore.js'
+import { writeConcept, listConcepts, readConcept, slugExists, setConceptStatus } from '../../src/store/conceptStore.js'
 
 const base = {
   slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin Role',
@@ -44,5 +44,16 @@ describe('conceptStore', () => {
     ).resolves.not.toThrow()
     const updated = await readConcept(root, 'admin-role')
     expect(updated?.title).toBe('v2')
+  })
+  it('setConceptStatus가 status를 불변으로 갱신한다', async () => {
+    await writeConcept(root, base as any)
+    expect((await readConcept(root, 'admin-role'))?.status).toBe('red')
+    const updated = await setConceptStatus(root, 'admin-role', 'green')
+    expect(updated.status).toBe('green')
+    expect(updated.title).toBe('Admin Role') // 나머지 보존
+    expect((await readConcept(root, 'admin-role'))?.status).toBe('green')
+  })
+  it('setConceptStatus는 없는 개념에 대해 에러를 던진다', async () => {
+    await expect(setConceptStatus(root, 'ghost', 'green')).rejects.toThrow('not found')
   })
 })

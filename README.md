@@ -64,16 +64,37 @@ flowchart LR
 
 All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
 
+### Concept status & approval
+
+Every concept carries a **status** so you always know what the human has actually confirmed:
+
+- 🟢 **green** — user-approved. The source of truth.
+- 🔴 **red** — unapproved. Auto-inferred concepts (and conflicting ones) start here as *proposals*.
+
+The viewer shows a badge for each concept, and the commit gate surfaces an **emphasized warning** when staged changes touch a red concept — it never silently hard-blocks, but asks "commit anyway?".
+
+How a concept becomes green is controlled by `approvalMode` in `init.json`:
+
+- **manual** (default) — the agent must **never** flip status. You approve by editing `status` to `green` in the concept JSON. Auto-approval is blocked by design, so the final concept set is always yours.
+- **cli** — the `conceptpowers-approve` skill (or `approve <slug>`) may flip a concept to green *after* a consistency check.
+
+When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
+
+### Full project scan (mid-project adoption)
+
+Adopting Conceptpowers on an existing project? `init` **strict** mode runs a *full scan*: it enumerates features by walking every button/action **and** analyzing on-screen content, then infers a (red) concept for each uncovered feature. This is thorough but **time- and token-intensive on large projects** — the init skill warns you before running it, and incremental backfill remains the default.
+
 ### Skills
 
 | Skill | Description |
 | --- | --- |
-| `conceptpowers-init` | Enable governance, scaffold `docs/conceptpowers` and the marker |
-| `conceptpowers-define-concept` | Define a structured concept for a new feature/role/permission/term |
+| `conceptpowers-init` | Enable governance, scaffold `docs/conceptpowers` and the marker; strict mode runs a full project scan |
+| `conceptpowers-define-concept` | Define a structured concept for a new feature/role/permission/term (sets green/red status) |
 | `conceptpowers-check-concept` | Find related concepts and judge allow/restrict/immutable violations before changes |
-| `conceptpowers-check-consistency` | Compare new/changed concepts against existing ones to detect conflicts (commit gate) |
+| `conceptpowers-check-consistency` | Compare new/changed concepts against existing ones (green wins, green↔green escalates); commit gate |
+| `conceptpowers-approve` | Approve a concept (red → green); user-gated, allowed only in `approvalMode: cli` |
 | `conceptpowers-update-mapping` | Sync `@concept` tags and the mapping cache |
-| `conceptpowers-audit` | Audit concept-less code (gaps) and `@concept` link integrity |
+| `conceptpowers-audit` | Audit concept-less code (gaps), `@concept` link integrity, and unapproved (red) concepts |
 | `conceptpowers-update-baseline` | Modify the baseline only when the user explicitly asks |
 
 ### Project structure
@@ -82,7 +103,7 @@ All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpo
 
 ```
 docs/conceptpowers/
-├── init.json                       # activation marker
+├── init.json                       # activation marker + settings (locale, approvalMode, backfillMode)
 ├── features/                       # feature specs
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data

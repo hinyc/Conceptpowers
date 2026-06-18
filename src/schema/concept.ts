@@ -5,11 +5,16 @@ export type ConceptCategory = z.infer<typeof ConceptCategory>
 
 const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
 
+// 승인 상태: green = 사용자 승인됨, red = 미승인(자동생성 기본).
+export const ConceptStatus = z.enum(['green', 'red'])
+export type ConceptStatus = z.infer<typeof ConceptStatus>
+
 export const ConceptSchema = z.object({
   slug,
   group: z.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(z.literal('')).default(''),
   category: z.array(ConceptCategory).min(1, 'category must have at least one item'),
   number: z.number().int().positive().optional(),
+  status: ConceptStatus.default('red'),
   title: z.string().min(1),
   eyebrow: z.string().default(''),
   description: z.object({
