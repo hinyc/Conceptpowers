@@ -78,6 +78,7 @@
 | D9 | baseline 폴더 구성 | `docs/conceptpowers/` = **init / features / concepts / architecture / infra** 5요소 | 전체가 사용자 전속 수정 대상(기준). `mapping.json`은 캐시로 분리 |
 | D10 | 개념 범주 | `feature` · `behavior` · `role` · `permission` · `term` (복수 가능) | 역할·권한·용어까지 포괄해 구멍 없게 |
 | D11 | 개념 무모순 게이트 | 개념 추가/수정 시 **기존 개념과 충돌·위배 검사 통과 시에만** 커밋 | 위반 시 중단·사용자 해소 요청 |
+| D12 | 상위 그룹(도메인) 분리 | features/concepts가 많아지면 **`<group>/` 폴더로 계층 분리** | `group` 필드로 표기, `slug`은 전역 고유. `category` 필드와는 별개 축 |
 
 ## 5. 아키텍처
 
@@ -121,17 +122,20 @@ Conceptpowers/
     │                            #   + 프로젝트 간단 정보, 강제 범위 등 설정
     │
     ├── 2) features/             # 기능 명세 — 구현하고자 하는 기능을 기술.
-    │   ├── <feature>.md         #   개념(concept)은 이 명세를 기반으로 구성된다.
+    │   ├── <group>/             #   많아지면 상위 그룹(도메인)별로 분리 (예: auth/, billing/)
+    │   │   └── <feature>.md     #   개념(concept)은 이 명세를 기반으로 구성된다.
     │   └── ...
     │
     ├── 3) concepts/             # 개념 폴더 — 데이터(진실) + 뷰(HTML)
     │   ├── data/                #   개념 정리용 JSON / MD (진실의 원천)
-    │   │   ├── admin-role.json
-    │   │   ├── admin-role.md
+    │   │   ├── <group>/         #     많아지면 상위 그룹(도메인)별로 분리
+    │   │   │   ├── admin-role.json
+    │   │   │   └── admin-role.md
     │   │   └── ...
     │   └── viewer/              #   뷰용 HTML (데이터에서 정적 재생성, D7)
-    │       ├── index.html
-    │       ├── admin-role.html
+    │       ├── index.html       #     그룹별 섹션으로 목록 구성
+    │       ├── <group>/
+    │       │   └── admin-role.html
     │       └── assets/concept.css
     │
     ├── 4) architecture/         # 프로젝트 전체 아키텍처 — 명시적으로 정리.
@@ -174,7 +178,8 @@ init (1) 허용 게이트                                         ▲
 
 ```jsonc
 {
-  "slug": "admin-role",
+  "slug": "admin-role",          // 프로젝트 전역 고유 (그룹이 달라도 중복 불가)
+  "group": "auth",               // 상위 그룹(도메인). 많아지면 폴더 분리 (선택, 기본 "")
   "category": ["role"],          // feature | behavior | role | permission | term (복수 가능)
   "number": 3,
   "title": "Admin Role",
