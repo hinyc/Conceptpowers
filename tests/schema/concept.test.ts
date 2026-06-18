@@ -26,4 +26,15 @@ describe('ConceptSchema', () => {
   it('알 수 없는 category 값을 거부한다', () => {
     expect(() => parseConcept({ ...valid, category: ['nope'] })).toThrow()
   })
+  it('group 경로 traversal을 거부한다 (C2)', () => {
+    expect(() => parseConcept({ ...valid, group: '../../../tmp/evil' })).toThrow()
+    expect(() => parseConcept({ ...valid, group: '../../etc' })).toThrow()
+    expect(() => parseConcept({ ...valid, group: '/abs/path' })).toThrow()
+  })
+  it('유효한 group 값을 허용한다 (C2)', () => {
+    expect(() => parseConcept({ ...valid, group: 'auth' })).not.toThrow()
+    expect(() => parseConcept({ ...valid, group: 'auth/admin' })).not.toThrow()
+    expect(() => parseConcept({ ...valid, group: '' })).not.toThrow()
+    expect(() => parseConcept({ ...valid, group: 'my-group/sub-section' })).not.toThrow()
+  })
 })
