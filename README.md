@@ -23,3 +23,9 @@
 - baseline 전체는 사용자 전속 수정.
 
 자세한 설계: `docs/specs/2026-06-18-conceptpowers-design.md`
+
+## superpowers와 함께 쓰기
+
+Conceptpowers는 [superpowers](https://github.com/obra/superpowers)와 충돌 없이 보완한다.
+superpowers가 개발 프로세스(아이디어→스펙→계획→TDD)를 이끌고, Conceptpowers가 개념 정의/검증 게이트를 더한다.
+자세한 흐름: `docs/superpowers-interop.md`.
