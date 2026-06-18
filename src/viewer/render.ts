@@ -17,10 +17,20 @@ export function renderViewer(concepts: Concept[]): Record<string, string> {
 }
 
 async function readBundledCss(): Promise<string> {
-  // dist/viewer/render.js 기준 → 패키지 루트의 assets/concept.css
-  const here = dirname(fileURLToPath(import.meta.url))
-  const cssPath = join(here, '..', '..', 'assets', 'concept.css')
-  return readFile(cssPath, 'utf8')
+  // 번들 위치(dist/cli.js, dist/viewer/render.js, src/viewer/render.ts 등)에
+  // 무관하게 assets/concept.css를 찾도록 상위 디렉터리를 탐색한다.
+  const start = dirname(fileURLToPath(import.meta.url))
+  let dir = start
+  for (let i = 0; i < 6; i++) {
+    try {
+      return await readFile(join(dir, 'assets', 'concept.css'), 'utf8')
+    } catch {
+      const parent = dirname(dir)
+      if (parent === dir) break
+      dir = parent
+    }
+  }
+  throw new Error(`concept.css를 찾을 수 없습니다 (탐색 시작: ${start})`)
 }
 
 export async function renderViewerToDisk(root: string): Promise<void> {
