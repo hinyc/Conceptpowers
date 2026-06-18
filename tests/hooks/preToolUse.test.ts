@@ -1,6 +1,7 @@
 // tests/hooks/preToolUse.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decidePreToolUse } from "../../src/hooks/preToolUse.js";
@@ -28,7 +29,7 @@ describe("decidePreToolUse", () => {
     });
     expect(r!.hookSpecificOutput.additionalContext).toContain("check-concept");
   });
-  it("git commit이면서 unknownTag가 있으면 deny한다", async () => {
+  it("git commit이면서 unknownTag가 있으면 deny한다 (changedFiles 제공)", async () => {
     await scaffoldInit(root, {});
     writeFileSync(join(root, "src/a.ts"), "// @concept:ghost\n");
     const r = await decidePreToolUse(root, {
@@ -49,5 +50,21 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.additionalContext).toContain(
       "check-consistency",
     );
+  });
+  it("changedFiles 미제공 시 스테이징된 파일을 직접 조회하여 unknownTag가 있으면 deny한다 (C1)", async () => {
+    await scaffoldInit(root, {});
+    // git init a temp repo so we can stage files
+    execSync("git init", { cwd: root });
+    execSync('git config user.email "test@test.com"', { cwd: root });
+    execSync('git config user.name "Test"', { cwd: root });
+    writeFileSync(join(root, "src/a.ts"), "// @concept:ghost\n");
+    execSync("git add src/a.ts", { cwd: root });
+    // changedFiles is NOT passed — hook must derive from git diff --cached
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("ghost");
   });
 });
