@@ -58,8 +58,8 @@
 1. **Opt-in 강제**: `docs/conceptpowers/` 가 존재하는(=`conceptpowers:init` 한) 프로젝트에서만 강제가 활성화된다.
 2. **개념 우선**: 개념이 없는 새 기능·동작 변경은 개념 정의를 먼저 강제한다.
 3. **위배 시 중단**: 변경이 개념을 위배하면 코드를 수정하지 않는다. 사용자가 개념을 바꾸거나 기능을 분리해야 한다.
-4. **개념 수정은 사용자 전속**: 개념(Concept) 데이터의 수정은 사용자가 **명시적으로 요청**하거나 **직접 수정**할 때만 가능하다. 에이전트가 임의로 개념을 바꾸지 않는다.
-5. **매핑 동기화**: 에이전트가 코드를 수정할 때는 `@concept` 태그/매핑도 **항상 함께** 갱신한다.
+4. **`docs/conceptpowers/` 전체가 기준(baseline)이며 사용자 전속 수정**: 이 폴더의 모든 내용(init 마커, 기능 명세, 개념, 아키텍처, 인프라)은 프로젝트의 **판단 기준**이다. 따라서 사용자가 **명시적으로 요청**하거나 **직접 수정**할 때만 변경된다. 에이전트는 일반 코드 작업 중 이 폴더를 **임의로 수정하지 않는다**(읽기 전용으로 취급해 위배를 판단). 새 항목 생성(예: 없는 개념 정의)은 사용자가 그 기능을 추가하려는 명시적 흐름 안에서, 사용자 확인을 거쳐 전용 스킬로만 이루어진다.
+5. **매핑 동기화**: 에이전트가 코드를 수정할 때는 `@concept` 태그/매핑도 **항상 함께** 갱신한다. (매핑 태그는 코드 측 산출물이므로 baseline 수정 제약의 예외)
 
 ## 4. 확정된 설계 결정 (Decisions)
 
@@ -73,6 +73,7 @@
 | D6 | 매핑 진실의 원천 | **코드 내 `@concept` 태그가 진실**, `mapping.json`은 재생성 가능한 캐시 | 코드 이동 시에도 연결 불일치 없음 |
 | D7 | HTML 뷰어 렌더링 | **데이터 저장 시 정적 HTML 재생성** | 서버 불필요, 파일 열면 바로 보임 |
 | D8 | 배포 채널 | **자체 마켓플레이스** (`.claude-plugin/marketplace.json`) | `superpowers`의 `obra/superpowers-marketplace` 방식 차용 |
+| D9 | baseline 폴더 구성 | `docs/conceptpowers/` = **init / features / concepts / architecture / infra** 5요소 | 전체가 사용자 전속 수정 대상(기준). `mapping.json`은 캐시로 분리 |
 
 ## 5. 아키텍처
 
@@ -105,20 +106,53 @@ Conceptpowers/
 
 ### 5.2 대상 프로젝트에 생성되는 구조 (`conceptpowers:init` 산출물)
 
+`docs/conceptpowers/` 는 5개 구성요소로 이루어진 **프로젝트의 기준(baseline) 저장소**다.
+전체가 사용자 전속 수정 대상이다(규칙 4).
+
 ```
 <대상 프로젝트>/
 └── docs/conceptpowers/
-    ├── config.json          # 강제 활성화 마커 + 설정 (강제 범위 등)
-    ├── concepts/            # 개념 데이터 (진실의 원천)
-    │   ├── admin-role.json
-    │   ├── user-role.json
+    │
+    ├── 1) init.json             # init 마커 — "Conceptpowers의 강제 개입을 허용한다"는 명시
+    │                            #   + 프로젝트 간단 정보, 강제 범위 등 설정
+    │
+    ├── 2) features/             # 기능 명세 — 구현하고자 하는 기능을 기술.
+    │   ├── <feature>.md         #   개념(concept)은 이 명세를 기반으로 구성된다.
     │   └── ...
-    ├── mapping.json         # @concept:<slug> ↔ 코드 경로/심볼 인덱스 (선택적 캐시)
-    └── viewer/              # HTML 뷰어 (데이터에서 렌더링)
-        ├── index.html       # 개념 목록
-        ├── admin-role.html  # 개념별 페이지
-        └── assets/concept.css
+    │
+    ├── 3) concepts/             # 개념 폴더 — 데이터(진실) + 뷰(HTML)
+    │   ├── data/                #   개념 정리용 JSON / MD (진실의 원천)
+    │   │   ├── admin-role.json
+    │   │   ├── admin-role.md
+    │   │   └── ...
+    │   └── viewer/              #   뷰용 HTML (데이터에서 정적 재생성, D7)
+    │       ├── index.html
+    │       ├── admin-role.html
+    │       └── assets/concept.css
+    │
+    ├── 4) architecture/         # 프로젝트 전체 아키텍처 — 명시적으로 정리.
+    │   └── architecture.md      #   아키텍처에 따라 개념이 달라질 수 있어 기준으로 둠.
+    │
+    └── 5) infra/                # 인프라 정보 — 명시적으로 기록하고 판단에 사용.
+        └── infra.md
 ```
+
+> `mapping.json`(@concept 태그 인덱스 캐시, D6)은 **코드 측 캐시**이므로
+> 이 baseline 폴더가 아니라 별도(예: `docs/conceptpowers/.cache/mapping.json`)에 두어
+> 사용자 전속 수정 제약과 분리한다.
+
+#### 구성요소 간 관계 (기준의 계층)
+
+```
+infra (5)  ─┐
+            ├─▶  architecture (4)  ─▶  features (2)  ─▶  concepts (3)  ─▶  코드 (@concept 태그)
+init (1) 허용 게이트                                         ▲
+                                                  검증 기준(Allow/Restrict/불변원칙)
+```
+
+- **infra → architecture → features → concepts** 순으로 상위 기준이 하위 개념을 제약한다.
+- 코드 변경은 최종적으로 **concepts**의 규칙에 대해 검증된다.
+- 상위(아키텍처·인프라·기능명세)가 바뀌면 개념도 달라질 수 있으므로 모두 명시적 기준으로 보존한다.
 
 ### 5.3 개념 데이터 스키마 (JSON)
 
@@ -169,11 +203,11 @@ Conceptpowers/
 | 스킬 | 트리거 | 역할 |
 |------|--------|------|
 | `conceptpowers` (진입) | 세션 시작 / 사용법 질문 | Conceptpowers 사용법·규칙 안내, 다른 스킬로 라우팅 |
-| `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 스캐폴딩 (config, viewer, css) → 강제 활성화 |
-| `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | 구조화된 개념(설명/목적/핵심행동/운영원칙)을 대화로 정의 → JSON 저장 + 뷰어 갱신 |
-| `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념을 찾아 변경의 위배 여부 판단. 위배 시 중단 안내 |
-| `conceptpowers:update-concept` | **사용자 명시 요청 시에만** | 개념 데이터 수정 (에이전트 임의 수정 금지) |
-| `conceptpowers:update-mapping` | 코드 수정 시 자동 + 수동 호출 | `@concept` 태그/`mapping.json` 갱신 |
+| `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 5요소 스캐폴딩(init·features·concepts·architecture·infra + viewer/css) → 강제 활성화 |
+| `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | `features/` 명세를 기반으로 구조화된 개념(설명/목적/핵심행동/운영원칙)을 대화로 정의 → `concepts/data/` JSON·MD 저장 + 뷰어 정적 재생성 |
+| `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념을 찾아 변경의 위배 여부 판단. 위배 시 중단 안내 (baseline은 읽기 전용) |
+| `conceptpowers:update-baseline` | **사용자 명시 요청 시에만** | baseline(개념·기능명세·아키텍처·인프라) 수정. 에이전트 임의 수정 금지 |
+| `conceptpowers:update-mapping` | 코드 수정 시 자동 + 수동 호출 | `@concept` 태그/`mapping.json` 캐시 갱신 (baseline 아님) |
 
 ### 5.5 훅 (Hooks)
 
