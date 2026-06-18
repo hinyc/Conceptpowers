@@ -70,6 +70,9 @@
 | D3 | 강제 활성화 | **Opt-in** — `conceptpowers:init` 호출로 `docs/conceptpowers/` 생성 시에만 | 마커 폴더 존재 = 강제 허용 |
 | D4 | 개념↔코드 연결 | **태그/주석 기반** (`@concept:<slug>`) | 에이전트가 수정 시 태그 자동 갱신 + 수동 매핑 갱신 스킬 제공 |
 | D5 | 강제 범위 | **새 기능·동작 변경만** | 단순 리팩터링·오타·포맷은 제외 |
+| D6 | 매핑 진실의 원천 | **코드 내 `@concept` 태그가 진실**, `mapping.json`은 재생성 가능한 캐시 | 코드 이동 시에도 연결 불일치 없음 |
+| D7 | HTML 뷰어 렌더링 | **데이터 저장 시 정적 HTML 재생성** | 서버 불필요, 파일 열면 바로 보임 |
+| D8 | 배포 채널 | **자체 마켓플레이스** (`.claude-plugin/marketplace.json`) | `superpowers`의 `obra/superpowers-marketplace` 방식 차용 |
 
 ## 5. 아키텍처
 
@@ -190,10 +193,10 @@ Conceptpowers/
 
 ## 7. 미확정 항목 (Open Questions)
 
-- OQ1: HTML 뷰어를 정적 생성으로 둘지, 데이터만 두고 온디맨드 렌더링할지 — *기본: 데이터 저장 시 정적 재생성*
-- OQ2: `mapping.json`을 진실로 둘지, 코드 내 `@concept` 태그를 진실로 두고 인덱스만 캐시할지 — *기본: 태그가 진실, mapping.json은 캐시*
-- OQ3: "새 기능·동작 변경" 판정 기준의 구체적 휴리스틱 (check-concept 스킬에서 정의)
-- OQ4: 플러그인 배포 채널 (자체 marketplace vs 공식) — superpowers 방식 참고, *TBD*
+- ~~OQ1: HTML 뷰어 정적 vs 온디맨드~~ → **해결(D7)**: 데이터 저장 시 정적 재생성
+- ~~OQ2: 매핑 진실의 원천~~ → **해결(D6)**: 코드 `@concept` 태그가 진실, mapping.json은 캐시
+- OQ3: "새 기능·동작 변경" 판정 기준의 구체적 휴리스틱 → **구현 시 `check-concept` 스킬 내에서 정의** (설계 단계에서는 보류)
+- ~~OQ4: 플러그인 배포 채널~~ → **해결(D8)**: 자체 마켓플레이스
 
 ## 8. 다음 단계
 
