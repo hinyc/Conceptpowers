@@ -147,7 +147,7 @@ coverage/
   "name": "conceptpowers",
   "description": "Concept-driven development governance: define concepts before code, enforce that changes never violate them",
   "version": "0.1.0",
-  "author": { "name": "inyeol Hong", "email": "iyhong@intellicode.co.kr" },
+  "author": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" },
   "license": "MIT",
   "keywords": ["concept", "governance", "skills", "consistency", "guardrails"]
 }
@@ -158,14 +158,14 @@ coverage/
 {
   "name": "conceptpowers-dev",
   "description": "Marketplace for the Conceptpowers governance plugin",
-  "owner": { "name": "inyeol Hong", "email": "iyhong@intellicode.co.kr" },
+  "owner": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" },
   "plugins": [
     {
       "name": "conceptpowers",
       "description": "Concept-driven development governance for Claude Code",
       "version": "0.1.0",
       "source": "./",
-      "author": { "name": "inyeol Hong", "email": "iyhong@intellicode.co.kr" }
+      "author": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" }
     }
   ]
 }
