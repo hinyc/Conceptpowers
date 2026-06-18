@@ -83,6 +83,7 @@
 | D13 | 전체 감사 스킬 | **`conceptpowers:audit`** — 수동 실행, 프로젝트 전체 스캔으로 미연결 구멍 탐지 + 기존 연결 정합성 검증 | 실시간 게이트(`check-concept`)를 보완하는 사후 전수 점검 |
 | D14 | 테스트 코드 개념 검증 | 테스트 작성 시 개념 참조, 위배 시 사용자 알림 (개념 임의수정 금지) | `check-concept` 검증 대상에 테스트 포함 |
 | D15 | 활성화 방식 | 플러그인 번들 **SessionStart 훅이 `init.json` 마커 자동 탐색**으로 활성화 | **CLAUDE.md 수정 불필요**. 설치만 하면 자동, init 안 한 프로젝트는 무동작 |
+| D16 | 진행 중 프로젝트 백필 | 기본 **점진적(incremental)** — init은 스캐폴드+마커만, 구멍은 audit 리포트로 안내하고 코드 건드릴 때 점진 백필 | `strict`(즉시 전체 강제)는 `init.json`의 옵트인 설정으로 선택 가능 |
 
 ## 5. 아키텍처
 
@@ -123,7 +124,7 @@ Conceptpowers/
 └── docs/conceptpowers/
     │
     ├── 1) init.json             # init 마커 — "Conceptpowers의 강제 개입을 허용한다"는 명시
-    │                            #   + 프로젝트 간단 정보, 강제 범위 등 설정
+    │                            #   + 프로젝트 정보, 강제 범위, backfillMode("incremental"|"strict", 기본 incremental)
     │
     ├── 2) features/             # 기능 명세 — 구현하고자 하는 기능을 기술.
     │   ├── <group>/             #   많아지면 상위 그룹(도메인)별로 분리 (예: auth/, billing/)
@@ -227,7 +228,7 @@ init (1) 허용 게이트                                         ▲
 | 스킬 | 트리거 | 역할 |
 |------|--------|------|
 | `conceptpowers` (진입) | 세션 시작 / 사용법 질문 | Conceptpowers 사용법·규칙 안내, 다른 스킬로 라우팅 |
-| `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 5요소 스캐폴딩(init·features·concepts·architecture·infra + viewer/css) → 강제 활성화 |
+| `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 5요소 스캐폴딩(init·features·concepts·architecture·infra + viewer/css) → 강제 활성화. 기본 **incremental**(스캐폴드+마커만, 구멍은 audit로 안내); `strict` 선택 시 즉시 전체 백필 |
 | `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | `features/` 명세 기반으로 구조화 개념(범주 포함: feature/behavior/role/permission/term)을 대화로 정의 → **무모순 검사 통과 시에만** `concepts/data/` 저장 + 뷰어 재생성 |
 | `conceptpowers:check-consistency` | define/update 시 자동 (내부 게이트) | 새/수정 개념을 **기존 모든 개념과 대조**해 충돌·위배 탐지. 통과해야만 커밋 (규칙 7) |
 | `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념(코드↔개념)을 찾아 **코드 변경**의 위배 여부 판단. 위배 시 중단 안내 (baseline은 읽기 전용) |
