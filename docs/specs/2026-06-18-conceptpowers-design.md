@@ -85,6 +85,7 @@
 | D15 | 활성화 방식 | 플러그인 번들 **SessionStart 훅이 `init.json` 마커 자동 탐색**으로 활성화 | **CLAUDE.md 수정 불필요**. 설치만 하면 자동, init 안 한 프로젝트는 무동작 |
 | D16 | 진행 중 프로젝트 백필 | 기본 **점진적(incremental)** — init은 스캐폴드+마커만, 구멍은 audit 리포트로 안내하고 코드 건드릴 때 점진 백필 | `strict`(즉시 전체 강제)는 `init.json`의 옵트인 설정으로 선택 가능 |
 | D17 | 커밋 게이트 | `git commit` 요청 시 **자동**으로 `check-concept`(+개념 변경 포함 시 `check-consistency`) 실행, **0건일 때만 커밋** | PreToolUse(Bash) 훅으로 가로챔. 구멍 없이 코드·개념 양쪽 검증 |
+| D18 | superpowers 보완 | superpowers와 **충돌 없이 보완**. 스킬은 `conceptpowers-` 접두사로 분리, 훅은 가산적이며 init 전엔 무동작, 프로세스 스킬 재정의 안 함 | 역할 분담: superpowers=프로세스, Conceptpowers=개념 거버넌스 게이트 |
 
 ## 5. 아키텍처
 
