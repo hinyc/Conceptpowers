@@ -1,0 +1,203 @@
+# Conceptpowers — 설계 문서 (Design Spec)
+
+- 작성일: 2026-06-18
+- 상태: 브레인스토밍 진행 중 (결정 사항 누적 기록)
+- 참고 프로젝트: `/Users/inyeol/Documents/GitHub/superpowers` (Claude Code 플러그인 배포 구조 참고)
+
+> 이 문서는 브레인스토밍에서 확정되는 결정들을 실시간으로 누적 정리한다.
+> 미확정 항목은 `TBD`로 표시하고, 확정 시 갱신한다.
+
+---
+
+## 1. 한 줄 요약
+
+**Conceptpowers** 는 코드를 작성·수정하기 전에 "개념(Concept)"을 먼저 정의하고,
+모든 기능·동작 변경이 정의된 개념의 규칙에 위배되지 않는지 자동으로 검증하도록
+강제하는 **개념 기반 개발 거버넌스(Concept-driven Development Governance) Claude Code 플러그인**이다.
+
+## 2. 문제 정의 / 동기
+
+- 에이전트가 코드를 빠르게 수정·추가하다 보면, 프로젝트가 원래 의도한 **개념적 일관성**이 무너진다.
+- "이 기능이 원래 무엇을 위한 것인가", "무엇을 해도 되고 무엇을 하면 안 되는가"가
+  코드 곳곳에 암묵적으로 흩어져 있어, 변경이 기존 설계 원칙을 위배해도 감지되지 않는다.
+- Conceptpowers는 **개념을 1급 산출물(first-class artifact)로 승격**시키고,
+  코드 변경을 개념에 대해 검증함으로써 일관성을 강제한다.
+
+## 3. 핵심 동작 루프 (The Core Loop)
+
+```
+[에이전트가 새 기능 추가 / 기존 동작 변경을 시도]
+        │
+        ▼
+이 프로젝트가 Conceptpowers로 init 되었는가? ──(아니오)──▶ 강제 없음, 일반 진행
+        │ (예)
+        ▼
+변경 대상에 연결된 @concept 태그가 있는가?
+        │
+   ┌────┴────────────────────────┐
+ (없음)                         (있음)
+   │                               │
+   ▼                               ▼
+관련 개념이 존재하나?            연결된 개념 규칙 로드
+   │                          (Allow/Restrict/불변 원칙)
+ (아니오) → 개념을 먼저 정의 강제      │
+   │  (conceptpowers:define)          ▼
+   │                          변경이 개념을 위배하는가?
+   └──────────┐                   ┌──┴───┐
+              ▼                 (아니오) (예)
+     개념 정의 후 진행            │       │
+                                 ▼       ▼
+                       코드 수정 진행   ❌ 코드 수정 중단
+                       + @concept 태그/  사용자에게:
+                         매핑 동시 갱신     (a) 개념을 명시적으로 업데이트, 또는
+                                          (b) 새 기능/개념으로 분리
+```
+
+### 핵심 규칙 (Invariants)
+
+1. **Opt-in 강제**: `docs/conceptpowers/` 가 존재하는(=`conceptpowers:init` 한) 프로젝트에서만 강제가 활성화된다.
+2. **개념 우선**: 개념이 없는 새 기능·동작 변경은 개념 정의를 먼저 강제한다.
+3. **위배 시 중단**: 변경이 개념을 위배하면 코드를 수정하지 않는다. 사용자가 개념을 바꾸거나 기능을 분리해야 한다.
+4. **개념 수정은 사용자 전속**: 개념(Concept) 데이터의 수정은 사용자가 **명시적으로 요청**하거나 **직접 수정**할 때만 가능하다. 에이전트가 임의로 개념을 바꾸지 않는다.
+5. **매핑 동기화**: 에이전트가 코드를 수정할 때는 `@concept` 태그/매핑도 **항상 함께** 갱신한다.
+
+## 4. 확정된 설계 결정 (Decisions)
+
+| # | 결정 항목 | 선택 | 비고 |
+|---|-----------|------|------|
+| D1 | 플러그인 성격 | 개념 기반 개발 거버넌스 | superpowers와 유사한 스킬/훅 패키지 |
+| D2 | 개념 저장 방식 | **데이터(JSON/MD) + HTML 뷰어** | 데이터가 진실, HTML은 렌더링된 뷰. status-dashboard 스킬 패턴 차용 |
+| D3 | 강제 활성화 | **Opt-in** — `conceptpowers:init` 호출로 `docs/conceptpowers/` 생성 시에만 | 마커 폴더 존재 = 강제 허용 |
+| D4 | 개념↔코드 연결 | **태그/주석 기반** (`@concept:<slug>`) | 에이전트가 수정 시 태그 자동 갱신 + 수동 매핑 갱신 스킬 제공 |
+| D5 | 강제 범위 | **새 기능·동작 변경만** | 단순 리팩터링·오타·포맷은 제외 |
+
+## 5. 아키텍처
+
+### 5.1 플러그인 저장소 구조 (이 레포 = Conceptpowers 플러그인)
+
+superpowers 구조를 참고하여:
+
+```
+Conceptpowers/
+├── .claude-plugin/
+│   ├── plugin.json          # 플러그인 매니페스트 (name, version, ...)
+│   └── marketplace.json     # 마켓플레이스 등록 정보
+├── skills/                  # 자동 트리거되는 스킬들
+│   ├── conceptpowers/       # (진입 스킬 — 사용법 안내)
+│   ├── init/
+│   ├── define-concept/
+│   ├── check-concept/
+│   ├── update-concept/
+│   └── update-mapping/
+├── hooks/                   # SessionStart / PreToolUse 훅
+├── assets/                  # HTML 뷰어 템플릿, concept.css 등
+├── docs/                    # (이 플러그인 자체의 설계 문서 — 본 파일 위치)
+├── tests/
+├── README.md
+└── CLAUDE.md
+```
+
+> 주의: 위 `docs/`는 **플러그인 레포 자신의 설계 문서**다.
+> `conceptpowers:init`이 **대상 프로젝트**에 만드는 `docs/conceptpowers/`와 혼동하지 말 것.
+
+### 5.2 대상 프로젝트에 생성되는 구조 (`conceptpowers:init` 산출물)
+
+```
+<대상 프로젝트>/
+└── docs/conceptpowers/
+    ├── config.json          # 강제 활성화 마커 + 설정 (강제 범위 등)
+    ├── concepts/            # 개념 데이터 (진실의 원천)
+    │   ├── admin-role.json
+    │   ├── user-role.json
+    │   └── ...
+    ├── mapping.json         # @concept:<slug> ↔ 코드 경로/심볼 인덱스 (선택적 캐시)
+    └── viewer/              # HTML 뷰어 (데이터에서 렌더링)
+        ├── index.html       # 개념 목록
+        ├── admin-role.html  # 개념별 페이지
+        └── assets/concept.css
+```
+
+### 5.3 개념 데이터 스키마 (JSON)
+
+보여준 LGEHS `Admin Role` HTML 예시의 구조를 데이터화한다. (Zod로 검증)
+
+```jsonc
+{
+  "slug": "admin-role",
+  "number": 3,
+  "title": "Admin Role",
+  "eyebrow": "운영자 역할",
+  "description": {
+    "definition": "핵심 정의 ...",
+    "analogy": "핵심 비유 ...",
+    "components": ["주요 구성 요소 ..."],
+    "example": "개념 예시 ..."
+  },
+  "purpose": {
+    "reason": "존재 이유 ...",
+    "benefits": ["기대 효과 ..."],
+    "vision": "최종 목표 ...",
+    "painPoints": ["해결하는 문제 ..."]
+  },
+  "actions": {
+    "allow": ["허용 행동 ..."],
+    "restrict": ["제한 행동 ..."],
+    "interaction": "상호작용 ..."
+  },
+  "principle": {
+    "immutableRules": ["불변 원칙 ..."],
+    "tradeoffs": "의사결정 우선순위 ...",
+    "lifecycle": ["관리 및 지속성 ..."]
+  },
+  "relations": {
+    "prev": "user-role",
+    "next": "agent",
+    "related": ["agent-developer"]
+  },
+  "codeLinks": ["src/auth/admin/**", "@concept:admin-role"]
+}
+```
+
+> 검증 기준 핵심: `actions.allow` / `actions.restrict` / `principle.immutableRules` 가
+> 코드 변경의 **위배 판단 기준**이 된다.
+
+### 5.4 구성 요소 (Skills / Commands)
+
+| 스킬 | 트리거 | 역할 |
+|------|--------|------|
+| `conceptpowers` (진입) | 세션 시작 / 사용법 질문 | Conceptpowers 사용법·규칙 안내, 다른 스킬로 라우팅 |
+| `conceptpowers:init` | 사용자 명시 호출 | 대상 프로젝트에 `docs/conceptpowers/` 스캐폴딩 (config, viewer, css) → 강제 활성화 |
+| `conceptpowers:define-concept` | 개념 없는 새 기능 시 자동, 또는 명시 호출 | 구조화된 개념(설명/목적/핵심행동/운영원칙)을 대화로 정의 → JSON 저장 + 뷰어 갱신 |
+| `conceptpowers:check-concept` | 새 기능·동작 변경 직전 자동 | 관련 개념을 찾아 변경의 위배 여부 판단. 위배 시 중단 안내 |
+| `conceptpowers:update-concept` | **사용자 명시 요청 시에만** | 개념 데이터 수정 (에이전트 임의 수정 금지) |
+| `conceptpowers:update-mapping` | 코드 수정 시 자동 + 수동 호출 | `@concept` 태그/`mapping.json` 갱신 |
+
+### 5.5 훅 (Hooks)
+
+| 훅 | 시점 | 동작 |
+|----|------|------|
+| SessionStart | 세션 시작 | 대상 프로젝트에 `docs/conceptpowers/` 존재 시, Conceptpowers 강제 컨텍스트 주입 |
+| PreToolUse (Edit/Write) | 코드 파일 수정 직전 | init된 프로젝트에서 새 기능·동작 변경이면 `check-concept` 수행을 강제하는 리마인더/게이트 |
+
+> 훅은 **의미 판단을 하지 않는다**(불가능). 훅은 게이트·리마인더 역할만 하고,
+> 실제 개념 검증·위배 판단은 **스킬(에이전트의 추론)**이 수행한다. (하이브리드)
+
+## 6. 범위 밖 (Non-goals / YAGNI)
+
+- 단순 리팩터링·오타·포맷 변경에 대한 개념 검증 (D5에 따라 제외)
+- 개념의 자동 생성/자동 수정 (개념 수정은 사용자 전속, 규칙 4)
+- 비-Claude-Code 하니스 지원 (1차 범위는 Claude Code only) — `TBD: 추후 검토`
+
+## 7. 미확정 항목 (Open Questions)
+
+- OQ1: HTML 뷰어를 정적 생성으로 둘지, 데이터만 두고 온디맨드 렌더링할지 — *기본: 데이터 저장 시 정적 재생성*
+- OQ2: `mapping.json`을 진실로 둘지, 코드 내 `@concept` 태그를 진실로 두고 인덱스만 캐시할지 — *기본: 태그가 진실, mapping.json은 캐시*
+- OQ3: "새 기능·동작 변경" 판정 기준의 구체적 휴리스틱 (check-concept 스킬에서 정의)
+- OQ4: 플러그인 배포 채널 (자체 marketplace vs 공식) — superpowers 방식 참고, *TBD*
+
+## 8. 다음 단계
+
+1. 본 설계 문서 사용자 리뷰
+2. 미확정 항목(OQ1~OQ4) 해소
+3. `writing-plans` 스킬로 구현 계획 작성 → 단계별 구현
+```
