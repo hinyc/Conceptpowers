@@ -82,6 +82,7 @@
 | D12 | 상위 그룹(도메인) 분리 | features/concepts가 많아지면 **`<group>/` 폴더로 계층 분리** | `group` 필드로 표기, `slug`은 전역 고유. `category` 필드와는 별개 축 |
 | D13 | 전체 감사 스킬 | **`conceptpowers:audit`** — 수동 실행, 프로젝트 전체 스캔으로 미연결 구멍 탐지 + 기존 연결 정합성 검증 | 실시간 게이트(`check-concept`)를 보완하는 사후 전수 점검 |
 | D14 | 테스트 코드 개념 검증 | 테스트 작성 시 개념 참조, 위배 시 사용자 알림 (개념 임의수정 금지) | `check-concept` 검증 대상에 테스트 포함 |
+| D15 | 활성화 방식 | 플러그인 번들 **SessionStart 훅이 `init.json` 마커 자동 탐색**으로 활성화 | **CLAUDE.md 수정 불필요**. 설치만 하면 자동, init 안 한 프로젝트는 무동작 |
 
 ## 5. 아키텍처
 
@@ -238,11 +239,30 @@ init (1) 허용 게이트                                         ▲
 
 | 훅 | 시점 | 동작 |
 |----|------|------|
-| SessionStart | 세션 시작 | 대상 프로젝트에 `docs/conceptpowers/` 존재 시, Conceptpowers 강제 컨텍스트 주입 |
+| SessionStart | 세션 시작 | 플러그인이 **자동으로** `docs/conceptpowers/init.json` 마커를 탐색. 존재하면 Conceptpowers 강제 컨텍스트 주입(활성화), 없으면 아무것도 안 함 |
 | PreToolUse (Edit/Write) | 코드 파일 수정 직전 | init된 프로젝트에서 새 기능·동작 변경이면 `check-concept` 수행을 강제하는 리마인더/게이트 |
 
 > 훅은 **의미 판단을 하지 않는다**(불가능). 훅은 게이트·리마인더 역할만 하고,
 > 실제 개념 검증·위배 판단은 **스킬(에이전트의 추론)**이 수행한다. (하이브리드)
+
+#### 활성화 흐름 (Activation) — 완전 자동, CLAUDE.md 수정 불필요
+
+```
+플러그인 설치 (/plugin install conceptpowers@<marketplace>)
+        │  → 플러그인에 번들된 SessionStart 훅이 함께 등록됨
+        ▼
+매 세션 시작 시, 번들 훅이 현재 프로젝트 루트에서 docs/conceptpowers/init.json 탐색
+        │
+   ┌────┴────┐
+ (있음)     (없음)
+   │           └─▶ 비활성. 일반 동작 (이 프로젝트는 강제 안 함)
+   ▼
+강제 컨텍스트 주입 → check-concept / 개념 우선 / 위배 중단 규칙 활성
+```
+
+- 사용자는 **CLAUDE.md에 아무것도 추가하지 않는다.** 활성화 신호는 오직 `init.json`(마커) 존재 여부다.
+- `conceptpowers:init`은 그 `init.json`을 만드는 행위이고, 그게 곧 "이 프로젝트는 강제를 허용한다"는 명시적 표시다.
+- 플러그인을 설치했어도 `init` 안 한 프로젝트에서는 훅이 마커를 못 찾아 **아무 일도 일어나지 않는다**(opt-in, D3).
 
 ### 5.6 전체 감사 (`conceptpowers:audit`)
 
