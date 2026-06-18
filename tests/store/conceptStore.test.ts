@@ -31,4 +31,18 @@ describe('conceptStore', () => {
     expect(await slugExists(root, 'admin-role')).toBe(true)
     expect(await slugExists(root, 'nope')).toBe(false)
   })
+  it('다른 그룹에 동일 slug 쓰기를 거부한다 (I1)', async () => {
+    await writeConcept(root, { ...base, slug: 'admin-role', group: 'auth' } as any)
+    await expect(
+      writeConcept(root, { ...base, slug: 'admin-role', group: 'billing' } as any)
+    ).rejects.toThrow('slug 중복')
+  })
+  it('동일 경로에 동일 slug 덮어쓰기는 허용한다 (I1)', async () => {
+    await writeConcept(root, { ...base, slug: 'admin-role', group: 'auth', title: 'v1' } as any)
+    await expect(
+      writeConcept(root, { ...base, slug: 'admin-role', group: 'auth', title: 'v2' } as any)
+    ).resolves.not.toThrow()
+    const updated = await readConcept(root, 'admin-role')
+    expect(updated?.title).toBe('v2')
+  })
 })
