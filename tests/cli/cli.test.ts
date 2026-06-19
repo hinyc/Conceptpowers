@@ -1,6 +1,6 @@
 // tests/cli/cli.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtempSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runCli } from "../../src/cli.js";
@@ -23,6 +23,25 @@ describe("runCli", () => {
     ]);
     expect(code).toBe(0);
     expect(existsSync(join(root, "docs/conceptpowers/init.json"))).toBe(true);
+  });
+  it("init 완료 후 안내 문구를 출력한다 (package.json 있으면 뷰어 스크립트 안내)", async () => {
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "demo" }));
+    let captured = "";
+    const code = await runCli(["init", "--root", root, "--lang", "ko"], (s) => (captured += s));
+    expect(code).toBe(0);
+    expect(captured).toContain("초기화 완료");
+    expect(captured).toContain("npm run concepts:view");
+  });
+  it("package.json이 없으면 안내가 뷰어 파일 경로를 가리킨다", async () => {
+    let captured = "";
+    await runCli(["init", "--root", root, "--lang", "ko"], (s) => (captured += s));
+    expect(captured).toContain("docs/conceptpowers/concepts/viewer/index.html");
+    expect(captured).not.toContain("npm run concepts:view");
+  });
+  it("--lang en이면 영어 안내를 출력한다", async () => {
+    let captured = "";
+    await runCli(["init", "--root", root, "--lang", "en"], (s) => (captured += s));
+    expect(captured).toContain("Conceptpowers initialized");
   });
   it("status가 초기화 여부를 JSON으로 출력한다", async () => {
     const out: string[] = [];

@@ -8,17 +8,18 @@ import { renderViewerToDisk } from '../viewer/render.js'
 import { addViewerScript } from './packageScript.js'
 
 export interface ScaffoldOptions { backfillMode?: 'incremental' | 'strict'; name?: string; description?: string; locale?: Locale }
+export interface ScaffoldResult { viewerScriptAdded: boolean }
 
 export async function isInitialized(root: string): Promise<boolean> {
   try { await access(cpPaths(root).initFile); return true } catch { return false }
 }
 
-export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise<void> {
+export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise<ScaffoldResult> {
   const p = cpPaths(root)
   for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
     await mkdir(d, { recursive: true })
 
-  if (await isInitialized(root)) return // 보존: 사용자 전속(규칙4)
+  if (await isInitialized(root)) return { viewerScriptAdded: false } // 보존: 사용자 전속(규칙4)
 
   const locale: Locale = opts.locale ?? 'ko'
   const config = parseInitConfig({
@@ -34,9 +35,11 @@ export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise
   // data 포맷이 고정이므로 빈 상태 뷰어(index.html + css)를 미리 생성해 둔다.
   await renderViewerToDisk(root)
   // 뷰어를 여는 편의 스크립트를 package.json에 1회 추가한다(있을 때만, 베스트에포트).
+  let viewerScriptAdded = false
   try {
-    await addViewerScript(root)
+    viewerScriptAdded = await addViewerScript(root)
   } catch {
     // package.json이 깨졌거나 쓸 수 없어도 init 자체는 성공으로 둔다.
   }
+  return { viewerScriptAdded }
 }

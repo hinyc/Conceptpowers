@@ -5,7 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 export const VIEWER_SCRIPT_NAME = 'concepts:view'
-const VIEWER_INDEX = 'docs/conceptpowers/concepts/viewer/index.html'
+export const VIEWER_INDEX = 'docs/conceptpowers/concepts/viewer/index.html'
 
 function openCommand(platform: string): string {
   if (platform === 'win32') return `start "" ${VIEWER_INDEX}`

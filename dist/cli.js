@@ -7185,6 +7185,37 @@ var seedTemplates = {
     infra: "# Infrastructure\n\n<!-- Fill in -->\n"
   }
 };
+var initHintStrings = {
+  ko: {
+    done: "Conceptpowers \uCD08\uAE30\uD654 \uC644\uB8CC",
+    created: "\uC0DD\uC131\uB428 (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra",
+    next: "\uB2E4\uC74C \uB2E8\uACC4",
+    fillDocs: "architecture.md / infra.md\uB97C \uCC44\uC6CC \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900\uC744 \uC791\uC131\uD558\uC138\uC694",
+    viewerScript: "\uBDF0\uC5B4 \uC5F4\uAE30:",
+    viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:"
+  },
+  en: {
+    done: "Conceptpowers initialized",
+    created: "Created (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra",
+    next: "Next steps",
+    fillDocs: "Fill in architecture.md / infra.md \u2014 the high-level basis for concepts",
+    viewerScript: "Open the viewer:",
+    viewerFile: "Open the viewer file directly:"
+  }
+};
+function buildInitHint(locale, opts) {
+  const t = initHintStrings[locale];
+  const viewerLine = opts.viewerScriptAdded ? `   2. ${t.viewerScript} ${opts.viewerCommand}` : `   2. ${t.viewerFile} ${opts.viewerPath}`;
+  return [
+    `\u2705 ${t.done}`,
+    `   ${t.created}`,
+    "",
+    `${t.next}:`,
+    `   1. ${t.fillDocs}`,
+    viewerLine,
+    ""
+  ].join("\n");
+}
 
 // src/viewer/render.ts
 import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile5 } from "node:fs/promises";
@@ -7708,7 +7739,7 @@ async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
   for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
     await mkdir5(d, { recursive: true });
-  if (await isInitialized(root)) return;
+  if (await isInitialized(root)) return { viewerScriptAdded: false };
   const locale = opts.locale ?? "ko";
   const config = parseInitConfig({
     version: "0.1.0",
@@ -7722,10 +7753,12 @@ async function scaffoldInit(root, opts) {
   await writeFile6(join6(p.architecture, "architecture.md"), seed.architecture, "utf8");
   await writeFile6(join6(p.infra, "infra.md"), seed.infra, "utf8");
   await renderViewerToDisk(root);
+  let viewerScriptAdded = false;
   try {
-    await addViewerScript(root);
+    viewerScriptAdded = await addViewerScript(root);
   } catch {
   }
+  return { viewerScriptAdded };
 }
 
 // src/mapping/scan.ts
@@ -7931,8 +7964,13 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   program2.name("conceptpowers").exitOverride();
   let code = 0;
   program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
-    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
     if (o.mode === "strict") await renderViewerToDisk(o.root);
+    out(buildInitHint(o.lang, {
+      viewerScriptAdded: result.viewerScriptAdded,
+      viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
+      viewerPath: VIEWER_INDEX
+    }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify({

@@ -1,5 +1,8 @@
 import { Command } from "commander";
 import { scaffoldInit, isInitialized } from "./init/scaffold.js";
+import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from "./init/packageScript.js";
+import { buildInitHint } from "./i18n/messages.js";
+import type { Locale } from "./schema/initConfig.js";
 import { renderViewerToDisk } from "./viewer/render.js";
 import { buildMapping, writeMappingCache } from "./mapping/scan.js";
 import { auditIntegrity } from "./audit/audit.js";
@@ -24,8 +27,13 @@ export async function runCli(
     .option("--mode <mode>", "incremental|strict", "incremental")
     .option("--lang <lang>", "ko|en", "ko")
     .action(async (o) => {
-      await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
       if (o.mode === "strict") await renderViewerToDisk(o.root);
+      out(buildInitHint(o.lang as Locale, {
+        viewerScriptAdded: result.viewerScriptAdded,
+        viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
+        viewerPath: VIEWER_INDEX,
+      }));
     });
 
   program

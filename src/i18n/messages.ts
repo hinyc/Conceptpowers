@@ -89,3 +89,55 @@ export const seedTemplates: Record<Locale, SeedTemplates> = {
 
 // 에이전트에게 산출물 언어를 지시할 때 쓰는 사람이 읽는 라벨.
 export const localeLabel: Record<Locale, string> = { ko: 'Korean', en: 'English' }
+
+// init 완료 후 사람이 읽는 안내 문구 조각.
+export interface InitHintStrings {
+  done: string
+  created: string
+  next: string
+  fillDocs: string
+  viewerScript: string // 뒤에 실행 명령(npm run …)이 붙는다
+  viewerFile: string // package.json이 없어 스크립트를 못 넣은 경우: 파일 경로 직접 안내
+}
+
+export const initHintStrings: Record<Locale, InitHintStrings> = {
+  ko: {
+    done: 'Conceptpowers 초기화 완료',
+    created: '생성됨 (docs/conceptpowers/): init.json · features · concepts · architecture · infra',
+    next: '다음 단계',
+    fillDocs: 'architecture.md / infra.md를 채워 개념의 상위 기준을 작성하세요',
+    viewerScript: '뷰어 열기:',
+    viewerFile: '뷰어를 직접 여세요:'
+  },
+  en: {
+    done: 'Conceptpowers initialized',
+    created: 'Created (docs/conceptpowers/): init.json · features · concepts · architecture · infra',
+    next: 'Next steps',
+    fillDocs: 'Fill in architecture.md / infra.md — the high-level basis for concepts',
+    viewerScript: 'Open the viewer:',
+    viewerFile: 'Open the viewer file directly:'
+  }
+}
+
+export interface InitHintOptions {
+  viewerScriptAdded: boolean
+  viewerCommand: string // 예: "npm run concepts:view"
+  viewerPath: string // 예: "docs/conceptpowers/concepts/viewer/index.html"
+}
+
+// init 완료 안내 문구(끝에 개행 포함)를 조립한다. 변경 없이 새 문자열만 생성한다.
+export function buildInitHint(locale: Locale, opts: InitHintOptions): string {
+  const t = initHintStrings[locale]
+  const viewerLine = opts.viewerScriptAdded
+    ? `   2. ${t.viewerScript} ${opts.viewerCommand}`
+    : `   2. ${t.viewerFile} ${opts.viewerPath}`
+  return [
+    `✅ ${t.done}`,
+    `   ${t.created}`,
+    '',
+    `${t.next}:`,
+    `   1. ${t.fillDocs}`,
+    viewerLine,
+    ''
+  ].join('\n')
+}
