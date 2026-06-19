@@ -28,4 +28,5 @@ truth; `red` concepts are proposals (e.g. auto-inferred during a full scan) awai
 ## Notes
 
 - You can also approve by editing `status` to `green` in the concept JSON, then `node "<cli>" render --root .`.
+  When approving this way, also run `node "<cli>" resolve-conflict <slug> --root .` to clear any recorded conflict.
 - Reverting an approval is the same flow with `status: red` (manual edit).

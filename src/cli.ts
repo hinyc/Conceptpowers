@@ -92,7 +92,7 @@ export async function runCli(
     .command("note-conflict")
     .argument("<slug>")
     .requiredOption("--reason <reason>", "충돌 사유")
-    .option("--root <root>", "프로젝트 루트", ".")
+    .option("--root <root>", "프로젝트 루트", process.cwd())
     .action(async (slug, o) => {
       await setPendingConflict(o.root, slug, o.reason);
     });
@@ -100,7 +100,7 @@ export async function runCli(
   program
     .command("resolve-conflict")
     .argument("<slug>")
-    .option("--root <root>", "프로젝트 루트", ".")
+    .option("--root <root>", "프로젝트 루트", process.cwd())
     .action(async (slug, o) => {
       await clearPendingConflict(o.root, slug);
     });

@@ -151,6 +151,7 @@ li::marker { color: var(--muted); }
   vertical-align: middle;
 }
 .badge--green { background: #e6f5ea; color: #1a7f37; border: 1px solid #aee0bd; }
+.badge--pending { background: #fdf3da; color: #9a6b00; border: 1px solid #ecd9a6; }
 .badge--red { background: #fdeaea; color: #b42318; border: 1px solid #f3b4ae; }
 .hero .badge { margin-left: .5rem; }
 .group li .badge { margin-right: .4rem; }

@@ -20,3 +20,9 @@ it('개념 데이터를 읽어 뷰어 HTML과 CSS를 디스크에 쓴다', async
   expect(readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/index.html'), 'utf8')).toContain('Admin Role')
   expect(existsSync(join(root, 'docs/conceptpowers/concepts/viewer/assets/concept.css'))).toBe(true)
 })
+
+it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {
+  await renderViewerToDisk(root)
+  const css = readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/assets/concept.css'), 'utf8')
+  expect(css).toContain('badge--pending')
+})
