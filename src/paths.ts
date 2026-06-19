@@ -13,6 +13,9 @@ export function cpPaths(root: string) {
     architecture: join(base, 'architecture'),
     infra: join(base, 'infra'),
     mappingCache: join(base, '.cache', 'mapping.json'),
-    cssTarget: join(base, 'concepts', 'viewer', 'assets', 'concept.css')
+    cssTarget: join(base, 'concepts', 'viewer', 'assets', 'concept.css'),
+    alignmentDir: join(base, 'concepts', '.alignment'),
+    alignmentLock: join(base, 'concepts', '.alignment', 'alignment.lock.json'),
+    alignmentHistory: join(base, 'concepts', '.alignment', 'history.json')
   } as const
 }
