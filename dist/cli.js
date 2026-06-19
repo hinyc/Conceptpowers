@@ -7123,6 +7123,7 @@ var InitConfigSchema = external_exports.object({
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -7535,9 +7536,20 @@ async function listConcepts(root) {
 async function readConcept(root, slug3) {
   return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
 }
+var ALLOWED_STATUS_TRANSITIONS = {
+  red: ["red", "green"],
+  pending: ["pending", "green", "red"],
+  green: ["green"]
+};
 async function setConceptStatus(root, slug3, status) {
   const concept = await readConcept(root, slug3);
   if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  const from = concept.status;
+  if (!ALLOWED_STATUS_TRANSITIONS[from].includes(status)) {
+    throw new Error(
+      `Illegal status transition: ${from} \u2192 ${status} (${slug3}). green/red are settled; only red\u2192green (human approval) and pending\u2192green/red are allowed.`
+    );
+  }
   const updated = await writeConcept(root, { ...concept, status });
   if (status === "green") await clearPendingConflict(root, slug3);
   return updated;
@@ -7786,6 +7798,13 @@ async function auditIntegrity(root, files) {
 
 // src/concept/approve.ts
 async function approveConcept(root, slug3) {
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  if (concept.status !== "red") {
+    throw new Error(
+      concept.status === "green" ? `Concept already approved (green): ${slug3}` : `Cannot approve a pending concept: ${slug3} \u2014 approve promotes red\u2192green; a pending concept settles to green via a passing consistency check.`
+    );
+  }
   return setConceptStatus(root, slug3, "green");
 }
 
@@ -7801,7 +7820,8 @@ var HistoryEntry = external_exports.object({
   prevHash: external_exports.string().default(""),
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
-  ignored: external_exports.boolean().default(false)
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
 
@@ -7830,6 +7850,7 @@ function toEntry(input, prevHash) {
     prevHash,
     reason: input.reason ?? "",
     ignored: input.ignored ?? false,
+    aligned: input.aligned ?? false,
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
@@ -7890,7 +7911,7 @@ async function computeDrift(root) {
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
   return items;

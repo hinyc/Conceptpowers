@@ -4085,6 +4085,7 @@ var InitConfigSchema = external_exports.object({
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -4266,7 +4267,8 @@ var HistoryEntry = external_exports.object({
   prevHash: external_exports.string().default(""),
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
-  ignored: external_exports.boolean().default(false)
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
 
@@ -4351,7 +4353,7 @@ async function computeDrift(root) {
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
   return items;

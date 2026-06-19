@@ -30,7 +30,7 @@ export async function reconcileAfterCommit(
   const nextLock: AlignmentLock = { ...lock }
   const aligned: string[] = []
   const ignored: string[] = []
-  const ignoredEntries: HistoryInput[] = []
+  const entries: HistoryInput[] = []
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug)
     if (d) {
@@ -39,9 +39,16 @@ export async function reconcileAfterCommit(
         d.relatedPaths.map(normalizeRel).every((p) => committed.has(p))
       if (followed) {
         aligned.push(c.slug)
+        entries.push({
+          slug: c.slug,
+          hash: d.currentHash,
+          reason: d.reason,
+          aligned: true,
+          at: stamp,
+        })
       } else {
         ignored.push(c.slug)
-        ignoredEntries.push({
+        entries.push({
           slug: c.slug,
           hash: d.currentHash,
           reason: d.reason,
@@ -59,7 +66,7 @@ export async function reconcileAfterCommit(
   const cleaned: AlignmentLock = Object.fromEntries(
     Object.entries(nextLock).filter(([slug]) => slugs.has(slug)),
   )
-  await appendHistoryMany(root, ignoredEntries)
+  await appendHistoryMany(root, entries)
   await writeLock(root, cleaned)
   return { aligned, ignored }
 }

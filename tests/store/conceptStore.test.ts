@@ -56,4 +56,23 @@ describe('conceptStore', () => {
   it('setConceptStatus는 없는 개념에 대해 에러를 던진다', async () => {
     await expect(setConceptStatus(root, 'ghost', 'green')).rejects.toThrow('not found')
   })
+  it('settled green은 다른 상태로 전이할 수 없다(가드)', async () => {
+    await writeConcept(root, { ...base, status: 'green' } as any)
+    await expect(setConceptStatus(root, 'admin-role', 'red')).rejects.toThrow(/transition/i)
+    await expect(setConceptStatus(root, 'admin-role', 'pending')).rejects.toThrow(/transition/i)
+  })
+  it('settled red는 pending으로 되돌릴 수 없다(red→green만 허용)', async () => {
+    await writeConcept(root, base as any) // 기본 red
+    await expect(setConceptStatus(root, 'admin-role', 'pending')).rejects.toThrow(/transition/i)
+  })
+  it('pending은 green/red로 정착할 수 있다', async () => {
+    await writeConcept(root, { ...base, status: 'pending' } as any)
+    await expect(setConceptStatus(root, 'admin-role', 'red')).resolves.toBeTruthy()
+    await writeConcept(root, { ...base, status: 'pending' } as any)
+    expect((await setConceptStatus(root, 'admin-role', 'green')).status).toBe('green')
+  })
+  it('동일 상태로의 전이는 허용한다(idempotent)', async () => {
+    await writeConcept(root, { ...base, status: 'green' } as any)
+    expect((await setConceptStatus(root, 'admin-role', 'green')).status).toBe('green')
+  })
 })
