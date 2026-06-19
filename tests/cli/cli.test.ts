@@ -24,6 +24,26 @@ describe("runCli", () => {
     expect(code).toBe(0);
     expect(existsSync(join(root, "docs/conceptpowers/init.json"))).toBe(true);
   });
+  it("sync 서브커맨드가 생성물을 패치한다 (초기화된 프로젝트)", async () => {
+    writeFileSync(join(root, "package.json"), JSON.stringify({
+      name: "demo",
+      scripts: { "concepts:view": "open docs/conceptpowers/concepts/viewer/index.html" },
+    }));
+    await runCli(["init", "--root", root]);
+    let captured = "";
+    const code = await runCli(["sync", "--root", root], (s) => (captured += s));
+    expect(code).toBe(0);
+    const r = JSON.parse(captured);
+    expect(r.ok).toBe(true);
+    expect(r).toHaveProperty("scriptStatus");
+    expect(r).toHaveProperty("orphansRemoved");
+  });
+  it("sync는 초기화되지 않은 프로젝트에서 에러를 반환한다", async () => {
+    let captured = "";
+    const code = await runCli(["sync", "--root", root], (s) => (captured += s));
+    expect(code).toBe(1);
+    expect(JSON.parse(captured).error).toContain("not initialized");
+  });
   it("init 완료 후 안내 문구를 출력한다 (package.json 있으면 뷰어 스크립트 안내)", async () => {
     writeFileSync(join(root, "package.json"), JSON.stringify({ name: "demo" }));
     let captured = "";

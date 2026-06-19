@@ -97,6 +97,7 @@ export async function buildSessionStartOutput(
             `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
             "Tell the user once, in one concise line, that an update is available and how to apply it:",
             "  /plugin marketplace update conceptpowers-dev",
+            "After updating, suggest running the conceptpowers:sync skill (or `conceptpowers sync`) once to refresh generated viewer assets and the concepts:view script. This only touches plugin-generated files; the baseline (concepts/specs/architecture/infra) is left untouched.",
             "Updates are manual by design; do not nag repeatedly within this session.",
             "</CONCEPTPOWERS-UPDATE>",
           ].join("\n");

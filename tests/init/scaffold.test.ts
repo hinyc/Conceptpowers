@@ -1,6 +1,6 @@
 // tests/init/scaffold.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mkdtempSync, existsSync, readFileSync } from 'node:fs'
+import { mkdtempSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { scaffoldInit, isInitialized } from '../../src/init/scaffold.js'
@@ -32,6 +32,14 @@ describe('scaffoldInit', () => {
     await scaffoldInit(root, { backfillMode: 'incremental' })
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))
     expect(cfg.backfillMode).toBe('strict') // 보존
+  })
+  it('재실행 시 옛 포맷 고아 *.html을 정리한다 (baseline 보존)', async () => {
+    await scaffoldInit(root, {})
+    const v = join(root, 'docs/conceptpowers/concepts/viewer')
+    writeFileSync(join(v, 'graph.html'), '<old/>') // 옛 잔재
+    await scaffoldInit(root, {}) // 재실행 = 생성물 패치
+    expect(existsSync(join(v, 'graph.html'))).toBe(false)
+    expect(existsSync(join(v, 'index.html'))).toBe(true)
   })
   it('init.json에 locale을 기록한다 (기본 ko)', async () => {
     await scaffoldInit(root, {})

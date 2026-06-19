@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { scaffoldInit, isInitialized } from "./init/scaffold.js";
+import { syncGenerated } from "./init/syncGenerated.js";
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from "./init/packageScript.js";
 import { buildInitHint } from "./i18n/messages.js";
 import type { Locale } from "./schema/initConfig.js";
@@ -28,12 +29,24 @@ export async function runCli(
     .option("--lang <lang>", "ko|en", "ko")
     .action(async (o) => {
       const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
-      if (o.mode === "strict") await renderViewerToDisk(o.root);
       out(buildInitHint(o.lang as Locale, {
         viewerScriptAdded: result.viewerScriptAdded,
         viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
         viewerPath: VIEWER_INDEX,
       }));
+    });
+
+  program
+    .command("sync")
+    .description("플러그인 생성물(뷰어 에셋·스크립트)을 최신으로 패치 (baseline 불변)")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (o) => {
+      if (!(await isInitialized(o.root))) {
+        out(JSON.stringify({ error: "not initialized" }));
+        code = 1;
+        return;
+      }
+      out(JSON.stringify({ ok: true, ...(await syncGenerated(o.root)) }));
     });
 
   program
