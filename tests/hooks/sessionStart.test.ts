@@ -82,3 +82,40 @@ describe("buildSessionStartOutput", () => {
     expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPT-DRIFT>");
   });
 });
+
+describe("플러그인 업데이트 알림", () => {
+  it("새 버전이 있으면 <CONCEPTPOWERS-UPDATE> 블록과 업데이트 명령을 담는다", async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, "/plugin", {
+      checkForUpdate: async () => ({ installed: "0.1.0", latest: "0.2.0" }),
+    });
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("<CONCEPTPOWERS-UPDATE>");
+    expect(ctx).toContain("0.2.0");
+    expect(ctx).toContain("/plugin marketplace update conceptpowers-dev");
+  });
+
+  it("업데이트가 없으면 블록이 없다", async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, "/plugin", {
+      checkForUpdate: async () => null,
+    });
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-UPDATE>");
+  });
+
+  it("versionCheck:false면 조회 자체를 안 한다", async () => {
+    await scaffoldInit(root, { });
+    // init.json의 versionCheck를 false로 덮어쓴다
+    const { writeFile } = await import("node:fs/promises");
+    const { cpPaths } = await import("../../src/paths.js");
+    const raw = JSON.parse(await (await import("node:fs/promises")).readFile(cpPaths(root).initFile, "utf8"));
+    await writeFile(cpPaths(root).initFile, JSON.stringify({ ...raw, versionCheck: false }));
+
+    let called = false;
+    const o = await buildSessionStartOutput(root, "/plugin", {
+      checkForUpdate: async () => { called = true; return { installed: "0.1.0", latest: "9.9.9" }; },
+    });
+    expect(called).toBe(false);
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-UPDATE>");
+  });
+});

@@ -6,6 +6,7 @@ import { listConcepts } from "../store/conceptStore.js";
 import { computeDrift, type DriftItem } from "../drift/detect.js";
 import { sanitizeText } from "../drift/safe.js";
 import { localeLabel } from "../i18n/messages.js";
+import { checkForUpdate as defaultCheckForUpdate, type UpdateInfo } from "../version/checkUpdate.js";
 
 export interface SessionStartOutput {
   hookSpecificOutput: {
@@ -14,9 +15,14 @@ export interface SessionStartOutput {
   };
 }
 
+export interface SessionStartDeps {
+  checkForUpdate?: (pluginRoot: string) => Promise<UpdateInfo | null>;
+}
+
 export async function buildSessionStartOutput(
   root: string,
   pluginRoot: string,
+  deps: SessionStartDeps = {},
 ): Promise<SessionStartOutput | null> {
   if (!(await isInitialized(root))) return null;
   const cli = join(pluginRoot, "dist", "cli.js");
@@ -75,10 +81,34 @@ export async function buildSessionStartOutput(
           "</CONCEPT-DRIFT>",
         ].join("\n")
       : "";
+  // best-effort: 업데이트 조회 실패가 세션 시작을 막지 않게 한다.
+  let updateBlock = "";
+  const versionCheckOn =
+    config?.versionCheck !== false && !process.env.CONCEPTPOWERS_NO_VERSION_CHECK;
+  if (versionCheckOn) {
+    try {
+      const check = deps.checkForUpdate ?? defaultCheckForUpdate;
+      const update = await check(pluginRoot);
+      if (update) {
+        updateBlock =
+          "\n" +
+          [
+            "<CONCEPTPOWERS-UPDATE>",
+            `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
+            "Tell the user once, in one concise line, that an update is available and how to apply it:",
+            "  /plugin marketplace update conceptpowers-dev",
+            "Updates are manual by design; do not nag repeatedly within this session.",
+            "</CONCEPTPOWERS-UPDATE>",
+          ].join("\n");
+      }
+    } catch {
+      updateBlock = "";
+    }
+  }
   return {
     hookSpecificOutput: {
       hookEventName: "SessionStart",
-      additionalContext: context + driftBlock,
+      additionalContext: context + driftBlock + updateBlock,
     },
   };
 }
