@@ -193,6 +193,17 @@ The entire baseline (concepts, specs, architecture, infra) is edited **exclusive
 
 Detailed design: `docs/specs/2026-06-18-conceptpowers-design.md`.
 
+### Knowledge graph
+
+The viewer's `#/graph` route renders the **concept · feature · code** relationships as one interactive graph, built from the `graph` block of `manifest.json` (see `src/viewer/graph.ts` for the data, `assets/viewer.js` for the rendering):
+
+- **Three node types**, color-coded with a legend: *concept*, *feature*, and *file* (a code path). Concept and feature nodes are larger; file nodes are small leaf dots.
+- **Edges are directional, three kinds** — `feature → concept` (the feature realizes that concept), `feature → file` (the feature's implementation path), and `concept → file` (code tied to the concept via its `codeLinks` or an `@concept:` tag picked up in `mapping.json`). A file referenced by both a feature and a concept becomes a single shared node, so concept · feature · code converge there. An edge to a concept that doesn't exist is dropped.
+- **Layout** is a zero-dependency, force-directed SVG simulation — node repulsion + edge springs + a gentle pull toward center — animated until it settles. The animation loop stops the moment you navigate away.
+- **Interaction:** drag any node to pin its position; click a *concept* or *feature* node to jump to its detail page (`#/concept/:slug`, `#/feature/:slug`); *file* nodes are leaves with no detail page — hover shows the full path as a tooltip.
+
+The graph is data-driven and re-derived on every `render` / `update-mapping`, so it always reflects the current concepts, features, and `@concept` ↔ code links.
+
 ### Using with superpowers
 
 Conceptpowers complements [superpowers](https://github.com/obra/superpowers) without conflict. superpowers drives the development *process* (idea → spec → plan → TDD); Conceptpowers adds the concept definition / verification *gates*. Detailed flow: `docs/superpowers-interop.md`.

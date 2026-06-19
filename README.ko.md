@@ -187,6 +187,17 @@ baseline(개념·명세·아키텍처·인프라) 전체는 **사용자 전속**
 
 자세한 설계: `docs/specs/2026-06-18-conceptpowers-design.md`.
 
+### 지식 그래프
+
+뷰어의 `#/graph` 라우트는 **개념 · 기능 · 코드** 관계를 하나의 인터랙티브 그래프로 보여준다. `manifest.json`의 `graph` 블록에서 만들어진다(데이터는 `src/viewer/graph.ts`, 렌더는 `assets/viewer.js`):
+
+- **노드 3종**, 범례로 색을 구분한다: *개념(concept)*, *기능(feature)*, *파일(file, 코드 경로)*. 개념·기능 노드는 크게, 파일 노드는 작은 말단 점으로 그린다.
+- **엣지는 방향이 있고 세 종류**다 — `기능 → 개념`(그 기능이 개념을 구현), `기능 → 파일`(기능의 구현 경로), `개념 → 파일`(개념의 `codeLinks` 또는 `mapping.json`에 잡힌 `@concept:` 태그로 연결된 코드). 기능과 개념이 같은 파일을 가리키면 파일 노드는 하나로 합쳐져 개념·기능·코드가 한곳에서 만난다. 존재하지 않는 개념으로 향하는 엣지는 버려진다.
+- **레이아웃**은 의존성 0의 force-directed SVG 시뮬레이션이다 — 노드 반발 + 엣지 스프링 + 중심으로의 약한 인력으로 자리를 잡아간다. 다른 화면으로 이동하면 애니메이션 루프는 즉시 멈춘다.
+- **상호작용:** 노드를 드래그하면 위치가 고정되고, *개념*·*기능* 노드를 클릭하면 상세로 이동한다(`#/concept/:slug`, `#/feature/:slug`). *파일* 노드는 상세 페이지가 없는 말단이라, hover 시 전체 경로를 툴팁으로 보여준다.
+
+그래프는 데이터 기반이며 `render` / `update-mapping`마다 다시 만들어지므로, 항상 현재의 개념·기능·`@concept` ↔ 코드 링크를 반영한다.
+
 ### superpowers와 함께 쓰기
 
 Conceptpowers는 [superpowers](https://github.com/obra/superpowers)와 충돌 없이 보완한다. superpowers가 개발 *프로세스*(아이디어 → 스펙 → 계획 → TDD)를 이끌고, Conceptpowers가 개념 정의/검증 *게이트*를 더한다. 자세한 흐름: `docs/superpowers-interop.md`.
