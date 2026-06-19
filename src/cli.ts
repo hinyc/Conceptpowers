@@ -4,6 +4,8 @@ import { renderViewerToDisk } from "./viewer/render.js";
 import { buildMapping, writeMappingCache } from "./mapping/scan.js";
 import { auditIntegrity } from "./audit/audit.js";
 import { approveConcept } from "./concept/approve.js";
+import { computeDrift } from "./drift/detect.js";
+import { noteChange } from "./drift/note.js";
 
 type Out = (s: string) => void;
 
@@ -30,7 +32,10 @@ export async function runCli(
     .command("status")
     .option("--root <dir>", "project root", process.cwd())
     .action(async (o) => {
-      out(JSON.stringify({ initialized: await isInitialized(o.root) }));
+      out(JSON.stringify({
+        initialized: await isInitialized(o.root),
+        drift: (await computeDrift(o.root)).length,
+      }));
     });
 
   program
@@ -65,6 +70,22 @@ export async function runCli(
       const r = await auditIntegrity(o.root, files);
       out(JSON.stringify(r));
       if (!r.ok) code = 1;
+    });
+
+  program
+    .command("drift")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (o) => {
+      out(JSON.stringify(await computeDrift(o.root)));
+    });
+
+  program
+    .command("note-change")
+    .option("--root <dir>", "project root", process.cwd())
+    .requiredOption("--reason <reason>", "why the concept changed")
+    .argument("<slug>")
+    .action(async (slug, o) => {
+      await noteChange(o.root, slug, o.reason);
     });
 
   try {

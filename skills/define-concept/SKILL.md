@@ -30,6 +30,8 @@ Write the concept content in the project's output language (the `locale` from `i
 7. Save as JSON (include the `status` field). Write the concept data file directly, then regenerate
    the viewer: `node "<cli>" render --root .`
 8. Guide the user to link the concept to code with a `@concept:<slug>` tag.
+9. If this **redefines an existing** concept (not a brand-new one), record why it changed so drift is
+   traceable: `node "<cli>" note-change <slug> --reason "<why it changed>" --root .`
 
 ## Outputs
 

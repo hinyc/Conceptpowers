@@ -3065,7 +3065,10 @@ function cpPaths(root) {
     architecture: join(base, "architecture"),
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
-    cssTarget: join(base, "concepts", "viewer", "assets", "concept.css")
+    cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    alignmentDir: join(base, "concepts", ".alignment"),
+    alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    alignmentHistory: join(base, "concepts", ".alignment", "history.json")
   };
 }
 
@@ -7698,6 +7701,13 @@ async function writeMappingCache(root, mapping) {
   await mkdir5(dirname4(target), { recursive: true });
   await writeFile6(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
+async function readMappingCache(root) {
+  try {
+    return JSON.parse(await readFile6(cpPaths(root).mappingCache, "utf8"));
+  } catch {
+    return {};
+  }
+}
 
 // src/audit/audit.ts
 async function auditIntegrity(root, files) {
@@ -7733,6 +7743,106 @@ async function approveConcept(root, slug3) {
   return setConceptStatus(root, slug3, "green");
 }
 
+// src/drift/lock.ts
+import { readFile as readFile7, writeFile as writeFile7, mkdir as mkdir6 } from "node:fs/promises";
+
+// src/schema/alignment.ts
+var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
+var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
+var HistoryEntry = external_exports.object({
+  slug: external_exports.string(),
+  hash: external_exports.string(),
+  prevHash: external_exports.string().default(""),
+  reason: external_exports.string().default(""),
+  at: external_exports.string(),
+  ignored: external_exports.boolean().default(false)
+});
+var History = external_exports.array(HistoryEntry);
+
+// src/drift/lock.ts
+async function readLock(root) {
+  try {
+    return AlignmentLock.parse(JSON.parse(await readFile7(cpPaths(root).alignmentLock, "utf8")));
+  } catch {
+    return {};
+  }
+}
+
+// src/drift/history.ts
+import { readFile as readFile8, writeFile as writeFile8, mkdir as mkdir7 } from "node:fs/promises";
+import { dirname as dirname5 } from "node:path";
+async function readHistory(root) {
+  try {
+    return History.parse(JSON.parse(await readFile8(cpPaths(root).alignmentHistory, "utf8")));
+  } catch {
+    return [];
+  }
+}
+async function appendHistory(root, input) {
+  const existing = await readHistory(root);
+  const prev = [...existing].reverse().find((e) => e.slug === input.slug);
+  const entry = HistoryEntry.parse({
+    slug: input.slug,
+    hash: input.hash,
+    prevHash: prev?.hash ?? "",
+    reason: input.reason ?? "",
+    ignored: input.ignored ?? false,
+    at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
+  });
+  const next = [...existing, entry];
+  const target = cpPaths(root).alignmentHistory;
+  await mkdir7(dirname5(target), { recursive: true });
+  await writeFile8(target, JSON.stringify(next, null, 2) + "\n", "utf8");
+  return entry;
+}
+
+// src/drift/hash.ts
+import { createHash } from "node:crypto";
+function contractHash(c) {
+  const contract = {
+    definition: c.description.definition,
+    components: c.description.components,
+    allow: c.actions.allow,
+    restrict: c.actions.restrict,
+    interaction: c.actions.interaction,
+    immutableRules: c.principle.immutableRules,
+    lifecycle: c.principle.lifecycle,
+    reason: c.purpose.reason
+  };
+  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+}
+
+// src/drift/detect.ts
+async function computeDrift(root) {
+  const [concepts, features, mapping, lock, history] = await Promise.all([
+    listConcepts(root),
+    listFeatures(root),
+    readMappingCache(root),
+    readLock(root),
+    readHistory(root)
+  ]);
+  const items = [];
+  for (const c of concepts) {
+    const locked = lock[c.slug]?.hash;
+    if (locked === void 0) continue;
+    const current = contractHash(c);
+    if (locked === current) continue;
+    const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
+    const fromTags = mapping[c.slug] ?? [];
+    const relatedPaths = [.../* @__PURE__ */ new Set([...fromTags, ...fromFeatures])];
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
+  }
+  return items;
+}
+
+// src/drift/note.ts
+async function noteChange(root, slug3, reason, at) {
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason, at });
+}
+
 // src/cli.ts
 async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
@@ -7743,7 +7853,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     if (o.mode === "strict") await renderViewerToDisk(o.root);
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    out(JSON.stringify({ initialized: await isInitialized(o.root) }));
+    out(JSON.stringify({
+      initialized: await isInitialized(o.root),
+      drift: (await computeDrift(o.root)).length
+    }));
   });
   program2.command("render").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     await renderViewerToDisk(o.root);
@@ -7759,6 +7872,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     const r = await auditIntegrity(o.root, files);
     out(JSON.stringify(r));
     if (!r.ok) code = 1;
+  });
+  program2.command("drift").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    out(JSON.stringify(await computeDrift(o.root)));
+  });
+  program2.command("note-change").option("--root <dir>", "project root", process.cwd()).requiredOption("--reason <reason>", "why the concept changed").argument("<slug>").action(async (slug3, o) => {
+    await noteChange(o.root, slug3, o.reason);
   });
   try {
     await program2.parseAsync(argv, { from: "user" });

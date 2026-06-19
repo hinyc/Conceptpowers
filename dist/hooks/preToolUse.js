@@ -12,7 +12,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
+import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -28,7 +28,10 @@ function cpPaths(root) {
     architecture: join(base, "architecture"),
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
-    cssTarget: join(base, "concepts", "viewer", "assets", "concept.css")
+    cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    alignmentDir: join(base, "concepts", ".alignment"),
+    alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    alignmentHistory: join(base, "concepts", ".alignment", "history.json")
   };
 }
 
@@ -4164,6 +4167,10 @@ async function listConcepts(root) {
   return concepts;
 }
 
+// src/store/featureStore.ts
+import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
+import { join as join3, dirname as dirname2 } from "node:path";
+
 // src/schema/feature.ts
 var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
 var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
@@ -4175,6 +4182,38 @@ var FeatureSchema = external_exports.object({
   concepts: external_exports.array(slug2).default([]),
   codePaths: external_exports.array(external_exports.string()).default([])
 });
+function parseFeature(input) {
+  return FeatureSchema.parse(input);
+}
+
+// src/store/featureStore.ts
+async function walkJson2(dir) {
+  let entries;
+  try {
+    entries = await readdir2(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    const full = join3(dir, e.name);
+    if (e.isDirectory()) out.push(...await walkJson2(full));
+    else if (e.name.endsWith(".json")) out.push(full);
+  }
+  return out;
+}
+async function listFeatures(root) {
+  const files = await walkJson2(cpPaths(root).features);
+  const features = [];
+  for (const file of files) {
+    try {
+      features.push(parseFeature(JSON.parse(await readFile2(file, "utf8"))));
+    } catch (error) {
+      throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
+    }
+  }
+  return features;
+}
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
@@ -4187,15 +4226,15 @@ async function isInitialized(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile2, mkdir as mkdir3, writeFile as writeFile3 } from "node:fs/promises";
-import { join as join3, dirname as dirname2 } from "node:path";
+import { readFile as readFile3, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { join as join4, dirname as dirname3 } from "node:path";
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 async function scanTags(root, files) {
   const result = {};
   for (const rel of files) {
     let content;
     try {
-      content = await readFile2(join3(root, rel), "utf8");
+      content = await readFile3(join4(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -4204,6 +4243,13 @@ async function scanTags(root, files) {
     if (slugs.length) result[rel] = slugs;
   }
   return result;
+}
+async function readMappingCache(root) {
+  try {
+    return JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8"));
+  } catch {
+    return {};
+  }
 }
 
 // src/audit/audit.ts
@@ -4226,6 +4272,81 @@ async function auditIntegrity(root, files) {
     unapproved: [...red],
     unapprovedRefs: [...refRed]
   };
+}
+
+// src/drift/lock.ts
+import { readFile as readFile4, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
+
+// src/schema/alignment.ts
+var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
+var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
+var HistoryEntry = external_exports.object({
+  slug: external_exports.string(),
+  hash: external_exports.string(),
+  prevHash: external_exports.string().default(""),
+  reason: external_exports.string().default(""),
+  at: external_exports.string(),
+  ignored: external_exports.boolean().default(false)
+});
+var History = external_exports.array(HistoryEntry);
+
+// src/drift/lock.ts
+async function readLock(root) {
+  try {
+    return AlignmentLock.parse(JSON.parse(await readFile4(cpPaths(root).alignmentLock, "utf8")));
+  } catch {
+    return {};
+  }
+}
+
+// src/drift/history.ts
+import { readFile as readFile5, writeFile as writeFile6, mkdir as mkdir6 } from "node:fs/promises";
+async function readHistory(root) {
+  try {
+    return History.parse(JSON.parse(await readFile5(cpPaths(root).alignmentHistory, "utf8")));
+  } catch {
+    return [];
+  }
+}
+
+// src/drift/hash.ts
+import { createHash } from "node:crypto";
+function contractHash(c) {
+  const contract = {
+    definition: c.description.definition,
+    components: c.description.components,
+    allow: c.actions.allow,
+    restrict: c.actions.restrict,
+    interaction: c.actions.interaction,
+    immutableRules: c.principle.immutableRules,
+    lifecycle: c.principle.lifecycle,
+    reason: c.purpose.reason
+  };
+  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+}
+
+// src/drift/detect.ts
+async function computeDrift(root) {
+  const [concepts, features, mapping, lock, history] = await Promise.all([
+    listConcepts(root),
+    listFeatures(root),
+    readMappingCache(root),
+    readLock(root),
+    readHistory(root)
+  ]);
+  const items = [];
+  for (const c of concepts) {
+    const locked = lock[c.slug]?.hash;
+    if (locked === void 0) continue;
+    const current = contractHash(c);
+    if (locked === current) continue;
+    const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
+    const fromTags = mapping[c.slug] ?? [];
+    const relatedPaths = [.../* @__PURE__ */ new Set([...fromTags, ...fromFeatures])];
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
+  }
+  return items;
 }
 
 // src/hooks/preToolUse.ts
@@ -4253,8 +4374,27 @@ async function decidePreToolUse(root, ev) {
       return {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
-          permissionDecision: "deny",
-          permissionDecisionReason: `Commit blocked: undefined concept tag(s) \u2014 ${detail}. Define the concept (define-concept) or fix the tag.`
+          permissionDecision: "ask",
+          permissionDecisionReason: `\u26A0\uFE0F \uC815\uC758\uB418\uC9C0 \uC54A\uC740 \uAC1C\uB150 \uD0DC\uADF8 \u2014 ${detail}. define-concept\uB85C \uAC1C\uB150\uC744 \uC815\uC758\uD558\uAC70\uB098 \uD0DC\uADF8\uB97C \uACE0\uCE58\uC138\uC694. \uADF8\uB798\uB3C4 \uCEE4\uBC0B\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?`
+        }
+      };
+    }
+    const drift = await computeDrift(root);
+    const staged = new Set(files);
+    const lagging = drift.filter(
+      (d) => d.relatedPaths.length > 0 && !d.relatedPaths.every((p) => staged.has(p))
+    );
+    if (lagging.length > 0) {
+      const detail = lagging.map((d) => {
+        const missing = d.relatedPaths.filter((p) => !staged.has(p)).join(", ");
+        return `${d.slug}${d.reason ? ` (\uC774\uC720: ${d.reason})` : ""} \u2192 \uBBF8\uBC18\uC601 \uCF54\uB4DC: ${missing}`;
+      }).join(" / ");
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "ask",
+          permissionDecisionReason: `\u26A0\uFE0F CONCEPT DRIFT \u2014 ${detail}. \uAC1C\uB150\uC774 \uBC14\uB00C\uC5C8\uB294\uB370 \uAD00\uB828 \uCF54\uB4DC\uAC00 \uC774\uBC88 \uCEE4\uBC0B\uC5D0 \uC548 \uB530\uB77C\uC654\uC2B5\uB2C8\uB2E4. \uCF54\uB4DC\uB97C \uD568\uAED8 \uC218\uC815\uD558\uAC70\uB098, \uADF8\uB798\uB3C4 \uC9C4\uD589\uD558\uB824\uBA74 \uCEE4\uBC0B\uD558\uC138\uC694(\uAC15\uD589 \uC2DC [Drift Ignored]\uB85C \uAE30\uB85D\uB428).`,
+          additionalContext: "Concept drift detected: listed concepts changed since last alignment but their related code is not staged. Run conceptpowers:check-concept to update the code, or override (the commit will be allowed and recorded as drift-ignored on the next reconcile)."
         }
       };
     }

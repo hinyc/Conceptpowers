@@ -37,7 +37,7 @@ async function run() {
         ].join('\n'),
       },
     })
-    console.log('빌드 완료: dist/{cli,hooks/sessionStart,hooks/preToolUse}.js')
+    console.log('빌드 완료: dist/{cli,hooks/sessionStart,hooks/preToolUse,hooks/postToolUse}.js')
   } catch (error) {
     console.error('빌드 실패:', error)
     process.exit(1)

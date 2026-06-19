@@ -7,8 +7,9 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// src/hooks/sessionStart.ts
-import { join as join4 } from "node:path";
+// src/hooks/postToolUse.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -4087,12 +4088,6 @@ var InitConfigSchema = external_exports.object({
   approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
-function parseInitConfig(input) {
-  return InitConfigSchema.parse(input);
-}
-
-// src/i18n/messages.ts
-var localeLabel = { ko: "Korean", en: "English" };
 
 // src/store/conceptStore.ts
 import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
@@ -4220,17 +4215,6 @@ async function listFeatures(root) {
   return features;
 }
 
-// src/init/readConfig.ts
-import { readFile as readFile3 } from "node:fs/promises";
-async function readInitConfig(root) {
-  try {
-    const raw = await readFile3(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
@@ -4241,18 +4225,9 @@ async function isInitialized(root) {
   }
 }
 
-// src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
-async function readMappingCache(root) {
-  try {
-    return JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
 // src/drift/lock.ts
-import { readFile as readFile5, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
+import { readFile as readFile3, writeFile as writeFile4, mkdir as mkdir4 } from "node:fs/promises";
+import { dirname as dirname3 } from "node:path";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4270,19 +4245,52 @@ var History = external_exports.array(HistoryEntry);
 // src/drift/lock.ts
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile5(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile3(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
+async function writeLock(root, lock) {
+  const target = cpPaths(root).alignmentLock;
+  await mkdir4(dirname3(target), { recursive: true });
+  await writeFile4(target, JSON.stringify(lock, null, 2) + "\n", "utf8");
+}
 
 // src/drift/history.ts
-import { readFile as readFile6, writeFile as writeFile6, mkdir as mkdir6 } from "node:fs/promises";
+import { readFile as readFile4, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
+import { dirname as dirname4 } from "node:path";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile6(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile4(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
+  }
+}
+async function appendHistory(root, input) {
+  const existing = await readHistory(root);
+  const prev = [...existing].reverse().find((e) => e.slug === input.slug);
+  const entry = HistoryEntry.parse({
+    slug: input.slug,
+    hash: input.hash,
+    prevHash: prev?.hash ?? "",
+    reason: input.reason ?? "",
+    ignored: input.ignored ?? false,
+    at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
+  });
+  const next = [...existing, entry];
+  const target = cpPaths(root).alignmentHistory;
+  await mkdir5(dirname4(target), { recursive: true });
+  await writeFile5(target, JSON.stringify(next, null, 2) + "\n", "utf8");
+  return entry;
+}
+
+// src/mapping/scan.ts
+import { readFile as readFile5, mkdir as mkdir6, writeFile as writeFile6 } from "node:fs/promises";
+async function readMappingCache(root) {
+  try {
+    return JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8"));
+  } catch {
+    return {};
   }
 }
 
@@ -4326,57 +4334,86 @@ async function computeDrift(root) {
   return items;
 }
 
-// src/hooks/sessionStart.ts
-async function buildSessionStartOutput(root, pluginRoot) {
-  if (!await isInitialized(root)) return null;
-  const cli = join4(pluginRoot, "dist", "cli.js");
-  const config = await readInitConfig(root);
-  const locale = config?.locale ?? "ko";
-  const approvalMode = config?.approvalMode ?? "manual";
-  const reds = (await listConcepts(root)).filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
-  const pendingLine = reds.length > 0 ? `- Pending approval (status=red, ${reds.length}): ${reds.join(", ")}. These concepts are auto/unconfirmed; guide the user to review and approve them.` : "- All defined concepts are approved (status=green).";
-  const context = [
-    "<CONCEPTPOWERS-ACTIVE>",
-    "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
-    "Rules:",
-    "- Before adding a feature or changing behavior, verify related concepts with the conceptpowers:check-concept skill.",
-    "- If no related concept exists, define it first with conceptpowers:define-concept.",
-    "- On a violation, do not modify code; ask the user to update the concept or split the feature.",
-    "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
-    `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
-    `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
-    `- Concept approval: status is green(approved)/red(unapproved). approvalMode='${approvalMode}'. In 'manual' mode you MUST NOT change a concept's status \u2014 the user edits it directly (or sets approvalMode='cli' to allow the conceptpowers:approve flow). Never auto-approve.`,
-    pendingLine,
-    "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
-    "</CONCEPTPOWERS-ACTIVE>"
-  ].join("\n");
-  const drift = await computeDrift(root);
-  const driftBlock = drift.length > 0 ? "\n" + [
-    "<CONCEPT-DRIFT>",
-    "These concepts changed since their code was last aligned. Their related code may need updating:",
-    ...drift.map(
-      (d) => `- ${d.slug}${d.reason ? ` (\uC774\uC720: ${d.reason})` : ""} \u2192 related code: ${d.relatedPaths.length ? d.relatedPaths.join(", ") : "(none yet)"}`
-    ),
-    "Guide the user to update the related code (or the concept) so they re-align; run conceptpowers:check-concept.",
-    "</CONCEPT-DRIFT>"
-  ].join("\n") : "";
-  return {
-    hookSpecificOutput: {
-      hookEventName: "SessionStart",
-      additionalContext: context + driftBlock
+// src/drift/reconcile.ts
+async function reconcileAfterCommit(root, committedFiles2, at) {
+  const stamp = at ?? (/* @__PURE__ */ new Date()).toISOString();
+  const committed = new Set(committedFiles2);
+  const [concepts, lock, drift] = await Promise.all([
+    listConcepts(root),
+    readLock(root),
+    computeDrift(root)
+  ]);
+  const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
+  const nextLock = { ...lock };
+  const aligned = [];
+  const ignored = [];
+  for (const c of concepts) {
+    const d = driftBySlug.get(c.slug);
+    if (d) {
+      const followed = d.relatedPaths.length === 0 || d.relatedPaths.every((p) => committed.has(p));
+      if (followed) {
+        aligned.push(c.slug);
+      } else {
+        ignored.push(c.slug);
+        await appendHistory(root, {
+          slug: c.slug,
+          hash: d.currentHash,
+          reason: d.reason,
+          ignored: true,
+          at: stamp
+        });
+      }
+      nextLock[c.slug] = { hash: d.currentHash, at: stamp };
+    } else if (lock[c.slug] === void 0) {
+      nextLock[c.slug] = { hash: contractHash(c), at: stamp };
     }
-  };
+  }
+  await writeLock(root, nextLock);
+  return { aligned, ignored };
+}
+
+// src/hooks/postToolUse.ts
+var execFileAsync = promisify(execFile);
+var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
+async function committedFiles(root) {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["--no-pager", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
+      { cwd: root }
+    );
+    return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+async function runPostToolUse(root, ev) {
+  if (!await isInitialized(root)) return null;
+  if (!(ev.tool === "Bash" && isGitCommit(ev.input.command))) return null;
+  const files = ev.committedFiles ?? await committedFiles(root);
+  try {
+    return await reconcileAfterCommit(root, files);
+  } catch {
+    return null;
+  }
 }
 var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  const root = process.cwd();
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join4(process.cwd());
-  buildSessionStartOutput(root, pluginRoot).then((o) => {
-    if (o) process.stdout.write(JSON.stringify(o));
+  let raw = "";
+  process.stdin.on("data", (c) => raw += c);
+  process.stdin.on("end", async () => {
+    try {
+      const payload = JSON.parse(raw || "{}");
+      await runPostToolUse(process.cwd(), {
+        tool: payload.tool_name,
+        input: payload.tool_input ?? {}
+      });
+    } catch {
+    }
     process.exit(0);
   });
 }
 export {
-  buildSessionStartOutput
+  runPostToolUse
 };
-//# sourceMappingURL=sessionStart.js.map
+//# sourceMappingURL=postToolUse.js.map

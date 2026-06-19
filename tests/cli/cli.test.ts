@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runCli } from "../../src/cli.js";
 import { writeConcept, readConcept } from "../../src/store/conceptStore.js";
+import { readHistory } from "../../src/drift/history.js";
 
 let root: string;
 beforeEach(() => {
@@ -56,5 +57,28 @@ describe("runCli", () => {
     const code = await runCli(["approve", "--root", root, "admin-role"], (s) => out.push(s));
     expect(code).toBe(1);
     expect((await readConcept(root, "admin-role"))?.status).toBe("red"); // 변경 없음
+  });
+  it("status는 drift 개수를 포함한다", async () => {
+    let captured = "";
+    await runCli(["init", "--root", root], () => {});
+    const code = await runCli(["status", "--root", root], (s) => (captured += s));
+    expect(code).toBe(0);
+    expect(JSON.parse(captured)).toMatchObject({ initialized: true, drift: 0 });
+  });
+  it("note-change는 history에 이유를 기록한다", async () => {
+    await runCli(["init", "--root", root], () => {});
+    await writeConcept(root, {
+      slug: "auth-token", category: ["behavior"], title: "A",
+      description: { definition: "d" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    await runCli(["note-change", "auth-token", "--reason", "만료 30분", "--root", root], () => {});
+    const h = await readHistory(root);
+    expect(h.some((e) => e.slug === "auth-token" && e.reason === "만료 30분")).toBe(true);
+  });
+  it("drift는 JSON 배열을 출력한다", async () => {
+    let captured = "";
+    await runCli(["init", "--root", root], () => {});
+    await runCli(["drift", "--root", root], (s) => (captured += s));
+    expect(JSON.parse(captured)).toEqual([]);
   });
 });

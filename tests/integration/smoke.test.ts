@@ -48,6 +48,7 @@ describe("end-to-end", () => {
       input: { command: "git commit -m x" },
       changedFiles: ["src/b.ts"],
     });
-    expect(blocked!.hookSpecificOutput.permissionDecision).toBe("deny");
+    // 미정의 태그는 막되 override 허용(ask) — 강제된 내비게이션
+    expect(blocked!.hookSpecificOutput.permissionDecision).toBe("ask");
   });
 });
