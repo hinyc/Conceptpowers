@@ -17,7 +17,7 @@ export interface GraphNode {
 export interface GraphEdge {
   source: string
   target: string
-  kind: 'feature-concept' | 'feature-file'
+  kind: 'feature-concept' | 'feature-file' | 'concept-file'
 }
 
 export interface GraphData {
@@ -29,8 +29,16 @@ export interface GraphData {
 const conceptHref = (c: Concept) => `#/concept/${c.slug}`
 const featureHref = (f: Feature) => `#/feature/${f.slug}`
 const baseName = (p: string) => p.split('/').filter(Boolean).pop() ?? p
+const own = (o: Record<string, string[]>, k: string) =>
+  Object.prototype.hasOwnProperty.call(o, k) ? o[k] : []
 
-export function buildGraphData(concepts: Concept[], features: Feature[]): GraphData {
+// codeLinksBySlug: @concept 매핑 캐시(mapping.json) 등 개념→코드 경로의 외부 출처.
+// 개념 자신의 codeLinks와 합쳐 "개념→파일" 연결을 만든다(파일 노드는 기능과 공유·중복 제거).
+export function buildGraphData(
+  concepts: Concept[],
+  features: Feature[],
+  codeLinksBySlug: Record<string, string[]> = {},
+): GraphData {
   const conceptSlugs = new Set(concepts.map((c) => c.slug))
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
@@ -40,9 +48,16 @@ export function buildGraphData(concepts: Concept[], features: Feature[]): GraphD
     seen.add(n.id)
     nodes.push(n)
   }
+  const addFile = (path: string) =>
+    add({ id: `p:${path}`, label: baseName(path), type: 'file', href: '', title: path })
 
   for (const c of concepts) {
     add({ id: `c:${c.slug}`, label: c.title, type: 'concept', href: conceptHref(c), title: c.slug })
+    const links = [...new Set([...(c.codeLinks ?? []), ...own(codeLinksBySlug, c.slug)])]
+    for (const path of links) {
+      addFile(path)
+      edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: 'concept-file' })
+    }
   }
   for (const f of features) {
     add({ id: `f:${f.slug}`, label: f.title, type: 'feature', href: featureHref(f), title: f.slug })
@@ -51,9 +66,8 @@ export function buildGraphData(concepts: Concept[], features: Feature[]): GraphD
       edges.push({ source: `f:${f.slug}`, target: `c:${slug}`, kind: 'feature-concept' })
     }
     for (const path of f.codePaths) {
-      const id = `p:${path}`
-      add({ id, label: baseName(path), type: 'file', href: '', title: path })
-      edges.push({ source: `f:${f.slug}`, target: id, kind: 'feature-file' })
+      addFile(path)
+      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: 'feature-file' })
     }
   }
   return { nodes, edges }

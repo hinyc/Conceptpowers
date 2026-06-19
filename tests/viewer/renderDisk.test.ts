@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { renderViewerToDisk } from '../../src/viewer/render.js'
 import { writeConcept } from '../../src/store/conceptStore.js'
 import { writeFeature } from '../../src/store/featureStore.js'
+import { writeMappingCache } from '../../src/mapping/scan.js'
 
 let root: string
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'cp-')) })
@@ -40,6 +41,20 @@ it('manifest.json에 개념/기능의 원본 JSON URL과 그래프가 담긴다'
   expect(m.concepts[0].url).toBe('../data/auth/admin-role.json')
   expect(m.features[0].url).toBe('../../features/login.json')
   expect(m.graph.edges.some((e: { target: string }) => e.target === 'c:admin-role')).toBe(true)
+})
+
+it('mapping.json(@concept→코드)이 개념→파일 그래프 엣지와 codeLinks로 반영된다', async () => {
+  await writeConcept(root, {
+    slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin Role',
+    description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}
+  })
+  await writeMappingCache(root, { 'admin-role': ['src/admin.ts'] })
+  await renderViewerToDisk(root)
+  const m = JSON.parse(readFileSync(viewer('manifest.json'), 'utf8'))
+  expect(m.concepts[0].codeLinks).toContain('src/admin.ts')
+  expect(m.graph.edges.some((e: { source: string; target: string; kind: string }) =>
+    e.source === 'c:admin-role' && e.target === 'p:src/admin.ts' && e.kind === 'concept-file'
+  )).toBe(true)
 })
 
 it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {

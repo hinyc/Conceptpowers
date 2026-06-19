@@ -154,6 +154,7 @@ function viewConcept(slug) {
   var t = state.t
   fetchJson(entry.url).then(function (c) {
     var related = relatedFeatures(slug)
+    var codeLinks = entry.codeLinks || []
     var sections = [
       h('header', { class: 'hero' }, [
         c.eyebrow ? h('span', { class: 'hero__eyebrow' }, c.eyebrow) : null,
@@ -184,6 +185,14 @@ function viewConcept(slug) {
             h('h2', null, t.relatedFeatures),
             h('ul', { class: 'links' }, related.map(function (f) {
               return h('li', null, h('a', { href: '#/feature/' + f.slug }, f.title))
+            }))
+          ])
+        : null,
+      codeLinks.length
+        ? h('section', { class: 'section' }, [
+            h('h2', null, t.implementationPaths),
+            h('ul', { class: 'paths' }, codeLinks.map(function (p) {
+              return h('li', null, h('code', null, p))
             }))
           ])
         : null,

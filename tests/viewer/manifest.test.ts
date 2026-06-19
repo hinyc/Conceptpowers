@@ -42,4 +42,14 @@ describe('buildManifest', () => {
       url: '../../features/flows/login.json'
     })
   })
+  it('개념 엔트리는 codeLinks(concept.codeLinks ∪ mapping)를 담는다', () => {
+    const c = { ...concept('auth'), codeLinks: ['src/a.ts'] } as Concept
+    const m = buildManifest([c], [], 'ko', { auth: ['src/b.ts'] })
+    expect(m.concepts[0].codeLinks.sort()).toEqual(['src/a.ts', 'src/b.ts'])
+  })
+  it('mapping이 없으면 codeLinks는 concept.codeLinks만 담는다', () => {
+    const c = { ...concept('auth'), codeLinks: ['src/a.ts'] } as Concept
+    const m = buildManifest([c], [], 'ko')
+    expect(m.concepts[0].codeLinks).toEqual(['src/a.ts'])
+  })
 })

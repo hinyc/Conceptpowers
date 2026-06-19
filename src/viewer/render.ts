@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { buildManifest } from './manifest.js'
 import { listConcepts } from '../store/conceptStore.js'
 import { listFeatures } from '../store/featureStore.js'
+import { readMappingCache } from '../mapping/scan.js'
 import { readInitConfig } from '../init/readConfig.js'
 import { cpPaths } from '../paths.js'
 
@@ -34,13 +35,14 @@ async function copyAsset(name: string, target: string): Promise<void> {
 export async function renderViewerToDisk(root: string): Promise<void> {
   const concepts = await listConcepts(root)
   const features = await listFeatures(root)
+  const mapping = await readMappingCache(root)
   const locale = (await readInitConfig(root))?.locale ?? 'ko'
   const p = cpPaths(root)
 
   await mkdir(p.conceptsViewer, { recursive: true })
   await writeFile(
     join(p.conceptsViewer, 'manifest.json'),
-    JSON.stringify(buildManifest(concepts, features, locale), null, 2) + '\n',
+    JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + '\n',
     'utf8'
   )
 

@@ -14,6 +14,7 @@ export interface ConceptEntry {
   status: ConceptStatus
   category: ConceptCategory[]
   url: string
+  codeLinks: string[]
 }
 
 export interface FeatureEntry {
@@ -39,10 +40,17 @@ const conceptUrl = (c: Pick<Concept, 'group' | 'slug'>) =>
 const featureUrl = (f: Pick<Feature, 'group' | 'slug'>) =>
   `../../features/${f.group ? `${f.group}/` : ''}${f.slug}.json`
 
+// 개념의 표시용 코드 링크 = concept.codeLinks ∪ mapping.json(@concept 태그) 경로.
+const own = (o: Record<string, string[]>, k: string) =>
+  Object.prototype.hasOwnProperty.call(o, k) ? o[k] : []
+const mergeLinks = (c: Concept, codeLinksBySlug: Record<string, string[]>) =>
+  [...new Set([...(c.codeLinks ?? []), ...own(codeLinksBySlug, c.slug)])]
+
 export function buildManifest(
   concepts: Concept[],
   features: Feature[],
-  locale: Locale = 'ko'
+  locale: Locale = 'ko',
+  codeLinksBySlug: Record<string, string[]> = {}
 ): Manifest {
   return {
     version: 1,
@@ -53,7 +61,8 @@ export function buildManifest(
       title: c.title,
       status: c.status,
       category: c.category,
-      url: conceptUrl(c)
+      url: conceptUrl(c),
+      codeLinks: mergeLinks(c, codeLinksBySlug)
     })),
     features: features.map((f) => ({
       slug: f.slug,
@@ -62,6 +71,6 @@ export function buildManifest(
       codePathCount: f.codePaths.length,
       url: featureUrl(f)
     })),
-    graph: buildGraphData(concepts, features)
+    graph: buildGraphData(concepts, features, codeLinksBySlug)
   }
 }
