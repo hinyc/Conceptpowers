@@ -24,4 +24,15 @@ describe('approveConcept', () => {
     const c = await approveConcept(root, 'admin-role')
     expect(c.status).toBe('green')
   })
+  it('이미 green인 개념은 승인을 거부한다', async () => {
+    await writeConcept(root, { ...baseConcept, status: 'green' })
+    await expect(approveConcept(root, 'admin-role')).rejects.toThrow(/green/i)
+  })
+  it('pending 개념은 승인을 거부한다(approve는 red 전용)', async () => {
+    await writeConcept(root, { ...baseConcept, status: 'pending' })
+    await expect(approveConcept(root, 'admin-role')).rejects.toThrow(/pending|consistency/i)
+  })
+  it('없는 개념은 에러를 던진다', async () => {
+    await expect(approveConcept(root, 'ghost')).rejects.toThrow(/not found/i)
+  })
 })

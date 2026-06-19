@@ -4087,6 +4087,7 @@ var InitConfigSchema = external_exports.object({
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 
@@ -4256,7 +4257,8 @@ var HistoryEntry = external_exports.object({
   prevHash: external_exports.string().default(""),
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
-  ignored: external_exports.boolean().default(false)
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
 
@@ -4288,6 +4290,7 @@ function toEntry(input, prevHash) {
     prevHash,
     reason: input.reason ?? "",
     ignored: input.ignored ?? false,
+    aligned: input.aligned ?? false,
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
@@ -4356,7 +4359,7 @@ async function computeDrift(root) {
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
   return items;
@@ -4375,16 +4378,23 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   const nextLock = { ...lock };
   const aligned = [];
   const ignored = [];
-  const ignoredEntries = [];
+  const entries = [];
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
       const followed = d.relatedPaths.length === 0 || d.relatedPaths.map(normalizeRel).every((p) => committed.has(p));
       if (followed) {
         aligned.push(c.slug);
+        entries.push({
+          slug: c.slug,
+          hash: d.currentHash,
+          reason: d.reason,
+          aligned: true,
+          at: stamp
+        });
       } else {
         ignored.push(c.slug);
-        ignoredEntries.push({
+        entries.push({
           slug: c.slug,
           hash: d.currentHash,
           reason: d.reason,
@@ -4401,7 +4411,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   const cleaned = Object.fromEntries(
     Object.entries(nextLock).filter(([slug3]) => slugs.has(slug3))
   );
-  await appendHistoryMany(root, ignoredEntries);
+  await appendHistoryMany(root, entries);
   await writeLock(root, cleaned);
   return { aligned, ignored };
 }

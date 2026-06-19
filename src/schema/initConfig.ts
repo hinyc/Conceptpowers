@@ -9,6 +9,7 @@ export const InitConfigSchema = z.object({
   backfillMode: z.enum(['incremental', 'strict']).default('incremental'),
   enforceScope: z.literal('new-feature-behavior').default('new-feature-behavior'),
   locale: LocaleSchema.default('ko'),
+  versionCheck: z.boolean().default(true),
   project: z.object({ name: z.string().default(''), description: z.string().default('') }).default({})
 })
 export type InitConfig = z.infer<typeof InitConfigSchema>

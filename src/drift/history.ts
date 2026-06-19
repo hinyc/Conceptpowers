@@ -16,6 +16,7 @@ export interface HistoryInput {
   hash: string
   reason?: string
   ignored?: boolean
+  aligned?: boolean
   at?: string
 }
 
@@ -26,6 +27,7 @@ function toEntry(input: HistoryInput, prevHash: string): HistoryEntry {
     prevHash,
     reason: input.reason ?? '',
     ignored: input.ignored ?? false,
+    aligned: input.aligned ?? false,
     at: input.at ?? new Date().toISOString(),
   })
 }

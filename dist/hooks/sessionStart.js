@@ -8,7 +8,7 @@ var __export = (target, all) => {
 };
 
 // src/hooks/sessionStart.ts
-import { join as join4 } from "node:path";
+import { join as join5 } from "node:path";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -4085,6 +4085,7 @@ var InitConfigSchema = external_exports.object({
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -4266,7 +4267,8 @@ var HistoryEntry = external_exports.object({
   prevHash: external_exports.string().default(""),
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
-  ignored: external_exports.boolean().default(false)
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
 
@@ -4351,16 +4353,111 @@ async function computeDrift(root) {
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
+    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
   return items;
 }
 
+// src/version/checkUpdate.ts
+import { readFile as readFile7, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join as join4 } from "node:path";
+
+// src/version/compareSemver.ts
+var SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
+function parse(v) {
+  const m = SEMVER.exec(v);
+  if (!m) return null;
+  return [Number(m[1]), Number(m[2]), Number(m[3])];
+}
+function isNewer(remote, installed) {
+  const r = parse(remote);
+  const i = parse(installed);
+  if (!r || !i) return false;
+  for (let k = 0; k < 3; k++) {
+    if (r[k] > i[k]) return true;
+    if (r[k] < i[k]) return false;
+  }
+  return false;
+}
+
+// src/version/checkUpdate.ts
+var DEFAULT_URL = "https://raw.githubusercontent.com/hinyc/Conceptpowers/main/.claude-plugin/plugin.json";
+var DEFAULT_TTL = 864e5;
+var DEFAULT_TIMEOUT = 1500;
+var CACHE_FILE = "update-check.json";
+function defaultCacheDir() {
+  return process.env.CONCEPTPOWERS_CACHE_DIR ?? join4(homedir(), ".cache", "conceptpowers");
+}
+async function readInstalledVersion(pluginRoot) {
+  try {
+    const text = await readFile7(join4(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const v = JSON.parse(text)?.version;
+    return typeof v === "string" ? v : null;
+  } catch {
+    return null;
+  }
+}
+async function readCache(cacheDir) {
+  try {
+    const text = await readFile7(join4(cacheDir, CACHE_FILE), "utf8");
+    const data = JSON.parse(text);
+    if (typeof data?.checkedAt === "number" && typeof data?.latest === "string") {
+      return { checkedAt: data.checkedAt, latest: data.latest };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+async function writeCache(cacheDir, cache) {
+  try {
+    await mkdir5(cacheDir, { recursive: true });
+    await writeFile5(join4(cacheDir, CACHE_FILE), JSON.stringify(cache));
+  } catch {
+  }
+}
+async function fetchLatest(fetchImpl, url, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchImpl(url, { signal: controller.signal });
+    if (!res.ok) return null;
+    const v = (await res.json())?.version;
+    return typeof v === "string" ? v : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function checkForUpdate(pluginRoot, opts = {}) {
+  const installed = await readInstalledVersion(pluginRoot);
+  if (!installed) return null;
+  const now = opts.now ?? Date.now();
+  const ttlMs = opts.ttlMs ?? DEFAULT_TTL;
+  const cacheDir = opts.cacheDir ?? defaultCacheDir();
+  let latest = null;
+  const cached = await readCache(cacheDir);
+  if (cached && now - cached.checkedAt < ttlMs) {
+    latest = cached.latest;
+  } else {
+    latest = await fetchLatest(
+      opts.fetchImpl ?? fetch,
+      opts.url ?? DEFAULT_URL,
+      opts.timeoutMs ?? DEFAULT_TIMEOUT
+    );
+    if (latest) await writeCache(cacheDir, { checkedAt: now, latest });
+  }
+  if (!latest) return null;
+  return isNewer(latest, installed) ? { installed, latest } : null;
+}
+
 // src/hooks/sessionStart.ts
-async function buildSessionStartOutput(root, pluginRoot) {
+async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   if (!await isInitialized(root)) return null;
-  const cli = join4(pluginRoot, "dist", "cli.js");
+  const cli = join5(pluginRoot, "dist", "cli.js");
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
   const all = await listConcepts(root);
@@ -4400,17 +4497,37 @@ async function buildSessionStartOutput(root, pluginRoot) {
     "Guide the user to update the related code (or the concept) so they re-align; run conceptpowers:check-concept.",
     "</CONCEPT-DRIFT>"
   ].join("\n") : "";
+  let updateBlock = "";
+  const versionCheckOn = config?.versionCheck !== false && !process.env.CONCEPTPOWERS_NO_VERSION_CHECK;
+  if (versionCheckOn) {
+    try {
+      const check = deps.checkForUpdate ?? checkForUpdate;
+      const update = await check(pluginRoot);
+      if (update) {
+        updateBlock = "\n" + [
+          "<CONCEPTPOWERS-UPDATE>",
+          `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
+          "Tell the user once, in one concise line, that an update is available and how to apply it:",
+          "  /plugin marketplace update conceptpowers-dev",
+          "Updates are manual by design; do not nag repeatedly within this session.",
+          "</CONCEPTPOWERS-UPDATE>"
+        ].join("\n");
+      }
+    } catch {
+      updateBlock = "";
+    }
+  }
   return {
     hookSpecificOutput: {
       hookEventName: "SessionStart",
-      additionalContext: context + driftBlock
+      additionalContext: context + driftBlock + updateBlock
     }
   };
 }
 var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   const root = process.cwd();
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join4(process.cwd());
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join5(process.cwd());
   buildSessionStartOutput(root, pluginRoot).then((o) => {
     if (o) process.stdout.write(JSON.stringify(o));
     process.exit(0);

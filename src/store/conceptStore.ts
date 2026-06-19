@@ -56,7 +56,16 @@ export async function slugExists(root: string, slug: string): Promise<boolean> {
   return (await readConcept(root, slug)) !== null
 }
 
-// 개념의 승인 상태를 불변으로 갱신한다(읽기 → 새 객체 → 쓰기).
+// 허용 상태 전이(programmatic). green/red는 settled — 이 헬퍼로는 변경 불가.
+// red→green은 사람의 승인(approve), pending→green은 일관성 통과, pending→red는 거부.
+// (사용자가 직접 JSON을 다시 작성하는 writeConcept 경로는 이 가드의 대상이 아니다.)
+const ALLOWED_STATUS_TRANSITIONS: Record<ConceptStatus, readonly ConceptStatus[]> = {
+  red: ['red', 'green'],
+  pending: ['pending', 'green', 'red'],
+  green: ['green'],
+}
+
+// 개념의 승인 상태를 불변으로 갱신한다(읽기 → 전이 검증 → 새 객체 → 쓰기).
 // green으로 전환 시 pending 충돌 기록도 자동으로 정리한다.
 export async function setConceptStatus(
   root: string,
@@ -65,6 +74,13 @@ export async function setConceptStatus(
 ): Promise<Concept> {
   const concept = await readConcept(root, slug)
   if (!concept) throw new Error(`Concept not found: ${slug}`)
+  const from = concept.status
+  if (!ALLOWED_STATUS_TRANSITIONS[from].includes(status)) {
+    throw new Error(
+      `Illegal status transition: ${from} → ${status} (${slug}). ` +
+        `green/red are settled; only red→green (human approval) and pending→green/red are allowed.`,
+    )
+  }
   const updated = await writeConcept(root, { ...concept, status })
   if (status === 'green') await clearPendingConflict(root, slug)
   return updated

@@ -36,8 +36,9 @@ export async function computeDrift(root: string): Promise<DriftItem[]> {
       .flatMap((f) => f.codePaths)
     const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : []
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))]
+    // 사유는 '실제 변경' 기록에서만 가져온다(정렬 확인용 aligned, override용 ignored 제외).
     const reason =
-      [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? ''
+      [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? ''
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths })
   }
   return items

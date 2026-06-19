@@ -11,6 +11,7 @@ export const HistoryEntry = z.object({
   reason: z.string().max(1000).default(''),
   at: z.string(),
   ignored: z.boolean().default(false),
+  aligned: z.boolean().default(false),
 })
 export type HistoryEntry = z.infer<typeof HistoryEntry>
 

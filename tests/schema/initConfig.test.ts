@@ -21,5 +21,14 @@ describe('InitConfig', () => {
   it('알 수 없는 locale을 거부한다', () => {
     expect(() => parseInitConfig({ version: '0.1.0', enabled: true, locale: 'fr' })).toThrow()
   })
+})
 
+describe('versionCheck', () => {
+  const base = { version: '0.1.0', enabled: true } as const
+  it('누락 시 기본값 true', () => {
+    expect(parseInitConfig({ ...base }).versionCheck).toBe(true)
+  })
+  it('false로 명시하면 false', () => {
+    expect(parseInitConfig({ ...base, versionCheck: false }).versionCheck).toBe(false)
+  })
 })

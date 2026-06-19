@@ -41,4 +41,15 @@ describe('computeDrift', () => {
     expect(drift[0].reason).toBe('만료 단축')
     expect(drift[0].relatedPaths).toContain('src/login.ts')
   })
+  it('aligned 기록은 drift 사유로 쓰이지 않는다(가장 최근 실제 변경 사유를 쓴다)', async () => {
+    await writeConcept(root, concept())
+    const c1 = await readConcept(root, 'auth-token')
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } })
+    // 실제 변경 사유 → 그 뒤 정렬 기록(aligned). 정렬 기록이 더 최신이지만 사유로 쓰이면 안 된다.
+    await appendHistory(root, { slug: 'auth-token', hash: 'h-change', reason: '진짜 변경 사유', at: 't2' })
+    await appendHistory(root, { slug: 'auth-token', hash: 'h-aligned', reason: '정렬 기록', aligned: true, at: 't3' })
+    await writeConcept(root, concept({ description: { definition: 'v2-변경됨' } }))
+    const drift = await computeDrift(root)
+    expect(drift[0].reason).toBe('진짜 변경 사유')
+  })
 })

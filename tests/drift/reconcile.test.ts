@@ -35,6 +35,16 @@ describe('reconcileAfterCommit', () => {
     expect(r.ignored).toEqual([])
     expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!))
   })
+  it('관련 코드가 커밋에 포함되면 history에 aligned 기록(ignored=false, aligned=true)', async () => {
+    await makeDrift()
+    const c2 = await readConcept(root, 'auth-token')
+    await reconcileAfterCommit(root, ['src/login.ts'], 't2')
+    const h = await readHistory(root)
+    const e = h.find((x) => x.slug === 'auth-token')
+    expect(e?.aligned).toBe(true)
+    expect(e?.ignored).toBe(false)
+    expect(e?.hash).toBe(contractHash(c2!))
+  })
   it('관련 코드가 빠지면 ignored로 분류하고 history에 ignored 기록 + lock 갱신', async () => {
     await makeDrift()
     const r = await reconcileAfterCommit(root, ['README.md'], 't2')
