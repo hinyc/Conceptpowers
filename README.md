@@ -24,7 +24,7 @@ None of the usual tools fix this, because none of them *enforce intent*:
 Conceptpowers treats a **concept as a first-class, versioned contract** that sits *above* the code. Three principles:
 
 1. **Concept before code.** Define purpose, allowed/restricted actions, and immutable rules as structured data *first*; code is downstream and must conform.
-2. **The human owns the contract.** The agent may *propose* concepts (status 🔴 red); only a person *approves* them (🟢 green). Auto-approval is blocked by design — the source of truth is always what a human confirmed.
+2. **The human owns the contract by authoring it.** The agent may *draft* concepts — a user-authored draft starts 🟡 pending and becomes 🟢 green once a consistency check passes; a concept the agent *infers* without a human starts 🔴 red, and only a person promotes it. The agent never blesses a concept no human authored.
 3. **Guardrails that navigate, not walls that block.** Gates surface undefined concepts, unapproved concepts, and concept↔code drift at the exact moment of edit/commit, then ask you to decide — they neither silently reject nor silently wave changes through, and any override is recorded.
 
 ### What you gain
@@ -97,15 +97,16 @@ All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpo
 
 Every concept carries a **status** so you always know what the human has actually confirmed:
 
-- 🟢 **green** — user-approved. The source of truth.
-- 🔴 **red** — unapproved. Auto-inferred concepts (and conflicting ones) start here as *proposals*.
+- 🟢 **green** — verified source of truth (user-authored + consistency-checked).
+- 🟡 **pending** — user-authored via `define-concept`, not yet settled. Becomes green automatically
+  once a consistency check passes, or stays pending while a conflict remains.
+- 🔴 **red** — auto-inferred (no human author) or rejected. Only a human promotes it (red→green).
 
 The viewer shows a badge for each concept, and the commit gate surfaces an **emphasized warning** when staged changes touch a red concept — it never silently hard-blocks, but asks "commit anyway?".
 
-How a concept becomes green is controlled by `approvalMode` in `init.json`:
-
-- **manual** (default) — the agent must **never** flip status. You approve by editing `status` to `green` in the concept JSON. Auto-approval is blocked by design, so the final concept set is always yours.
-- **cli** — the `conceptpowers-approve` skill (or `approve <slug>`) may flip a concept to green *after* a consistency check.
+The agent may only **promote a user-authored pending to green** after a passing consistency check;
+it never demotes or changes a settled green/red. The human's control point is **authoring** the
+concept's content, not a separate approval toggle.
 
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
@@ -142,10 +143,10 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 | Skill | When it runs | What it produces |
 | --- | --- | --- |
 | `conceptpowers-init` | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists). |
-| `conceptpowers-define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON (status 🔴 red) saved after a consistency check. If it *redefines* an existing concept, also records the change reason via `note-change` so drift stays traceable. |
+| `conceptpowers-define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON born 🟡 pending; on a passing consistency check it becomes 🟢 green, otherwise it stays pending with the conflict reason recorded via `note-conflict`. (Auto-inferred concepts are 🔴 red.) |
 | `conceptpowers-check-concept` | **Before** writing or changing any code (tests included) that adds a feature or alters behavior. | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept) |
 | `conceptpowers-check-consistency` | **Whenever a concept is defined or changed**, and again **at the commit gate**. | A conflict report across *all* concepts — green wins over red, green↔green escalates to you. Passes only at zero conflicts. (concept ↔ concept) |
-| `conceptpowers-approve` | When the user **confirms** a 🔴 concept — allowed only in `approvalMode: cli`. | Flips status 🔴 → 🟢 *after* a consistency check, then re-renders the viewer. The agent never approves on its own. |
+| `conceptpowers-approve` | When the user **confirms** a 🔴 concept on explicit user request. | Promotes an auto-inferred 🔴 red concept to 🟢 green *after* a consistency check, then re-renders the viewer. The agent never approves on its own. |
 | `conceptpowers-update-mapping` | **After editing code**, to refresh the `@concept` links — or anytime, to resync. | Updated `@concept` tags (source of truth) + a rebuilt `.cache/mapping.json`. |
 | `conceptpowers-audit` | **Anytime**, for a whole-project sweep. | A list of concept-less gaps, broken `@concept` links, and unapproved 🔴 concepts, each with a recommended action. |
 | `conceptpowers-update-baseline` | **Only** when the user explicitly asks to edit the baseline. | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`. |
@@ -156,7 +157,7 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 
 ```
 docs/conceptpowers/
-├── init.json                       # activation marker + settings (locale, approvalMode, backfillMode)
+├── init.json                       # activation marker + settings (locale, backfillMode)
 ├── features/                       # feature specs
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data
