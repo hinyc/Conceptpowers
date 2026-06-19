@@ -4,6 +4,7 @@ import { readMappingCache } from '../mapping/scan.js'
 import { readLock } from './lock.js'
 import { readHistory } from './history.js'
 import { contractHash } from './hash.js'
+import { normalizeRel } from './safe.js'
 
 export interface DriftItem {
   slug: string
@@ -32,7 +33,7 @@ export async function computeDrift(root: string): Promise<DriftItem[]> {
       .filter((f) => f.concepts.includes(c.slug))
       .flatMap((f) => f.codePaths)
     const fromTags = mapping[c.slug] ?? []
-    const relatedPaths = [...new Set([...fromTags, ...fromFeatures])]
+    const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))]
     const reason =
       [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? ''
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths })

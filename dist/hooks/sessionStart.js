@@ -30,7 +30,8 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
-    alignmentHistory: join(base, "concepts", ".alignment", "history.json")
+    alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
   };
 }
 
@@ -4243,16 +4244,17 @@ async function isInitialized(root) {
 
 // src/mapping/scan.ts
 import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8"));
+    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/lock.ts
-import { readFile as readFile5, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
+import { readFile as readFile5 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4261,7 +4263,7 @@ var HistoryEntry = external_exports.object({
   slug: external_exports.string(),
   hash: external_exports.string(),
   prevHash: external_exports.string().default(""),
-  reason: external_exports.string().default(""),
+  reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false)
 });
@@ -4277,7 +4279,7 @@ async function readLock(root) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile6, writeFile as writeFile6, mkdir as mkdir6 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile6(cpPaths(root).alignmentHistory, "utf8")));
@@ -4302,6 +4304,14 @@ function contractHash(c) {
   return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
 }
 
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+function sanitizeText(s, max = 200) {
+  return s.replace(/[ -]+/g, " ").replace(/[<>]/g, "").trim().slice(0, max);
+}
+
 // src/drift/detect.ts
 async function computeDrift(root) {
   const [concepts, features, mapping, lock, history] = await Promise.all([
@@ -4319,7 +4329,7 @@ async function computeDrift(root) {
     if (locked === current) continue;
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = mapping[c.slug] ?? [];
-    const relatedPaths = [.../* @__PURE__ */ new Set([...fromTags, ...fromFeatures])];
+    const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
     const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
@@ -4350,12 +4360,17 @@ async function buildSessionStartOutput(root, pluginRoot) {
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>"
   ].join("\n");
-  const drift = await computeDrift(root);
+  let drift = [];
+  try {
+    drift = await computeDrift(root);
+  } catch {
+    drift = [];
+  }
   const driftBlock = drift.length > 0 ? "\n" + [
     "<CONCEPT-DRIFT>",
     "These concepts changed since their code was last aligned. Their related code may need updating:",
     ...drift.map(
-      (d) => `- ${d.slug}${d.reason ? ` (\uC774\uC720: ${d.reason})` : ""} \u2192 related code: ${d.relatedPaths.length ? d.relatedPaths.join(", ") : "(none yet)"}`
+      (d) => `- ${sanitizeText(d.slug)}${d.reason ? ` (reason: ${sanitizeText(d.reason)})` : ""} -> related code: ${d.relatedPaths.length ? d.relatedPaths.map((p) => sanitizeText(p)).join(", ") : "(none yet)"}`
     ),
     "Guide the user to update the related code (or the concept) so they re-align; run conceptpowers:check-concept.",
     "</CONCEPT-DRIFT>"

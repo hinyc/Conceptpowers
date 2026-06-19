@@ -16,6 +16,7 @@ export function cpPaths(root: string) {
     cssTarget: join(base, 'concepts', 'viewer', 'assets', 'concept.css'),
     alignmentDir: join(base, 'concepts', '.alignment'),
     alignmentLock: join(base, 'concepts', '.alignment', 'alignment.lock.json'),
-    alignmentHistory: join(base, 'concepts', '.alignment', 'history.json')
+    alignmentHistory: join(base, 'concepts', '.alignment', 'history.json'),
+    alignmentLastCommit: join(base, 'concepts', '.alignment', 'last-commit')
   } as const
 }

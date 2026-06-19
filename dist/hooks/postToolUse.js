@@ -10,6 +10,7 @@ var __export = (target, all) => {
 // src/hooks/postToolUse.ts
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { readFile as readFile6 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -31,7 +32,8 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
-    alignmentHistory: join(base, "concepts", ".alignment", "history.json")
+    alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
   };
 }
 
@@ -4226,8 +4228,7 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile3, writeFile as writeFile4, mkdir as mkdir4 } from "node:fs/promises";
-import { dirname as dirname3 } from "node:path";
+import { readFile as readFile3 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4236,11 +4237,22 @@ var HistoryEntry = external_exports.object({
   slug: external_exports.string(),
   hash: external_exports.string(),
   prevHash: external_exports.string().default(""),
-  reason: external_exports.string().default(""),
+  reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
+
+// src/util/atomicWrite.ts
+import { writeFile as writeFile4, rename, mkdir as mkdir4 } from "node:fs/promises";
+import { dirname as dirname3 } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir4(dirname3(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  await writeFile4(tmp, data, "utf8");
+  await rename(tmp, target);
+}
 
 // src/drift/lock.ts
 async function readLock(root) {
@@ -4251,14 +4263,11 @@ async function readLock(root) {
   }
 }
 async function writeLock(root, lock) {
-  const target = cpPaths(root).alignmentLock;
-  await mkdir4(dirname3(target), { recursive: true });
-  await writeFile4(target, JSON.stringify(lock, null, 2) + "\n", "utf8");
+  await writeFileAtomic(cpPaths(root).alignmentLock, JSON.stringify(lock, null, 2) + "\n");
 }
 
 // src/drift/history.ts
-import { readFile as readFile4, writeFile as writeFile5, mkdir as mkdir5 } from "node:fs/promises";
-import { dirname as dirname4 } from "node:path";
+import { readFile as readFile4 } from "node:fs/promises";
 async function readHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile4(cpPaths(root).alignmentHistory, "utf8")));
@@ -4266,29 +4275,36 @@ async function readHistory(root) {
     return [];
   }
 }
-async function appendHistory(root, input) {
-  const existing = await readHistory(root);
-  const prev = [...existing].reverse().find((e) => e.slug === input.slug);
-  const entry = HistoryEntry.parse({
+function toEntry(input, prevHash) {
+  return HistoryEntry.parse({
     slug: input.slug,
     hash: input.hash,
-    prevHash: prev?.hash ?? "",
+    prevHash,
     reason: input.reason ?? "",
     ignored: input.ignored ?? false,
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
-  const next = [...existing, entry];
-  const target = cpPaths(root).alignmentHistory;
-  await mkdir5(dirname4(target), { recursive: true });
-  await writeFile5(target, JSON.stringify(next, null, 2) + "\n", "utf8");
-  return entry;
+}
+async function appendHistoryMany(root, inputs) {
+  if (inputs.length === 0) return [];
+  const all = [...await readHistory(root)];
+  const added = [];
+  for (const input of inputs) {
+    const prev = [...all].reverse().find((e) => e.slug === input.slug);
+    const entry = toEntry(input, prev?.hash ?? "");
+    all.push(entry);
+    added.push(entry);
+  }
+  await writeFileAtomic(cpPaths(root).alignmentHistory, JSON.stringify(all, null, 2) + "\n");
+  return added;
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir6, writeFile as writeFile6 } from "node:fs/promises";
+import { readFile as readFile5, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
+var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8"));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
@@ -4310,6 +4326,11 @@ function contractHash(c) {
   return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
 }
 
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+
 // src/drift/detect.ts
 async function computeDrift(root) {
   const [concepts, features, mapping, lock, history] = await Promise.all([
@@ -4327,7 +4348,7 @@ async function computeDrift(root) {
     if (locked === current) continue;
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
     const fromTags = mapping[c.slug] ?? [];
-    const relatedPaths = [.../* @__PURE__ */ new Set([...fromTags, ...fromFeatures])];
+    const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
     const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
@@ -4337,7 +4358,7 @@ async function computeDrift(root) {
 // src/drift/reconcile.ts
 async function reconcileAfterCommit(root, committedFiles2, at) {
   const stamp = at ?? (/* @__PURE__ */ new Date()).toISOString();
-  const committed = new Set(committedFiles2);
+  const committed = new Set(committedFiles2.map(normalizeRel));
   const [concepts, lock, drift] = await Promise.all([
     listConcepts(root),
     readLock(root),
@@ -4347,15 +4368,16 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   const nextLock = { ...lock };
   const aligned = [];
   const ignored = [];
+  const ignoredEntries = [];
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
-      const followed = d.relatedPaths.length === 0 || d.relatedPaths.every((p) => committed.has(p));
+      const followed = d.relatedPaths.length === 0 || d.relatedPaths.map(normalizeRel).every((p) => committed.has(p));
       if (followed) {
         aligned.push(c.slug);
       } else {
         ignored.push(c.slug);
-        await appendHistory(root, {
+        ignoredEntries.push({
           slug: c.slug,
           hash: d.currentHash,
           reason: d.reason,
@@ -4368,31 +4390,79 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
       nextLock[c.slug] = { hash: contractHash(c), at: stamp };
     }
   }
-  await writeLock(root, nextLock);
+  const slugs = new Set(concepts.map((c) => c.slug));
+  const cleaned = Object.fromEntries(
+    Object.entries(nextLock).filter(([slug3]) => slugs.has(slug3))
+  );
+  await appendHistoryMany(root, ignoredEntries);
+  await writeLock(root, cleaned);
   return { aligned, ignored };
 }
 
 // src/hooks/postToolUse.ts
 var execFileAsync = promisify(execFile);
 var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
-async function committedFiles(root) {
+async function git(root, args) {
   try {
-    const { stdout } = await execFileAsync(
-      "git",
-      ["--no-pager", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
-      { cwd: root }
-    );
-    return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+    const { stdout } = await execFileAsync("git", ["--no-pager", ...args], { cwd: root });
+    return stdout;
   } catch {
-    return [];
+    return null;
+  }
+}
+async function headSha(root) {
+  const out = await git(root, ["rev-parse", "HEAD"]);
+  return out ? out.trim() : null;
+}
+async function isMergeCommit(root) {
+  const out = await git(root, ["rev-list", "--parents", "-n", "1", "HEAD"]);
+  if (!out) return false;
+  return out.trim().split(/\s+/).length > 2;
+}
+async function committedFiles(root) {
+  const out = await git(root, ["diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "HEAD"]);
+  if (!out) return [];
+  return out.split("\n").map((l) => l.trim()).filter(Boolean);
+}
+async function readLastCommit(root) {
+  try {
+    return (await readFile6(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+  } catch {
+    return "";
+  }
+}
+async function writeLastCommit(root, sha) {
+  try {
+    await writeFileAtomic(cpPaths(root).alignmentLastCommit, sha + "\n");
+  } catch {
   }
 }
 async function runPostToolUse(root, ev) {
   if (!await isInitialized(root)) return null;
   if (!(ev.tool === "Bash" && isGitCommit(ev.input.command))) return null;
-  const files = ev.committedFiles ?? await committedFiles(root);
+  if (ev.committedFiles) {
+    try {
+      return await reconcileAfterCommit(root, ev.committedFiles);
+    } catch {
+      return null;
+    }
+  }
+  const sha = await headSha(root);
+  if (!sha) return null;
+  if (sha === await readLastCommit(root)) return null;
+  if (await isMergeCommit(root)) {
+    await writeLastCommit(root, sha);
+    return null;
+  }
+  const files = await committedFiles(root);
+  if (files.length === 0) {
+    await writeLastCommit(root, sha);
+    return null;
+  }
   try {
-    return await reconcileAfterCommit(root, files);
+    const res = await reconcileAfterCommit(root, files);
+    await writeLastCommit(root, sha);
+    return res;
   } catch {
     return null;
   }

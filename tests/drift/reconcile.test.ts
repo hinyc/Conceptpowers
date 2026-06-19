@@ -50,4 +50,26 @@ describe('reconcileAfterCommit', () => {
     expect(r.ignored).toEqual([])
     expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c!))
   })
+  it('경로 표기가 달라도(./ 접두) 정규화해 aligned로 본다 (H1)', async () => {
+    await writeConcept(root, concept())
+    const c1 = await readConcept(root, 'auth-token')
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } })
+    // codePaths는 './' 접두, 커밋 파일은 git 표기(접두 없음)
+    await writeFeature(root, { slug: 'login', title: 'L', concepts: ['auth-token'], codePaths: ['./src/login.ts'] })
+    await writeConcept(root, concept({ description: { definition: 'v2' } }))
+    const r = await reconcileAfterCommit(root, ['src/login.ts'], 't2')
+    expect(r.aligned).toContain('auth-token')
+    expect(r.ignored).toEqual([])
+  })
+  it('삭제된 개념의 stale lock 항목을 정리한다 (M1)', async () => {
+    await writeConcept(root, concept())
+    await writeLock(root, {
+      'auth-token': { hash: 'old', at: 't' },
+      'deleted-one': { hash: 'x', at: 't' },
+    })
+    await reconcileAfterCommit(root, [], 't2')
+    const lock = await readLock(root)
+    expect(lock['deleted-one']).toBeUndefined()
+    expect(lock['auth-token']).toBeDefined()
+  })
 })

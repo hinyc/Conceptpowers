@@ -8,7 +8,7 @@ export const HistoryEntry = z.object({
   slug: z.string(),
   hash: z.string(),
   prevHash: z.string().default(''),
-  reason: z.string().default(''),
+  reason: z.string().max(1000).default(''),
   at: z.string(),
   ignored: z.boolean().default(false),
 })

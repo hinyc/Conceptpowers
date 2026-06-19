@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { isInitialized } from "../init/scaffold.js";
 import { readInitConfig } from "../init/readConfig.js";
 import { listConcepts } from "../store/conceptStore.js";
-import { computeDrift } from "../drift/detect.js";
+import { computeDrift, type DriftItem } from "../drift/detect.js";
+import { sanitizeText } from "../drift/safe.js";
 import { localeLabel } from "../i18n/messages.js";
 
 export interface SessionStartOutput {
@@ -44,7 +45,13 @@ export async function buildSessionStartOutput(
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",
   ].join("\n");
-  const drift = await computeDrift(root);
+  // best-effort: drift 계산 실패가 세션 시작을 막지 않게 한다.
+  let drift: DriftItem[] = [];
+  try {
+    drift = await computeDrift(root);
+  } catch {
+    drift = [];
+  }
   const driftBlock =
     drift.length > 0
       ? "\n" +
@@ -53,8 +60,10 @@ export async function buildSessionStartOutput(
           "These concepts changed since their code was last aligned. Their related code may need updating:",
           ...drift.map(
             (d) =>
-              `- ${d.slug}${d.reason ? ` (이유: ${d.reason})` : ""} → related code: ${
-                d.relatedPaths.length ? d.relatedPaths.join(", ") : "(none yet)"
+              `- ${sanitizeText(d.slug)}${d.reason ? ` (reason: ${sanitizeText(d.reason)})` : ""} -> related code: ${
+                d.relatedPaths.length
+                  ? d.relatedPaths.map((p) => sanitizeText(p)).join(", ")
+                  : "(none yet)"
               }`,
           ),
           "Guide the user to update the related code (or the concept) so they re-align; run conceptpowers:check-concept.",

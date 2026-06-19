@@ -1,9 +1,11 @@
 // src/mapping/scan.ts
 import { readFile, mkdir, writeFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
+import { z } from 'zod'
 import { cpPaths } from '../paths.js'
 
 export type Mapping = Record<string, string[]>
+const MappingSchema = z.record(z.string(), z.array(z.string()))
 const TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g
 
 export async function scanTags(root: string, files: string[]): Promise<Record<string, string[]>> {
@@ -35,7 +37,7 @@ export async function writeMappingCache(root: string, mapping: Mapping): Promise
 
 export async function readMappingCache(root: string): Promise<Mapping> {
   try {
-    return JSON.parse(await readFile(cpPaths(root).mappingCache, 'utf8'))
+    return MappingSchema.parse(JSON.parse(await readFile(cpPaths(root).mappingCache, 'utf8')))
   } catch {
     return {}
   }

@@ -10,7 +10,8 @@ export async function noteChange(
   reason: string,
   at?: string,
 ): Promise<HistoryEntry> {
+  if (!reason.trim()) throw new Error('reason must not be empty')
   const concept = await readConcept(root, slug)
   if (!concept) throw new Error(`Concept not found: ${slug}`)
-  return appendHistory(root, { slug, hash: contractHash(concept), reason, at })
+  return appendHistory(root, { slug, hash: contractHash(concept), reason: reason.trim(), at })
 }

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanTags, buildMapping } from '../../src/mapping/scan.js'
+import { scanTags, buildMapping, writeMappingCache, readMappingCache } from '../../src/mapping/scan.js'
 
 let root: string
 beforeEach(() => {
@@ -25,5 +25,15 @@ describe('mapping scan', () => {
     const m = await buildMapping(root, ['src/a.ts', 'src/b.ts'])
     expect(m['admin-role'].sort()).toEqual(['src/a.ts', 'src/b.ts'])
     expect(m['user-role']).toEqual(['src/b.ts'])
+  })
+  it('readMappingCache는 쓰고 다시 읽으면 동일하다', async () => {
+    await writeMappingCache(root, { 'admin-role': ['src/a.ts'] })
+    expect(await readMappingCache(root)).toEqual({ 'admin-role': ['src/a.ts'] })
+  })
+  it('readMappingCache는 형식이 깨진 캐시면 빈 객체로 폴백한다 (M3/zod)', async () => {
+    const cache = join(root, 'docs/conceptpowers/.cache')
+    mkdirSync(cache, { recursive: true })
+    writeFileSync(join(cache, 'mapping.json'), '{"admin-role": "not-an-array"}')
+    expect(await readMappingCache(root)).toEqual({})
   })
 })
