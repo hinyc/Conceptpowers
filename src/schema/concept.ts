@@ -9,8 +9,9 @@ const slug = z
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
   .refine((s) => !RESERVED_SLUGS.has(s), 'slug must not be a reserved name')
 
-// 승인 상태: green = 사용자 승인됨, red = 미승인(자동생성 기본).
-export const ConceptStatus = z.enum(['green', 'red'])
+// 승인 상태: green = 검증된 source of truth, pending = 사용자 작성·정착 전(미적용),
+// red = 미승인(자동추론 기본/거부). 기본값은 red(특권 상태 pending은 명시 지정만).
+export const ConceptStatus = z.enum(['green', 'pending', 'red'])
 export type ConceptStatus = z.infer<typeof ConceptStatus>
 
 export const ConceptSchema = z.object({

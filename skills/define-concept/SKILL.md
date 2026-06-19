@@ -21,14 +21,19 @@ Write the concept content in the project's output language (the `locale` from `i
 4. Decide the slug (kebab-case, globally unique) and group (domain).
 5. **Consistency check**: run the `conceptpowers-check-consistency` skill to confirm no conflict or
    violation against existing concepts.
-6. **Set the `status`** based on origin and the consistency result:
-   - User-authored via this skill **with no conflict** → `status: green` (the user defining it counts
-     as approval).
-   - User-authored **with a conflict**, OR auto-inferred during a full scan → `status: red`
-     (unapproved). On a conflict, **do not silently save a green**; surface the conflict and let the
-     user resolve it (adjust or split) (rule 7). Auto-inferred concepts are always `red`.
+6. **Set the `status` — born `pending`; promote to `green` only after the step-5 consistency check passes (never default to green).**
+   The agent only ever *promotes* a user-authored pending to green after a passing
+   consistency check (step 5). Auto-inferred concepts (full scan) are born `red`, not pending.
+   - **No conflict** (step 5 passed) → set `status: green`. The user authored it and it is
+     consistent, so it becomes the source of truth.
+   - **Conflict** → keep `status: pending` and record why it cannot settle:
+     `node "<cli>" note-conflict <slug> --reason "<which concept it conflicts with and how>" --root .`
+     Surface the conflict to the user (revise or split); do not force green.
+   - **Auto-inferred during a full scan** → `status: red` (unapproved; user approves later).
 7. Save as JSON (include the `status` field). Write the concept data file directly, then regenerate
    the viewer: `node "<cli>" render --root .`
+   - If a previously-recorded conflict for this slug is now resolved (status set to green),
+     clear it: `node "<cli>" resolve-conflict <slug> --root .`
 8. Guide the user to link the concept to code with a `@concept:<slug>` tag.
 9. If this **redefines an existing** concept (not a brand-new one), record why it changed so drift is
    traceable: `node "<cli>" note-change <slug> --reason "<why it changed>" --root .`

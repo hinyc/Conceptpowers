@@ -15,7 +15,10 @@ function list(items: string[]): string {
 
 function statusBadge(c: Concept, t: ViewerStrings): string {
   const status = c.status ?? 'red'
-  const label = status === 'green' ? t.statusApproved : t.statusUnapproved
+  const label =
+    status === 'green' ? t.statusApproved
+    : status === 'pending' ? t.statusPending
+    : t.statusUnapproved
   return `<span class="badge badge--${status}">${esc(label)}</span>`
 }
 

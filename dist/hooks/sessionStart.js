@@ -31,7 +31,8 @@ function cpPaths(root) {
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
-    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
   };
 }
 
@@ -4078,14 +4079,12 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
-var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
-  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -4103,7 +4102,7 @@ import { join as join2, dirname } from "node:path";
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
-var ConceptStatus = external_exports.enum(["green", "red"]);
+var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
@@ -4364,9 +4363,11 @@ async function buildSessionStartOutput(root, pluginRoot) {
   const cli = join4(pluginRoot, "dist", "cli.js");
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
-  const approvalMode = config?.approvalMode ?? "manual";
-  const reds = (await listConcepts(root)).filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
-  const pendingLine = reds.length > 0 ? `- Pending approval (status=red, ${reds.length}): ${reds.map((s) => sanitizeText(s)).join(", ")}. These concepts are auto/unconfirmed; guide the user to review and approve them.` : "- All defined concepts are approved (status=green).";
+  const all = await listConcepts(root);
+  const reds = all.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
+  const pendings = all.filter((c) => c.status === "pending").map((c) => c.slug);
+  const redLine = reds.length > 0 ? `- Unapproved auto-inferred (status=red, ${reds.length}): ${reds.map((s) => sanitizeText(s)).join(", ")}. These were inferred without the user; guide the user to review and approve (red\u2192green).` : "- No unapproved auto-inferred (red) concepts.";
+  const pendingLine = pendings.length > 0 ? `- Lingering pending (status=pending, ${pendings.length}): ${pendings.map((s) => sanitizeText(s)).join(", ")}. User-authored, not yet settled; once consistency passes they become green automatically, or stay pending if a conflict remains.` : "- No lingering pending concepts.";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
     "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
@@ -4377,7 +4378,8 @@ async function buildSessionStartOutput(root, pluginRoot) {
     "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
     `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
-    `- Concept approval: status is green(approved)/red(unapproved). approvalMode='${approvalMode}'. In 'manual' mode you MUST NOT change a concept's status \u2014 the user edits it directly (or sets approvalMode='cli' to allow the conceptpowers:approve flow). Never auto-approve.`,
+    `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red \u2014 the user does that directly. Never auto-approve a red (un-authored) concept.`,
+    redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>"

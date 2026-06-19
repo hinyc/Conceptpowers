@@ -22,6 +22,9 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    - **green ↔ green conflict → stop and ask the user.** Two user-approved concepts contradicting each
      other is a real contradiction the agent must not auto-resolve. Present both and the conflict.
    - **red ↔ red conflict** → report both as unresolved proposals; resolve when the user approves one.
+   - Pending(🟡) concepts are user-authored drafts under check. On a clean result, the caller
+     promotes them to green; on a conflict, they stay pending and the reason is recorded via
+     `note-conflict`. Settled green/red concepts are never auto-changed by this check.
 4. Proceed with save/commit only when there are zero unresolved conflicts.
 
 ## Commit gate (D17)
@@ -31,4 +34,4 @@ When adding or modifying a concept, verify there is no conflict or violation aga
 - **Unapproved (red) concepts do not hard-block a commit**, but the commit gate surfaces them with an
   emphasized warning (`⚠️ UNAPPROVED CONCEPTS`). When you see it, show the warning prominently and ask
   the user "commit anyway?" — proceed only on explicit confirmation. Approving the concepts first
-  (manual edit, or `conceptpowers-approve` in cli mode) is preferred.
+  (manual edit, or `conceptpowers-approve` on explicit user request) is preferred.

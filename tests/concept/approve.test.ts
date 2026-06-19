@@ -3,29 +3,25 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { approveConcept } from '../../src/concept/approve.js'
 import { scaffoldInit } from '../../src/init/scaffold.js'
-import { writeConcept, readConcept } from '../../src/store/conceptStore.js'
+import { writeConcept } from '../../src/store/conceptStore.js'
+import { approveConcept } from '../../src/concept/approve.js'
 
-const base = {
-  slug: 'admin-role', category: ['role'], title: 'Admin Role',
-  description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}
+const baseConcept = {
+  slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin',
+  description: { definition: 'd' }, purpose: { reason: 'r' },
+  actions: {}, principle: {}, status: 'red'
 }
-let root: string
-beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'cp-')) })
 
 describe('approveConcept', () => {
-  it('manual 모드(기본)에서는 승인을 거부한다', async () => {
+  let root: string
+  beforeEach(async () => {
+    root = mkdtempSync(join(tmpdir(), 'cp-approve-'))
     await scaffoldInit(root, {})
-    await writeConcept(root, base as any)
-    await expect(approveConcept(root, 'admin-role')).rejects.toThrow(/approval/i)
-    expect((await readConcept(root, 'admin-role'))?.status).toBe('red') // 변경 없음
+    await writeConcept(root, baseConcept)
   })
-  it('cli 모드에서는 status를 green으로 승인한다', async () => {
-    await scaffoldInit(root, { approvalMode: 'cli' })
-    await writeConcept(root, base as any)
+  it('red 개념을 green으로 승인한다', async () => {
     const c = await approveConcept(root, 'admin-role')
     expect(c.status).toBe('green')
-    expect((await readConcept(root, 'admin-role'))?.status).toBe('green')
   })
 })

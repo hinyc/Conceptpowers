@@ -127,6 +127,40 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.permissionDecision).toBe("allow");
   });
 
+  it("충돌 기록이 있는 pending 개념을 참조하면 강한 알림(ask)", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "pend-x", category: ["term"], title: "PX",
+      description: { definition: "d" }, purpose: { reason: "r" },
+      actions: {}, principle: {}, status: "pending",
+    } as any);
+    const { setPendingConflict } = await import("../../src/concept/pendingConflicts.js");
+    await setPendingConflict(root, "pend-x", "conflicts with pend-y");
+    writeFileSync(join(root, "src/px.ts"), "// @concept:pend-x\n");
+    const out = await decidePreToolUse(root, {
+      tool: "Bash", input: { command: "git commit -m x" },
+      changedFiles: ["src/px.ts"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("CONFLICTED PENDING");
+  });
+
+  it("충돌 기록 없는 pending 개념 참조는 막지 않는다(소프트 통과)", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "pend-y", category: ["term"], title: "PY",
+      description: { definition: "d" }, purpose: { reason: "r" },
+      actions: {}, principle: {}, status: "pending",
+    } as any);
+    writeFileSync(join(root, "src/py.ts"), "// @concept:pend-y\n");
+    const out = await decidePreToolUse(root, {
+      tool: "Bash", input: { command: "git commit -m x" },
+      changedFiles: ["src/py.ts"],
+    });
+    // pending-without-conflict must NOT trigger CONFLICTED PENDING block
+    expect(out?.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("CONFLICTED PENDING");
+  });
+
   it("drift reason의 인젝션 시도(각괄호/개행)를 새니타이즈해 컨텍스트에 넣는다 (보안 H1)", async () => {
     await scaffoldInit(root, {});
     await writeConcept(root, {

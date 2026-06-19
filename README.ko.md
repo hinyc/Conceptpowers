@@ -24,7 +24,7 @@
 Conceptpowers는 **개념을 코드 위에 있는 1급의, 버전 관리되는 계약**으로 다룬다. 세 가지 원칙:
 
 1. **코드보다 개념 먼저.** 목적, 허용/제한 동작, 불변 규칙을 구조화된 데이터로 *먼저* 정의한다. 코드는 그 하위이며 개념을 따라야 한다.
-2. **계약의 주인은 사람.** 에이전트는 개념을 *제안*만 한다(🔴 red). *승인*은 오직 사람이 한다(🟢 green). 자동 승인은 설계상 차단된다 — 진실의 원천은 언제나 사람이 확정한 것이다.
+2. **계약의 주인은 사람 — 사람이 직접 작성함으로써.** 에이전트는 개념을 *초안*으로 남길 수 있다 — 사용자가 작성한 초안은 🟡 pending으로 시작하고, 일관성 검사를 통과하면 🟢 green이 된다. 사람 없이 에이전트가 *유추*한 개념은 🔴 red로 시작하며, 오직 사람만 승급시킬 수 있다. 에이전트는 사람이 작성하지 않은 개념을 결코 확정하지 않는다.
 3. **막는 벽이 아니라 안내하는 가드레일.** 게이트는 미정의 개념·미승인 개념·개념↔코드 드리프트를 편집/커밋 바로 그 순간에 드러내고 결정을 묻는다 — 조용히 거부하지도, 조용히 통과시키지도 않으며, 강행(override)은 기록으로 남는다.
 
 ### 얻는 이점
@@ -51,6 +51,21 @@ Claude Code 안에서 세 줄이면 시작된다:
 ```
 
 `/conceptpowers-init`은 `docs/conceptpowers/`를 스캐폴딩하고 `init.json` 마커를 생성한다. 이 마커가 스위치다 — 존재하는 순간 거버넌스 훅이 해당 프로젝트에서 자동으로 활성화된다.
+
+### 최신 버전 유지
+
+Conceptpowers는 서드파티 마켓플레이스에서 배포되며, **자동 업데이트는 기본 OFF**다. 항상 최신 버전을 쓰려면 한 번만 켜두면 된다:
+
+> `/plugin marketplace` → **Marketplaces** 탭 → `conceptpowers-dev` 선택 → **auto-update** 활성화.
+
+그러면 Claude Code가 시작 시 플러그인을 갱신하고, 새 버전이 도착하면 `/reload-plugins`를 안내한다. 수동으로 업데이트하려면:
+
+```bash
+/plugin marketplace update conceptpowers-dev    # 마켓플레이스 메타데이터 갱신
+/plugin update conceptpowers@conceptpowers-dev  # 플러그인 업데이트
+```
+
+> **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `plugin.json` / `marketplace.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
 
 ---
 
@@ -82,15 +97,13 @@ flowchart LR
 
 모든 개념은 **상태(status)**를 가져, 사람이 실제로 확정한 것이 무엇인지 항상 드러난다:
 
-- 🟢 **green** — 사용자 승인됨. 진실의 원천(source of truth).
-- 🔴 **red** — 미승인. 자동 유추된 개념(과 충돌하는 개념)은 *제안* 상태로 여기서 시작한다.
+- 🟢 **green** — 검증된 source of truth (사용자 작성 + 일관성 검증).
+- 🟡 **pending** — `define-concept`로 사용자가 작성, 정착 전. 일관성 통과 시 자동 green, 충돌 남으면 pending 유지.
+- 🔴 **red** — 자동 추론(작성자 없음) 또는 거부. 사람만 green으로 승급.
 
 뷰어는 개념마다 배지를 표시하고, 스테이징된 변경이 red 개념을 건드리면 커밋 게이트가 **강조된 경고**를 띄운다 — 조용히 하드 차단하지 않고 "그래도 커밋할까요?"를 묻는다.
 
-개념이 green이 되는 방식은 `init.json`의 `approvalMode`로 제어한다:
-
-- **manual** (기본) — 에이전트는 status를 **절대** 바꾸지 않는다. 사용자가 개념 JSON의 `status`를 직접 `green`으로 수정해 승인한다. 자동 승인은 설계상 차단되어, 최종 개념 집합은 항상 사용자의 것이다.
-- **cli** — 일관성 검사를 통과한 *뒤* `conceptpowers-approve` 스킬(또는 `approve <slug>`)이 개념을 green으로 전환할 수 있다.
+에이전트는 일관성 검사를 통과한 뒤에만 **사용자가 작성한 pending을 green으로 승급**할 수 있다. 확정된 green/red는 절대 변경하지 않는다. 사람의 제어 지점은 개념의 내용을 **직접 작성**하는 것이며, 별도의 승인 토글이 아니다.
 
 green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가 양보(수정/재플래그)하며, **green ↔ green** 충돌은 중단하고 사용자에게 올린다.
 
@@ -127,10 +140,10 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 | 스킬 | 언제 사용되나 | 무엇을 만들어내나 |
 | --- | --- | --- |
 | `conceptpowers-init` | **프로젝트당 한 번**, 거버넌스를 켤 때. `strict` 모드는 기존 코드베이스를 전체 스캔해 개념을 백필한다. | `docs/conceptpowers/` 스캐폴드 + `init.json` 마커(생기는 순간 훅이 살아난다). |
-| `conceptpowers-define-concept` | 기존 개념이 **없는** 기능·역할·권한·용어를 추가하기 **전에**. | 일관성 검사를 거쳐 저장되는 새 개념 JSON(상태 🔴 red). 기존 개념을 *재정의*하는 경우엔 `note-change`로 변경 이유까지 기록해 드리프트 추적을 유지한다. |
+| `conceptpowers-define-concept` | 기존 개념이 **없는** 기능·역할·권한·용어를 추가하기 **전에**. | 🟡 pending으로 탄생하는 새 개념 JSON. 일관성 검사 통과 시 🟢 green이 되고, 그렇지 않으면 충돌 이유를 `note-conflict`로 기록한 채 pending 유지. (자동 유추 개념은 🔴 red.) |
 | `conceptpowers-check-concept` | 기능을 추가하거나 동작을 바꾸는 코드(테스트 포함)를 작성/변경하기 **전에**. | 판정 결과: 변경이 관련 개념의 allow / restrict / immutable 규칙을 위배하는가? (코드 ↔ 개념) |
 | `conceptpowers-check-consistency` | **개념을 정의·변경할 때마다**, 그리고 **커밋 게이트에서** 다시. | *모든* 개념에 대한 충돌 리포트 — green이 red를 이기고, green↔green은 사용자에게 올린다. 충돌 0일 때만 통과. (개념 ↔ 개념) |
-| `conceptpowers-approve` | 사용자가 🔴 개념을 **확정**할 때 — `approvalMode: cli`에서만 허용. | 일관성 검사 *뒤* 상태를 🔴 → 🟢으로 전환하고 뷰어를 다시 렌더링한다. 에이전트가 임의로 승인하지 않는다. |
+| `conceptpowers-approve` | 사용자가 🔴 개념을 **명시적으로 확정**할 때. | 자동 유추된 🔴 red 개념을 일관성 검사 *뒤* 🟢 green으로 승급하고 뷰어를 다시 렌더링한다. 에이전트가 임의로 승인하지 않는다. |
 | `conceptpowers-update-mapping` | **코드 편집 후** `@concept` 링크를 갱신할 때 — 혹은 언제든 재동기화. | 갱신된 `@concept` 태그(진실의 원천) + 재빌드된 `.cache/mapping.json`. |
 | `conceptpowers-audit` | **언제든**, 프로젝트 전수 점검용. | 개념 없는 gap 목록, 깨진 `@concept` 링크, 미승인 🔴 개념 — 각각 권장 조치와 함께. |
 | `conceptpowers-update-baseline` | 사용자가 baseline 수정을 **명시적으로 요청할 때만**. | 요청된 baseline 수정. 개념의 계약이 바뀌면 `note-change`로 이유를 기록한다. |

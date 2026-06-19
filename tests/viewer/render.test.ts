@@ -69,4 +69,16 @@ describe('renderViewer', () => {
     expect(out['auth/admin-role.html']).toContain('badge--green')
     expect(out['auth/admin-role.html']).toContain('Approved')
   })
+  it('pending 상태에 badge--pending와 보류 라벨을 렌더한다', () => {
+    const pending = { ...c, status: 'pending' } as Concept
+    const out = renderViewer([pending])
+    expect(out['auth/admin-role.html']).toContain('badge--pending')
+    expect(out['auth/admin-role.html']).toContain('보류')
+  })
+  it('pending 개념은 Pending 배지를 표시한다 (en)', () => {
+    const pending = { ...c, status: 'pending' } as Concept
+    const out = renderViewer([pending], 'en')
+    expect(out['auth/admin-role.html']).toContain('badge--pending')
+    expect(out['auth/admin-role.html']).toContain('Pending')
+  })
 })

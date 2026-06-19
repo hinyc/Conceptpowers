@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/init/scaffold.ts
-import { mkdir as mkdir4, writeFile as writeFile5, access } from "node:fs/promises";
+import { mkdir as mkdir5, writeFile as writeFile6, access } from "node:fs/promises";
 import { join as join6 } from "node:path";
 
 // src/paths.ts
@@ -3069,7 +3069,8 @@ function cpPaths(root) {
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
-    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
   };
 }
 
@@ -7116,14 +7117,12 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
-var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
-  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -7141,6 +7140,7 @@ var viewerStrings = {
     conceptList: "\uAC1C\uB150 \uBAA9\uB85D",
     statusApproved: "\uC2B9\uC778\uB428",
     statusUnapproved: "\uBBF8\uC2B9\uC778",
+    statusPending: "\uBCF4\uB958",
     featureList: "\uAE30\uB2A5 \uBAA9\uB85D",
     relatedFeatures: "\uAD00\uB828 \uAE30\uB2A5",
     relatedConcepts: "\uAD00\uB828 \uAC1C\uB150",
@@ -7161,6 +7161,7 @@ var viewerStrings = {
     conceptList: "Concepts",
     statusApproved: "Approved",
     statusUnapproved: "Unapproved",
+    statusPending: "Pending",
     featureList: "Features",
     relatedFeatures: "Related Features",
     relatedConcepts: "Related Concepts",
@@ -7185,8 +7186,8 @@ var seedTemplates = {
 };
 
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile4 } from "node:fs/promises";
-import { join as join4, dirname as dirname3 } from "node:path";
+import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile5 } from "node:fs/promises";
+import { join as join4, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/template.ts
@@ -7198,7 +7199,7 @@ function list(items) {
 }
 function statusBadge(c, t) {
   const status = c.status ?? "red";
-  const label = status === "green" ? t.statusApproved : t.statusUnapproved;
+  const label = status === "green" ? t.statusApproved : status === "pending" ? t.statusPending : t.statusUnapproved;
   return `<span class="badge badge--${status}">${esc(label)}</span>`;
 }
 var depthOf = (rel) => rel.split("/").length - 1;
@@ -7394,14 +7395,14 @@ window.__cpRenderGraph = function (data) {
 `;
 
 // src/store/conceptStore.ts
-import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
-import { join as join2, dirname } from "node:path";
+import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir } from "node:fs/promises";
+import { join as join2, dirname as dirname2 } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
-var ConceptStatus = external_exports.enum(["green", "red"]);
+var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
@@ -7443,6 +7444,48 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
+// src/concept/pendingConflicts.ts
+import { readFile } from "node:fs/promises";
+
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
+
+// src/concept/pendingConflicts.ts
+async function readPendingConflicts(root) {
+  try {
+    const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+async function setPendingConflict(root, slug3, reason) {
+  const current = await readPendingConflicts(root);
+  const next = { ...current, [slug3]: reason };
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
+}
+async function clearPendingConflict(root, slug3) {
+  const current = await readPendingConflicts(root);
+  if (!(slug3 in current)) return;
+  const next = { ...current };
+  delete next[slug3];
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
+}
+
 // src/store/conceptStore.ts
 function fileFor(root, c) {
   const dataDir = cpPaths(root).conceptsData;
@@ -7458,8 +7501,8 @@ async function writeConcept(root, input) {
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, JSON.stringify(concept, null, 2) + "\n", "utf8");
+  await mkdir2(dirname2(target), { recursive: true });
+  await writeFile2(target, JSON.stringify(concept, null, 2) + "\n", "utf8");
   return concept;
 }
 async function walkJson(dir) {
@@ -7482,7 +7525,7 @@ async function listConcepts(root) {
   const concepts = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
+      concepts.push(parseConcept(JSON.parse(await readFile2(f, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
@@ -7495,12 +7538,14 @@ async function readConcept(root, slug3) {
 async function setConceptStatus(root, slug3, status) {
   const concept = await readConcept(root, slug3);
   if (!concept) throw new Error(`Concept not found: ${slug3}`);
-  return writeConcept(root, { ...concept, status });
+  const updated = await writeConcept(root, { ...concept, status });
+  if (status === "green") await clearPendingConflict(root, slug3);
+  return updated;
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
+import { join as join3, dirname as dirname3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
@@ -7539,7 +7584,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile2(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -7548,10 +7593,10 @@ async function listFeatures(root) {
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile3(cpPaths(root).initFile, "utf8");
+    const raw = await readFile4(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -7575,13 +7620,13 @@ function renderViewer(concepts, locale = "ko", features = []) {
   return out;
 }
 async function readBundledCss() {
-  const start = dirname3(fileURLToPath(import.meta.url));
+  const start = dirname4(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile4(join4(dir, "assets", "concept.css"), "utf8");
+      return await readFile5(join4(dir, "assets", "concept.css"), "utf8");
     } catch {
-      const parent = dirname3(dir);
+      const parent = dirname4(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -7596,16 +7641,16 @@ async function renderViewerToDisk(root) {
   const viewer = cpPaths(root).conceptsViewer;
   for (const [rel, html] of Object.entries(files)) {
     const target = join4(viewer, rel);
-    await mkdir3(dirname3(target), { recursive: true });
-    await writeFile3(target, html, "utf8");
+    await mkdir4(dirname4(target), { recursive: true });
+    await writeFile4(target, html, "utf8");
   }
   const cssTarget = cpPaths(root).cssTarget;
-  await mkdir3(dirname3(cssTarget), { recursive: true });
-  await writeFile3(cssTarget, await readBundledCss(), "utf8");
+  await mkdir4(dirname4(cssTarget), { recursive: true });
+  await writeFile4(cssTarget, await readBundledCss(), "utf8");
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile5, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile6, writeFile as writeFile5 } from "node:fs/promises";
 import { join as join5 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
@@ -7618,7 +7663,7 @@ async function addViewerScript(root, platform = process.platform) {
   const pkgPath = join5(root, "package.json");
   let raw;
   try {
-    raw = await readFile5(pkgPath, "utf8");
+    raw = await readFile6(pkgPath, "utf8");
   } catch {
     return false;
   }
@@ -7634,7 +7679,7 @@ async function addViewerScript(root, platform = process.platform) {
     ...pkg,
     scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: openCommand(platform) }
   };
-  await writeFile4(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  await writeFile5(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
   return true;
 }
 
@@ -7650,7 +7695,7 @@ async function isInitialized(root) {
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
   for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir4(d, { recursive: true });
+    await mkdir5(d, { recursive: true });
   if (await isInitialized(root)) return;
   const locale = opts.locale ?? "ko";
   const config = parseInitConfig({
@@ -7658,13 +7703,12 @@ async function scaffoldInit(root, opts) {
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
     locale,
-    approvalMode: opts.approvalMode ?? "manual",
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile5(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile6(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile5(join6(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile5(join6(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile6(join6(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile6(join6(p.infra, "infra.md"), seed.infra, "utf8");
   await renderViewerToDisk(root);
   try {
     await addViewerScript(root);
@@ -7673,8 +7717,8 @@ async function scaffoldInit(root, opts) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile6, mkdir as mkdir5, writeFile as writeFile6 } from "node:fs/promises";
-import { join as join7, dirname as dirname4 } from "node:path";
+import { readFile as readFile7, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
+import { join as join7, dirname as dirname5 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 async function scanTags(root, files) {
@@ -7682,7 +7726,7 @@ async function scanTags(root, files) {
   for (const rel of files) {
     let content;
     try {
-      content = await readFile6(join7(root, rel), "utf8");
+      content = await readFile7(join7(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -7702,12 +7746,12 @@ async function buildMapping(root, files) {
 }
 async function writeMappingCache(root, mapping) {
   const target = cpPaths(root).mappingCache;
-  await mkdir5(dirname4(target), { recursive: true });
-  await writeFile6(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
+  await mkdir6(dirname5(target), { recursive: true });
+  await writeFile7(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile6(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile7(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
@@ -7718,37 +7762,35 @@ async function auditIntegrity(root, files) {
   const concepts = await listConcepts(root);
   const known = new Set(concepts.map((c) => c.slug));
   const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
+  const pending = new Set(concepts.filter((c) => c.status === "pending").map((c) => c.slug));
   const tags = await scanTags(root, files);
   const unknownTags = [];
   const refRed = /* @__PURE__ */ new Set();
+  const refPending = /* @__PURE__ */ new Set();
   for (const [file, slugs] of Object.entries(tags))
     for (const slug3 of slugs) {
       if (!known.has(slug3)) unknownTags.push({ slug: slug3, file });
       else if (red.has(slug3)) refRed.add(slug3);
+      else if (pending.has(slug3)) refPending.add(slug3);
     }
   return {
     ok: unknownTags.length === 0,
-    // 미승인(red)은 정합성을 막지 않음(경고만)
+    // 미승인(red)·보류(pending)는 정합성을 막지 않음(경고만)
     unknownTags,
     unapproved: [...red],
-    unapprovedRefs: [...refRed]
+    unapprovedRefs: [...refRed],
+    pending: [...pending],
+    pendingRefs: [...refPending]
   };
 }
 
 // src/concept/approve.ts
 async function approveConcept(root, slug3) {
-  const config = await readInitConfig(root);
-  const mode = config?.approvalMode ?? "manual";
-  if (mode !== "cli") {
-    throw new Error(
-      `Approval via CLI is disabled (approvalMode='${mode}'). Set "approvalMode": "cli" in init.json to enable the approve flow, or edit the concept's "status" field to "green" manually.`
-    );
-  }
   return setConceptStatus(root, slug3, "green");
 }
 
 // src/drift/lock.ts
-import { readFile as readFile7 } from "node:fs/promises";
+import { readFile as readFile8 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -7763,36 +7805,20 @@ var HistoryEntry = external_exports.object({
 });
 var History = external_exports.array(HistoryEntry);
 
-// src/util/atomicWrite.ts
-import { writeFile as writeFile7, rename, mkdir as mkdir6, rm } from "node:fs/promises";
-import { dirname as dirname5 } from "node:path";
-var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir6(dirname5(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  try {
-    await writeFile7(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
-  } catch (error) {
-    await rm(tmp, { force: true });
-    throw error;
-  }
-}
-
 // src/drift/lock.ts
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile7(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile8(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile8 } from "node:fs/promises";
+import { readFile as readFile9 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile8(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile9(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -7883,8 +7909,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
   let code = 0;
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--approval <mode>", "manual|cli", "manual").action(async (o) => {
-    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, approvalMode: o.approval });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
+    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
     if (o.mode === "strict") await renderViewerToDisk(o.root);
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
@@ -7913,6 +7939,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("note-change").option("--root <dir>", "project root", process.cwd()).requiredOption("--reason <reason>", "why the concept changed").argument("<slug>").action(async (slug3, o) => {
     await noteChange(o.root, slug3, o.reason);
+  });
+  program2.command("note-conflict").argument("<slug>").requiredOption("--reason <reason>", "\uCDA9\uB3CC \uC0AC\uC720").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", process.cwd()).action(async (slug3, o) => {
+    await setPendingConflict(o.root, slug3, o.reason);
+  });
+  program2.command("resolve-conflict").argument("<slug>").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", process.cwd()).action(async (slug3, o) => {
+    await clearPendingConflict(o.root, slug3);
   });
   try {
     await program2.parseAsync(argv, { from: "user" });
