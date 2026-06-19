@@ -21,7 +21,7 @@ Write the concept content in the project's output language (the `locale` from `i
 4. Decide the slug (kebab-case, globally unique) and group (domain).
 5. **Consistency check**: run the `conceptpowers-check-consistency` skill to confirm no conflict or
    violation against existing concepts.
-6. **Set the `status` — birth as `pending`, never set `green` directly here.**
+6. **Set the `status` — born `pending`; promote to `green` only after the step-5 consistency check passes (never default to green).**
    The agent only ever *promotes* a user-authored pending to green after a passing
    consistency check (step 5). Auto-inferred concepts (full scan) are born `red`, not pending.
    - **No conflict** (step 5 passed) → set `status: green`. The user authored it and it is

@@ -6,6 +6,12 @@ import { scaffoldInit } from '../../src/init/scaffold.js'
 import {
   readPendingConflicts, setPendingConflict, clearPendingConflict,
 } from '../../src/concept/pendingConflicts.js'
+import { writeConcept, setConceptStatus } from '../../src/store/conceptStore.js'
+
+const baseConcept = {
+  slug: 'test-concept', category: ['feature'], title: 'Test Concept',
+  description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {},
+}
 
 describe('pendingConflicts', () => {
   let root: string
@@ -23,6 +29,13 @@ describe('pendingConflicts', () => {
   it('해소하면 항목이 사라진다', async () => {
     await setPendingConflict(root, 'a', 'x')
     await clearPendingConflict(root, 'a')
+    expect(await readPendingConflicts(root)).toEqual({})
+  })
+  it('setConceptStatus → green 전환 시 충돌 기록이 자동 정리된다', async () => {
+    await writeConcept(root, { ...baseConcept, status: 'pending' } as any)
+    await setPendingConflict(root, 'test-concept', 'conflicts with existing-concept')
+    expect(await readPendingConflicts(root)).toEqual({ 'test-concept': 'conflicts with existing-concept' })
+    await setConceptStatus(root, 'test-concept', 'green')
     expect(await readPendingConflicts(root)).toEqual({})
   })
 })

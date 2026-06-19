@@ -4,6 +4,7 @@ import type { Dirent } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { cpPaths } from '../paths.js'
 import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js'
+import { clearPendingConflict } from '../concept/pendingConflicts.js'
 
 function fileFor(root: string, c: Concept): string {
   const dataDir = cpPaths(root).conceptsData
@@ -56,6 +57,7 @@ export async function slugExists(root: string, slug: string): Promise<boolean> {
 }
 
 // 개념의 승인 상태를 불변으로 갱신한다(읽기 → 새 객체 → 쓰기).
+// green으로 전환 시 pending 충돌 기록도 자동으로 정리한다.
 export async function setConceptStatus(
   root: string,
   slug: string,
@@ -63,5 +65,7 @@ export async function setConceptStatus(
 ): Promise<Concept> {
   const concept = await readConcept(root, slug)
   if (!concept) throw new Error(`Concept not found: ${slug}`)
-  return writeConcept(root, { ...concept, status })
+  const updated = await writeConcept(root, { ...concept, status })
+  if (status === 'green') await clearPendingConflict(root, slug)
+  return updated
 }

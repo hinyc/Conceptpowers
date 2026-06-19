@@ -43,5 +43,9 @@ Run only after warning the user about time/token cost. Goal: enumerate features,
 - `docs/conceptpowers/` is a **read-only baseline** afterward. Modify it only via update-baseline.
 - The language can be changed later by editing `locale` in `init.json`.
 - If `init.json` already exists, it is not overwritten (user settings are preserved).
-- Concept `status`: `green` = user-approved, `red` = unapproved (auto-inferred default). See the
-  `conceptpowers-approve` skill.
+- Concept `status` (3-state model):
+  - `green` — user-approved and consistent; source of truth.
+  - `pending` — user-authored draft; auto-promotes to `green` after a passing consistency check,
+    else stays pending until resolved. See `conceptpowers-define-concept`.
+  - `red` — auto-inferred (full scan) proposal awaiting user review and approval.
+    See the `conceptpowers-approve` skill.
