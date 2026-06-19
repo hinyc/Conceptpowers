@@ -22,13 +22,17 @@ export async function buildSessionStartOutput(
   const cli = join(pluginRoot, "dist", "cli.js");
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
-  const reds = (await listConcepts(root))
-    .filter((c) => (c.status ?? "red") === "red")
-    .map((c) => c.slug);
-  const pendingLine =
+  const all = await listConcepts(root);
+  const reds = all.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
+  const pendings = all.filter((c) => c.status === "pending").map((c) => c.slug);
+  const redLine =
     reds.length > 0
-      ? `- Pending approval (status=red, ${reds.length}): ${reds.map((s) => sanitizeText(s)).join(", ")}. These concepts are auto/unconfirmed; guide the user to review and approve them.`
-      : "- All defined concepts are approved (status=green).";
+      ? `- Unapproved auto-inferred (status=red, ${reds.length}): ${reds.map((s) => sanitizeText(s)).join(", ")}. These were inferred without the user; guide the user to review and approve (red→green).`
+      : "- No unapproved auto-inferred (red) concepts.";
+  const pendingLine =
+    pendings.length > 0
+      ? `- Lingering pending (status=pending, ${pendings.length}): ${pendings.map((s) => sanitizeText(s)).join(", ")}. User-authored, not yet settled; once consistency passes they become green automatically, or stay pending if a conflict remains.`
+      : "- No lingering pending concepts.";
   const context = [
     "<CONCEPTPOWERS-ACTIVE>",
     "This project has Conceptpowers governance enabled (docs/conceptpowers/init.json present).",
@@ -39,7 +43,8 @@ export async function buildSessionStartOutput(
     "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
     `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
-    `- Concept approval: status is green(approved)/pending(under review)/red(unapproved). Use the conceptpowers:approve flow when the user explicitly requests it. Never auto-approve.`,
+    `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red — the user does that directly. Never auto-approve a red (un-authored) concept.`,
+    redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",
