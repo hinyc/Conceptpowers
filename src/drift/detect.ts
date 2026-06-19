@@ -23,16 +23,18 @@ export async function computeDrift(root: string): Promise<DriftItem[]> {
     readLock(root),
     readHistory(root),
   ])
+  const hasOwn = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k)
   const items: DriftItem[] = []
   for (const c of concepts) {
-    const locked = lock[c.slug]?.hash
+    // 프로토타입 속성('constructor' 등)으로 인한 오조회/throw 방지: own 속성만 본다.
+    const locked = hasOwn(lock, c.slug) ? lock[c.slug].hash : undefined
     if (locked === undefined) continue // 신규: 첫 커밋에서 등록됨
     const current = contractHash(c)
     if (locked === current) continue // 정렬됨
     const fromFeatures = features
       .filter((f) => f.concepts.includes(c.slug))
       .flatMap((f) => f.codePaths)
-    const fromTags = mapping[c.slug] ?? []
+    const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : []
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))]
     const reason =
       [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? ''

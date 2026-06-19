@@ -3,7 +3,11 @@ import { z } from 'zod'
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term'])
 export type ConceptCategory = z.infer<typeof ConceptCategory>
 
-const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
+const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__'])
+const slug = z
+  .string()
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
+  .refine((s) => !RESERVED_SLUGS.has(s), 'slug must not be a reserved name')
 
 // 승인 상태: green = 사용자 승인됨, red = 미승인(자동생성 기본).
 export const ConceptStatus = z.enum(['green', 'red'])
@@ -24,7 +28,7 @@ export const ConceptSchema = z.object({
     example: z.string().default('')
   }),
   purpose: z.object({
-    reason: z.string().min(1),
+    reason: z.string().min(1).max(2000),
     benefits: z.array(z.string()).default([]),
     vision: z.string().default(''),
     painPoints: z.array(z.string()).default([])

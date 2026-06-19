@@ -7399,7 +7399,8 @@ import { join as join2, dirname } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
-var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
+var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
 var ConceptStatus = external_exports.enum(["green", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
@@ -7416,7 +7417,7 @@ var ConceptSchema = external_exports.object({
     example: external_exports.string().default("")
   }),
   purpose: external_exports.object({
-    reason: external_exports.string().min(1),
+    reason: external_exports.string().min(1).max(2e3),
     benefits: external_exports.array(external_exports.string()).default([]),
     vision: external_exports.string().default(""),
     painPoints: external_exports.array(external_exports.string()).default([])
@@ -7502,7 +7503,8 @@ import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdi
 import { join as join3, dirname as dirname2 } from "node:path";
 
 // src/schema/feature.ts
-var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case");
+var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
+var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS2.has(s), "slug must not be a reserved name");
 var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
 var FeatureSchema = external_exports.object({
   slug: slug2,
@@ -7762,14 +7764,19 @@ var HistoryEntry = external_exports.object({
 var History = external_exports.array(HistoryEntry);
 
 // src/util/atomicWrite.ts
-import { writeFile as writeFile7, rename, mkdir as mkdir6 } from "node:fs/promises";
+import { writeFile as writeFile7, rename, mkdir as mkdir6, rm } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 var counter = 0;
 async function writeFileAtomic(target, data) {
   await mkdir6(dirname5(target), { recursive: true });
   const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  await writeFile7(tmp, data, "utf8");
-  await rename(tmp, target);
+  try {
+    await writeFile7(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
 }
 
 // src/drift/lock.ts
@@ -7847,14 +7854,15 @@ async function computeDrift(root) {
     readLock(root),
     readHistory(root)
   ]);
+  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   const items = [];
   for (const c of concepts) {
-    const locked = lock[c.slug]?.hash;
+    const locked = hasOwn(lock, c.slug) ? lock[c.slug].hash : void 0;
     if (locked === void 0) continue;
     const current = contractHash(c);
     if (locked === current) continue;
     const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
-    const fromTags = mapping[c.slug] ?? [];
+    const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
     const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
     const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored)?.reason ?? "";
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
