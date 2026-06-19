@@ -4090,7 +4090,7 @@ var InitConfigSchema = external_exports.object({
 });
 
 // src/store/conceptStore.ts
-import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
+import { mkdir, readFile as readFile2, writeFile, readdir } from "node:fs/promises";
 import { join as join2, dirname } from "node:path";
 
 // src/schema/concept.ts
@@ -4139,6 +4139,18 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
+// src/concept/pendingConflicts.ts
+import { readFile } from "node:fs/promises";
+async function readPendingConflicts(root) {
+  try {
+    const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 // src/store/conceptStore.ts
 async function walkJson(dir) {
   let entries;
@@ -4160,7 +4172,7 @@ async function listConcepts(root) {
   const concepts = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
+      concepts.push(parseConcept(JSON.parse(await readFile2(f, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
@@ -4169,7 +4181,7 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
+import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
 import { join as join3, dirname as dirname2 } from "node:path";
 
 // src/schema/feature.ts
@@ -4209,7 +4221,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile2(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4228,7 +4240,7 @@ async function isInitialized(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
 import { join as join4, dirname as dirname3 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
@@ -4237,7 +4249,7 @@ async function scanTags(root, files) {
   for (const rel of files) {
     let content;
     try {
-      content = await readFile3(join4(root, rel), "utf8");
+      content = await readFile4(join4(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -4249,7 +4261,7 @@ async function scanTags(root, files) {
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
@@ -4283,7 +4295,7 @@ async function auditIntegrity(root, files) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile4 } from "node:fs/promises";
+import { readFile as readFile5 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4301,17 +4313,17 @@ var History = external_exports.array(HistoryEntry);
 // src/drift/lock.ts
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile4(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile5(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile5(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile6(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4383,18 +4395,6 @@ async function computeDrift(root) {
     items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
   }
   return items;
-}
-
-// src/concept/pendingConflicts.ts
-import { readFile as readFile6 } from "node:fs/promises";
-async function readPendingConflicts(root) {
-  try {
-    const raw = await readFile6(cpPaths(root).pendingConflicts, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
 }
 
 // src/hooks/preToolUse.ts

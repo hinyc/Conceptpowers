@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 import { readFile as readFile6 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
+import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4091,8 +4091,8 @@ var InitConfigSchema = external_exports.object({
 });
 
 // src/store/conceptStore.ts
-import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
-import { join as join2, dirname } from "node:path";
+import { mkdir as mkdir2, readFile, writeFile as writeFile2, readdir } from "node:fs/promises";
+import { join as join2, dirname as dirname2 } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -4140,6 +4140,22 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
+
 // src/store/conceptStore.ts
 async function walkJson(dir) {
   let entries;
@@ -4170,8 +4186,8 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir3, readFile as readFile2, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
+import { join as join3, dirname as dirname3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
@@ -4243,22 +4259,6 @@ var HistoryEntry = external_exports.object({
   ignored: external_exports.boolean().default(false)
 });
 var History = external_exports.array(HistoryEntry);
-
-// src/util/atomicWrite.ts
-import { writeFile as writeFile4, rename, mkdir as mkdir4, rm } from "node:fs/promises";
-import { dirname as dirname3 } from "node:path";
-var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir4(dirname3(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  try {
-    await writeFile4(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
-  } catch (error) {
-    await rm(tmp, { force: true });
-    throw error;
-  }
-}
 
 // src/drift/lock.ts
 async function readLock(root) {
