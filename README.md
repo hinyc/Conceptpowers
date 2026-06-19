@@ -31,7 +31,7 @@ Conceptpowers treats a **concept as a first-class, versioned contract** that sit
 
 - 🧠 **Intent survives.** The "why" becomes a machine-checkable contract instead of tribal knowledge.
 - 🤖 **AI stays on-rails.** Agents check the concept *before* writing code and can't quietly violate a rule.
-- 🚨 **Drift is caught early.** When a concept changes but its code lags behind (or vice versa), the commit gate flags it — with the recorded *reason* it changed — instead of letting them diverge in silence.
+- 🚨 **Drift is caught early.** When a concept's contract changes but its code hasn't caught up in the same commit, the commit gate flags it — with the recorded *reason* it changed — instead of letting them diverge in silence.
 - 🔍 **Lighter reviews.** The unwritten rule is now written and enforced, so review spends its time on judgment, not rule-recall.
 - 🗺️ **Faster onboarding.** A browsable concept viewer and a concept·feature·code knowledge graph show what each part *means* and how it all connects.
 - 🔓 **Opt-in, no lock-in.** One marker file switches it on per project; no marker, no hooks. Just JSON + git, with zero runtime dependency added to your app.
@@ -47,10 +47,10 @@ Inside Claude Code, three commands get you running:
 ```bash
 /plugin marketplace add hinyc/Conceptpowers   # 1. add the marketplace
 /plugin install conceptpowers@conceptpowers-dev # 2. install the plugin
-/conceptpowers-init                             # 3. enable it in your project
+/conceptpowers:init                             # 3. enable it in your project
 ```
 
-`/conceptpowers-init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
+`/conceptpowers:init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
 
 ### Staying up to date
 
@@ -71,6 +71,8 @@ Claude Code then refreshes the plugin at startup and prompts `/reload-plugins` w
 
 ## How it Works
 
+> **Conceptpowers only works with an LLM in the loop.** The intelligence lives in the agent, not the engine. The bundled engine (`src/`) is purely deterministic — it validates concept schemas, manages the `@concept` ↔ code mapping cache, tracks status and alignment state, and reads/writes JSON. Every act of *judgment* — "does this change violate a concept's allow/restrict/immutable rules?", "do these two concepts conflict?", "what feature has no concept?" — is performed by Claude reading the skills, because it requires reasoning over natural-language intent against real code. Without an LLM, Conceptpowers degrades to a structured-file manager: the gates still fire, but nothing can decide whether a change is actually a violation. The engine never calls an LLM itself; the reasoning happens inside the Claude Code conversation where the skills run.
+
 Conceptpowers keeps concepts and code in lockstep through a simple loop:
 
 ```mermaid
@@ -86,10 +88,10 @@ flowchart LR
     G -. "drift found" .-> A
 ```
 
-1. **Define** a concept as structured data (`/conceptpowers-define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
-2. **Check** before changing code (`/conceptpowers-check-concept`). The agent finds the related concept and judges whether the change violates it.
+1. **Define** a concept as structured data (`/conceptpowers:define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
+2. **Check** before changing code (`/conceptpowers:check-concept`). The agent finds the related concept and judges whether the change violates it.
 3. **Enforce** automatically across three hook touchpoints. The **SessionStart** hook loads active concepts (and any drift) into context; the **PreToolUse** hook stops before a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and asks you to fix or confirm — overrides are recorded rather than silently lost; the **PostToolUse** hook, after a commit lands, re-aligns the concepts whose code shipped so the drift signal clears itself.
-4. **Audit** anytime (`/conceptpowers-audit`) to find concept-less code and verify every `@concept` link still resolves.
+4. **Audit** anytime (`/conceptpowers:audit`) to find concept-less code and verify every `@concept` link still resolves.
 
 All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
 
@@ -106,7 +108,10 @@ The viewer shows a badge for each concept, and the commit gate surfaces an **emp
 
 The agent may only **promote a user-authored pending to green** after a passing consistency check;
 it never demotes or changes a settled green/red. The human's control point is **authoring** the
-concept's content, not a separate approval toggle.
+concept's content, not a separate approval toggle. The engine backs this with a transition guard:
+`setConceptStatus` / `approve` reject illegal status moves — green and red are *settled* (no demotion
+through this path) and `approve` acts only on a red concept. (Whether the consistency check actually
+passed before a promotion remains the agent's judgment — that part is not machine-verifiable.)
 
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
@@ -142,18 +147,18 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 
 | Skill | When it runs | What it produces |
 | --- | --- | --- |
-| `conceptpowers-init` | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists). |
-| `conceptpowers-define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON born 🟡 pending; on a passing consistency check it becomes 🟢 green, otherwise it stays pending with the conflict reason recorded via `note-conflict`. (Auto-inferred concepts are 🔴 red.) |
-| `conceptpowers-check-concept` | **Before** writing or changing any code (tests included) that adds a feature or alters behavior. | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept) |
-| `conceptpowers-check-consistency` | **Whenever a concept is defined or changed**, and again **at the commit gate**. | A conflict report across *all* concepts — green wins over red, green↔green escalates to you. Passes only at zero conflicts. (concept ↔ concept) |
-| `conceptpowers-approve` | When the user **confirms** a 🔴 concept on explicit user request. | Promotes an auto-inferred 🔴 red concept to 🟢 green *after* a consistency check, then re-renders the viewer. The agent never approves on its own. |
-| `conceptpowers-update-mapping` | **After editing code**, to refresh the `@concept` links — or anytime, to resync. | Updated `@concept` tags (source of truth) + a rebuilt `.cache/mapping.json`. |
-| `conceptpowers-audit` | **Anytime**, for a whole-project sweep. | A list of concept-less gaps, broken `@concept` links, and unapproved 🔴 concepts, each with a recommended action. |
-| `conceptpowers-update-baseline` | **Only** when the user explicitly asks to edit the baseline. | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`. |
+| `conceptpowers:init` | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists). |
+| `conceptpowers:define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON born 🟡 pending; on a passing consistency check it becomes 🟢 green, otherwise it stays pending with the conflict reason recorded via `note-conflict`. (Auto-inferred concepts are 🔴 red.) |
+| `conceptpowers:check-concept` | **Before** writing or changing any code (tests included) that adds a feature or alters behavior. | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept) |
+| `conceptpowers:check-consistency` | **Whenever a concept is defined or changed**, and again **at the commit gate**. | A conflict report across *all* concepts — green wins over red, green↔green escalates to you. Passes only at zero conflicts. (concept ↔ concept) |
+| `conceptpowers:approve` | When the user **confirms** a 🔴 concept on explicit user request. | Promotes an auto-inferred 🔴 red concept to 🟢 green *after* a consistency check, then re-renders the viewer. The agent never approves on its own. |
+| `conceptpowers:update-mapping` | **After editing code**, to refresh the `@concept` links — or anytime, to resync. | Updated `@concept` tags (source of truth) + a rebuilt `.cache/mapping.json`. |
+| `conceptpowers:audit` | **Anytime**, for a whole-project sweep. | A list of concept-less gaps, broken `@concept` links, and unapproved 🔴 concepts, each with a recommended action. |
+| `conceptpowers:update-baseline` | **Only** when the user explicitly asks to edit the baseline. | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`. |
 
 ### Project structure
 
-`/conceptpowers-init` creates:
+`/conceptpowers:init` creates:
 
 ```
 docs/conceptpowers/
@@ -162,10 +167,10 @@ docs/conceptpowers/
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data
 │   ├── viewer/index.html           # browsable concept viewer
-│   └── .alignment/                 # drift state: alignment lock + why-log (plugin-managed, do not edit)
+│   └── .alignment/                 # drift state: lock + why-log — created on first commit reconcile (plugin-managed, do not edit)
 ├── architecture/architecture.md    # architecture template
 ├── infra/infra.md                  # infra template
-└── .cache/mapping.json             # auto mapping cache (do not edit)
+└── .cache/mapping.json             # auto mapping cache — created on first update-mapping (do not edit)
 ```
 
 The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
