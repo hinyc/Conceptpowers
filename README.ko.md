@@ -73,7 +73,7 @@ flowchart LR
 
 1. **정의(Define)**: 개념을 구조화된 데이터로 정의한다 (`/conceptpowers-define-concept`). 목적, 허용/제한 동작, 불변 규칙을 담는다.
 2. **검증(Check)**: 코드 변경 전 검증한다 (`/conceptpowers-check-concept`). 에이전트가 관련 개념을 찾아 변경이 그것을 위배하는지 판단한다.
-3. **강제(Enforce)**: 자동으로 강제된다. SessionStart 훅이 활성 개념(및 드리프트)을 컨텍스트에 로드하고, PreToolUse 훅은 미정의 `@concept`·미승인(red) 개념·개념↔코드 드리프트를 참조하는 커밋 직전에 멈춰 수정 또는 확인을 묻는다 — 강행해도 조용히 사라지지 않고 기록으로 남는다.
+3. **강제(Enforce)**: 세 개의 훅 접점에서 자동으로 강제된다. **SessionStart** 훅이 활성 개념(및 드리프트)을 컨텍스트에 로드하고, **PreToolUse** 훅은 미정의 `@concept`·미승인(red) 개념·개념↔코드 드리프트를 참조하는 커밋 직전에 멈춰 수정 또는 확인을 묻는다 — 강행해도 조용히 사라지지 않고 기록으로 남는다. 커밋이 완료되면 **PostToolUse** 훅이 코드가 함께 올라간 개념들을 재정렬해 드리프트 신호를 스스로 해소한다.
 4. **감사(Audit)**: 언제든 (`/conceptpowers-audit`) 개념 없는 코드를 찾고 모든 `@concept` 링크가 여전히 유효한지 확인한다.
 
 모든 강제는 **프로젝트별 opt-in**이며, 전적으로 `docs/conceptpowers/init.json` 마커에 의해 게이트된다 — 마커가 없으면 훅도 없다.
@@ -94,21 +94,46 @@ flowchart LR
 
 green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가 양보(수정/재플래그)하며, **green ↔ green** 충돌은 중단하고 사용자에게 올린다.
 
+### 커밋 시점에 일어나는 일
+
+`git commit`은 두 개의 훅으로 감싸이고, 그 사이에 검증 스킬이 실행되어 있어야 한다. 거버넌스가 실제로 물리는 지점이 바로 여기다.
+
+**커밋 직전 — `PreToolUse` 게이트**가 스테이징된 파일을 검사해 정확히 하나의 결정을 돌려준다:
+
+| 스테이징된 변경의 조건 | 결정 | 보이는 메시지 |
+| --- | --- | --- |
+| `@concept:` 태그가 **존재하지 않는** 개념을 가리킴 | **ask** | `[WARNING] undefined concept tag …` — 개념을 정의하거나 태그를 고치거나, 그래도 커밋 |
+| 개념이 코드 정렬 이후 **바뀌었는데**, 그 관련 코드가 **이번 커밋에 없음**(드리프트) | **ask** | `[CONCEPT DRIFT] …` — 기록된 *변경 이유*와 함께. 코드를 함께 스테이징하거나, 강행(`[Drift Ignored]`로 기록) |
+| 스테이징된 변경이 아직 🔴 **미승인** 개념을 건드림 | **ask** | `[WARNING] UNAPPROVED CONCEPTS …` — 검토/승인하거나, 그래도 커밋 |
+| 위 어느 것도 아님 | **allow** | 진행. 단 게이트는 check-concept / check-consistency를 실행했어야 함을 다시 상기시킨다 |
+
+게이트는 **절대 하드 차단하지 않는다** — 모든 문제는 *ask*(차단 **+** 강행)다. 한쪽으로 강제된 운전대일 뿐 벽이 아니다 — "아니, 그래도 커밋해"라고 하면 양보하고, 그 강행은 조용히 사라지지 않고 기록된다.
+
+**그 사이 — 에이전트가 게이트를 통과시키려 실행하는 스킬:**
+- `check-concept` — 스테이징된 *코드*가 관련 개념을 지키는지 검증한다 (코드 ↔ 개념).
+- `check-consistency` — *바뀐 개념*이 다른 개념과 충돌하지 않는지 검증한다 (개념 ↔ 개념).
+- `update-mapping` — `@concept` 태그와 캐시를 재동기화해 게이트가 최신 링크를 평가하게 한다.
+
+**커밋이 완료된 뒤 — `PostToolUse` 재정렬(reconcile)**은 커밋이 실제로 일어났는지(HEAD가 전진했고 머지가 아닌지) 확인한 뒤, 그 커밋에 관련 코드가 함께 올라간 모든 개념을 **재정렬**한다: 정렬 락이 새 계약 해시로 전진하고(드리프트 해소), why-log(`history.json`)에 각 개념을 *aligned*로 — 게이트를 강행했다면 *drift-ignored*로 — 기록한다. 이 자가 해소 단계가 드리프트 신호를 영원히 보채지 않고 정직하게 유지한다.
+
 ### 프로젝트 전체 스캔 (중도 도입)
 
 이미 진행 중인 프로젝트에 Conceptpowers를 도입한다면? `init` **strict** 모드가 *전체 스캔*을 수행한다 — 모든 버튼/동작을 훑고 **화면에 보이는 내용까지 분석**해 기능을 나열한 뒤, 개념이 없는 기능마다 (red) 개념을 유추한다. 철저하지만 **대형 프로젝트에서는 시간·토큰 소모가 크다** — init 스킬이 실행 전에 경고하며, 기본값은 점진적(incremental) 백필이다.
 
 ### 스킬
 
-| 스킬 | 설명 |
-| --- | --- |
-| `conceptpowers-init` | 거버넌스 활성화, `docs/conceptpowers`와 마커 스캐폴딩 |
-| `conceptpowers-define-concept` | 새 기능·역할·권한·용어에 대한 구조화된 개념 정의 |
-| `conceptpowers-check-concept` | 코드 변경 전 관련 개념을 찾아 allow/restrict/immutable 규칙 위배 판단 |
-| `conceptpowers-check-consistency` | 신규/변경 개념을 기존 개념과 비교해 충돌 탐지 (커밋 게이트) |
-| `conceptpowers-update-mapping` | `@concept` 태그와 매핑 캐시 동기화 |
-| `conceptpowers-audit` | 개념 누락 코드(gap)와 `@concept` 링크 무결성 전체 점검 |
-| `conceptpowers-update-baseline` | 사용자가 명시적으로 요청할 때만 baseline 수정 |
+각 스킬은 루프의 특정 순간에 켜진다. 가운데 열이 트리거 — *언제* 당신(또는 당신을 대신한 에이전트)이 그 스킬에 손을 대는가다.
+
+| 스킬 | 언제 사용되나 | 무엇을 만들어내나 |
+| --- | --- | --- |
+| `conceptpowers-init` | **프로젝트당 한 번**, 거버넌스를 켤 때. `strict` 모드는 기존 코드베이스를 전체 스캔해 개념을 백필한다. | `docs/conceptpowers/` 스캐폴드 + `init.json` 마커(생기는 순간 훅이 살아난다). |
+| `conceptpowers-define-concept` | 기존 개념이 **없는** 기능·역할·권한·용어를 추가하기 **전에**. | 일관성 검사를 거쳐 저장되는 새 개념 JSON(상태 🔴 red). 기존 개념을 *재정의*하는 경우엔 `note-change`로 변경 이유까지 기록해 드리프트 추적을 유지한다. |
+| `conceptpowers-check-concept` | 기능을 추가하거나 동작을 바꾸는 코드(테스트 포함)를 작성/변경하기 **전에**. | 판정 결과: 변경이 관련 개념의 allow / restrict / immutable 규칙을 위배하는가? (코드 ↔ 개념) |
+| `conceptpowers-check-consistency` | **개념을 정의·변경할 때마다**, 그리고 **커밋 게이트에서** 다시. | *모든* 개념에 대한 충돌 리포트 — green이 red를 이기고, green↔green은 사용자에게 올린다. 충돌 0일 때만 통과. (개념 ↔ 개념) |
+| `conceptpowers-approve` | 사용자가 🔴 개념을 **확정**할 때 — `approvalMode: cli`에서만 허용. | 일관성 검사 *뒤* 상태를 🔴 → 🟢으로 전환하고 뷰어를 다시 렌더링한다. 에이전트가 임의로 승인하지 않는다. |
+| `conceptpowers-update-mapping` | **코드 편집 후** `@concept` 링크를 갱신할 때 — 혹은 언제든 재동기화. | 갱신된 `@concept` 태그(진실의 원천) + 재빌드된 `.cache/mapping.json`. |
+| `conceptpowers-audit` | **언제든**, 프로젝트 전수 점검용. | 개념 없는 gap 목록, 깨진 `@concept` 링크, 미승인 🔴 개념 — 각각 권장 조치와 함께. |
+| `conceptpowers-update-baseline` | 사용자가 baseline 수정을 **명시적으로 요청할 때만**. | 요청된 baseline 수정. 개념의 계약이 바뀌면 `note-change`로 이유를 기록한다. |
 
 ### 프로젝트 구조
 
@@ -120,7 +145,8 @@ docs/conceptpowers/
 ├── features/                       # 기능 명세
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # 개념 데이터
-│   └── viewer/index.html           # 탐색 가능한 개념 뷰어
+│   ├── viewer/index.html           # 탐색 가능한 개념 뷰어
+│   └── .alignment/                 # 드리프트 상태: 정렬 락 + why-log (플러그인 관리, 수정 금지)
 ├── architecture/architecture.md    # 아키텍처 템플릿
 ├── infra/infra.md                  # 인프라 템플릿
 └── .cache/mapping.json             # 자동 매핑 캐시 (수정 금지)

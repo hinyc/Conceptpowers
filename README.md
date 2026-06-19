@@ -73,7 +73,7 @@ flowchart LR
 
 1. **Define** a concept as structured data (`/conceptpowers-define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
 2. **Check** before changing code (`/conceptpowers-check-concept`). The agent finds the related concept and judges whether the change violates it.
-3. **Enforce** automatically. The SessionStart hook loads active concepts (and any drift) into context; the PreToolUse hook stops before a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and asks you to fix or confirm — overrides are recorded rather than silently lost.
+3. **Enforce** automatically across three hook touchpoints. The **SessionStart** hook loads active concepts (and any drift) into context; the **PreToolUse** hook stops before a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and asks you to fix or confirm — overrides are recorded rather than silently lost; the **PostToolUse** hook, after a commit lands, re-aligns the concepts whose code shipped so the drift signal clears itself.
 4. **Audit** anytime (`/conceptpowers-audit`) to find concept-less code and verify every `@concept` link still resolves.
 
 All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
@@ -94,22 +94,46 @@ How a concept becomes green is controlled by `approvalMode` in `init.json`:
 
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
+### What happens at commit time
+
+A `git commit` is bracketed by two hooks, with the verification skills expected to have run in between. This is where the governance actually bites.
+
+**Before the commit — the `PreToolUse` gate** inspects the staged files and returns exactly one decision:
+
+| Condition in the staged changes | Decision | What you see |
+| --- | --- | --- |
+| An `@concept:` tag points to a concept that **doesn't exist** | **ask** | `[WARNING] undefined concept tag …` — define it or fix the tag, or commit anyway |
+| A concept **changed** since its code was last aligned, but that related code is **not in this commit** (drift) | **ask** | `[CONCEPT DRIFT] …` with the recorded *reason it changed* — stage the code too, or override (recorded as `[Drift Ignored]`) |
+| The staged changes touch a still-🔴 **unapproved** concept | **ask** | `[WARNING] UNAPPROVED CONCEPTS …` — review/approve, or commit anyway |
+| None of the above | **allow** | proceeds; the gate still reminds the agent it should have run check-concept / check-consistency |
+
+The gate **never hard-blocks** — every problem is an *ask* (block **with** override). It's a steering wheel forced one way, not a wall: if you say "no, commit anyway," it yields, and the override is recorded rather than silently lost.
+
+**In between — the skills the agent runs to clear the gate:**
+- `check-concept` verifies the staged *code* obeys its related concepts (code ↔ concept).
+- `check-consistency` verifies any *changed concept* doesn't conflict with the others (concept ↔ concept).
+- `update-mapping` resyncs the `@concept` tags and cache so the gate evaluates current links.
+
+**After the commit lands — the `PostToolUse` reconcile** confirms the commit actually happened (HEAD advanced, and it isn't a merge), then **re-aligns** every concept whose related code shipped in that commit: its alignment lock advances to the new contract hash (so drift clears), and the why-log (`history.json`) records each concept as *aligned* — or, if you overrode the gate, as *drift-ignored*. This self-clearing step is what keeps the drift signal honest instead of nagging forever.
+
 ### Full project scan (mid-project adoption)
 
 Adopting Conceptpowers on an existing project? `init` **strict** mode runs a *full scan*: it enumerates features by walking every button/action **and** analyzing on-screen content, then infers a (red) concept for each uncovered feature. This is thorough but **time- and token-intensive on large projects** — the init skill warns you before running it, and incremental backfill remains the default.
 
 ### Skills
 
-| Skill | Description |
-| --- | --- |
-| `conceptpowers-init` | Enable governance, scaffold `docs/conceptpowers` and the marker; strict mode runs a full project scan |
-| `conceptpowers-define-concept` | Define a structured concept for a new feature/role/permission/term (sets green/red status) |
-| `conceptpowers-check-concept` | Find related concepts and judge allow/restrict/immutable violations before changes |
-| `conceptpowers-check-consistency` | Compare new/changed concepts against existing ones (green wins, green↔green escalates); commit gate |
-| `conceptpowers-approve` | Approve a concept (red → green); user-gated, allowed only in `approvalMode: cli` |
-| `conceptpowers-update-mapping` | Sync `@concept` tags and the mapping cache |
-| `conceptpowers-audit` | Audit concept-less code (gaps), `@concept` link integrity, and unapproved (red) concepts |
-| `conceptpowers-update-baseline` | Modify the baseline only when the user explicitly asks |
+Each skill activates at a specific moment in the loop. The middle column is the trigger — *when* you (or the agent, on your behalf) reach for it.
+
+| Skill | When it runs | What it produces |
+| --- | --- | --- |
+| `conceptpowers-init` | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists). |
+| `conceptpowers-define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON (status 🔴 red) saved after a consistency check. If it *redefines* an existing concept, also records the change reason via `note-change` so drift stays traceable. |
+| `conceptpowers-check-concept` | **Before** writing or changing any code (tests included) that adds a feature or alters behavior. | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept) |
+| `conceptpowers-check-consistency` | **Whenever a concept is defined or changed**, and again **at the commit gate**. | A conflict report across *all* concepts — green wins over red, green↔green escalates to you. Passes only at zero conflicts. (concept ↔ concept) |
+| `conceptpowers-approve` | When the user **confirms** a 🔴 concept — allowed only in `approvalMode: cli`. | Flips status 🔴 → 🟢 *after* a consistency check, then re-renders the viewer. The agent never approves on its own. |
+| `conceptpowers-update-mapping` | **After editing code**, to refresh the `@concept` links — or anytime, to resync. | Updated `@concept` tags (source of truth) + a rebuilt `.cache/mapping.json`. |
+| `conceptpowers-audit` | **Anytime**, for a whole-project sweep. | A list of concept-less gaps, broken `@concept` links, and unapproved 🔴 concepts, each with a recommended action. |
+| `conceptpowers-update-baseline` | **Only** when the user explicitly asks to edit the baseline. | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`. |
 
 ### Project structure
 
@@ -121,7 +145,8 @@ docs/conceptpowers/
 ├── features/                       # feature specs
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data
-│   └── viewer/index.html           # browsable concept viewer
+│   ├── viewer/index.html           # browsable concept viewer
+│   └── .alignment/                 # drift state: alignment lock + why-log (plugin-managed, do not edit)
 ├── architecture/architecture.md    # architecture template
 ├── infra/infra.md                  # infra template
 └── .cache/mapping.json             # auto mapping cache (do not edit)
