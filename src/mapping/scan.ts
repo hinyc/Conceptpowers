@@ -32,3 +32,11 @@ export async function writeMappingCache(root: string, mapping: Mapping): Promise
   await mkdir(dirname(target), { recursive: true })
   await writeFile(target, JSON.stringify(mapping, null, 2) + '\n', 'utf8')
 }
+
+export async function readMappingCache(root: string): Promise<Mapping> {
+  try {
+    return JSON.parse(await readFile(cpPaths(root).mappingCache, 'utf8'))
+  } catch {
+    return {}
+  }
+}
