@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { isInitialized } from "../init/scaffold.js";
 import { readInitConfig } from "../init/readConfig.js";
 import { listConcepts } from "../store/conceptStore.js";
+import { computeDrift } from "../drift/detect.js";
 import { localeLabel } from "../i18n/messages.js";
 
 export interface SessionStartOutput {
@@ -43,10 +44,27 @@ export async function buildSessionStartOutput(
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",
   ].join("\n");
+  const drift = await computeDrift(root);
+  const driftBlock =
+    drift.length > 0
+      ? "\n" +
+        [
+          "<CONCEPT-DRIFT>",
+          "These concepts changed since their code was last aligned. Their related code may need updating:",
+          ...drift.map(
+            (d) =>
+              `- ${d.slug}${d.reason ? ` (이유: ${d.reason})` : ""} → related code: ${
+                d.relatedPaths.length ? d.relatedPaths.join(", ") : "(none yet)"
+              }`,
+          ),
+          "Guide the user to update the related code (or the concept) so they re-align; run conceptpowers:check-concept.",
+          "</CONCEPT-DRIFT>",
+        ].join("\n")
+      : "";
   return {
     hookSpecificOutput: {
       hookEventName: "SessionStart",
-      additionalContext: context,
+      additionalContext: context + driftBlock,
     },
   };
 }
