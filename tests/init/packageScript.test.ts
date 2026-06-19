@@ -20,13 +20,13 @@ describe('addViewerScript', () => {
     expect(await addViewerScript(root, 'darwin')).toBe(true)
     const pkg = readPkg()
     expect(pkg.scripts.build).toBe('tsc')
-    expect(pkg.scripts[VIEWER_SCRIPT_NAME]).toContain('open ')
-    expect(pkg.scripts[VIEWER_SCRIPT_NAME]).toContain('docs/conceptpowers/concepts/viewer/index.html')
+    expect(pkg.scripts[VIEWER_SCRIPT_NAME]).toContain('node ')
+    expect(pkg.scripts[VIEWER_SCRIPT_NAME]).toContain('docs/conceptpowers/concepts/viewer/serve.mjs')
   })
-  it('OS별 open 명령을 생성한다', async () => {
+  it('플랫폼과 무관하게 node 서버 명령을 생성한다', async () => {
     writeFileSync(pkgPath(), JSON.stringify({ name: 'demo' }))
     await addViewerScript(root, 'win32')
-    expect(readPkg().scripts[VIEWER_SCRIPT_NAME]).toContain('start')
+    expect(readPkg().scripts[VIEWER_SCRIPT_NAME]).toBe('node docs/conceptpowers/concepts/viewer/serve.mjs')
   })
   it('이미 동일 스크립트가 있으면 덮어쓰지 않고 false를 반환한다', async () => {
     writeFileSync(pkgPath(), JSON.stringify({ scripts: { [VIEWER_SCRIPT_NAME]: 'custom' } }))

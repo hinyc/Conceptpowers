@@ -7131,50 +7131,6 @@ function parseInitConfig(input) {
 }
 
 // src/i18n/messages.ts
-var viewerStrings = {
-  ko: {
-    description: "\uC124\uBA85",
-    purpose: "\uBAA9\uC801",
-    allow: "\uD5C8\uC6A9 \uD589\uB3D9",
-    restrict: "\uC81C\uD55C \uD589\uB3D9",
-    principle: "\uC6B4\uC601 \uC6D0\uCE59",
-    conceptList: "\uAC1C\uB150 \uBAA9\uB85D",
-    statusApproved: "\uC2B9\uC778\uB428",
-    statusUnapproved: "\uBBF8\uC2B9\uC778",
-    statusPending: "\uBCF4\uB958",
-    featureList: "\uAE30\uB2A5 \uBAA9\uB85D",
-    relatedFeatures: "\uAD00\uB828 \uAE30\uB2A5",
-    relatedConcepts: "\uAD00\uB828 \uAC1C\uB150",
-    implementationPaths: "\uAD6C\uD604 \uACBD\uB85C",
-    featureEyebrow: "\uAE30\uB2A5",
-    graphTitle: "\uC9C0\uC2DD \uADF8\uB798\uD504",
-    openGraph: "\uC9C0\uC2DD \uADF8\uB798\uD504 \uBCF4\uAE30",
-    conceptNode: "\uAC1C\uB150",
-    featureNode: "\uAE30\uB2A5",
-    fileNode: "\uD30C\uC77C"
-  },
-  en: {
-    description: "Description",
-    purpose: "Purpose",
-    allow: "Allowed",
-    restrict: "Restricted",
-    principle: "Operating Principles",
-    conceptList: "Concepts",
-    statusApproved: "Approved",
-    statusUnapproved: "Unapproved",
-    statusPending: "Pending",
-    featureList: "Features",
-    relatedFeatures: "Related Features",
-    relatedConcepts: "Related Concepts",
-    implementationPaths: "Implementation",
-    featureEyebrow: "Feature",
-    graphTitle: "Knowledge Graph",
-    openGraph: "View Knowledge Graph",
-    conceptNode: "Concept",
-    featureNode: "Feature",
-    fileNode: "File"
-  }
-};
 var seedTemplates = {
   ko: {
     architecture: "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n",
@@ -7222,106 +7178,9 @@ import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile5 } from 
 import { join as join4, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// src/viewer/template.ts
-function esc(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
-function list(items) {
-  return items.length ? `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
-}
-function statusBadge(c, t) {
-  const status = c.status ?? "red";
-  const label = status === "green" ? t.statusApproved : status === "pending" ? t.statusPending : t.statusUnapproved;
-  return `<span class="badge badge--${status}">${esc(label)}</span>`;
-}
-var depthOf = (rel) => rel.split("/").length - 1;
-var upTo = (rel) => "../".repeat(depthOf(rel));
-var cssHref = (depth) => `${"../".repeat(depth)}assets/concept.css`;
-var conceptRel = (c) => c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
-var featureRel = (f) => f.group ? `features/${f.group}/${f.slug}.html` : `features/${f.slug}.html`;
-function conceptPage(c, locale = "ko", relatedFeatures = []) {
-  const rel = conceptRel(c);
-  const up = upTo(rel);
-  const t = viewerStrings[locale];
-  const related = relatedFeatures.length ? `<section class="section"><h2>${t.relatedFeatures}</h2><ul class="links">${relatedFeatures.map((f) => `<li><a href="${up}${esc(featureRel(f))}">${esc(f.title)}</a></li>`).join("")}</ul></section>` : "";
-  return `<!DOCTYPE html>
-<html lang="${locale}"><head><meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>${esc(c.title)} \xB7 concept</title>
-<link rel="stylesheet" href="${cssHref(depthOf(rel))}"/></head>
-<body><div class="wrap">
-<header class="hero"><span class="hero__eyebrow">${esc(c.eyebrow)}</span>${statusBadge(c, t)}
-<h1>${esc(c.title)}</h1><p>${esc(c.description.definition)}</p>
-<p class="cats">${c.category.map(esc).join(" \xB7 ")}</p></header>
-<section class="section"><h2>${t.description}</h2><p>${esc(c.description.definition)}</p>
-${c.description.analogy ? `<p class="analogy">${esc(c.description.analogy)}</p>` : ""}
-${list(c.description.components)}</section>
-<section class="section"><h2>${t.purpose}</h2><p>${esc(c.purpose.reason)}</p>${list(c.purpose.benefits)}</section>
-<section class="section cols"><div class="col-card col-card--allow"><h3>${t.allow}</h3>${list(c.actions.allow)}</div>
-<div class="col-card col-card--restrict"><h3>${t.restrict}</h3>${list(c.actions.restrict)}</div></section>
-<section class="section"><h2>${t.principle}</h2>${list(c.principle.immutableRules)}
-${c.principle.tradeoffs ? `<p>${esc(c.principle.tradeoffs)}</p>` : ""}</section>
-${related}
-<nav class="pagenav"><a href="${up}index.html">${esc(t.conceptList)}</a> \xB7 <a href="${up}graph.html">${esc(t.graphTitle)}</a></nav>
-</div></body></html>
-`;
-}
-function featurePage(f, locale = "ko", concepts = /* @__PURE__ */ new Map()) {
-  const rel = featureRel(f);
-  const up = upTo(rel);
-  const t = viewerStrings[locale];
-  const conceptLinks = f.concepts.map((slug3) => {
-    const c = concepts.get(slug3);
-    return c ? `<li><a href="${up}${esc(conceptRel(c))}">${esc(c.title)}</a></li>` : `<li><span class="muted">${esc(slug3)}</span></li>`;
-  }).join("");
-  const paths = f.codePaths.length ? `<ul class="paths">${f.codePaths.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : "";
-  return `<!DOCTYPE html>
-<html lang="${locale}"><head><meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>${esc(f.title)} \xB7 feature</title>
-<link rel="stylesheet" href="${cssHref(depthOf(rel))}"/></head>
-<body><div class="wrap">
-<header class="hero"><span class="hero__eyebrow">${esc(t.featureEyebrow)}</span>
-<h1>${esc(f.title)}</h1>${f.description ? `<p>${esc(f.description)}</p>` : ""}</header>
-<section class="section"><h2>${t.relatedConcepts}</h2><ul class="links">${conceptLinks}</ul></section>
-<section class="section"><h2>${t.implementationPaths}</h2>${paths}</section>
-<nav class="pagenav"><a href="${up}index.html">${esc(t.conceptList)}</a> \xB7 <a href="${up}graph.html">${esc(t.graphTitle)}</a></nav>
-</div></body></html>
-`;
-}
-function indexPage(concepts, locale = "ko", features = []) {
-  const byGroup = /* @__PURE__ */ new Map();
-  for (const c of concepts) {
-    const g = c.group || "(ungrouped)";
-    byGroup.set(g, [...byGroup.get(g) ?? [], c]);
-  }
-  const t = viewerStrings[locale];
-  const sections = [...byGroup.entries()].map(([g, cs]) => `<section class="group"><h2>${esc(g)}</h2><ul>${cs.map((c) => {
-    const href = conceptRel(c);
-    return `<li>${statusBadge(c, t)} <a href="${esc(href)}">${esc(c.title)}</a> <small>${c.category.map(esc).join(", ")}</small></li>`;
-  }).join("")}</ul></section>`).join("");
-  const featureSection = features.length ? `<section class="group"><h2>${esc(t.featureList)}</h2><ul>${features.map((f) => `<li><a href="${esc(featureRel(f))}">${esc(f.title)}</a> <small>${f.codePaths.length}</small></li>`).join("")}</ul></section>` : "";
-  const title = t.conceptList;
-  return `<!DOCTYPE html><html lang="${locale}"><head><meta charset="UTF-8"/>
-<title>${title} \xB7 Conceptpowers</title><link rel="stylesheet" href="assets/concept.css"/></head>
-<body><div class="wrap"><header class="hero"><h1>${title}</h1>
-<nav class="pagenav"><a class="graph-link" href="graph.html">${esc(t.openGraph)} \u2192</a></nav></header>
-${sections}${featureSection}</div></body></html>
-`;
-}
-
 // src/viewer/graph.ts
-function reverseFeatureIndex(features) {
-  const idx = /* @__PURE__ */ new Map();
-  for (const f of features) {
-    for (const slug3 of f.concepts) {
-      idx.set(slug3, [...idx.get(slug3) ?? [], f]);
-    }
-  }
-  return idx;
-}
-var conceptHref = (c) => c.group ? `${c.group}/${c.slug}.html` : `${c.slug}.html`;
-var featureHref = (f) => f.group ? `features/${f.group}/${f.slug}.html` : `features/${f.slug}.html`;
+var conceptHref = (c) => `#/concept/${c.slug}`;
+var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
 function buildGraphData(concepts, features) {
   const conceptSlugs = new Set(concepts.map((c) => c.slug));
@@ -7350,81 +7209,32 @@ function buildGraphData(concepts, features) {
   }
   return { nodes, edges };
 }
-function embed(data) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
+
+// src/viewer/manifest.ts
+var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
+var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
+function buildManifest(concepts, features, locale = "ko") {
+  return {
+    version: 1,
+    locale,
+    concepts: concepts.map((c) => ({
+      slug: c.slug,
+      group: c.group ?? "",
+      title: c.title,
+      status: c.status,
+      category: c.category,
+      url: conceptUrl(c)
+    })),
+    features: features.map((f) => ({
+      slug: f.slug,
+      group: f.group ?? "",
+      title: f.title,
+      codePathCount: f.codePaths.length,
+      url: featureUrl(f)
+    })),
+    graph: buildGraphData(concepts, features)
+  };
 }
-function graphPage(data, locale = "ko") {
-  const t = viewerStrings[locale];
-  const legend = `<span class="lg"><i class="dot dot--concept"></i>${esc(t.conceptNode)}</span><span class="lg"><i class="dot dot--feature"></i>${esc(t.featureNode)}</span><span class="lg"><i class="dot dot--file"></i>${esc(t.fileNode)}</span>`;
-  return `<!DOCTYPE html>
-<html lang="${locale}"><head><meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>${esc(t.graphTitle)} \xB7 Conceptpowers</title>
-<link rel="stylesheet" href="assets/concept.css"/></head>
-<body class="graph-body">
-<header class="graph-bar"><a class="back" href="index.html">\u2190 ${esc(t.conceptList)}</a>
-<strong>${esc(t.graphTitle)}</strong><span class="legend">${legend}</span></header>
-<svg id="graph" class="graph"></svg>
-<script>${GRAPH_SCRIPT}</script>
-<script>window.__cpRenderGraph(${embed(data)});</script>
-</body></html>
-`;
-}
-var GRAPH_SCRIPT = `
-window.__cpRenderGraph = function (data) {
-  var NS = 'http://www.w3.org/2000/svg';
-  var svg = document.getElementById('graph');
-  function size() { return { w: svg.clientWidth || window.innerWidth, h: svg.clientHeight || (window.innerHeight - 56) }; }
-  var dim = size(), W = dim.w, H = dim.h;
-  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-  var n = data.nodes.length || 1;
-  var nodes = data.nodes.map(function (d, i) {
-    var a = i / n * Math.PI * 2, R = Math.min(W, H) * 0.32;
-    return { id: d.id, label: d.label, type: d.type, href: d.href, title: d.title,
-      x: W / 2 + Math.cos(a) * R, y: H / 2 + Math.sin(a) * R, vx: 0, vy: 0, fixed: false, drag: false };
-  });
-  var byId = {}; nodes.forEach(function (d) { byId[d.id] = d; });
-  var edges = data.edges.map(function (e) { return { s: byId[e.source], t: byId[e.target] }; })
-    .filter(function (e) { return e.s && e.t; });
-  var gE = document.createElementNS(NS, 'g'); svg.appendChild(gE);
-  var gN = document.createElementNS(NS, 'g'); svg.appendChild(gN);
-  var lines = edges.map(function () { var l = document.createElementNS(NS, 'line'); l.setAttribute('class', 'gedge'); gE.appendChild(l); return l; });
-  function toLocal(ev) { var r = svg.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H }; }
-  var groups = nodes.map(function (d) {
-    var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'gnode gnode--' + d.type);
-    var c = document.createElementNS(NS, 'circle'); c.setAttribute('r', d.type === 'file' ? 5 : 9); g.appendChild(c);
-    var tx = document.createElementNS(NS, 'text'); tx.setAttribute('x', 13); tx.setAttribute('y', 4); tx.textContent = d.label; g.appendChild(tx);
-    var tt = document.createElementNS(NS, 'title'); tt.textContent = d.title || d.label; g.appendChild(tt);
-    g.addEventListener('mousedown', function (ev) {
-      ev.preventDefault(); d.fixed = true; d.drag = false;
-      function mv(e2) { var p = toLocal(e2); d.x = p.x; d.y = p.y; d.drag = true; }
-      function up() { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); setTimeout(function () { d.drag = false; }, 0); }
-      window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
-    });
-    if (d.href) { g.style.cursor = 'pointer'; g.addEventListener('click', function () { if (!d.drag) window.location.href = d.href; }); }
-    gN.appendChild(g); return g;
-  });
-  function tick() {
-    for (var i = 0; i < nodes.length; i++) for (var j = i + 1; j < nodes.length; j++) {
-      var a = nodes[i], b = nodes[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + 0.01, dd = Math.sqrt(d2), f = 2600 / d2;
-      a.vx += dx / dd * f; a.vy += dy / dd * f; b.vx -= dx / dd * f; b.vy -= dy / dd * f;
-    }
-    edges.forEach(function (e) {
-      var dx = e.t.x - e.s.x, dy = e.t.y - e.s.y, dd = Math.sqrt(dx * dx + dy * dy) + 0.01, f = (dd - 96) * 0.02;
-      e.s.vx += dx / dd * f; e.s.vy += dy / dd * f; e.t.vx -= dx / dd * f; e.t.vy -= dy / dd * f;
-    });
-    nodes.forEach(function (d) {
-      d.vx += (W / 2 - d.x) * 0.002; d.vy += (H / 2 - d.y) * 0.002; d.vx *= 0.85; d.vy *= 0.85;
-      if (!d.fixed) { d.x += d.vx; d.y += d.vy; }
-      d.x = Math.max(24, Math.min(W - 24, d.x)); d.y = Math.max(24, Math.min(H - 24, d.y));
-    });
-    lines.forEach(function (l, i) { var e = edges[i]; l.setAttribute('x1', e.s.x); l.setAttribute('y1', e.s.y); l.setAttribute('x2', e.t.x); l.setAttribute('y2', e.t.y); });
-    groups.forEach(function (g, i) { g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')'); });
-    requestAnimationFrame(tick);
-  }
-  if (data.nodes.length) requestAnimationFrame(tick);
-};
-`;
 
 // src/store/conceptStore.ts
 import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir } from "node:fs/promises";
@@ -7647,49 +7457,39 @@ async function readInitConfig(root) {
 }
 
 // src/viewer/render.ts
-function renderViewer(concepts, locale = "ko", features = []) {
-  const reverse = reverseFeatureIndex(features);
-  const conceptBySlug = new Map(concepts.map((c) => [c.slug, c]));
-  const out = {
-    "index.html": indexPage(concepts, locale, features),
-    "graph.html": graphPage(buildGraphData(concepts, features), locale)
-  };
-  for (const c of concepts) {
-    out[conceptRel(c)] = conceptPage(c, locale, reverse.get(c.slug) ?? []);
-  }
-  for (const f of features) {
-    out[featureRel(f)] = featurePage(f, locale, conceptBySlug);
-  }
-  return out;
-}
-async function readBundledCss() {
+async function readAsset(name) {
   const start = dirname4(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile5(join4(dir, "assets", "concept.css"), "utf8");
+      return await readFile5(join4(dir, "assets", name));
     } catch {
       const parent = dirname4(dir);
       if (parent === dir) break;
       dir = parent;
     }
   }
-  throw new Error(`concept.css not found (search start: ${start})`);
+  throw new Error(`asset not found: ${name} (search start: ${start})`);
+}
+async function copyAsset(name, target) {
+  await mkdir4(dirname4(target), { recursive: true });
+  await writeFile4(target, await readAsset(name));
 }
 async function renderViewerToDisk(root) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
-  const files = renderViewer(concepts, locale, features);
-  const viewer = cpPaths(root).conceptsViewer;
-  for (const [rel, html] of Object.entries(files)) {
-    const target = join4(viewer, rel);
-    await mkdir4(dirname4(target), { recursive: true });
-    await writeFile4(target, html, "utf8");
-  }
-  const cssTarget = cpPaths(root).cssTarget;
-  await mkdir4(dirname4(cssTarget), { recursive: true });
-  await writeFile4(cssTarget, await readBundledCss(), "utf8");
+  const p = cpPaths(root);
+  await mkdir4(p.conceptsViewer, { recursive: true });
+  await writeFile4(
+    join4(p.conceptsViewer, "manifest.json"),
+    JSON.stringify(buildManifest(concepts, features, locale), null, 2) + "\n",
+    "utf8"
+  );
+  await copyAsset("index.html", join4(p.conceptsViewer, "index.html"));
+  await copyAsset("viewer.js", join4(p.conceptsViewer, "assets", "viewer.js"));
+  await copyAsset("serve.mjs", join4(p.conceptsViewer, "serve.mjs"));
+  await copyAsset("concept.css", p.cssTarget);
 }
 
 // src/init/packageScript.ts
@@ -7697,12 +7497,11 @@ import { readFile as readFile6, writeFile as writeFile5 } from "node:fs/promises
 import { join as join5 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
-function openCommand(platform) {
-  if (platform === "win32") return `start "" ${VIEWER_INDEX}`;
-  if (platform === "darwin") return `open ${VIEWER_INDEX}`;
-  return `xdg-open ${VIEWER_INDEX}`;
+var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
+function openCommand() {
+  return `node ${VIEWER_SERVE}`;
 }
-async function addViewerScript(root, platform = process.platform) {
+async function addViewerScript(root, _platform = process.platform) {
   const pkgPath = join5(root, "package.json");
   let raw;
   try {
@@ -7720,7 +7519,7 @@ async function addViewerScript(root, platform = process.platform) {
   if (scripts[VIEWER_SCRIPT_NAME]) return false;
   const next = {
     ...pkg,
-    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: openCommand(platform) }
+    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: openCommand() }
   };
   await writeFile5(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
   return true;

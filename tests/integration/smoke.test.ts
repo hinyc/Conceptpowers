@@ -1,6 +1,6 @@
 // tests/integration/smoke.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runCli } from "../../src/cli.js";
@@ -28,11 +28,17 @@ describe("end-to-end", () => {
       status: "green", // 승인된 개념 → 커밋 게이트 통과
     });
     expect(await runCli(["render", "--root", root])).toBe(0);
+    // 개념은 개별 HTML이 아니라 manifest.json에 등록되고 단일 뷰어가 렌더한다.
     expect(
-      existsSync(
-        join(root, "docs/conceptpowers/concepts/viewer/auth/admin-role.html"),
-      ),
+      existsSync(join(root, "docs/conceptpowers/concepts/viewer/index.html")),
     ).toBe(true);
+    const manifest = JSON.parse(
+      readFileSync(
+        join(root, "docs/conceptpowers/concepts/viewer/manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(manifest.concepts[0].url).toBe("../data/auth/admin-role.json");
 
     writeFileSync(join(root, "src/a.ts"), "// @concept:admin-role\n");
     const ok = await decidePreToolUse(root, {

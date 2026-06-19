@@ -175,13 +175,19 @@ docs/conceptpowers/
 ├── init.json                       # activation marker + settings (locale, backfillMode)
 ├── features/                       # feature specs
 ├── concepts/
-│   ├── data/<group>/<slug>.json    # concept data
-│   ├── viewer/index.html           # browsable concept viewer
+│   ├── data/<group>/<slug>.json    # concept data (source of truth)
+│   ├── viewer/                      # browsable SPA viewer — open with `npm run concepts:view`
+│   │   ├── index.html               #   static shell
+│   │   ├── manifest.json            #   data index (concepts · features · graph)
+│   │   ├── serve.mjs                #   zero-dependency local HTTP server
+│   │   └── assets/{viewer.js,concept.css}  # client renderer + styles
 │   └── .alignment/                 # drift state: lock + why-log — created on first commit reconcile (plugin-managed, do not edit)
 ├── architecture/architecture.md    # architecture template
 ├── infra/infra.md                  # infra template
 └── .cache/mapping.json             # auto mapping cache — created on first update-mapping (do not edit)
 ```
+
+The viewer is a **client-side SPA**: it doesn't bake one HTML file per concept — `index.html` + `assets/viewer.js` fetch `manifest.json` and the original `data/*.json` at runtime. Because it `fetch`es local JSON, it must be served over HTTP, not opened as a `file://` — so `init` also adds a **`concepts:view`** script (`node …/viewer/serve.mjs`) to your `package.json` when one exists.
 
 The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
 

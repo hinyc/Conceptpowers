@@ -1,66 +1,52 @@
 // src/viewer/render.ts
+// 뷰어를 디스크에 만든다. 개념마다 HTML을 굽지 않고, 데이터는 원본 JSON으로 두고
+// 단일 SPA(index.html + viewer.js)가 manifest.json을 통해 data/*.json을 fetch해 렌더한다.
 import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { Concept } from '../schema/concept.js'
-import type { Feature } from '../schema/feature.js'
-import type { Locale } from '../schema/initConfig.js'
-import { conceptPage, indexPage, featurePage, conceptRel, featureRel } from './template.js'
-import { buildGraphData, graphPage, reverseFeatureIndex } from './graph.js'
+import { buildManifest } from './manifest.js'
 import { listConcepts } from '../store/conceptStore.js'
 import { listFeatures } from '../store/featureStore.js'
 import { readInitConfig } from '../init/readConfig.js'
 import { cpPaths } from '../paths.js'
 
-export function renderViewer(
-  concepts: Concept[],
-  locale: Locale = 'ko',
-  features: Feature[] = []
-): Record<string, string> {
-  const reverse = reverseFeatureIndex(features)
-  const conceptBySlug = new Map(concepts.map((c) => [c.slug, c]))
-  const out: Record<string, string> = {
-    'index.html': indexPage(concepts, locale, features),
-    'graph.html': graphPage(buildGraphData(concepts, features), locale)
-  }
-  for (const c of concepts) {
-    out[conceptRel(c)] = conceptPage(c, locale, reverse.get(c.slug) ?? [])
-  }
-  for (const f of features) {
-    out[featureRel(f)] = featurePage(f, locale, conceptBySlug)
-  }
-  return out
-}
-
-async function readBundledCss(): Promise<string> {
-  // 번들 위치(dist/cli.js, dist/viewer/render.js, src/viewer/render.ts 등)에
-  // 무관하게 assets/concept.css를 찾도록 상위 디렉터리를 탐색한다.
+// 번들 위치(dist/…, src/…)에 무관하게 상위 디렉터리를 탐색해 assets/<name>을 읽는다.
+async function readAsset(name: string): Promise<Buffer> {
   const start = dirname(fileURLToPath(import.meta.url))
   let dir = start
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile(join(dir, 'assets', 'concept.css'), 'utf8')
+      return await readFile(join(dir, 'assets', name))
     } catch {
       const parent = dirname(dir)
       if (parent === dir) break
       dir = parent
     }
   }
-  throw new Error(`concept.css not found (search start: ${start})`)
+  throw new Error(`asset not found: ${name} (search start: ${start})`)
+}
+
+async function copyAsset(name: string, target: string): Promise<void> {
+  await mkdir(dirname(target), { recursive: true })
+  await writeFile(target, await readAsset(name))
 }
 
 export async function renderViewerToDisk(root: string): Promise<void> {
   const concepts = await listConcepts(root)
   const features = await listFeatures(root)
   const locale = (await readInitConfig(root))?.locale ?? 'ko'
-  const files = renderViewer(concepts, locale, features)
-  const viewer = cpPaths(root).conceptsViewer
-  for (const [rel, html] of Object.entries(files)) {
-    const target = join(viewer, rel)
-    await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, html, 'utf8')
-  }
-  const cssTarget = cpPaths(root).cssTarget
-  await mkdir(dirname(cssTarget), { recursive: true })
-  await writeFile(cssTarget, await readBundledCss(), 'utf8')
+  const p = cpPaths(root)
+
+  await mkdir(p.conceptsViewer, { recursive: true })
+  await writeFile(
+    join(p.conceptsViewer, 'manifest.json'),
+    JSON.stringify(buildManifest(concepts, features, locale), null, 2) + '\n',
+    'utf8'
+  )
+
+  // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
+  await copyAsset('index.html', join(p.conceptsViewer, 'index.html'))
+  await copyAsset('viewer.js', join(p.conceptsViewer, 'assets', 'viewer.js'))
+  await copyAsset('serve.mjs', join(p.conceptsViewer, 'serve.mjs'))
+  await copyAsset('concept.css', p.cssTarget)
 }

@@ -182,6 +182,11 @@ li::marker { color: var(--muted); }
 .pagenav a:hover { text-decoration: underline; }
 .graph-link { font-weight: 600; }
 
+/* 단일 SPA: 그래프 라우트는 뷰포트 전체를 채운다 */
+body.viewing-graph { margin: 0; height: 100vh; overflow: hidden; }
+body.viewing-graph #app,
+body.viewing-graph .graph-shell { height: 100vh; display: flex; flex-direction: column; }
+
 /* 지식 그래프 페이지 */
 .graph-body { margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 .graph-bar {

@@ -169,13 +169,19 @@ docs/conceptpowers/
 ├── init.json                       # 활성화 마커
 ├── features/                       # 기능 명세
 ├── concepts/
-│   ├── data/<group>/<slug>.json    # 개념 데이터
-│   ├── viewer/index.html           # 탐색 가능한 개념 뷰어
+│   ├── data/<group>/<slug>.json    # 개념 데이터 (진실의 원천)
+│   ├── viewer/                      # 탐색 가능한 SPA 뷰어 — `npm run concepts:view`로 연다
+│   │   ├── index.html               #   정적 셸
+│   │   ├── manifest.json            #   데이터 인덱스 (개념 · 기능 · 그래프)
+│   │   ├── serve.mjs                #   의존성 0짜리 로컬 HTTP 서버
+│   │   └── assets/{viewer.js,concept.css}  # 클라이언트 렌더러 + 스타일
 │   └── .alignment/                 # 드리프트 상태: 락 + why-log — 첫 커밋 재정렬 시 생성 (플러그인 관리, 수정 금지)
 ├── architecture/architecture.md    # 아키텍처 템플릿
 ├── infra/infra.md                  # 인프라 템플릿
 └── .cache/mapping.json             # 자동 매핑 캐시 — 첫 update-mapping 시 생성 (수정 금지)
 ```
+
+뷰어는 **클라이언트사이드 SPA**다 — 개념마다 HTML을 굽지 않고, `index.html` + `assets/viewer.js`가 런타임에 `manifest.json`과 원본 `data/*.json`을 fetch한다. 로컬 JSON을 `fetch`하므로 `file://`로 직접 열면 안 되고 HTTP로 서빙해야 한다 — 그래서 `init`은 `package.json`이 있으면 **`concepts:view`** 스크립트(`node …/viewer/serve.mjs`)도 함께 추가한다.
 
 baseline(개념·명세·아키텍처·인프라) 전체는 **사용자 전속** 수정이다 — 에이전트가 임의로 다시 쓰지 않는다.
 
