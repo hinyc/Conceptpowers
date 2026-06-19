@@ -6,6 +6,7 @@ import { auditIntegrity } from "./audit/audit.js";
 import { approveConcept } from "./concept/approve.js";
 import { computeDrift } from "./drift/detect.js";
 import { noteChange } from "./drift/note.js";
+import { setPendingConflict, clearPendingConflict } from "./concept/pendingConflicts.js";
 
 type Out = (s: string) => void;
 
@@ -85,6 +86,23 @@ export async function runCli(
     .argument("<slug>")
     .action(async (slug, o) => {
       await noteChange(o.root, slug, o.reason);
+    });
+
+  program
+    .command("note-conflict")
+    .argument("<slug>")
+    .requiredOption("--reason <reason>", "충돌 사유")
+    .option("--root <root>", "프로젝트 루트", ".")
+    .action(async (slug, o) => {
+      await setPendingConflict(o.root, slug, o.reason);
+    });
+
+  program
+    .command("resolve-conflict")
+    .argument("<slug>")
+    .option("--root <root>", "프로젝트 루트", ".")
+    .action(async (slug, o) => {
+      await clearPendingConflict(o.root, slug);
     });
 
   try {

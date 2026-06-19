@@ -65,4 +65,12 @@ describe("runCli", () => {
     await runCli(["drift", "--root", root], (s) => (captured += s));
     expect(JSON.parse(captured)).toEqual([]);
   });
+  it("note-conflict/resolve-conflict가 사유를 기록·해소한다", async () => {
+    await runCli(["init", "--root", root]);
+    expect(await runCli(["note-conflict", "p", "--reason", "x", "--root", root])).toBe(0);
+    const { readPendingConflicts } = await import("../../src/concept/pendingConflicts.js");
+    expect(await readPendingConflicts(root)).toEqual({ p: "x" });
+    await runCli(["resolve-conflict", "p", "--root", root]);
+    expect(await readPendingConflicts(root)).toEqual({});
+  });
 });
