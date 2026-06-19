@@ -3069,7 +3069,8 @@ function cpPaths(root) {
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
-    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
   };
 }
 
@@ -7116,14 +7117,12 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
-var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
-  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
@@ -7141,6 +7140,7 @@ var viewerStrings = {
     conceptList: "\uAC1C\uB150 \uBAA9\uB85D",
     statusApproved: "\uC2B9\uC778\uB428",
     statusUnapproved: "\uBBF8\uC2B9\uC778",
+    statusPending: "\uBCF4\uB958",
     featureList: "\uAE30\uB2A5 \uBAA9\uB85D",
     relatedFeatures: "\uAD00\uB828 \uAE30\uB2A5",
     relatedConcepts: "\uAD00\uB828 \uAC1C\uB150",
@@ -7161,6 +7161,7 @@ var viewerStrings = {
     conceptList: "Concepts",
     statusApproved: "Approved",
     statusUnapproved: "Unapproved",
+    statusPending: "Pending",
     featureList: "Features",
     relatedFeatures: "Related Features",
     relatedConcepts: "Related Concepts",
@@ -7198,7 +7199,7 @@ function list(items) {
 }
 function statusBadge(c, t) {
   const status = c.status ?? "red";
-  const label = status === "green" ? t.statusApproved : t.statusUnapproved;
+  const label = status === "green" ? t.statusApproved : status === "pending" ? t.statusPending : t.statusUnapproved;
   return `<span class="badge badge--${status}">${esc(label)}</span>`;
 }
 var depthOf = (rel) => rel.split("/").length - 1;
@@ -7401,7 +7402,7 @@ import { join as join2, dirname } from "node:path";
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
-var ConceptStatus = external_exports.enum(["green", "red"]);
+var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
@@ -7658,7 +7659,6 @@ async function scaffoldInit(root, opts) {
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
     locale,
-    approvalMode: opts.approvalMode ?? "manual",
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
   await writeFile5(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
@@ -7718,32 +7718,30 @@ async function auditIntegrity(root, files) {
   const concepts = await listConcepts(root);
   const known = new Set(concepts.map((c) => c.slug));
   const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
+  const pending = new Set(concepts.filter((c) => c.status === "pending").map((c) => c.slug));
   const tags = await scanTags(root, files);
   const unknownTags = [];
   const refRed = /* @__PURE__ */ new Set();
+  const refPending = /* @__PURE__ */ new Set();
   for (const [file, slugs] of Object.entries(tags))
     for (const slug3 of slugs) {
       if (!known.has(slug3)) unknownTags.push({ slug: slug3, file });
       else if (red.has(slug3)) refRed.add(slug3);
+      else if (pending.has(slug3)) refPending.add(slug3);
     }
   return {
     ok: unknownTags.length === 0,
-    // 미승인(red)은 정합성을 막지 않음(경고만)
+    // 미승인(red)·보류(pending)는 정합성을 막지 않음(경고만)
     unknownTags,
     unapproved: [...red],
-    unapprovedRefs: [...refRed]
+    unapprovedRefs: [...refRed],
+    pending: [...pending],
+    pendingRefs: [...refPending]
   };
 }
 
 // src/concept/approve.ts
 async function approveConcept(root, slug3) {
-  const config = await readInitConfig(root);
-  const mode = config?.approvalMode ?? "manual";
-  if (mode !== "cli") {
-    throw new Error(
-      `Approval via CLI is disabled (approvalMode='${mode}'). Set "approvalMode": "cli" in init.json to enable the approve flow, or edit the concept's "status" field to "green" manually.`
-    );
-  }
   return setConceptStatus(root, slug3, "green");
 }
 
@@ -7878,13 +7876,37 @@ async function noteChange(root, slug3, reason, at) {
   return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
 }
 
+// src/concept/pendingConflicts.ts
+import { readFile as readFile9 } from "node:fs/promises";
+async function readPendingConflicts(root) {
+  try {
+    const raw = await readFile9(cpPaths(root).pendingConflicts, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+async function setPendingConflict(root, slug3, reason) {
+  const current = await readPendingConflicts(root);
+  const next = { ...current, [slug3]: reason };
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
+}
+async function clearPendingConflict(root, slug3) {
+  const current = await readPendingConflicts(root);
+  if (!(slug3 in current)) return;
+  const next = { ...current };
+  delete next[slug3];
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
+}
+
 // src/cli.ts
 async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
   let code = 0;
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--approval <mode>", "manual|cli", "manual").action(async (o) => {
-    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, approvalMode: o.approval });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
+    await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
     if (o.mode === "strict") await renderViewerToDisk(o.root);
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
@@ -7913,6 +7935,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("note-change").option("--root <dir>", "project root", process.cwd()).requiredOption("--reason <reason>", "why the concept changed").argument("<slug>").action(async (slug3, o) => {
     await noteChange(o.root, slug3, o.reason);
+  });
+  program2.command("note-conflict").argument("<slug>").requiredOption("--reason <reason>", "\uCDA9\uB3CC \uC0AC\uC720").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", ".").action(async (slug3, o) => {
+    await setPendingConflict(o.root, slug3, o.reason);
+  });
+  program2.command("resolve-conflict").argument("<slug>").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", ".").action(async (slug3, o) => {
+    await clearPendingConflict(o.root, slug3);
   });
   try {
     await program2.parseAsync(argv, { from: "user" });

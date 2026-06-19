@@ -33,7 +33,8 @@ function cpPaths(root) {
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
-    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit")
+    alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
   };
 }
 
@@ -4080,14 +4081,12 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
-var ApprovalModeSchema = external_exports.enum(["manual", "cli"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
   backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
-  approvalMode: ApprovalModeSchema.default("manual"),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 
@@ -4099,7 +4098,7 @@ import { join as join2, dirname } from "node:path";
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
-var ConceptStatus = external_exports.enum(["green", "red"]);
+var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
