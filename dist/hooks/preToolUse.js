@@ -12,7 +12,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
+import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4230,18 +4230,8 @@ async function listFeatures(root) {
   return features;
 }
 
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile4, mkdir as mkdir3, writeFile as writeFile3 } from "node:fs/promises";
 import { join as join4, dirname as dirname3 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
@@ -4265,6 +4255,20 @@ async function readMappingCache(root) {
     return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
+  }
+}
+
+// src/init/packageScript.ts
+var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
+var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
   }
 }
 

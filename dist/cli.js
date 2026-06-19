@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/init/scaffold.ts
-import { mkdir as mkdir5, writeFile as writeFile6, access } from "node:fs/promises";
-import { join as join6 } from "node:path";
+import { mkdir as mkdir6, writeFile as writeFile7, access } from "node:fs/promises";
+import { join as join8 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -7173,16 +7173,21 @@ function buildInitHint(locale, opts) {
   ].join("\n");
 }
 
+// src/init/syncGenerated.ts
+import { readdir as readdir3, rm as rm2, rmdir } from "node:fs/promises";
+import { join as join7 } from "node:path";
+
 // src/viewer/render.ts
-import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile5 } from "node:fs/promises";
-import { join as join4, dirname as dirname4 } from "node:path";
+import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile6 } from "node:fs/promises";
+import { join as join5, dirname as dirname5 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
 var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
-function buildGraphData(concepts, features) {
+var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
+function buildGraphData(concepts, features, codeLinksBySlug = {}) {
   const conceptSlugs = new Set(concepts.map((c) => c.slug));
   const nodes = [];
   const edges = [];
@@ -7192,8 +7197,14 @@ function buildGraphData(concepts, features) {
     seen.add(n.id);
     nodes.push(n);
   };
+  const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
     add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+    const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
+    for (const path of links) {
+      addFile(path);
+      edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: "concept-file" });
+    }
   }
   for (const f of features) {
     add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
@@ -7202,9 +7213,8 @@ function buildGraphData(concepts, features) {
       edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
     }
     for (const path of f.codePaths) {
-      const id = `p:${path}`;
-      add({ id, label: baseName(path), type: "file", href: "", title: path });
-      edges.push({ source: `f:${f.slug}`, target: id, kind: "feature-file" });
+      addFile(path);
+      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: "feature-file" });
     }
   }
   return { nodes, edges };
@@ -7213,7 +7223,9 @@ function buildGraphData(concepts, features) {
 // src/viewer/manifest.ts
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
 var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
-function buildManifest(concepts, features, locale = "ko") {
+var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
+var mergeLinks = (c, codeLinksBySlug) => [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])];
+function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
   return {
     version: 1,
     locale,
@@ -7223,7 +7235,8 @@ function buildManifest(concepts, features, locale = "ko") {
       title: c.title,
       status: c.status,
       category: c.category,
-      url: conceptUrl(c)
+      url: conceptUrl(c),
+      codeLinks: mergeLinks(c, codeLinksBySlug)
     })),
     features: features.map((f) => ({
       slug: f.slug,
@@ -7232,7 +7245,7 @@ function buildManifest(concepts, features, locale = "ko") {
       codePathCount: f.codePaths.length,
       url: featureUrl(f)
     })),
-    graph: buildGraphData(concepts, features)
+    graph: buildGraphData(concepts, features, codeLinksBySlug)
   };
 }
 
@@ -7445,124 +7458,9 @@ async function listFeatures(root) {
   return features;
 }
 
-// src/init/readConfig.ts
-import { readFile as readFile4 } from "node:fs/promises";
-async function readInitConfig(root) {
-  try {
-    const raw = await readFile4(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
-// src/viewer/render.ts
-async function readAsset(name) {
-  const start = dirname4(fileURLToPath(import.meta.url));
-  let dir = start;
-  for (let i = 0; i < 6; i++) {
-    try {
-      return await readFile5(join4(dir, "assets", name));
-    } catch {
-      const parent = dirname4(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  }
-  throw new Error(`asset not found: ${name} (search start: ${start})`);
-}
-async function copyAsset(name, target) {
-  await mkdir4(dirname4(target), { recursive: true });
-  await writeFile4(target, await readAsset(name));
-}
-async function renderViewerToDisk(root) {
-  const concepts = await listConcepts(root);
-  const features = await listFeatures(root);
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
-  const p = cpPaths(root);
-  await mkdir4(p.conceptsViewer, { recursive: true });
-  await writeFile4(
-    join4(p.conceptsViewer, "manifest.json"),
-    JSON.stringify(buildManifest(concepts, features, locale), null, 2) + "\n",
-    "utf8"
-  );
-  await copyAsset("index.html", join4(p.conceptsViewer, "index.html"));
-  await copyAsset("viewer.js", join4(p.conceptsViewer, "assets", "viewer.js"));
-  await copyAsset("serve.mjs", join4(p.conceptsViewer, "serve.mjs"));
-  await copyAsset("concept.css", p.cssTarget);
-}
-
-// src/init/packageScript.ts
-import { readFile as readFile6, writeFile as writeFile5 } from "node:fs/promises";
-import { join as join5 } from "node:path";
-var VIEWER_SCRIPT_NAME = "concepts:view";
-var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
-var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
-function openCommand() {
-  return `node ${VIEWER_SERVE}`;
-}
-async function addViewerScript(root, _platform = process.platform) {
-  const pkgPath = join5(root, "package.json");
-  let raw;
-  try {
-    raw = await readFile6(pkgPath, "utf8");
-  } catch {
-    return false;
-  }
-  let pkg;
-  try {
-    pkg = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`package.json \uD30C\uC2F1 \uC2E4\uD328: ${error.message}`);
-  }
-  const scripts = pkg.scripts ?? {};
-  if (scripts[VIEWER_SCRIPT_NAME]) return false;
-  const next = {
-    ...pkg,
-    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: openCommand() }
-  };
-  await writeFile5(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
-  return true;
-}
-
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
-async function scaffoldInit(root, opts) {
-  const p = cpPaths(root);
-  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir5(d, { recursive: true });
-  if (await isInitialized(root)) return { viewerScriptAdded: false };
-  const locale = opts.locale ?? "ko";
-  const config = parseInitConfig({
-    version: "0.1.0",
-    enabled: true,
-    backfillMode: opts.backfillMode ?? "incremental",
-    locale,
-    project: { name: opts.name ?? "", description: opts.description ?? "" }
-  });
-  await writeFile6(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
-  const seed = seedTemplates[locale];
-  await writeFile6(join6(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile6(join6(p.infra, "infra.md"), seed.infra, "utf8");
-  await renderViewerToDisk(root);
-  let viewerScriptAdded = false;
-  try {
-    viewerScriptAdded = await addViewerScript(root);
-  } catch {
-  }
-  return { viewerScriptAdded };
-}
-
 // src/mapping/scan.ts
-import { readFile as readFile7, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
-import { join as join7, dirname as dirname5 } from "node:path";
+import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { join as join4, dirname as dirname4 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 async function scanTags(root, files) {
@@ -7570,7 +7468,7 @@ async function scanTags(root, files) {
   for (const rel of files) {
     let content;
     try {
-      content = await readFile7(join7(root, rel), "utf8");
+      content = await readFile4(join4(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -7590,15 +7488,174 @@ async function buildMapping(root, files) {
 }
 async function writeMappingCache(root, mapping) {
   const target = cpPaths(root).mappingCache;
-  await mkdir6(dirname5(target), { recursive: true });
-  await writeFile7(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
+  await mkdir4(dirname4(target), { recursive: true });
+  await writeFile4(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile7(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
+}
+
+// src/init/readConfig.ts
+import { readFile as readFile5 } from "node:fs/promises";
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+// src/viewer/render.ts
+async function readAsset(name) {
+  const start = dirname5(fileURLToPath(import.meta.url));
+  let dir = start;
+  for (let i = 0; i < 6; i++) {
+    try {
+      return await readFile6(join5(dir, "assets", name));
+    } catch {
+      const parent = dirname5(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  throw new Error(`asset not found: ${name} (search start: ${start})`);
+}
+async function copyAsset(name, target) {
+  await mkdir5(dirname5(target), { recursive: true });
+  await writeFile5(target, await readAsset(name));
+}
+async function renderViewerToDisk(root) {
+  const concepts = await listConcepts(root);
+  const features = await listFeatures(root);
+  const mapping = await readMappingCache(root);
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const p = cpPaths(root);
+  await mkdir5(p.conceptsViewer, { recursive: true });
+  await writeFile5(
+    join5(p.conceptsViewer, "manifest.json"),
+    JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + "\n",
+    "utf8"
+  );
+  await copyAsset("index.html", join5(p.conceptsViewer, "index.html"));
+  await copyAsset("viewer.js", join5(p.conceptsViewer, "assets", "viewer.js"));
+  await copyAsset("serve.mjs", join5(p.conceptsViewer, "serve.mjs"));
+  await copyAsset("concept.css", p.cssTarget);
+}
+
+// src/init/packageScript.ts
+import { readFile as readFile7, writeFile as writeFile6 } from "node:fs/promises";
+import { join as join6 } from "node:path";
+var VIEWER_SCRIPT_NAME = "concepts:view";
+var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
+var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
+var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
+function isPluginManaged(cmd) {
+  return cmd.includes("conceptpowers/concepts/viewer/");
+}
+async function upsertViewerScript(root) {
+  const pkgPath = join6(root, "package.json");
+  let raw;
+  try {
+    raw = await readFile7(pkgPath, "utf8");
+  } catch {
+    return "no-package";
+  }
+  let pkg;
+  try {
+    pkg = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`package.json \uD30C\uC2F1 \uC2E4\uD328: ${error.message}`);
+  }
+  const scripts = pkg.scripts ?? {};
+  const existing = scripts[VIEWER_SCRIPT_NAME];
+  if (existing === VIEWER_COMMAND) return "unchanged";
+  if (existing && !isPluginManaged(existing)) return "kept";
+  const next = {
+    ...pkg,
+    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND }
+  };
+  await writeFile6(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  return "set";
+}
+
+// src/init/syncGenerated.ts
+async function cleanLegacyViewerHtml(viewerDir) {
+  const keep = join7(viewerDir, "index.html");
+  let removed = 0;
+  async function walk(dir) {
+    let entries;
+    try {
+      entries = await readdir3(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = join7(dir, e.name);
+      if (e.isDirectory()) {
+        await walk(full);
+        try {
+          if ((await readdir3(full)).length === 0) await rmdir(full);
+        } catch {
+        }
+      } else if (e.name.endsWith(".html") && full !== keep) {
+        await rm2(full);
+        removed++;
+      }
+    }
+  }
+  await walk(viewerDir);
+  return removed;
+}
+async function syncGenerated(root) {
+  await renderViewerToDisk(root);
+  const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
+  const scriptStatus = await upsertViewerScript(root);
+  return { scriptStatus, orphansRemoved };
+}
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function syncSafely(root) {
+  try {
+    return await syncGenerated(root);
+  } catch {
+    return { scriptStatus: "no-package", orphansRemoved: 0 };
+  }
+}
+async function scaffoldInit(root, opts) {
+  const p = cpPaths(root);
+  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
+    await mkdir6(d, { recursive: true });
+  if (await isInitialized(root)) {
+    const synced2 = await syncSafely(root);
+    return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
+  }
+  const locale = opts.locale ?? "ko";
+  const config = parseInitConfig({
+    version: "0.1.0",
+    enabled: true,
+    backfillMode: opts.backfillMode ?? "incremental",
+    locale,
+    project: { name: opts.name ?? "", description: opts.description ?? "" }
+  });
+  await writeFile7(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  const seed = seedTemplates[locale];
+  await writeFile7(join8(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile7(join8(p.infra, "infra.md"), seed.infra, "utf8");
+  const synced = await syncSafely(root);
+  return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
 
 // src/audit/audit.ts
@@ -7764,12 +7821,19 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   let code = 0;
   program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
     const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
-    if (o.mode === "strict") await renderViewerToDisk(o.root);
     out(buildInitHint(o.lang, {
       viewerScriptAdded: result.viewerScriptAdded,
       viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
       viewerPath: VIEWER_INDEX
     }));
+  });
+  program2.command("sync").description("\uD50C\uB7EC\uADF8\uC778 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uCD5C\uC2E0\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    if (!await isInitialized(o.root)) {
+      out(JSON.stringify({ error: "not initialized" }));
+      code = 1;
+      return;
+    }
+    out(JSON.stringify({ ok: true, ...await syncGenerated(o.root) }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify({

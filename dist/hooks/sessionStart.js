@@ -11,7 +11,7 @@ var __export = (target, all) => {
 import { join as join5 } from "node:path";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
+import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4223,16 +4223,31 @@ async function listFeatures(root) {
   return features;
 }
 
+// src/mapping/scan.ts
+import { readFile as readFile3, mkdir as mkdir3, writeFile as writeFile3 } from "node:fs/promises";
+var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
+async function readMappingCache(root) {
+  try {
+    return MappingSchema.parse(JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8")));
+  } catch {
+    return {};
+  }
+}
+
 // src/init/readConfig.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile3(cpPaths(root).initFile, "utf8");
+    const raw = await readFile4(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
   }
 }
+
+// src/init/packageScript.ts
+var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
+var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
@@ -4241,17 +4256,6 @@ async function isInitialized(root) {
     return true;
   } catch {
     return false;
-  }
-}
-
-// src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
-var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
-async function readMappingCache(root) {
-  try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
-  } catch {
-    return {};
   }
 }
 
@@ -4509,6 +4513,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
           `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
           "Tell the user once, in one concise line, that an update is available and how to apply it:",
           "  /plugin marketplace update conceptpowers-dev",
+          "After updating, suggest running the conceptpowers:sync skill (or `conceptpowers sync`) once to refresh generated viewer assets and the concepts:view script. This only touches plugin-generated files; the baseline (concepts/specs/architecture/infra) is left untouched.",
           "Updates are manual by design; do not nag repeatedly within this session.",
           "</CONCEPTPOWERS-UPDATE>"
         ].join("\n");

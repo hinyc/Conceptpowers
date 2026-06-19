@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 import { readFile as readFile6 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
+import { mkdir as mkdir5, writeFile as writeFile5, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4235,6 +4235,21 @@ async function listFeatures(root) {
   return features;
 }
 
+// src/mapping/scan.ts
+import { readFile as readFile3, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
+async function readMappingCache(root) {
+  try {
+    return MappingSchema.parse(JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8")));
+  } catch {
+    return {};
+  }
+}
+
+// src/init/packageScript.ts
+var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
+var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
+
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
@@ -4246,7 +4261,7 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4265,7 +4280,7 @@ var History = external_exports.array(HistoryEntry);
 // src/drift/lock.ts
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile3(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile4(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -4275,10 +4290,10 @@ async function writeLock(root, lock) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile4 } from "node:fs/promises";
+import { readFile as readFile5 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile4(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile5(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4306,17 +4321,6 @@ async function appendHistoryMany(root, inputs) {
   }
   await writeFileAtomic(cpPaths(root).alignmentHistory, JSON.stringify(all, null, 2) + "\n");
   return added;
-}
-
-// src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
-var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
-async function readMappingCache(root) {
-  try {
-    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
-  } catch {
-    return {};
-  }
 }
 
 // src/drift/hash.ts
