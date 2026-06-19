@@ -52,6 +52,21 @@ Claude Code 안에서 세 줄이면 시작된다:
 
 `/conceptpowers-init`은 `docs/conceptpowers/`를 스캐폴딩하고 `init.json` 마커를 생성한다. 이 마커가 스위치다 — 존재하는 순간 거버넌스 훅이 해당 프로젝트에서 자동으로 활성화된다.
 
+### 최신 버전 유지
+
+Conceptpowers는 서드파티 마켓플레이스에서 배포되며, **자동 업데이트는 기본 OFF**다. 항상 최신 버전을 쓰려면 한 번만 켜두면 된다:
+
+> `/plugin marketplace` → **Marketplaces** 탭 → `conceptpowers-dev` 선택 → **auto-update** 활성화.
+
+그러면 Claude Code가 시작 시 플러그인을 갱신하고, 새 버전이 도착하면 `/reload-plugins`를 안내한다. 수동으로 업데이트하려면:
+
+```bash
+/plugin marketplace update conceptpowers-dev    # 마켓플레이스 메타데이터 갱신
+/plugin update conceptpowers@conceptpowers-dev  # 플러그인 업데이트
+```
+
+> **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `plugin.json` / `marketplace.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
+
 ---
 
 ## 동작 방식 (How it Works)

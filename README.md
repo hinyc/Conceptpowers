@@ -52,6 +52,21 @@ Inside Claude Code, three commands get you running:
 
 `/conceptpowers-init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
 
+### Staying up to date
+
+Conceptpowers ships from a third-party marketplace, where **auto-update is off by default**. To always run the latest version, enable it once:
+
+> `/plugin marketplace` → **Marketplaces** tab → select `conceptpowers-dev` → enable **auto-update**.
+
+Claude Code then refreshes the plugin at startup and prompts `/reload-plugins` when a new version lands. To update manually instead:
+
+```bash
+/plugin marketplace update conceptpowers-dev    # refresh marketplace metadata
+/plugin update conceptpowers@conceptpowers-dev  # update the plugin
+```
+
+> **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `plugin.json` / `marketplace.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
+
 ---
 
 ## How it Works
