@@ -8,19 +8,33 @@
 
 ## Why Conceptpowers?
 
-As a codebase grows, the **intent** behind it gets lost. The rules ("admins can never be deleted", "prices are immutable after checkout") live in someone's head, in a stale wiki, or nowhere at all. Code silently drifts from its original concept — and AI coding agents, moving fast, make changes that quietly violate rules no one wrote down.
+### The problem — intent decays faster than code
 
-Conventional approaches don't solve this:
+A codebase's most valuable, least recoverable asset is **intent**: the reasons it works the way it does ("admins are never hard-deleted", "prices are immutable after checkout"). That intent lives in someone's head, a stale wiki, or nowhere. As the code grows — and especially as AI agents write more of it, fast — code silently drifts from the concept it was meant to express, and rules no one wrote down get violated with no one noticing. The cost isn't one bug; it's compounding architectural drift, re-litigated decisions, and onboarding that drags because the "why" lives nowhere.
 
-- 📄 **Docs & wikis** go stale the moment code changes. Nothing enforces them.
-- 💬 **Code review** catches violations only if a human happens to remember the rule.
-- 🤖 **AI agents** have no durable memory of *why* the code is the way it is.
+None of the usual tools fix this, because none of them *enforce intent*:
 
-**Concept-Driven Development** flips this. You define a concept *first* — its purpose, what it allows, what it restricts, what is immutable — as structured, versioned data. From then on, Conceptpowers:
+- 📄 **Docs & wikis** describe; they don't enforce. They're stale on the next commit.
+- ✅ **Tests** encode behavior, not the *why* behind it — a green test doesn't mean the rule was respected.
+- 💬 **Code review** only catches a violation if a human happens to remember an unwritten rule at the right moment.
+- 🤖 **AI agents** optimize for "make it work now," with no durable memory of why a constraint exists.
 
-- ✅ checks proposed changes against the concept **before** code is written,
-- 🔒 **blocks commits** that reference undefined concepts,
-- 🔍 **audits** the whole project for code that drifted away from its concept.
+### The intent — a concept is a contract that comes before the code
+
+Conceptpowers treats a **concept as a first-class, versioned contract** that sits *above* the code. Three principles:
+
+1. **Concept before code.** Define purpose, allowed/restricted actions, and immutable rules as structured data *first*; code is downstream and must conform.
+2. **The human owns the contract.** The agent may *propose* concepts (status 🔴 red); only a person *approves* them (🟢 green). Auto-approval is blocked by design — the source of truth is always what a human confirmed.
+3. **Guardrails that navigate, not walls that block.** Gates surface undefined concepts, unapproved concepts, and concept↔code drift at the exact moment of edit/commit, then ask you to decide — they neither silently reject nor silently wave changes through, and any override is recorded.
+
+### What you gain
+
+- 🧠 **Intent survives.** The "why" becomes a machine-checkable contract instead of tribal knowledge.
+- 🤖 **AI stays on-rails.** Agents check the concept *before* writing code and can't quietly violate a rule.
+- 🚨 **Drift is caught early.** When a concept changes but its code lags behind (or vice versa), the commit gate flags it — with the recorded *reason* it changed — instead of letting them diverge in silence.
+- 🔍 **Lighter reviews.** The unwritten rule is now written and enforced, so review spends its time on judgment, not rule-recall.
+- 🗺️ **Faster onboarding.** A browsable concept viewer and a concept·feature·code knowledge graph show what each part *means* and how it all connects.
+- 🔓 **Opt-in, no lock-in.** One marker file switches it on per project; no marker, no hooks. Just JSON + git, with zero runtime dependency added to your app.
 
 The "why" stops being tribal knowledge and becomes an enforced contract.
 
@@ -59,7 +73,7 @@ flowchart LR
 
 1. **Define** a concept as structured data (`/conceptpowers-define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
 2. **Check** before changing code (`/conceptpowers-check-concept`). The agent finds the related concept and judges whether the change violates it.
-3. **Enforce** automatically. The SessionStart hook loads active concepts into context; the PreToolUse hook blocks any commit that references an undefined `@concept`.
+3. **Enforce** automatically. The SessionStart hook loads active concepts (and any drift) into context; the PreToolUse hook stops before a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and asks you to fix or confirm — overrides are recorded rather than silently lost.
 4. **Audit** anytime (`/conceptpowers-audit`) to find concept-less code and verify every `@concept` link still resolves.
 
 All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
