@@ -47,6 +47,9 @@ describe('ConceptSchema', () => {
   it('status green을 허용한다', () => {
     expect(parseConcept({ ...valid, status: 'green' }).status).toBe('green')
   })
+  it('status pending을 허용한다', () => {
+    expect(parseConcept({ ...valid, status: 'pending' }).status).toBe('pending')
+  })
   it('알 수 없는 status 값을 거부한다', () => {
     expect(() => parseConcept({ ...valid, status: 'yellow' })).toThrow()
   })
