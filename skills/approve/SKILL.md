@@ -10,14 +10,11 @@ truth; `red` concepts are proposals (e.g. auto-inferred during a full scan) awai
 
 ## Precondition (do not skip)
 
-- **The user must explicitly request approval.** Never auto-approve a concept to make your own change
-  pass. The whole point of `status` is that the user confirms the final concept set.
-- Check `approvalMode` in `init.json`:
-  - **manual** (default): the CLI/agent approve path is disabled. Tell the user to either edit the
-    concept JSON's `status` to `green` themselves, or switch `approvalMode` to `cli` in `init.json`.
-  - **cli**: the steps below are allowed.
+- **The user must explicitly request approval.** Never approve to make your own change pass.
+- This skill promotes an **auto-inferred `red`** concept to `green`. User-authored concepts go
+  through `define-concept` (pending → green on a passing consistency check) and do not need this.
 
-## Steps (cli mode)
+## Steps
 
 1. **Consistency check first**: run `conceptpowers-check-consistency` for the target concept against
    all existing concepts.
@@ -25,12 +22,10 @@ truth; `red` concepts are proposals (e.g. auto-inferred during a full scan) awai
      and goes back to the user. Do not approve while an unresolved conflict remains.
 2. **Approve** via the CLI (also re-renders the viewer badge):
    `node "<cli>" approve --root . <slug>`
-   - This refuses with an error if `approvalMode` is not `cli`.
 3. Report the result: the concept is now `green`, and any `red` concepts it superseded were revised
    or re-flagged. If a conflict could not be auto-resolved, ask the user to decide.
 
 ## Notes
 
-- Manual approval is always available regardless of mode: edit `status` to `green` in the concept's
-  JSON, then `node "<cli>" render --root .`.
+- You can also approve by editing `status` to `green` in the concept JSON, then `node "<cli>" render --root .`.
 - Reverting an approval is the same flow with `status: red` (manual edit).
