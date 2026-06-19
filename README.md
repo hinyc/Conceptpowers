@@ -67,6 +67,15 @@ Claude Code then refreshes the plugin at startup and prompts `/reload-plugins` w
 
 > **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `plugin.json` / `marketplace.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
 
+### Version check notifications
+
+When Conceptpowers is active in a project, it checks GitHub for the latest plugin version at session start.
+If a newer version is available, it alerts you in one line (update is manual: `/plugin marketplace update conceptpowers-dev`).
+The check uses a 24h cache with a short timeout and is best-effort — even if it fails, your session is unaffected.
+
+To disable version checks, either set `"versionCheck": false` in `docs/conceptpowers/init.json`
+or set the environment variable `CONCEPTPOWERS_NO_VERSION_CHECK=1`.
+
 ---
 
 ## How it Works
