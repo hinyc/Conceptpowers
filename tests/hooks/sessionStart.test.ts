@@ -42,7 +42,7 @@ describe("buildSessionStartOutput", () => {
     expect(ctx).toContain("Output language");
     expect(ctx).toContain("English");
   });
-  it("미승인(red) 개념 수와 approvalMode 규칙을 컨텍스트에 담는다", async () => {
+  it("미승인(red) 개념 수와 승인 규칙을 컨텍스트에 담는다", async () => {
     await scaffoldInit(root, {});
     await writeConcept(root, {
       slug: "red-one", category: ["feature"], title: "R",
@@ -51,7 +51,7 @@ describe("buildSessionStartOutput", () => {
     const o = await buildSessionStartOutput(root, "/plugin");
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain("red-one");
-    expect(ctx).toContain("approvalMode");
+    expect(ctx).toContain("Never auto-approve");
   });
   it("drift가 있으면 <CONCEPT-DRIFT> 블록과 이유를 주입한다", async () => {
     await scaffoldInit(root, {});

@@ -22,7 +22,6 @@ export async function buildSessionStartOutput(
   const cli = join(pluginRoot, "dist", "cli.js");
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
-  const approvalMode = config?.approvalMode ?? "manual";
   const reds = (await listConcepts(root))
     .filter((c) => (c.status ?? "red") === "red")
     .map((c) => c.slug);
@@ -40,7 +39,7 @@ export async function buildSessionStartOutput(
     "- All of docs/conceptpowers/ is a read-only baseline. Modify it only on explicit user request, via conceptpowers:update-baseline.",
     `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
-    `- Concept approval: status is green(approved)/red(unapproved). approvalMode='${approvalMode}'. In 'manual' mode you MUST NOT change a concept's status — the user edits it directly (or sets approvalMode='cli' to allow the conceptpowers:approve flow). Never auto-approve.`,
+    `- Concept approval: status is green(approved)/pending(under review)/red(unapproved). Use the conceptpowers:approve flow when the user explicitly requests it. Never auto-approve.`,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>",

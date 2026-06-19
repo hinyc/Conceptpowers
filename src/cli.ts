@@ -22,9 +22,8 @@ export async function runCli(
     .option("--root <dir>", "project root", process.cwd())
     .option("--mode <mode>", "incremental|strict", "incremental")
     .option("--lang <lang>", "ko|en", "ko")
-    .option("--approval <mode>", "manual|cli", "manual")
     .action(async (o) => {
-      await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, approvalMode: o.approval });
+      await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
       if (o.mode === "strict") await renderViewerToDisk(o.root);
     });
 
