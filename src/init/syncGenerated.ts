@@ -6,11 +6,13 @@ import { readdir, rm, rmdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { renderViewerToDisk } from '../viewer/render.js'
 import { upsertViewerScript, type ViewerScriptStatus } from './packageScript.js'
+import { ensureReference } from './reference.js'
 import { cpPaths } from '../paths.js'
 
 export interface SyncResult {
   scriptStatus: ViewerScriptStatus
   orphansRemoved: number
+  referenceReadmeCreated: boolean
 }
 
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
@@ -49,5 +51,6 @@ export async function syncGenerated(root: string): Promise<SyncResult> {
   await renderViewerToDisk(root) // 에셋 + manifest를 최신 플러그인 기준으로 재생성
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer)
   const scriptStatus = await upsertViewerScript(root)
-  return { scriptStatus, orphansRemoved }
+  const referenceReadmeCreated = await ensureReference(root) // reference/ 폴더 + 안내 README 보장
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated }
 }

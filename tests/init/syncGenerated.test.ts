@@ -20,6 +20,9 @@ describe('syncGenerated', () => {
     expect(existsSync(viewer('serve.mjs'))).toBe(true)
     expect(existsSync(viewer('manifest.json'))).toBe(true)
     expect(r.scriptStatus).toBe('no-package') // package.json 없음
+    // reference 폴더 + 안내 README 보장
+    expect(existsSync(join(root, 'docs/conceptpowers/reference/README.md'))).toBe(true)
+    expect(r.referenceReadmeCreated).toBe(false) // scaffoldInit가 이미 생성
   })
 
   it('옛 포맷 고아 *.html을 정리하고 index.html은 보존한다', async () => {

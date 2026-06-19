@@ -24,6 +24,7 @@ function cpPaths(root) {
     base,
     initFile: join(base, "init.json"),
     features: join(base, "features"),
+    reference: join(base, "reference"),
     conceptsData: join(base, "concepts", "data"),
     conceptsViewer: join(base, "concepts", "viewer"),
     architecture: join(base, "architecture"),

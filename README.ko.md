@@ -168,6 +168,7 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 docs/conceptpowers/
 ├── init.json                       # 활성화 마커
 ├── features/                       # 기능 명세
+├── reference/                      # 사용자 참고자료 — 개념 작업 시 필요할 때 참고됨 (사용자 전속)
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # 개념 데이터 (진실의 원천)
 │   ├── viewer/                      # 탐색 가능한 SPA 뷰어 — `npm run concepts:view`로 연다

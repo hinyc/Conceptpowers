@@ -18,13 +18,13 @@ async function syncSafely(root: string): Promise<SyncResult> {
   try {
     return await syncGenerated(root)
   } catch {
-    return { scriptStatus: 'no-package', orphansRemoved: 0 }
+    return { scriptStatus: 'no-package', orphansRemoved: 0, referenceReadmeCreated: false }
   }
 }
 
 export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise<ScaffoldResult> {
   const p = cpPaths(root)
-  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
+  for (const d of [p.features, p.reference, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
     await mkdir(d, { recursive: true })
 
   // 이미 초기화된 경우: baseline(개념·명세·init.json 설정)은 보존하고

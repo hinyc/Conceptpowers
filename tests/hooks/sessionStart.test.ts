@@ -1,6 +1,6 @@
 // tests/hooks/sessionStart.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildSessionStartOutput } from "../../src/hooks/sessionStart.js";
@@ -27,6 +27,20 @@ describe("buildSessionStartOutput", () => {
     expect(ctx).toContain("Conceptpowers");
     expect(ctx).toContain("/plugin/dist/cli.js");
     expect(ctx).toContain("check-concept");
+  });
+  it("reference/에 사용자 자료가 있으면 <CONCEPTPOWERS-REFERENCE> 블록을 넣는다", async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, "docs/conceptpowers/reference/glossary.md"), "용어집");
+    const o = await buildSessionStartOutput(root, "/plugin");
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("<CONCEPTPOWERS-REFERENCE>");
+    expect(ctx).toContain("glossary.md");
+    expect(ctx).toContain("untrusted");
+  });
+  it("reference/에 seed README만 있으면 블록이 없다", async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, "/plugin");
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-REFERENCE>");
   });
   it("ko면 Output language 디렉티브가 Korean이다 (기본)", async () => {
     await scaffoldInit(root, {});

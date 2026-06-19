@@ -51,6 +51,7 @@ describe("runCli", () => {
     expect(code).toBe(0);
     expect(captured).toContain("초기화 완료");
     expect(captured).toContain("npm run concepts:view");
+    expect(captured).toContain("reference/"); // 참고자료 폴더 안내
   });
   it("package.json이 없으면 안내가 뷰어 파일 경로를 가리킨다", async () => {
     let captured = "";

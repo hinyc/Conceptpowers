@@ -16,6 +16,13 @@ describe('scaffoldInit', () => {
       expect(existsSync(join(b, d))).toBe(true)
     expect(existsSync(join(b, 'init.json'))).toBe(true)
   })
+  it('reference 폴더와 안내 README를 생성한다', async () => {
+    await scaffoldInit(root, { locale: 'ko' })
+    const ref = join(root, 'docs/conceptpowers/reference')
+    expect(existsSync(ref)).toBe(true)
+    expect(existsSync(join(ref, 'README.md'))).toBe(true)
+    expect(readFileSync(join(ref, 'README.md'), 'utf8')).toContain('참고자료')
+  })
   it('init.json에 backfillMode를 기록한다', async () => {
     await scaffoldInit(root, { backfillMode: 'strict' })
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'))

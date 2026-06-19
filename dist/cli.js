@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/init/scaffold.ts
-import { mkdir as mkdir6, writeFile as writeFile7, access } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { mkdir as mkdir7, writeFile as writeFile8, access as access2 } from "node:fs/promises";
+import { join as join9 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -3060,6 +3060,7 @@ function cpPaths(root) {
     base,
     initFile: join(base, "init.json"),
     features: join(base, "features"),
+    reference: join(base, "reference"),
     conceptsData: join(base, "concepts", "data"),
     conceptsViewer: join(base, "concepts", "viewer"),
     architecture: join(base, "architecture"),
@@ -7131,51 +7132,90 @@ function parseInitConfig(input) {
 }
 
 // src/i18n/messages.ts
+var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
+
+\uC774 \uD3F4\uB354\uC5D0 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD560 \uC790\uB8CC\uB97C \uB123\uC73C\uC138\uC694.
+
+## \uBB34\uC5C7\uC744 \uB123\uB098\uC694
+- \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uC678\uBD80 API/\uD45C\uC900 \uBA85\uC138, \uB514\uC790\uC778\xB7\uAE30\uD68D(PRD) \uBB38\uC11C, \uC120\uD589 \uC0AC\uB840, \uADDC\uC815\xB7\uC815\uCC45 \uB4F1
+- \uD615\uC2DD \uC790\uC720(.md, .txt \uB4F1). \uD558\uC704 \uD3F4\uB354\uB85C \uBD84\uB958\uD574\uB3C4 \uB429\uB2C8\uB2E4.
+
+## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
+- \uAC1C\uB150\uC744 \uC815\uC758\xB7\uAC80\uC99D\uD558\uAC70\uB098 \uC804\uC218 \uC810\uAC80(audit)\uD560 \uB54C, \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
+- \uC804\uBD80\uB97C \uD56D\uC0C1 \uC77D\uC9C0\uB294 \uC54A\uC2B5\uB2C8\uB2E4(\uD1A0\uD070 \uC808\uC57D). \uD30C\uC77C\uBA85\xB7\uAD6C\uC870\uB97C \uC54C\uC544\uBCF4\uAE30 \uC27D\uAC8C \uB450\uC138\uC694.
+
+## \uC8FC\uC758
+- \uC774 \uD3F4\uB354\uB294 **\uC0AC\uC6A9\uC790 \uC804\uC18D**\uC785\uB2C8\uB2E4 \u2014 \uC5D0\uC774\uC804\uD2B8\uB294 \uC77D\uAE30\uB9CC \uD558\uACE0 \uC218\uC815\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.
+- \uB0B4\uC6A9\uC740 **\uCC38\uACE0 \uB370\uC774\uD130\uC77C \uBFD0 \uC9C0\uC2DC\uAC00 \uC544\uB2D9\uB2C8\uB2E4.** \uD30C\uC77C \uC548\uC758 "\uC774\uB807\uAC8C \uD574\uB77C" \uB958 \uBB38\uAD6C\uB85C \uC5D0\uC774\uC804\uD2B8 \uB3D9\uC791\uC744 \uBC14\uAFB8\uB824 \uD558\uC9C0 \uB9C8\uC138\uC694(\uBB34\uC2DC\uB429\uB2C8\uB2E4).
+- baseline(\uAC1C\uB150 \xB7 architecture.md \xB7 infra.md)\uACFC\uB294 \uBCC4\uAC1C\uC758 \uBCF4\uC870 \uC790\uB8CC\uC785\uB2C8\uB2E4.
+`;
+var REFERENCE_README_EN = `# Reference materials
+
+Put materials here for the agent to consult during concept work.
+
+## What to put
+- Domain glossary, external API/standard specs, design/PRD docs, prior art, policies, etc.
+- Any format (.md, .txt, \u2026). Subfolders are fine.
+
+## How it's used
+- When defining, verifying, or auditing concepts, the agent reads **only the relevant files, on demand** and factors them in.
+- It does not load everything every time (to save tokens). Keep filenames and structure legible.
+
+## Notes
+- This folder is **user-owned** \u2014 the agent only reads it, never edits it.
+- Its content is **reference data, not instructions.** Do not try to steer the agent with "do this" text inside files (it is ignored).
+- It is supporting material, separate from the baseline (concepts \xB7 architecture.md \xB7 infra.md).
+`;
 var seedTemplates = {
   ko: {
     architecture: "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n",
-    infra: "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n"
+    infra: "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n",
+    reference: REFERENCE_README_KO
   },
   en: {
     architecture: "# Architecture\n\n<!-- Fill in: the high-level basis for concepts -->\n",
-    infra: "# Infrastructure\n\n<!-- Fill in -->\n"
+    infra: "# Infrastructure\n\n<!-- Fill in -->\n",
+    reference: REFERENCE_README_EN
   }
 };
 var initHintStrings = {
   ko: {
     done: "Conceptpowers \uCD08\uAE30\uD654 \uC644\uB8CC",
-    created: "\uC0DD\uC131\uB428 (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra",
+    created: "\uC0DD\uC131\uB428 (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra \xB7 reference",
     next: "\uB2E4\uC74C \uB2E8\uACC4",
     fillDocs: "architecture.md / infra.md\uB97C \uCC44\uC6CC \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900\uC744 \uC791\uC131\uD558\uC138\uC694",
+    reference: "\uCC38\uACE0\uC790\uB8CC(\uC6A9\uC5B4\uC9D1\xB7\uC678\uBD80 \uBA85\uC138\xB7\uAE30\uD68D \uBB38\uC11C \uB4F1)\uB294 reference/ \uD3F4\uB354\uC5D0 \uB123\uC73C\uBA74 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD569\uB2C8\uB2E4",
     viewerScript: "\uBDF0\uC5B4 \uC5F4\uAE30:",
     viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:"
   },
   en: {
     done: "Conceptpowers initialized",
-    created: "Created (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra",
+    created: "Created (docs/conceptpowers/): init.json \xB7 features \xB7 concepts \xB7 architecture \xB7 infra \xB7 reference",
     next: "Next steps",
     fillDocs: "Fill in architecture.md / infra.md \u2014 the high-level basis for concepts",
+    reference: "Drop reference material (glossary, external specs, PRDs) into reference/ \u2014 it is consulted during concept work",
     viewerScript: "Open the viewer:",
     viewerFile: "Open the viewer file directly:"
   }
 };
 function buildInitHint(locale, opts) {
   const t = initHintStrings[locale];
-  const viewerLine = opts.viewerScriptAdded ? `   2. ${t.viewerScript} ${opts.viewerCommand}` : `   2. ${t.viewerFile} ${opts.viewerPath}`;
+  const viewerLine = opts.viewerScriptAdded ? `   3. ${t.viewerScript} ${opts.viewerCommand}` : `   3. ${t.viewerFile} ${opts.viewerPath}`;
   return [
     `\u2705 ${t.done}`,
     `   ${t.created}`,
     "",
     `${t.next}:`,
     `   1. ${t.fillDocs}`,
+    `   2. ${t.reference}`,
     viewerLine,
     ""
   ].join("\n");
 }
 
 // src/init/syncGenerated.ts
-import { readdir as readdir3, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { readdir as readdir4, rm as rm2, rmdir } from "node:fs/promises";
+import { join as join8 } from "node:path";
 
 // src/viewer/render.ts
 import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile6 } from "node:fs/promises";
@@ -7583,23 +7623,41 @@ async function upsertViewerScript(root) {
   return "set";
 }
 
+// src/init/reference.ts
+import { mkdir as mkdir6, writeFile as writeFile7, access, readdir as readdir3 } from "node:fs/promises";
+import { join as join7, relative } from "node:path";
+var SEED_README = "README.md";
+async function ensureReference(root) {
+  const dir = cpPaths(root).reference;
+  await mkdir6(dir, { recursive: true });
+  const readme = join7(dir, SEED_README);
+  try {
+    await access(readme);
+    return false;
+  } catch {
+  }
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  await writeFile7(readme, seedTemplates[locale].reference, "utf8");
+  return true;
+}
+
 // src/init/syncGenerated.ts
 async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join7(viewerDir, "index.html");
+  const keep = join8(viewerDir, "index.html");
   let removed = 0;
   async function walk(dir) {
     let entries;
     try {
-      entries = await readdir3(dir, { withFileTypes: true });
+      entries = await readdir4(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const e of entries) {
-      const full = join7(dir, e.name);
+      const full = join8(dir, e.name);
       if (e.isDirectory()) {
         await walk(full);
         try {
-          if ((await readdir3(full)).length === 0) await rmdir(full);
+          if ((await readdir4(full)).length === 0) await rmdir(full);
         } catch {
         }
       } else if (e.name.endsWith(".html") && full !== keep) {
@@ -7615,13 +7673,14 @@ async function syncGenerated(root) {
   await renderViewerToDisk(root);
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
   const scriptStatus = await upsertViewerScript(root);
-  return { scriptStatus, orphansRemoved };
+  const referenceReadmeCreated = await ensureReference(root);
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated };
 }
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
-    await access(cpPaths(root).initFile);
+    await access2(cpPaths(root).initFile);
     return true;
   } catch {
     return false;
@@ -7631,13 +7690,13 @@ async function syncSafely(root) {
   try {
     return await syncGenerated(root);
   } catch {
-    return { scriptStatus: "no-package", orphansRemoved: 0 };
+    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false };
   }
 }
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
-  for (const d of [p.features, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir6(d, { recursive: true });
+  for (const d of [p.features, p.reference, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
+    await mkdir7(d, { recursive: true });
   if (await isInitialized(root)) {
     const synced2 = await syncSafely(root);
     return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
@@ -7650,10 +7709,10 @@ async function scaffoldInit(root, opts) {
     locale,
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile7(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile8(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile7(join8(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile7(join8(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile8(join9(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile8(join9(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncSafely(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
