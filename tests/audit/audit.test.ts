@@ -39,4 +39,10 @@ describe('auditIntegrity', () => {
     const r = await auditIntegrity(root, ['src/a.ts'])
     expect(r.unapprovedRefs).toEqual(['red-one'])
   })
+  it('pending 개념은 unapproved가 아니라 pending으로 보고한다', async () => {
+    await writeConcept(root, { slug: 'pend-one', category: ['term'], title: 'P', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'pending' })
+    const r = await auditIntegrity(root, [])
+    expect(r.unapproved).not.toContain('pend-one')
+    expect(r.pending).toContain('pend-one')
+  })
 })
