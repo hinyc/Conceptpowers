@@ -11,6 +11,7 @@ const outdir = join(root, 'dist')
 const entryPoints = [
   join(root, 'src/hooks/sessionStart.ts'),
   join(root, 'src/hooks/preToolUse.ts'),
+  join(root, 'src/hooks/postToolUse.ts'),
   join(root, 'src/cli.ts'),
 ]
 
