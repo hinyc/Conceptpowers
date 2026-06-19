@@ -1,7 +1,7 @@
 {
   "name": "conceptpowers",
   "description": "Concept-driven development governance: define concepts before code, enforce that changes never violate them",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" },
   "license": "MIT",
   "keywords": ["concept", "governance", "skills", "consistency", "guardrails"]
