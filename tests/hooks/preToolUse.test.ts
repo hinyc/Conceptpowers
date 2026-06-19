@@ -6,7 +6,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decidePreToolUse } from "../../src/hooks/preToolUse.js";
 import { scaffoldInit } from "../../src/init/scaffold.js";
-import { writeConcept } from "../../src/store/conceptStore.js";
+import { writeConcept, readConcept } from "../../src/store/conceptStore.js";
+import { writeFeature } from "../../src/store/featureStore.js";
+import { writeLock } from "../../src/drift/lock.js";
+import { contractHash } from "../../src/drift/hash.js";
 
 let root: string;
 beforeEach(() => {
@@ -30,7 +33,7 @@ describe("decidePreToolUse", () => {
     });
     expect(r!.hookSpecificOutput.additionalContext).toContain("check-concept");
   });
-  it("git commit이면서 unknownTag가 있으면 deny한다 (changedFiles 제공)", async () => {
+  it("git commit이면서 unknownTag가 있으면 ask한다 (changedFiles 제공)", async () => {
     await scaffoldInit(root, {});
     writeFileSync(join(root, "src/a.ts"), "// @concept:ghost\n");
     const r = await decidePreToolUse(root, {
@@ -38,7 +41,7 @@ describe("decidePreToolUse", () => {
       input: { command: "git commit -m x" },
       changedFiles: ["src/a.ts"],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("ghost");
   });
   it("git commit이고 정합성 OK면 검증 리마인더만 주입(allow 유지)", async () => {
@@ -67,7 +70,7 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("red-one");
   });
-  it("changedFiles 미제공 시 스테이징된 파일을 직접 조회하여 unknownTag가 있으면 deny한다 (C1)", async () => {
+  it("changedFiles 미제공 시 스테이징된 파일을 직접 조회하여 unknownTag가 있으면 ask한다 (C1)", async () => {
     await scaffoldInit(root, {});
     // git init a temp repo so we can stage files
     execSync("git init", { cwd: root });
@@ -80,7 +83,46 @@ describe("decidePreToolUse", () => {
       tool: "Bash",
       input: { command: "git commit -m x" },
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("ghost");
+  });
+
+  it("개념 drift인데 관련 코드가 스테이지에 없으면 ask로 경고한다", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "auth-token", category: ["behavior"], title: "A", status: "green",
+      description: { definition: "v1" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    const c1 = await readConcept(root, "auth-token");
+    await writeLock(root, { "auth-token": { hash: contractHash(c1!), at: "t" } });
+    await writeFeature(root, { slug: "login", title: "L", concepts: ["auth-token"], codePaths: ["src/login.ts"] } as any);
+    await writeConcept(root, {
+      slug: "auth-token", category: ["behavior"], title: "A", status: "green",
+      description: { definition: "v2" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    const r = await decidePreToolUse(root, {
+      tool: "Bash", input: { command: "git commit -m x" }, changedFiles: ["README.md"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("DRIFT");
+  });
+
+  it("drift여도 관련 코드가 스테이지에 함께 있으면 막지 않는다(allow)", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "auth-token", category: ["behavior"], title: "A", status: "green",
+      description: { definition: "v1" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    const c1 = await readConcept(root, "auth-token");
+    await writeLock(root, { "auth-token": { hash: contractHash(c1!), at: "t" } });
+    await writeFeature(root, { slug: "login", title: "L", concepts: ["auth-token"], codePaths: ["src/login.ts"] } as any);
+    await writeConcept(root, {
+      slug: "auth-token", category: ["behavior"], title: "A", status: "green",
+      description: { definition: "v2" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    const r = await decidePreToolUse(root, {
+      tool: "Bash", input: { command: "git commit -m x" }, changedFiles: ["src/login.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("allow");
   });
 });

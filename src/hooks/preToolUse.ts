@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { isInitialized } from "../init/scaffold.js";
 import { auditIntegrity } from "../audit/audit.js";
+import { computeDrift } from "../drift/detect.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -54,8 +55,30 @@ export async function decidePreToolUse(
       return {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
-          permissionDecision: "deny",
-          permissionDecisionReason: `Commit blocked: undefined concept tag(s) — ${detail}. Define the concept (define-concept) or fix the tag.`,
+          permissionDecision: "ask",
+          permissionDecisionReason: `⚠️ 정의되지 않은 개념 태그 — ${detail}. define-concept로 개념을 정의하거나 태그를 고치세요. 그래도 커밋하시겠습니까?`,
+        },
+      };
+    }
+    const drift = await computeDrift(root);
+    const staged = new Set(files);
+    const lagging = drift.filter(
+      (d) => d.relatedPaths.length > 0 && !d.relatedPaths.every((p) => staged.has(p)),
+    );
+    if (lagging.length > 0) {
+      const detail = lagging
+        .map((d) => {
+          const missing = d.relatedPaths.filter((p) => !staged.has(p)).join(", ");
+          return `${d.slug}${d.reason ? ` (이유: ${d.reason})` : ""} → 미반영 코드: ${missing}`;
+        })
+        .join(" / ");
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "ask",
+          permissionDecisionReason: `⚠️ CONCEPT DRIFT — ${detail}. 개념이 바뀌었는데 관련 코드가 이번 커밋에 안 따라왔습니다. 코드를 함께 수정하거나, 그래도 진행하려면 커밋하세요(강행 시 [Drift Ignored]로 기록됨).`,
+          additionalContext:
+            "Concept drift detected: listed concepts changed since last alignment but their related code is not staged. Run conceptpowers:check-concept to update the code, or override (the commit will be allowed and recorded as drift-ignored on the next reconcile).",
         },
       };
     }
