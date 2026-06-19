@@ -13,6 +13,7 @@ export interface ViewerStrings {
   conceptList: string
   statusApproved: string
   statusUnapproved: string
+  statusPending: string
   featureList: string
   relatedFeatures: string
   relatedConcepts: string
@@ -35,6 +36,7 @@ export const viewerStrings: Record<Locale, ViewerStrings> = {
     conceptList: '개념 목록',
     statusApproved: '승인됨',
     statusUnapproved: '미승인',
+    statusPending: '보류',
     featureList: '기능 목록',
     relatedFeatures: '관련 기능',
     relatedConcepts: '관련 개념',
@@ -55,6 +57,7 @@ export const viewerStrings: Record<Locale, ViewerStrings> = {
     conceptList: 'Concepts',
     statusApproved: 'Approved',
     statusUnapproved: 'Unapproved',
+    statusPending: 'Pending',
     featureList: 'Features',
     relatedFeatures: 'Related Features',
     relatedConcepts: 'Related Concepts',
