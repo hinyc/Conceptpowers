@@ -82,4 +82,11 @@ describe("checkForUpdate", () => {
     expect(r).toBeNull();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it("ok 응답이지만 본문 JSON이 깨지면 null(throw 안 함)", async () => {
+    const root = makePluginRoot("0.1.0");
+    const fetchImpl = vi.fn(async () => ({ ok: true, json: async () => { throw new SyntaxError("bad json"); } } as Response));
+    const r = await checkForUpdate(root, { fetchImpl: fetchImpl as any, cacheDir, now: 1000 });
+    expect(r).toBeNull();
+  });
 });

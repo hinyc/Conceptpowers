@@ -75,6 +75,7 @@ conceptpowers가 활성화된 프로젝트는 세션 시작 시 GitHub의 최신
 
 끄려면 `docs/conceptpowers/init.json`에 `"versionCheck": false`를 두거나,
 환경변수 `CONCEPTPOWERS_NO_VERSION_CHECK=1`을 설정하세요.
+캐시 위치는 기본값 `~/.cache/conceptpowers`이며, `CONCEPTPOWERS_CACHE_DIR` 환경변수로 재정의할 수 있습니다.
 
 ---
 

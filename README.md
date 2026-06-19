@@ -75,6 +75,7 @@ The check uses a 24h cache with a short timeout and is best-effort — even if i
 
 To disable version checks, either set `"versionCheck": false` in `docs/conceptpowers/init.json`
 or set the environment variable `CONCEPTPOWERS_NO_VERSION_CHECK=1`.
+The cache is stored in `~/.cache/conceptpowers` by default; override with `CONCEPTPOWERS_CACHE_DIR`.
 
 ---
 

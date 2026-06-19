@@ -118,4 +118,24 @@ describe("플러그인 업데이트 알림", () => {
     expect(called).toBe(false);
     expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-UPDATE>");
   });
+
+  it("CONCEPTPOWERS_NO_VERSION_CHECK=1이면 조회 자체를 안 한다", async () => {
+    await scaffoldInit(root, {});
+    const prev = process.env.CONCEPTPOWERS_NO_VERSION_CHECK;
+    try {
+      process.env.CONCEPTPOWERS_NO_VERSION_CHECK = "1";
+      let called = false;
+      const o = await buildSessionStartOutput(root, "/plugin", {
+        checkForUpdate: async () => { called = true; return { installed: "0.1.0", latest: "9.9.9" }; },
+      });
+      expect(called).toBe(false);
+      expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-UPDATE>");
+    } finally {
+      if (prev === undefined) {
+        delete process.env.CONCEPTPOWERS_NO_VERSION_CHECK;
+      } else {
+        process.env.CONCEPTPOWERS_NO_VERSION_CHECK = prev;
+      }
+    }
+  });
 });
