@@ -28,15 +28,22 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
 
 ## Full-scan procedure (strict)
 
-Run only after warning the user about time/token cost. Goal: enumerate features, then infer concepts.
+Run only after warning the user about time/token cost. Goal: build the full **concept · feature · code**
+knowledge graph — enumerate features, infer concepts, and wire all three links so the `#/graph` view is connected.
 
 1. **Enumerate features by behavior**: scan the codebase for every actionable surface first — buttons,
    form submits, menu actions, route handlers, commands — and describe the simple function of each.
 2. **Enumerate features by screen**: analyze what each screen/view renders and list the features it
-   exposes to the user. Merge with step 1 into a deduplicated feature list under `features/`.
-3. **Infer concepts**: for each feature with no covering concept, infer a concept (define-concept).
-   Auto-inferred concepts are saved with `status: red` (unapproved) — they are proposals for the user.
-4. Report the feature list + inferred (red) concepts and tell the user to review and approve them.
+   exposes to the user. Merge with step 1 into a deduplicated feature list.
+3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
+   implementing `codePaths` filled in (the *feature → code* link) via `conceptpowers-define-feature`.
+4. **Infer concepts and wire features to them**: for each feature with no covering concept, infer a
+   concept (define-concept) — auto-inferred concepts are saved with `status: red` (unapproved) — then
+   record the concept slug in that feature's `concepts` (the *feature → concept* link).
+5. **Wire concept → code**: add `@concept:<slug>` tags to the implementing files and run
+   `conceptpowers-update-mapping` (`node "<cli>" map ...`) so concept and feature converge on the same file.
+6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
+   (red) concepts + the wired graph, and tell the user to review and approve the red concepts.
 
 ## Notes
 

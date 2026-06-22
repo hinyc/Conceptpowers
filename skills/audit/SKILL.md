@@ -19,6 +19,10 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
    that need a concept but have no `@concept` tag. For each:
    - If a related concept already exists → suggest adding the tag (update-mapping).
    - If no concept exists → suggest define-concept.
+2b. **Feature coverage (knowledge graph)**: check that each user-facing feature surface is recorded as a
+   feature spec under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code)
+   filled in. For any surface missing a spec, or a spec missing those links, suggest
+   `conceptpowers-define-feature`. This is what keeps the `#/graph` view connected (concept · feature · code).
 3. **Verify existing links (semantic judgment)**: for each `@concept` link, sample-check that the code
    complies with the concept's allow/restrict/immutable rules (reuse check-concept).
 4. **Unapproved concepts (status)**: the CLI audit also returns `unapproved` (all `red` concepts) and
@@ -36,5 +40,7 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
 
 ## Backfill modes
 
-- incremental: report gaps only and recommend gradual backfill.
-- strict: force immediate resolution of all gaps (init strict or on user request).
+- incremental: report gaps only and recommend gradual backfill — including missing feature specs and
+  their concept/code links (define-feature), so the graph fills in over time.
+- strict: force immediate resolution of all gaps (init strict or on user request), wiring every feature
+  to its concept(s) and code.

@@ -158,6 +158,7 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 | Skill | When it runs | What it produces |
 | --- | --- | --- |
 | `conceptpowers:init` | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists). |
+| `conceptpowers:define-feature` | **When you surface a feature** (button / action / route / command) that should appear in the knowledge graph. | A feature JSON under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code) wired — the source of the feature links in the graph. |
 | `conceptpowers:define-concept` | **Before** adding a feature / role / permission / term that **no** existing concept covers. | A new concept JSON born 🟡 pending; on a passing consistency check it becomes 🟢 green, otherwise it stays pending with the conflict reason recorded via `note-conflict`. (Auto-inferred concepts are 🔴 red.) |
 | `conceptpowers:check-concept` | **Before** writing or changing any code (tests included) that adds a feature or alters behavior. | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept) |
 | `conceptpowers:check-consistency` | **Whenever a concept is defined or changed**, and again **at the commit gate**. | A conflict report across *all* concepts — green wins over red, green↔green escalates to you. Passes only at zero conflicts. (concept ↔ concept) |
@@ -202,6 +203,8 @@ The viewer's `#/graph` route renders the **concept · feature · code** relation
 - **Edges are directional, three kinds** — `feature → concept` (the feature realizes that concept), `feature → file` (the feature's implementation path), and `concept → file` (code tied to the concept via its `codeLinks` or an `@concept:` tag picked up in `mapping.json`). A file referenced by both a feature and a concept becomes a single shared node, so concept · feature · code converge there. An edge to a concept that doesn't exist is dropped.
 - **Layout** is a zero-dependency, force-directed SVG simulation — node repulsion + edge springs + a gentle pull toward center — animated until it settles. The animation loop stops the moment you navigate away.
 - **Interaction:** drag any node to pin its position; click a *concept* or *feature* node to jump to its detail page (`#/concept/:slug`, `#/feature/:slug`); *file* nodes are leaves with no detail page — hover shows the full path as a tooltip.
+
+How the links are made: a **feature spec** (`features/*.json`) declares its `concepts` and `codePaths` — that is the source of the `feature → concept` and `feature → file` edges (author it with `conceptpowers:define-feature`). The `concept → file` edge comes from the concept's own `codeLinks` plus the `@concept:<slug>` tags scanned out of the code into `.cache/mapping.json` (via `update-mapping`). `render` reads all three (concepts, features, mapping) and rebuilds the `graph` block of `manifest.json`.
 
 The graph is data-driven and re-derived on every `render` / `update-mapping`, so it always reflects the current concepts, features, and `@concept` ↔ code links.
 

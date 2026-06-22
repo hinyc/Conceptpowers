@@ -1,5 +1,7 @@
 import { Command } from "commander";
+import { readFile } from "node:fs/promises";
 import { scaffoldInit, isInitialized } from "./init/scaffold.js";
+import { writeFeature } from "./store/featureStore.js";
 import { syncGenerated } from "./init/syncGenerated.js";
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from "./init/packageScript.js";
 import { buildInitHint } from "./i18n/messages.js";
@@ -73,6 +75,16 @@ export async function runCli(
     .action(async (slug, o) => {
       await approveConcept(o.root, slug);
       await renderViewerToDisk(o.root);
+    });
+
+  program
+    .command("feature")
+    .description("feature 명세를 검증해 features/에 기록 (기능↔개념·기능↔코드 배선)")
+    .requiredOption("--file <path>", "feature JSON 파일 경로")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (o) => {
+      const feature = await writeFeature(o.root, JSON.parse(await readFile(o.file, "utf8")));
+      out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
     });
 
   program

@@ -152,6 +152,7 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 | 스킬 | 언제 사용되나 | 무엇을 만들어내나 |
 | --- | --- | --- |
 | `conceptpowers:init` | **프로젝트당 한 번**, 거버넌스를 켤 때. `strict` 모드는 기존 코드베이스를 전체 스캔해 개념을 백필한다. | `docs/conceptpowers/` 스캐폴드 + `init.json` 마커(생기는 순간 훅이 살아난다). |
+| `conceptpowers:define-feature` | 지식 그래프에 올라가야 할 **기능(버튼·액션·라우트·명령)을 발견했을 때**. | `features/` 아래 기능 JSON. `concepts`(기능 → 개념)와 `codePaths`(기능 → 코드)가 배선되어 그래프의 기능 링크 원천이 된다. |
 | `conceptpowers:define-concept` | 기존 개념이 **없는** 기능·역할·권한·용어를 추가하기 **전에**. | 🟡 pending으로 탄생하는 새 개념 JSON. 일관성 검사 통과 시 🟢 green이 되고, 그렇지 않으면 충돌 이유를 `note-conflict`로 기록한 채 pending 유지. (자동 유추 개념은 🔴 red.) |
 | `conceptpowers:check-concept` | 기능을 추가하거나 동작을 바꾸는 코드(테스트 포함)를 작성/변경하기 **전에**. | 판정 결과: 변경이 관련 개념의 allow / restrict / immutable 규칙을 위배하는가? (코드 ↔ 개념) |
 | `conceptpowers:check-consistency` | **개념을 정의·변경할 때마다**, 그리고 **커밋 게이트에서** 다시. | *모든* 개념에 대한 충돌 리포트 — green이 red를 이기고, green↔green은 사용자에게 올린다. 충돌 0일 때만 통과. (개념 ↔ 개념) |
@@ -196,6 +197,8 @@ baseline(개념·명세·아키텍처·인프라) 전체는 **사용자 전속**
 - **엣지는 방향이 있고 세 종류**다 — `기능 → 개념`(그 기능이 개념을 구현), `기능 → 파일`(기능의 구현 경로), `개념 → 파일`(개념의 `codeLinks` 또는 `mapping.json`에 잡힌 `@concept:` 태그로 연결된 코드). 기능과 개념이 같은 파일을 가리키면 파일 노드는 하나로 합쳐져 개념·기능·코드가 한곳에서 만난다. 존재하지 않는 개념으로 향하는 엣지는 버려진다.
 - **레이아웃**은 의존성 0의 force-directed SVG 시뮬레이션이다 — 노드 반발 + 엣지 스프링 + 중심으로의 약한 인력으로 자리를 잡아간다. 다른 화면으로 이동하면 애니메이션 루프는 즉시 멈춘다.
 - **상호작용:** 노드를 드래그하면 위치가 고정되고, *개념*·*기능* 노드를 클릭하면 상세로 이동한다(`#/concept/:slug`, `#/feature/:slug`). *파일* 노드는 상세 페이지가 없는 말단이라, hover 시 전체 경로를 툴팁으로 보여준다.
+
+링크가 만들어지는 방식: **기능 명세**(`features/*.json`)가 자신의 `concepts`와 `codePaths`를 선언하며, 이것이 `기능 → 개념`·`기능 → 파일` 엣지의 원천이다(`conceptpowers:define-feature`로 작성). `개념 → 파일` 엣지는 개념 자신의 `codeLinks`와, 코드에서 스캔해 `.cache/mapping.json`에 모인 `@concept:<slug>` 태그(`update-mapping`)에서 나온다. `render`는 이 셋(개념·기능·매핑)을 읽어 `manifest.json`의 `graph` 블록을 다시 만든다.
 
 그래프는 데이터 기반이며 `render` / `update-mapping`마다 다시 만들어지므로, 항상 현재의 개념·기능·`@concept` ↔ 코드 링크를 반영한다.
 

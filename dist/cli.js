@@ -3047,6 +3047,9 @@ var {
   Help
 } = import_index.default;
 
+// src/cli.ts
+import { readFile as readFile10 } from "node:fs/promises";
+
 // src/init/scaffold.ts
 import { mkdir as mkdir7, writeFile as writeFile8, access as access2 } from "node:fs/promises";
 import { join as join9 } from "node:path";
@@ -7470,6 +7473,22 @@ function parseFeature(input) {
 }
 
 // src/store/featureStore.ts
+function fileFor2(root, f) {
+  const dir = cpPaths(root).features;
+  return f.group ? join3(dir, f.group, `${f.slug}.json`) : join3(dir, `${f.slug}.json`);
+}
+async function writeFeature(root, input) {
+  const feature = parseFeature(input);
+  const target = fileFor2(root, feature);
+  const existing = await listFeatures(root);
+  const duplicate = existing.find((f) => f.slug === feature.slug && fileFor2(root, f) !== target);
+  if (duplicate) {
+    throw new Error(`Duplicate feature slug: ${feature.slug} already exists (globally unique)`);
+  }
+  await mkdir3(dirname3(target), { recursive: true });
+  await writeFile3(target, JSON.stringify(feature, null, 2) + "\n", "utf8");
+  return feature;
+}
 async function walkJson2(dir) {
   let entries;
   try {
@@ -7906,6 +7925,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
     await approveConcept(o.root, slug3);
     await renderViewerToDisk(o.root);
+  });
+  program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    const feature = await writeFeature(o.root, JSON.parse(await readFile10(o.file, "utf8")));
+    out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
     await writeMappingCache(o.root, await buildMapping(o.root, files));

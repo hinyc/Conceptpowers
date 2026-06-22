@@ -57,4 +57,40 @@ describe("end-to-end", () => {
     // 미정의 태그는 막되 override 허용(ask) — 강제된 내비게이션
     expect(blocked!.hookSpecificOutput.permissionDecision).toBe("ask");
   });
+
+  it("init → feature 작성 → concept 정의 → map → render: 그래프에 3종 엣지가 모두 생긴다", async () => {
+    expect(await runCli(["init", "--root", root])).toBe(0);
+
+    // 개념(개념→코드는 @concept 태그 + map으로 배선)
+    await writeConcept(root, {
+      slug: "auth-session", group: "auth", category: ["feature"], title: "세션",
+      description: { definition: "d" }, purpose: { reason: "r" },
+      actions: {}, principle: {}, status: "green",
+    });
+
+    // 기능(기능→개념: concepts, 기능→코드: codePaths)
+    const spec = join(root, "feat.json");
+    writeFileSync(spec, JSON.stringify({
+      slug: "login", group: "auth", title: "로그인",
+      concepts: ["auth-session"], codePaths: ["src/login.ts"],
+    }));
+    expect(await runCli(["feature", "--root", root, "--file", spec])).toBe(0);
+
+    // @concept 태그 → mapping.json (개념→코드)
+    writeFileSync(join(root, "src/login.ts"), "// @concept:auth-session\n");
+    expect(await runCli(["map", "--root", root, "src/login.ts"])).toBe(0);
+
+    expect(await runCli(["render", "--root", root])).toBe(0);
+    const manifest = JSON.parse(
+      readFileSync(join(root, "docs/conceptpowers/concepts/viewer/manifest.json"), "utf8"),
+    );
+    const kinds = new Set(manifest.graph.edges.map((e: { kind: string }) => e.kind));
+    expect(kinds.has("feature-concept")).toBe(true);
+    expect(kinds.has("feature-file")).toBe(true);
+    expect(kinds.has("concept-file")).toBe(true);
+    // 같은 파일(src/login.ts)을 기능·개념이 공유 → 파일 노드는 하나로 합쳐진다
+    expect(
+      manifest.graph.nodes.filter((n: { id: string }) => n.id === "p:src/login.ts").length,
+    ).toBe(1);
+  });
 });
