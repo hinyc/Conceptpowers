@@ -88,6 +88,44 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("ghost");
   });
 
+  it("태그 없는 신규 코드 파일을 커밋하려 하면 개념 없는 코드로 경고(ask)한다", async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, "src/foo.ts"), "export const foo = 1\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["src/foo.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("개념 없는 코드");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("foo.ts");
+  });
+  it("ignoreGlobs에 매칭되는 util 파일은 태그 없어도 경고하지 않는다", async () => {
+    await scaffoldInit(root, {});
+    mkdirSync(join(root, "src/utils"), { recursive: true });
+    writeFileSync(join(root, "src/utils/bar.ts"), "export const bar = 1\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["src/utils/bar.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("개념 없는 코드");
+  });
+  it("태그가 있는 신규 코드 파일은 개념 없는 코드 경고를 내지 않는다", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "foo-feat", category: ["feature"], title: "F", status: "green",
+      description: { definition: "d" }, purpose: { reason: "r" }, actions: {}, principle: {},
+    } as any);
+    writeFileSync(join(root, "src/foo.ts"), "// @concept:foo-feat\nexport const foo = 1\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["src/foo.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("개념 없는 코드");
+  });
+
   it("개념 drift인데 관련 코드가 스테이지에 없으면 ask로 경고한다", async () => {
     await scaffoldInit(root, {});
     await writeConcept(root, {
