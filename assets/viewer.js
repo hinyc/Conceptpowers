@@ -1,6 +1,6 @@
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
-// 해시 라우트: #/ (목록) · #/concept/:slug · #/feature/:slug · #/graph
+// 해시 라우트: #/ (목록) · #/concept/:slug · #/feature/:slug · #/graph(/:focusSlug)
 'use strict'
 
 var I18N = {
@@ -11,6 +11,8 @@ var I18N = {
     featureList: '기능 목록', relatedFeatures: '관련 기능', relatedConcepts: '관련 개념',
     implementationPaths: '구현 경로', featureEyebrow: '기능', graphTitle: '지식 그래프',
     openGraph: '지식 그래프 보기', conceptNode: '개념', featureNode: '기능', fileNode: '파일',
+    allConcepts: '전체 보기', focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
+    copyPath: '경로 복사', copied: '복사됨', copyFailed: '복사 실패',
     back: '개념 목록', empty: '아직 개념이 없습니다.', loadError: '데이터를 불러오지 못했습니다.',
     notFound: '대상을 찾을 수 없습니다.'
   },
@@ -21,12 +23,14 @@ var I18N = {
     featureList: 'Features', relatedFeatures: 'Related Features', relatedConcepts: 'Related Concepts',
     implementationPaths: 'Implementation', featureEyebrow: 'Feature', graphTitle: 'Knowledge Graph',
     openGraph: 'View Knowledge Graph', conceptNode: 'Concept', featureNode: 'Feature', fileNode: 'File',
+    allConcepts: 'Show all', focusHint: 'Pick a concept to show only its related graph.',
+    copyPath: 'Copy path', copied: 'Copied', copyFailed: 'Copy failed',
     back: 'Concepts', empty: 'No concepts yet.', loadError: 'Failed to load data.',
     notFound: 'Not found.'
   }
 }
 
-var state = { manifest: null, t: I18N.ko }
+var state = { manifest: null, t: I18N.en }
 var renderGen = 0 // 라우트가 바뀌면 증가 → 그래프 애니메이션 루프 종료 신호
 
 // ---- DOM 헬퍼: 텍스트는 textContent로만 넣어 XSS를 차단한다 ----
@@ -64,6 +68,19 @@ function statusBadge(status) {
   var t = state.t
   var label = status === 'green' ? t.statusApproved : status === 'pending' ? t.statusPending : t.statusUnapproved
   return h('span', { class: 'badge badge--' + (status || 'red') }, label)
+}
+// 클립보드 복사. localhost는 보안 컨텍스트라 navigator.clipboard가 동작하지만,
+// 안 될 경우 textarea + execCommand로 폴백한다.
+function copyText(s) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(s)
+  return new Promise(function (res, rej) {
+    try {
+      var ta = document.createElement('textarea')
+      ta.value = s; ta.style.position = 'fixed'; ta.style.opacity = '0'
+      document.body.appendChild(ta); ta.focus(); ta.select()
+      document.execCommand('copy'); document.body.removeChild(ta); res()
+    } catch (e) { rej(e) }
+  })
 }
 function setApp(node, opts) {
   document.body.className = opts && opts.graph ? 'viewing-graph' : ''
@@ -196,7 +213,10 @@ function viewConcept(slug) {
             }))
           ])
         : null,
-      pagenav()
+      h('nav', { class: 'pagenav' }, [
+        h('a', { href: '#/' }, t.conceptList), ' · ',
+        h('a', { class: 'graph-link', href: '#/graph/' + slug }, t.openGraph + ' →')
+      ])
     ]
     setApp(h('div', { class: 'wrap' }, sections))
   }).catch(renderError)
@@ -232,10 +252,48 @@ function viewFeature(slug) {
   }).catch(renderError)
 }
 
-// ---- 뷰: 지식 그래프 ----
-function viewGraph() {
+// 선택한 개념의 1-hop 이웃만 추린다: 개념 자신 + 그 개념을 실현하는 기능 +
+// 개념·기능이 가리키는 파일 + (맥락용) 그 기능들이 함께 실현하는 다른 개념(잎 노드).
+function subgraphFor(data, slug) {
+  var focusId = 'c:' + slug
+  var keep = {}; keep[focusId] = true
+  var feats = {}
+  data.edges.forEach(function (e) {
+    if (e.kind === 'feature-concept' && e.target === focusId) { keep[e.source] = true; feats[e.source] = true }
+    if (e.kind === 'concept-file' && e.source === focusId) keep[e.target] = true
+  })
+  data.edges.forEach(function (e) {
+    if (!feats[e.source]) return
+    if (e.kind === 'feature-file') keep[e.target] = true // 기능→코드
+    if (e.kind === 'feature-concept') keep[e.target] = true // 형제 개념(맥락 잎)
+  })
+  return {
+    nodes: data.nodes.filter(function (n) { return keep[n.id] }),
+    edges: data.edges.filter(function (e) { return keep[e.source] && keep[e.target] })
+  }
+}
+
+// 개념 선택 드롭다운: 변경 시 #/graph/<slug> 로 이동(전체 보기는 __all).
+function focusSelect(concepts, value) {
   var t = state.t
-  var data = (state.manifest.graph) || { nodes: [], edges: [] }
+  var sel = h('select', { class: 'graph-focus', 'aria-label': t.conceptNode })
+  sel.appendChild(h('option', { value: '__all' }, t.allConcepts))
+  concepts.forEach(function (c) { sel.appendChild(h('option', { value: c.slug }, c.title)) })
+  sel.value = value
+  sel.addEventListener('change', function () { window.location.hash = '/graph/' + sel.value })
+  return sel
+}
+
+// ---- 뷰: 지식 그래프 ----
+// focusSlug: 개념 slug면 그 이웃만, '__all'이면 전체, 없으면 첫 개념을 기본 포커스.
+function viewGraph(focusSlug) {
+  var t = state.t
+  var full = (state.manifest.graph) || { nodes: [], edges: [] }
+  var concepts = state.manifest.concepts || []
+  var isAll = focusSlug === '__all'
+  var effective = isAll ? null
+    : (focusSlug || (concepts.length ? concepts[0].slug : null))
+  var data = effective ? subgraphFor(full, effective) : full
   var legend = h('span', { class: 'legend' }, [
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--concept' }), t.conceptNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--feature' }), t.featureNode]),
@@ -245,7 +303,9 @@ function viewGraph() {
   setApp(h('div', { class: 'graph-shell' }, [
     h('header', { class: 'graph-bar' }, [
       h('a', { class: 'back', href: '#/' }, '← ' + t.back),
-      h('strong', null, t.graphTitle), legend
+      h('strong', null, t.graphTitle),
+      concepts.length ? focusSelect(concepts, effective || '__all') : null,
+      legend
     ]),
     svg
   ]), { graph: true })
@@ -271,17 +331,26 @@ function renderGraph(svg, data, gen) {
   var gN = h('g'); svg.appendChild(gN)
   var lines = edges.map(function () { var l = document.createElementNS(NS, 'line'); l.setAttribute('class', 'gedge'); gE.appendChild(l); return l })
   function toLocal(ev) { var r = svg.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H } }
+
+  // 파일 노드 호버 툴팁: 전체 경로 + 경로 복사 버튼. graph-shell 안에 두어 라우트 전환 시 함께 제거된다.
+  var tip = buildFileTip(svg, W, H)
+
   var groups = nodes.map(function (d) {
     var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'gnode gnode--' + d.type)
     var c = document.createElementNS(NS, 'circle'); c.setAttribute('r', d.type === 'file' ? 5 : 9); g.appendChild(c)
     var tx = document.createElementNS(NS, 'text'); tx.setAttribute('x', 13); tx.setAttribute('y', 4); tx.textContent = d.label; g.appendChild(tx)
-    var tt = document.createElementNS(NS, 'title'); tt.textContent = d.title || d.label; g.appendChild(tt)
+    // 파일 노드는 커스텀 툴팁이 경로를 보여주므로 네이티브 <title>은 개념·기능에만 둔다.
+    if (d.type !== 'file') { var tt = document.createElementNS(NS, 'title'); tt.textContent = d.title || d.label; g.appendChild(tt) }
     g.addEventListener('mousedown', function (ev) {
       ev.preventDefault(); d.fixed = true; d.drag = false
       function mv(e2) { var p = toLocal(e2); d.x = p.x; d.y = p.y; d.drag = true }
       function up() { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); setTimeout(function () { d.drag = false }, 0) }
       window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up)
     })
+    if (d.type === 'file') {
+      g.addEventListener('mouseenter', function () { tip.show(d) })
+      g.addEventListener('mouseleave', function () { tip.scheduleHide() })
+    }
     if (d.href) { g.style.cursor = 'pointer'; g.addEventListener('click', function () { if (!d.drag) window.location.hash = d.href.replace(/^#/, '') }) }
     gN.appendChild(g); return g
   })
@@ -302,9 +371,51 @@ function renderGraph(svg, data, gen) {
     })
     lines.forEach(function (l, i) { var e = edges[i]; l.setAttribute('x1', e.s.x); l.setAttribute('y1', e.s.y); l.setAttribute('x2', e.t.x); l.setAttribute('y2', e.t.y) })
     groups.forEach(function (g, i) { g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')') })
+    tip.reposition() // 노드가 움직이는 동안 툴팁을 따라붙인다
     requestAnimationFrame(tick)
   }
   if (data.nodes.length) requestAnimationFrame(tick)
+}
+
+// 파일 노드 호버 툴팁 빌더: 전체 경로 표시 + 경로 복사 버튼. 노드 좌표(뷰박스 W×H)를
+// 화면 좌표로 변환해 fixed 위치에 띄우고, 노드↔툴팁 사이 이동을 허용하도록 지연 숨김한다.
+function buildFileTip(svg, W, H) {
+  var el = document.createElement('div'); el.className = 'gtip'; el.style.display = 'none'
+  var pathEl = document.createElement('span'); pathEl.className = 'gtip__path'
+  var copyBtn = document.createElement('button'); copyBtn.type = 'button'; copyBtn.className = 'gtip__copy'
+  copyBtn.textContent = state.t.copyPath
+  el.appendChild(copyBtn); el.appendChild(pathEl) // 복사 버튼을 경로 좌측에 둔다
+  ;(svg.parentNode || document.body).appendChild(el)
+
+  var active = null, hideTimer = null, btnTimer = null
+  function place() {
+    if (!active) return
+    var r = svg.getBoundingClientRect()
+    el.style.left = (r.left + active.x / W * r.width + 12) + 'px'
+    el.style.top = (r.top + active.y / H * r.height - 8) + 'px'
+  }
+  function hide() { active = null; el.style.display = 'none' }
+  function clearHide() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null } }
+  function flashBtn(label) {
+    copyBtn.textContent = label
+    if (btnTimer) clearTimeout(btnTimer)
+    btnTimer = setTimeout(function () { copyBtn.textContent = state.t.copyPath }, 1200)
+  }
+  copyBtn.addEventListener('click', function () {
+    copyText(pathEl.textContent)
+      .then(function () { flashBtn(state.t.copied) })
+      .catch(function () { flashBtn(state.t.copyFailed) })
+  })
+  el.addEventListener('mouseenter', clearHide)
+  el.addEventListener('mouseleave', hide)
+  return {
+    show: function (d) {
+      clearHide(); active = d; pathEl.textContent = d.title
+      copyBtn.textContent = state.t.copyPath; el.style.display = 'flex'; place()
+    },
+    scheduleHide: function () { clearHide(); hideTimer = setTimeout(hide, 180) },
+    reposition: function () { if (active) place() }
+  }
 }
 
 // ---- 에러/미발견 ----
@@ -324,21 +435,23 @@ function route() {
   var parts = hash.split('/').filter(Boolean) // ['concept','slug'] 등
   if (parts[0] === 'concept' && parts[1]) return viewConcept(decodeURIComponent(parts[1]))
   if (parts[0] === 'feature' && parts[1]) return viewFeature(decodeURIComponent(parts[1]))
-  if (parts[0] === 'graph') return viewGraph()
+  if (parts[0] === 'graph') return viewGraph(parts[1] ? decodeURIComponent(parts[1]) : null)
   return viewIndex()
 }
 
 function boot() {
   fetchJson('manifest.json').then(function (m) {
     state.manifest = m
-    state.t = I18N[m.locale] || I18N.ko
-    document.documentElement.lang = m.locale || 'ko'
+    // UI 문구는 기본 영어. 개념/기능 본문(data/*.json)은 작성된 언어 그대로 렌더되며,
+    // UI 언어만 바꾸려면 manifest의 uiLocale(예: 'ko')을 지정한다.
+    state.t = I18N[m.uiLocale] || I18N.en
+    document.documentElement.lang = m.locale || 'en'
     window.addEventListener('hashchange', route)
     route()
   }).catch(function () {
     var app = document.getElementById('app')
     app.textContent = ''
-    app.appendChild(h('div', { class: 'wrap' }, h('p', { class: 'muted' }, I18N.ko.loadError)))
+    app.appendChild(h('div', { class: 'wrap' }, h('p', { class: 'muted' }, I18N.en.loadError)))
   })
 }
 

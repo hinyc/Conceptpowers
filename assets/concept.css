@@ -196,6 +196,10 @@ body.viewing-graph .graph-shell { height: 100vh; display: flex; flex-direction: 
 }
 .graph-bar .back { color: var(--link); text-decoration: none; font-weight: 600; }
 .graph-bar strong { font-size: 1rem; }
+.graph-bar .graph-focus {
+  margin-left: 12px; padding: 4px 8px; font-size: .85rem;
+  color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+}
 .graph-bar .legend { margin-left: auto; display: flex; gap: 14px; color: var(--muted); font-size: .85rem; }
 .graph-bar .lg { display: inline-flex; align-items: center; gap: .35rem; }
 .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
@@ -209,3 +213,20 @@ body.viewing-graph .graph-shell { height: 100vh; display: flex; flex-direction: 
 .gnode--concept circle { fill: var(--link); }
 .gnode--feature circle { fill: var(--allow); }
 .gnode--file circle { fill: var(--muted); }
+.gnode--file { cursor: default; }
+.gtip {
+  position: fixed; z-index: 20; display: flex; align-items: center; gap: 8px;
+  max-width: 360px; padding: 6px 8px;
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+}
+.gtip__path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem;
+  word-break: break-all; line-height: 1.35;
+}
+.gtip__copy {
+  flex: 0 0 auto; cursor: pointer; padding: 2px 8px; font-size: .72rem; white-space: nowrap;
+  color: var(--link); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+}
+.gtip__copy:hover { border-color: var(--link); }
