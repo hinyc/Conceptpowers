@@ -11,6 +11,9 @@ Sync the `@concept` tags (the source-of-truth on the code side) with the `mappin
 
 1. If you changed code, confirm the changed files have the right `@concept:<slug>` tag, and add one if missing.
    - The tag must exactly match the related concept's slug (globally unique).
+   - A file may relate to several concepts — add one `@concept:<slug>` tag per related concept.
+   - Concept-agnostic code (type-only/utils/helpers/config/build/generated) needs no tag; the commit
+     gate skips files matching `init.json` `ignoreGlobs`. Add a path there to silence a false warning.
 2. Regenerate the mapping cache:
    `node "<cli>" map --root . <changed files...>`
    - Or pass the whole source as arguments if a full refresh is needed.

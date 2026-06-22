@@ -4087,6 +4087,21 @@ var InitConfigSchema = external_exports.object({
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
   versionCheck: external_exports.boolean().default(true),
+  // 개념 매핑에서 제외할 경로 글롭(타입 전용·유틸·설정/빌드/생성물 등).
+  // 여기에 매칭되는 파일은 @concept 태그가 없어도 커밋 게이트가 경고하지 않는다.
+  ignoreGlobs: external_exports.array(external_exports.string()).default([
+    "docs/conceptpowers/**",
+    "**/*.d.ts",
+    "**/*.types.ts",
+    "**/types/**",
+    "**/utils/**",
+    "**/helpers/**",
+    "**/*.config.*",
+    "scripts/**",
+    "dist/**",
+    "build/**",
+    "**/*.generated.*"
+  ]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function parseInitConfig(input) {
