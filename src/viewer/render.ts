@@ -32,7 +32,9 @@ async function copyAsset(name: string, target: string): Promise<void> {
   await writeFile(target, await readAsset(name))
 }
 
-export async function renderViewerToDisk(root: string): Promise<void> {
+// 매니페스트(manifest.json)만 다시 쓴다. 정적 에셋 복사는 하지 않으므로
+// 실행 중인 뷰어 서버(serve.mjs)가 자신·에셋을 덮어쓰는 일 없이 데이터 변경을 반영할 수 있다.
+export async function writeManifest(root: string): Promise<void> {
   const concepts = await listConcepts(root)
   const features = await listFeatures(root)
   const mapping = await readMappingCache(root)
@@ -45,6 +47,11 @@ export async function renderViewerToDisk(root: string): Promise<void> {
     JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + '\n',
     'utf8'
   )
+}
+
+export async function renderViewerToDisk(root: string): Promise<void> {
+  await writeManifest(root)
+  const p = cpPaths(root)
 
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
   await copyAsset('index.html', join(p.conceptsViewer, 'index.html'))

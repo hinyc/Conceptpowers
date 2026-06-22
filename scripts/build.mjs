@@ -37,7 +37,19 @@ async function run() {
         ].join('\n'),
       },
     })
-    console.log('빌드 완료: dist/{cli,hooks/sessionStart,hooks/preToolUse,hooks/postToolUse}.js')
+    // 뷰어 서버는 사용자 프로젝트에 복사돼 `node serve.mjs`로 직접 실행되므로(플러그인 dist 접근 불가),
+    // 엔진(zod 포함)을 인라인 번들해 assets/serve.mjs로 굽는다. → 런타임 의존성 0 + 가드 로직 단일 소스.
+    await build({
+      entryPoints: [join(root, 'src/viewer/serve.ts')],
+      outfile: join(root, 'assets/serve.mjs'),
+      bundle: true,
+      platform: 'node',
+      format: 'esm',
+      target: 'node20',
+      sourcemap: false,
+    })
+
+    console.log('빌드 완료: dist/{cli,hooks/sessionStart,hooks/preToolUse,hooks/postToolUse}.js, assets/serve.mjs')
   } catch (error) {
     console.error('빌드 실패:', error)
     process.exit(1)

@@ -85,3 +85,35 @@ export async function setConceptStatus(
   if (status === 'green') await clearPendingConflict(root, slug)
   return updated
 }
+
+// 내용 편집으로 바꿀 수 있는 필드(섹션 단위 교체). slug/group(파일 경로 키)과
+// status(상태 전이는 setConceptStatus 전용)는 의도적으로 제외한다.
+const EDITABLE_FIELDS = [
+  'category', 'number', 'title', 'eyebrow',
+  'description', 'purpose', 'actions', 'principle', 'relations', 'codeLinks',
+] as const
+type EditableField = (typeof EDITABLE_FIELDS)[number]
+export type ConceptContentPatch = Partial<Pick<Concept, EditableField>>
+
+// 개념 본문을 불변으로 편집한다(읽기 → 화이트리스트 병합 → 검증 → 쓰기).
+// 병합은 "최상위 필드 단위 교체"다(deep-merge 아님): patch에 description이 오면
+// description 전체가 교체된다. 호출자(뷰어 폼)는 각 섹션을 통째로 보내야 부분 유실이 없다.
+// 정책: green 개념을 편집하면 status를 pending으로 내려 재검증을 유도한다
+// (이는 setConceptStatus 가드가 막는 전이이므로 별도의 의도된 연산으로 둔다).
+// pending/red는 내용만 바뀌고 상태를 유지한다.
+export async function editConceptContent(
+  root: string,
+  slug: string,
+  patch: ConceptContentPatch,
+): Promise<Concept> {
+  const concept = await readConcept(root, slug)
+  if (!concept) throw new Error(`Concept not found: ${slug}`)
+  const safe: Partial<Concept> = {}
+  for (const key of EDITABLE_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(patch, key) && patch[key] !== undefined) {
+      ;(safe as Record<string, unknown>)[key] = patch[key]
+    }
+  }
+  const nextStatus: ConceptStatus = concept.status === 'green' ? 'pending' : concept.status
+  return writeConcept(root, { ...concept, ...safe, slug: concept.slug, group: concept.group, status: nextStatus })
+}

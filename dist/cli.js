@@ -7588,7 +7588,7 @@ async function copyAsset(name, target) {
   await mkdir5(dirname5(target), { recursive: true });
   await writeFile5(target, await readAsset(name));
 }
-async function renderViewerToDisk(root) {
+async function writeManifest(root) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
@@ -7600,6 +7600,10 @@ async function renderViewerToDisk(root) {
     JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + "\n",
     "utf8"
   );
+}
+async function renderViewerToDisk(root) {
+  await writeManifest(root);
+  const p = cpPaths(root);
   await copyAsset("index.html", join5(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join5(p.conceptsViewer, "assets", "viewer.js"));
   await copyAsset("serve.mjs", join5(p.conceptsViewer, "serve.mjs"));

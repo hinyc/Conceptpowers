@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { writeConcept, listConcepts, readConcept, slugExists, setConceptStatus } from '../../src/store/conceptStore.js'
+import { writeConcept, listConcepts, readConcept, slugExists, setConceptStatus, editConceptContent } from '../../src/store/conceptStore.js'
 
 const base = {
   slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin Role',
@@ -74,5 +74,55 @@ describe('conceptStore', () => {
   it('동일 상태로의 전이는 허용한다(idempotent)', async () => {
     await writeConcept(root, { ...base, status: 'green' } as any)
     expect((await setConceptStatus(root, 'admin-role', 'green')).status).toBe('green')
+  })
+})
+
+describe('editConceptContent', () => {
+  it('본문 필드를 불변으로 교체한다', async () => {
+    await writeConcept(root, { ...base, status: 'pending' } as any)
+    const updated = await editConceptContent(root, 'admin-role', {
+      title: 'New Title',
+      actions: { allow: ['x'], restrict: ['y'], interaction: '' },
+    })
+    expect(updated.title).toBe('New Title')
+    expect(updated.actions.allow).toEqual(['x'])
+    expect((await readConcept(root, 'admin-role'))?.title).toBe('New Title')
+  })
+  it('green 개념을 편집하면 pending으로 내려간다(재검증 유도)', async () => {
+    await writeConcept(root, { ...base, status: 'green' } as any)
+    const updated = await editConceptContent(root, 'admin-role', { title: 'Edited' })
+    expect(updated.status).toBe('pending')
+  })
+  it('pending/red 개념은 편집해도 상태를 유지한다', async () => {
+    await writeConcept(root, { ...base, status: 'pending' } as any)
+    expect((await editConceptContent(root, 'admin-role', { title: 'a' })).status).toBe('pending')
+    await writeConcept(root, { ...base, status: 'red' } as any)
+    expect((await editConceptContent(root, 'admin-role', { title: 'b' })).status).toBe('red')
+  })
+  it('slug/group/status 변경 시도는 무시한다', async () => {
+    await writeConcept(root, { ...base, status: 'green' } as any)
+    const updated = await editConceptContent(root, 'admin-role', {
+      // @ts-expect-error — 화이트리스트 밖 필드는 타입상으로도 막힌다
+      slug: 'hacked', group: 'evil', status: 'green', title: 'ok',
+    })
+    expect(updated.slug).toBe('admin-role')
+    expect(updated.group).toBe('auth')
+    expect(updated.status).toBe('pending') // green→pending (status 패치는 무시)
+    expect(updated.title).toBe('ok')
+  })
+  it('스키마 위반(빈 definition)은 거부한다', async () => {
+    await writeConcept(root, base as any)
+    await expect(
+      editConceptContent(root, 'admin-role', { description: { definition: '', analogy: '', components: [], example: '' } }),
+    ).rejects.toThrow()
+  })
+  it('런타임 임의 키(타입 우회)는 무시한다', async () => {
+    await writeConcept(root, base as any)
+    const updated = await editConceptContent(root, 'admin-role', { hacked: 'x', title: 'ok' } as any)
+    expect(updated.title).toBe('ok')
+    expect((updated as any).hacked).toBeUndefined()
+  })
+  it('없는 개념은 에러를 던진다', async () => {
+    await expect(editConceptContent(root, 'ghost', { title: 'x' })).rejects.toThrow('not found')
   })
 })
