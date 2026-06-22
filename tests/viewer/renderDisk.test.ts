@@ -67,3 +67,9 @@ it('viewer.js와 index.html이 서로를 참조한다', async () => {
   await renderViewerToDisk(root)
   expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/viewer.js')
 })
+
+it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {
+  await renderViewerToDisk(root)
+  const css = readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/assets/concept.css'), 'utf8')
+  expect(css).toContain('badge--pending')
+})
