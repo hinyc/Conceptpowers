@@ -7,12 +7,14 @@ import { join } from 'node:path'
 import { renderViewerToDisk } from '../viewer/render.js'
 import { upsertViewerScript, type ViewerScriptStatus } from './packageScript.js'
 import { ensureReference } from './reference.js'
+import { ensureAlignmentGitignore } from './alignmentGitignore.js'
 import { cpPaths } from '../paths.js'
 
 export interface SyncResult {
   scriptStatus: ViewerScriptStatus
   orphansRemoved: number
   referenceReadmeCreated: boolean
+  alignmentGitignoreCreated: boolean
 }
 
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
@@ -52,5 +54,6 @@ export async function syncGenerated(root: string): Promise<SyncResult> {
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer)
   const scriptStatus = await upsertViewerScript(root)
   const referenceReadmeCreated = await ensureReference(root) // reference/ 폴더 + 안내 README 보장
-  return { scriptStatus, orphansRemoved, referenceReadmeCreated }
+  const alignmentGitignoreCreated = await ensureAlignmentGitignore(root) // last-commit 추적 제외 보장
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated }
 }

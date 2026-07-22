@@ -1,5 +1,2 @@
 node_modules/
 coverage/
-
-# plugin-managed local state (rewritten by hooks on every commit)
-docs/conceptpowers/concepts/.alignment/last-commit

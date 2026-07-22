@@ -3051,8 +3051,8 @@ var {
 import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir7, writeFile as writeFile8, access as access2 } from "node:fs/promises";
-import { join as join9 } from "node:path";
+import { mkdir as mkdir8, writeFile as writeFile9, access as access3 } from "node:fs/promises";
+import { join as join10 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -7233,7 +7233,7 @@ function buildInitHint(locale, opts) {
 
 // src/init/syncGenerated.ts
 import { readdir as readdir4, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { join as join9 } from "node:path";
 
 // src/viewer/render.ts
 import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
@@ -7782,9 +7782,25 @@ async function ensureReference(root) {
   return true;
 }
 
+// src/init/alignmentGitignore.ts
+import { access as access2, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
+import { join as join8 } from "node:path";
+var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
+async function ensureAlignmentGitignore(root) {
+  const target = join8(cpPaths(root).alignmentDir, ".gitignore");
+  try {
+    await access2(target);
+    return false;
+  } catch {
+    await mkdir7(cpPaths(root).alignmentDir, { recursive: true });
+    await writeFile8(target, CONTENT, "utf8");
+    return true;
+  }
+}
+
 // src/init/syncGenerated.ts
 async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join8(viewerDir, "index.html");
+  const keep = join9(viewerDir, "index.html");
   let removed = 0;
   async function walk(dir) {
     let entries;
@@ -7794,7 +7810,7 @@ async function cleanLegacyViewerHtml(viewerDir) {
       return;
     }
     for (const e of entries) {
-      const full = join8(dir, e.name);
+      const full = join9(dir, e.name);
       if (e.isDirectory()) {
         await walk(full);
         try {
@@ -7815,13 +7831,14 @@ async function syncGenerated(root) {
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
   const scriptStatus = await upsertViewerScript(root);
   const referenceReadmeCreated = await ensureReference(root);
-  return { scriptStatus, orphansRemoved, referenceReadmeCreated };
+  const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated };
 }
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
-    await access2(cpPaths(root).initFile);
+    await access3(cpPaths(root).initFile);
     return true;
   } catch {
     return false;
@@ -7831,13 +7848,13 @@ async function syncSafely(root) {
   try {
     return await syncGenerated(root);
   } catch {
-    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false };
+    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false };
   }
 }
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
   for (const d of [p.features, p.reference, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir7(d, { recursive: true });
+    await mkdir8(d, { recursive: true });
   if (await isInitialized(root)) {
     const synced2 = await syncSafely(root);
     return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
@@ -7850,10 +7867,10 @@ async function scaffoldInit(root, opts) {
     locale,
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile8(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile9(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile8(join9(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile8(join9(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile9(join10(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile9(join10(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncSafely(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
