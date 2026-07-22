@@ -26,4 +26,12 @@ describe('buildInitHint', () => {
     expect(msg).toContain('Conceptpowers initialized')
     expect(msg).toContain('Next steps')
   })
+
+  it('define-concept 다음 단계 안내를 포함한다 (ko/en)', () => {
+    const ko = buildInitHint('ko', { ...base, viewerScriptAdded: true })
+    expect(ko).toContain('define-concept')
+    expect(ko).toContain('개념 정의')
+    const en = buildInitHint('en', { ...base, viewerScriptAdded: true })
+    expect(en).toContain('define-concept')
+  })
 })

@@ -5,6 +5,11 @@ description: Use after updating the plugin, or whenever the viewer/concepts:view
 
 # Conceptpowers: Sync
 
+> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
+> Tell the user this project is not initialized and that governance commands are disabled until
+> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
+> any step below without the marker.
+
 Patch the **plugin-generated** artifacts of an already-initialized project up to the installed
 plugin version. Most generated files are produced at `init` time, so after a plugin update an
 existing project can be left on old viewer assets or an outdated `concepts:view` script. This

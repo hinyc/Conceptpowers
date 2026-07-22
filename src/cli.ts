@@ -27,6 +27,19 @@ export async function runCli(
   program.name("conceptpowers").exitOverride();
   let code = 0;
 
+  // init 강제: 초기화 마커(init.json) 없이는 어떤 명령도 실행하지 않는다.
+  // init(최초 진입)과 status(진단)만 예외. throw는 아래 catch가 {error} + exit 1로 변환한다.
+  const NO_INIT_REQUIRED = new Set(["init", "status"]);
+  program.hook("preAction", async (_thisCommand, actionCommand) => {
+    if (NO_INIT_REQUIRED.has(actionCommand.name())) return;
+    const root = (actionCommand.opts() as { root?: string }).root ?? process.cwd();
+    if (!(await isInitialized(root))) {
+      throw new Error(
+        "not initialized — run /conceptpowers:init first (docs/conceptpowers/init.json missing)",
+      );
+    }
+  });
+
   program
     .command("init")
     .option("--root <dir>", "project root", process.cwd())
@@ -46,11 +59,6 @@ export async function runCli(
     .description("플러그인 생성물(뷰어 에셋·스크립트)을 최신으로 패치 (baseline 불변)")
     .option("--root <dir>", "project root", process.cwd())
     .action(async (o) => {
-      if (!(await isInitialized(o.root))) {
-        out(JSON.stringify({ error: "not initialized" }));
-        code = 1;
-        return;
-      }
       out(JSON.stringify({ ok: true, ...(await syncGenerated(o.root)) }));
     });
 

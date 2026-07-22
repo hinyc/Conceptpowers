@@ -7204,7 +7204,8 @@ var initHintStrings = {
     fillDocs: "architecture.md / infra.md\uB97C \uCC44\uC6CC \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900\uC744 \uC791\uC131\uD558\uC138\uC694",
     reference: "\uCC38\uACE0\uC790\uB8CC(\uC6A9\uC5B4\uC9D1\xB7\uC678\uBD80 \uBA85\uC138\xB7\uAE30\uD68D \uBB38\uC11C \uB4F1)\uB294 reference/ \uD3F4\uB354\uC5D0 \uB123\uC73C\uBA74 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD569\uB2C8\uB2E4",
     viewerScript: "\uBDF0\uC5B4 \uC5F4\uAE30:",
-    viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:"
+    viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:",
+    defineConcept: "\uAC1C\uB150 \uC815\uC758 \uC2DC\uC791: /conceptpowers:define-concept \u2014 \uD504\uB85C\uC81D\uD2B8\uC758 \uADDC\uCE59\uACFC \uC758\uB3C4\uB97C \uAC80\uC0AC \uAC00\uB2A5\uD55C \uACC4\uC57D(\uAC1C\uB150)\uC73C\uB85C \uC791\uC131\uD569\uB2C8\uB2E4. \uBC14\uB85C \uC774\uC5B4\uC11C \uC9C4\uD589\uD560\uC9C0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694"
   },
   en: {
     done: "Conceptpowers initialized",
@@ -7213,7 +7214,8 @@ var initHintStrings = {
     fillDocs: "Fill in architecture.md / infra.md \u2014 the high-level basis for concepts",
     reference: "Drop reference material (glossary, external specs, PRDs) into reference/ \u2014 it is consulted during concept work",
     viewerScript: "Open the viewer:",
-    viewerFile: "Open the viewer file directly:"
+    viewerFile: "Open the viewer file directly:",
+    defineConcept: "Start defining concepts: /conceptpowers:define-concept \u2014 turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away"
   }
 };
 function buildInitHint(locale, opts) {
@@ -7227,6 +7229,7 @@ function buildInitHint(locale, opts) {
     `   1. ${t.fillDocs}`,
     `   2. ${t.reference}`,
     viewerLine,
+    `   4. ${t.defineConcept}`,
     ""
   ].join("\n");
 }
@@ -8004,6 +8007,16 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
   let code = 0;
+  const NO_INIT_REQUIRED = /* @__PURE__ */ new Set(["init", "status"]);
+  program2.hook("preAction", async (_thisCommand, actionCommand) => {
+    if (NO_INIT_REQUIRED.has(actionCommand.name())) return;
+    const root = actionCommand.opts().root ?? process.cwd();
+    if (!await isInitialized(root)) {
+      throw new Error(
+        "not initialized \u2014 run /conceptpowers:init first (docs/conceptpowers/init.json missing)"
+      );
+    }
+  });
   program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
     const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
     out(buildInitHint(o.lang, {
@@ -8013,11 +8026,6 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     }));
   });
   program2.command("sync").description("\uD50C\uB7EC\uADF8\uC778 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uCD5C\uC2E0\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    if (!await isInitialized(o.root)) {
-      out(JSON.stringify({ error: "not initialized" }));
-      code = 1;
-      return;
-    }
     out(JSON.stringify({ ok: true, ...await syncGenerated(o.root) }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {

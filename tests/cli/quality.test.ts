@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { runCli } from '../../src/cli.js'
 import { writeConcept } from '../../src/store/conceptStore.js'
 import { readAttestLog } from '../../src/concept/attest.js'
+import { scaffoldInit } from '../../src/init/scaffold.js'
 
 function conceptInput(rules: string[]) {
   return {
@@ -21,6 +22,7 @@ describe('cli: quality / attest-consistency', () => {
   const out = (s: string) => { output += s }
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-q-'))
+    await scaffoldInit(root, {}) // init 가드 통과 (CLI는 init 없이는 거부됨)
     output = ''
   })
 

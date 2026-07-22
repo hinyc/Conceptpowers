@@ -24,7 +24,12 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
    `node "<cli>" init --root . --mode <incremental|strict> --lang <ko|en>`
 4. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 5. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
-6. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
+6. **Offer define-concept as the immediate next step.** Explain it in one line — "define-concept는
+   프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
+   작성하는 단계입니다. 참고자료를 reference/에 넣어두면 그걸 근거로 함께 작성합니다." — then
+   **ask the user whether to continue with `/conceptpowers:define-concept` right now.** Proceed only
+   on yes; if they decline, remind them it is available anytime.
+7. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
 
 ## Full-scan procedure (strict)
 

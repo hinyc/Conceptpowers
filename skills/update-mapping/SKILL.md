@@ -5,6 +5,11 @@ description: Use after modifying code to sync @concept tags and the mapping cach
 
 # Conceptpowers: Update Mapping
 
+> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
+> Tell the user this project is not initialized and that governance commands are disabled until
+> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
+> any step below without the marker.
+
 Sync the `@concept` tags (the source-of-truth on the code side) with the `mapping.json` cache (rule 5, D6).
 
 ## Steps

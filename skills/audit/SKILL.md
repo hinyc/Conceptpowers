@@ -5,6 +5,11 @@ description: Use when the user wants a full project audit ("개념 전수 점검
 
 # Conceptpowers: Audit (full audit)
 
+> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
+> Tell the user this project is not initialized and that governance commands are disabled until
+> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
+> any step below without the marker.
+
 Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of existing links (D13).
 
 ## Steps

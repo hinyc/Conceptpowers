@@ -5,6 +5,11 @@ description: Use when you identify a feature surface (button/action/route/comman
 
 # Conceptpowers: Define Feature
 
+> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
+> Tell the user this project is not initialized and that governance commands are disabled until
+> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
+> any step below without the marker.
+
 A **feature** is a first-class entity in the knowledge graph. It is the single source of the
 *feature → concept* link (which concept the feature realizes) and the *feature → code* link
 (which files implement it). Without a feature spec, the graph cannot show "this feature relates

@@ -5,6 +5,11 @@ description: Use ONLY when the user explicitly asks to modify the baseline (a co
 
 # Conceptpowers: Update Baseline (user-only)
 
+> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
+> Tell the user this project is not initialized and that governance commands are disabled until
+> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
+> any step below without the marker.
+
 Modify the baseline (all of `docs/conceptpowers/`) (rule 4).
 
 ## Precondition

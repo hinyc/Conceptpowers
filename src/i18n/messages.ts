@@ -71,6 +71,7 @@ export interface InitHintStrings {
   reference: string // reference/ 폴더 용도 안내
   viewerScript: string // 뒤에 실행 명령(npm run …)이 붙는다
   viewerFile: string // package.json이 없어 스크립트를 못 넣은 경우: 파일 경로 직접 안내
+  defineConcept: string // 다음 단계인 define-concept 설명 + 바로 이어갈지 묻는 안내
 }
 
 export const initHintStrings: Record<Locale, InitHintStrings> = {
@@ -81,7 +82,8 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     fillDocs: 'architecture.md / infra.md를 채워 개념의 상위 기준을 작성하세요',
     reference: '참고자료(용어집·외부 명세·기획 문서 등)는 reference/ 폴더에 넣으면 개념 작업 시 참고합니다',
     viewerScript: '뷰어 열기:',
-    viewerFile: '뷰어를 직접 여세요:'
+    viewerFile: '뷰어를 직접 여세요:',
+    defineConcept: '개념 정의 시작: /conceptpowers:define-concept — 프로젝트의 규칙과 의도를 검사 가능한 계약(개념)으로 작성합니다. 바로 이어서 진행할지 사용자에게 물어보세요'
   },
   en: {
     done: 'Conceptpowers initialized',
@@ -90,7 +92,8 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     fillDocs: 'Fill in architecture.md / infra.md — the high-level basis for concepts',
     reference: 'Drop reference material (glossary, external specs, PRDs) into reference/ — it is consulted during concept work',
     viewerScript: 'Open the viewer:',
-    viewerFile: 'Open the viewer file directly:'
+    viewerFile: 'Open the viewer file directly:',
+    defineConcept: 'Start defining concepts: /conceptpowers:define-concept — turn the project\'s rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away'
   }
 }
 
@@ -114,6 +117,7 @@ export function buildInitHint(locale: Locale, opts: InitHintOptions): string {
     `   1. ${t.fillDocs}`,
     `   2. ${t.reference}`,
     viewerLine,
+    `   4. ${t.defineConcept}`,
     ''
   ].join('\n')
 }
