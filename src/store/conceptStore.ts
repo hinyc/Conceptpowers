@@ -1,3 +1,4 @@
+// @concept:settled-status
 // src/store/conceptStore.ts
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'

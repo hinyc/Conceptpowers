@@ -1,0 +1,13 @@
+{
+  "slug": "commit-gate",
+  "group": "governance",
+  "title": "커밋 문지기",
+  "description": "git 커밋 직전에 스테이징된 변경을 검사해, 개념 없는 코드·미정의 태그·개념-코드 어긋남(드리프트)·검사 안 된 개념 변경을 발견하면 경고와 함께 사용자에게 묻는다.",
+  "concepts": [
+    "ask-only-gate"
+  ],
+  "codePaths": [
+    "src/hooks/preToolUse.ts",
+    "src/hooks/postToolUse.ts"
+  ]
+}

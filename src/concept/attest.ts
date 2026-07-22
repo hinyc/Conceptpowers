@@ -1,3 +1,4 @@
+// @concept:settled-status
 // src/concept/attest.ts
 // check-consistency 실행 증빙. 증빙은 에이전트의 자기신고이며, 목표는 "검사 단계를
 // 건너뛴 채 승격/커밋이 진행되지 않게" 워크플로우를 강제하고 감사 흔적을 남기는 것이다.

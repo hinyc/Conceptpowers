@@ -1,0 +1,12 @@
+{
+  "ask-only-gate": [
+    "src/hooks/preToolUse.ts",
+    "src/hooks/postToolUse.ts"
+  ],
+  "settled-status": [
+    "src/store/conceptStore.ts",
+    "src/concept/approve.ts",
+    "src/concept/quality.ts",
+    "src/concept/attest.ts"
+  ]
+}

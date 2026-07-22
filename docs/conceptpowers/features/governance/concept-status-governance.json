@@ -1,0 +1,16 @@
+{
+  "slug": "concept-status-governance",
+  "group": "governance",
+  "title": "개념 신호등 관리",
+  "description": "개념의 상태(초록·노랑·빨강)를 관리한다. 확정 상태는 함부로 못 바꾸고, 초록 승격은 품질 최소치와 충돌 검사 기록을 요구한다.",
+  "concepts": [
+    "settled-status",
+    "human-owns-contract"
+  ],
+  "codePaths": [
+    "src/store/conceptStore.ts",
+    "src/concept/approve.ts",
+    "src/concept/quality.ts",
+    "src/concept/attest.ts"
+  ]
+}

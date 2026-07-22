@@ -1,10 +1,250 @@
 {
   "version": 1,
   "locale": "ko",
-  "concepts": [],
-  "features": [],
+  "concepts": [
+    {
+      "slug": "ask-only-gate",
+      "group": "governance",
+      "title": "막지 않는 문지기",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/ask-only-gate.json",
+      "codeLinks": [
+        "src/hooks/preToolUse.ts",
+        "src/hooks/postToolUse.ts"
+      ]
+    },
+    {
+      "slug": "human-owns-contract",
+      "group": "governance",
+      "title": "개념의 주인은 사람",
+      "status": "green",
+      "category": [
+        "behavior",
+        "permission"
+      ],
+      "url": "../data/governance/human-owns-contract.json",
+      "codeLinks": [
+        "skills/define-concept/SKILL.md",
+        "skills/update-baseline/SKILL.md"
+      ]
+    },
+    {
+      "slug": "settled-status",
+      "group": "governance",
+      "title": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
+      "status": "green",
+      "category": [
+        "behavior",
+        "term"
+      ],
+      "url": "../data/governance/settled-status.json",
+      "codeLinks": [
+        "src/store/conceptStore.ts",
+        "src/concept/approve.ts",
+        "src/concept/quality.ts",
+        "src/concept/attest.ts"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "slug": "commit-gate",
+      "group": "governance",
+      "title": "커밋 문지기",
+      "codePathCount": 2,
+      "url": "../../features/governance/commit-gate.json"
+    },
+    {
+      "slug": "concept-status-governance",
+      "group": "governance",
+      "title": "개념 신호등 관리",
+      "codePathCount": 4,
+      "url": "../../features/governance/concept-status-governance.json"
+    }
+  ],
   "graph": {
-    "nodes": [],
-    "edges": []
+    "nodes": [
+      {
+        "id": "c:ask-only-gate",
+        "label": "막지 않는 문지기",
+        "type": "concept",
+        "href": "#/concept/ask-only-gate",
+        "title": "ask-only-gate"
+      },
+      {
+        "id": "p:src/hooks/preToolUse.ts",
+        "label": "preToolUse.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/preToolUse.ts"
+      },
+      {
+        "id": "p:src/hooks/postToolUse.ts",
+        "label": "postToolUse.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/postToolUse.ts"
+      },
+      {
+        "id": "c:human-owns-contract",
+        "label": "개념의 주인은 사람",
+        "type": "concept",
+        "href": "#/concept/human-owns-contract",
+        "title": "human-owns-contract"
+      },
+      {
+        "id": "p:skills/define-concept/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/define-concept/SKILL.md"
+      },
+      {
+        "id": "p:skills/update-baseline/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-baseline/SKILL.md"
+      },
+      {
+        "id": "c:settled-status",
+        "label": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
+        "type": "concept",
+        "href": "#/concept/settled-status",
+        "title": "settled-status"
+      },
+      {
+        "id": "p:src/store/conceptStore.ts",
+        "label": "conceptStore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/store/conceptStore.ts"
+      },
+      {
+        "id": "p:src/concept/approve.ts",
+        "label": "approve.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/approve.ts"
+      },
+      {
+        "id": "p:src/concept/quality.ts",
+        "label": "quality.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/quality.ts"
+      },
+      {
+        "id": "p:src/concept/attest.ts",
+        "label": "attest.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/attest.ts"
+      },
+      {
+        "id": "f:commit-gate",
+        "label": "커밋 문지기",
+        "type": "feature",
+        "href": "#/feature/commit-gate",
+        "title": "commit-gate"
+      },
+      {
+        "id": "f:concept-status-governance",
+        "label": "개념 신호등 관리",
+        "type": "feature",
+        "href": "#/feature/concept-status-governance",
+        "title": "concept-status-governance"
+      }
+    ],
+    "edges": [
+      {
+        "source": "c:ask-only-gate",
+        "target": "p:src/hooks/preToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:ask-only-gate",
+        "target": "p:src/hooks/postToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:skills/define-concept/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:skills/update-baseline/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/concept/approve.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/concept/quality.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/concept/attest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "f:commit-gate",
+        "target": "c:ask-only-gate",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:commit-gate",
+        "target": "p:src/hooks/preToolUse.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:commit-gate",
+        "target": "p:src/hooks/postToolUse.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "c:settled-status",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "c:human-owns-contract",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "p:src/concept/approve.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "p:src/concept/quality.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "p:src/concept/attest.ts",
+        "kind": "feature-file"
+      }
+    ]
   }
 }
