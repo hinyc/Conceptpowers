@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir7, writeFile as writeFile8, access as access2 } from "node:fs/promises";
@@ -3074,7 +3074,8 @@ function cpPaths(root) {
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
-    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
+    attestFile: join(base, "concepts", ".alignment", "attest.json")
   };
 }
 
@@ -7235,7 +7236,7 @@ import { readdir as readdir4, rm as rm2, rmdir } from "node:fs/promises";
 import { join as join8 } from "node:path";
 
 // src/viewer/render.ts
-import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile6 } from "node:fs/promises";
+import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
 import { join as join5, dirname as dirname5 } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7307,7 +7308,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir } from "node:fs/promises";
+import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir } from "node:fs/promises";
 import { join as join2, dirname as dirname2 } from "node:path";
 
 // src/schema/concept.ts
@@ -7398,6 +7399,93 @@ async function clearPendingConflict(root, slug3) {
   await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
 }
 
+// src/concept/quality.ts
+var MIN_RULE_LENGTH = 10;
+function checkConceptQuality(c) {
+  const deficiencies = [];
+  const rules = [...c.actions.allow, ...c.actions.restrict, ...c.principle.immutableRules];
+  const termOnly = c.category.length === 1 && c.category[0] === "term";
+  if (termOnly) {
+    if (c.description.example.trim() === "") {
+      deficiencies.push(
+        "term concept requires a non-empty description.example (a term's contract is definition + example)"
+      );
+    }
+  } else if (rules.length === 0) {
+    deficiencies.push(
+      "no enforceable rule: actions.allow / actions.restrict / principle.immutableRules must contain at least 1 item in total"
+    );
+  }
+  for (const rule of rules) {
+    if (rule.trim().length < MIN_RULE_LENGTH) {
+      deficiencies.push(`rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`);
+    }
+  }
+  return { ok: deficiencies.length === 0, deficiencies };
+}
+
+// src/concept/attest.ts
+import { readFile as readFile2 } from "node:fs/promises";
+
+// src/schema/alignment.ts
+var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
+var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
+var HistoryEntry = external_exports.object({
+  slug: external_exports.string(),
+  hash: external_exports.string(),
+  prevHash: external_exports.string().default(""),
+  reason: external_exports.string().max(1e3).default(""),
+  at: external_exports.string(),
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
+});
+var History = external_exports.array(HistoryEntry);
+var AttestEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["pass", "conflict"]),
+  at: external_exports.string()
+});
+var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+
+// src/drift/hash.ts
+import { createHash } from "node:crypto";
+function contractHash(c) {
+  const contract = {
+    definition: c.description.definition,
+    components: c.description.components,
+    allow: c.actions.allow,
+    restrict: c.actions.restrict,
+    interaction: c.actions.interaction,
+    immutableRules: c.principle.immutableRules,
+    lifecycle: c.principle.lifecycle,
+    reason: c.purpose.reason
+  };
+  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+}
+
+// src/concept/attest.ts
+async function readAttestLog(root) {
+  try {
+    return AttestLog.parse(JSON.parse(await readFile2(cpPaths(root).attestFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function recordAttest(root, concept, result) {
+  const entry = {
+    hash: contractHash(concept),
+    result,
+    at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  const next = { ...await readAttestLog(root), [concept.slug]: entry };
+  await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + "\n");
+  return entry;
+}
+function freshPassAttest(log, concept) {
+  const entry = log[concept.slug];
+  return !!entry && entry.result === "pass" && entry.hash === contractHash(concept);
+}
+
 // src/store/conceptStore.ts
 function fileFor(root, c) {
   const dataDir = cpPaths(root).conceptsData;
@@ -7437,7 +7525,7 @@ async function listConcepts(root) {
   const concepts = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile2(f, "utf8"))));
+      concepts.push(parseConcept(JSON.parse(await readFile3(f, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
@@ -7461,13 +7549,26 @@ async function setConceptStatus(root, slug3, status) {
       `Illegal status transition: ${from} \u2192 ${status} (${slug3}). green/red are settled; only red\u2192green (human approval) and pending\u2192green/red are allowed.`
     );
   }
+  if (status === "green" && from !== "green") {
+    const quality = checkConceptQuality(concept);
+    if (!quality.ok) {
+      throw new Error(
+        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
+      );
+    }
+    if (!freshPassAttest(await readAttestLog(root), concept)) {
+      throw new Error(
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers-check-consistency, then record it: attest-consistency ${slug3} --result pass`
+      );
+    }
+  }
   const updated = await writeConcept(root, { ...concept, status });
   if (status === "green") await clearPendingConflict(root, slug3);
   return updated;
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
+import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
 import { join as join3, dirname as dirname3 } from "node:path";
 
 // src/schema/feature.ts
@@ -7523,7 +7624,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -7532,7 +7633,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile5, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
 import { join as join4, dirname as dirname4 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
@@ -7542,7 +7643,7 @@ async function scanTags(root, files) {
   for (const rel of files) {
     let content;
     try {
-      content = await readFile4(join4(root, rel), "utf8");
+      content = await readFile5(join4(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -7569,17 +7670,17 @@ async function writeMappingCache(root, mapping) {
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    const raw = await readFile6(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -7592,7 +7693,7 @@ async function readAsset(name) {
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile6(join5(dir, "assets", name));
+      return await readFile7(join5(dir, "assets", name));
     } catch {
       const parent = dirname5(dir);
       if (parent === dir) break;
@@ -7628,7 +7729,7 @@ async function renderViewerToDisk(root) {
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile7, writeFile as writeFile6 } from "node:fs/promises";
+import { readFile as readFile8, writeFile as writeFile6 } from "node:fs/promises";
 import { join as join6 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
@@ -7641,7 +7742,7 @@ async function upsertViewerScript(root) {
   const pkgPath = join6(root, "package.json");
   let raw;
   try {
-    raw = await readFile7(pkgPath, "utf8");
+    raw = await readFile8(pkgPath, "utf8");
   } catch {
     return "no-package";
   }
@@ -7797,36 +7898,20 @@ async function approveConcept(root, slug3) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile8 } from "node:fs/promises";
-
-// src/schema/alignment.ts
-var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
-var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
-var HistoryEntry = external_exports.object({
-  slug: external_exports.string(),
-  hash: external_exports.string(),
-  prevHash: external_exports.string().default(""),
-  reason: external_exports.string().max(1e3).default(""),
-  at: external_exports.string(),
-  ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
-});
-var History = external_exports.array(HistoryEntry);
-
-// src/drift/lock.ts
+import { readFile as readFile9 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile8(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile9(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile9 } from "node:fs/promises";
+import { readFile as readFile10 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile9(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile10(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -7857,22 +7942,6 @@ async function appendHistoryMany(root, inputs) {
 }
 async function appendHistory(root, input) {
   return (await appendHistoryMany(root, [input]))[0];
-}
-
-// src/drift/hash.ts
-import { createHash } from "node:crypto";
-function contractHash(c) {
-  const contract = {
-    definition: c.description.definition,
-    components: c.description.components,
-    allow: c.actions.allow,
-    restrict: c.actions.restrict,
-    interaction: c.actions.interaction,
-    immutableRules: c.principle.immutableRules,
-    lifecycle: c.principle.lifecycle,
-    reason: c.purpose.reason
-  };
-  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
 }
 
 // src/drift/safe.ts
@@ -7948,7 +8017,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     await renderViewerToDisk(o.root);
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile10(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile11(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
@@ -7970,6 +8039,26 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("resolve-conflict").argument("<slug>").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", process.cwd()).action(async (slug3, o) => {
     await clearPendingConflict(o.root, slug3);
+  });
+  program2.command("quality").description("\uAC1C\uB150\uC758 \uACB0\uC815\uB860\uC801 \uD488\uC9C8 \uCD5C\uC18C\uCE58 \uAC80\uC0AC (green \uC2B9\uACA9 \uC804\uC81C\uC870\uAC74)").argument("<slug>").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    const concept = await readConcept(o.root, slug3);
+    if (!concept) {
+      out(JSON.stringify({ error: `Concept not found: ${slug3}` }));
+      code = 1;
+      return;
+    }
+    const r = checkConceptQuality(concept);
+    out(JSON.stringify(r));
+    if (!r.ok) code = 1;
+  });
+  program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    if (o.result !== "pass" && o.result !== "conflict") {
+      throw new Error(`--result must be pass|conflict, got: ${o.result}`);
+    }
+    const concept = await readConcept(o.root, slug3);
+    if (!concept) throw new Error(`Concept not found: ${slug3}`);
+    const entry = await recordAttest(o.root, concept, o.result);
+    out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
   });
   try {
     await program2.parseAsync(argv, { from: "user" });

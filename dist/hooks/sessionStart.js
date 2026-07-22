@@ -33,7 +33,8 @@ function cpPaths(root) {
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
-    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
+    attestFile: join(base, "concepts", ".alignment", "attest.json")
   };
 }
 
@@ -4160,6 +4161,42 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
+// src/schema/alignment.ts
+var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
+var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
+var HistoryEntry = external_exports.object({
+  slug: external_exports.string(),
+  hash: external_exports.string(),
+  prevHash: external_exports.string().default(""),
+  reason: external_exports.string().max(1e3).default(""),
+  at: external_exports.string(),
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
+});
+var History = external_exports.array(HistoryEntry);
+var AttestEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["pass", "conflict"]),
+  at: external_exports.string()
+});
+var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+
+// src/drift/hash.ts
+import { createHash } from "node:crypto";
+function contractHash(c) {
+  const contract = {
+    definition: c.description.definition,
+    components: c.description.components,
+    allow: c.actions.allow,
+    restrict: c.actions.restrict,
+    interaction: c.actions.interaction,
+    immutableRules: c.principle.immutableRules,
+    lifecycle: c.principle.lifecycle,
+    reason: c.purpose.reason
+  };
+  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+}
+
 // src/store/conceptStore.ts
 async function walkJson(dir) {
   let entries;
@@ -4300,22 +4337,6 @@ async function isInitialized(root) {
 
 // src/drift/lock.ts
 import { readFile as readFile5 } from "node:fs/promises";
-
-// src/schema/alignment.ts
-var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
-var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
-var HistoryEntry = external_exports.object({
-  slug: external_exports.string(),
-  hash: external_exports.string(),
-  prevHash: external_exports.string().default(""),
-  reason: external_exports.string().max(1e3).default(""),
-  at: external_exports.string(),
-  ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
-});
-var History = external_exports.array(HistoryEntry);
-
-// src/drift/lock.ts
 async function readLock(root) {
   try {
     return AlignmentLock.parse(JSON.parse(await readFile5(cpPaths(root).alignmentLock, "utf8")));
@@ -4332,22 +4353,6 @@ async function readHistory(root) {
   } catch {
     return [];
   }
-}
-
-// src/drift/hash.ts
-import { createHash } from "node:crypto";
-function contractHash(c) {
-  const contract = {
-    definition: c.description.definition,
-    components: c.description.components,
-    allow: c.actions.allow,
-    restrict: c.actions.restrict,
-    interaction: c.actions.interaction,
-    immutableRules: c.principle.immutableRules,
-    lifecycle: c.principle.lifecycle,
-    reason: c.purpose.reason
-  };
-  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
 }
 
 // src/drift/safe.ts

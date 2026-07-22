@@ -6,14 +6,14 @@ var __export = (target, all) => {
 
 // src/viewer/serve.ts
 import { createServer } from "node:http";
-import { readFile as readFile7 } from "node:fs/promises";
+import { readFile as readFile8 } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2, readdir } from "node:fs/promises";
+import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir } from "node:fs/promises";
 import { join as join2, dirname as dirname2 } from "node:path";
 
 // src/paths.ts
@@ -36,7 +36,8 @@ function cpPaths(root) {
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
-    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json")
+    pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
+    attestFile: join(base, "concepts", ".alignment", "attest.json")
   };
 }
 
@@ -4164,6 +4165,83 @@ async function clearPendingConflict(root, slug3) {
   await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
 }
 
+// src/concept/quality.ts
+var MIN_RULE_LENGTH = 10;
+function checkConceptQuality(c) {
+  const deficiencies = [];
+  const rules = [...c.actions.allow, ...c.actions.restrict, ...c.principle.immutableRules];
+  const termOnly = c.category.length === 1 && c.category[0] === "term";
+  if (termOnly) {
+    if (c.description.example.trim() === "") {
+      deficiencies.push(
+        "term concept requires a non-empty description.example (a term's contract is definition + example)"
+      );
+    }
+  } else if (rules.length === 0) {
+    deficiencies.push(
+      "no enforceable rule: actions.allow / actions.restrict / principle.immutableRules must contain at least 1 item in total"
+    );
+  }
+  for (const rule of rules) {
+    if (rule.trim().length < MIN_RULE_LENGTH) {
+      deficiencies.push(`rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`);
+    }
+  }
+  return { ok: deficiencies.length === 0, deficiencies };
+}
+
+// src/concept/attest.ts
+import { readFile as readFile2 } from "node:fs/promises";
+
+// src/schema/alignment.ts
+var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
+var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
+var HistoryEntry = external_exports.object({
+  slug: external_exports.string(),
+  hash: external_exports.string(),
+  prevHash: external_exports.string().default(""),
+  reason: external_exports.string().max(1e3).default(""),
+  at: external_exports.string(),
+  ignored: external_exports.boolean().default(false),
+  aligned: external_exports.boolean().default(false)
+});
+var History = external_exports.array(HistoryEntry);
+var AttestEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["pass", "conflict"]),
+  at: external_exports.string()
+});
+var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+
+// src/drift/hash.ts
+import { createHash } from "node:crypto";
+function contractHash(c) {
+  const contract = {
+    definition: c.description.definition,
+    components: c.description.components,
+    allow: c.actions.allow,
+    restrict: c.actions.restrict,
+    interaction: c.actions.interaction,
+    immutableRules: c.principle.immutableRules,
+    lifecycle: c.principle.lifecycle,
+    reason: c.purpose.reason
+  };
+  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+}
+
+// src/concept/attest.ts
+async function readAttestLog(root) {
+  try {
+    return AttestLog.parse(JSON.parse(await readFile2(cpPaths(root).attestFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+function freshPassAttest(log, concept) {
+  const entry = log[concept.slug];
+  return !!entry && entry.result === "pass" && entry.hash === contractHash(concept);
+}
+
 // src/store/conceptStore.ts
 function fileFor(root, c) {
   const dataDir = cpPaths(root).conceptsData;
@@ -4203,7 +4281,7 @@ async function listConcepts(root) {
   const concepts = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile2(f, "utf8"))));
+      concepts.push(parseConcept(JSON.parse(await readFile3(f, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
@@ -4226,6 +4304,19 @@ async function setConceptStatus(root, slug3, status) {
     throw new Error(
       `Illegal status transition: ${from} \u2192 ${status} (${slug3}). green/red are settled; only red\u2192green (human approval) and pending\u2192green/red are allowed.`
     );
+  }
+  if (status === "green" && from !== "green") {
+    const quality = checkConceptQuality(concept);
+    if (!quality.ok) {
+      throw new Error(
+        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
+      );
+    }
+    if (!freshPassAttest(await readAttestLog(root), concept)) {
+      throw new Error(
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers-check-consistency, then record it: attest-consistency ${slug3} --result pass`
+      );
+    }
   }
   const updated = await writeConcept(root, { ...concept, status });
   if (status === "green") await clearPendingConflict(root, slug3);
@@ -4258,7 +4349,7 @@ async function editConceptContent(root, slug3, patch) {
 }
 
 // src/viewer/render.ts
-import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile6 } from "node:fs/promises";
+import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
 import { join as join4, dirname as dirname4 } from "node:path";
 
 // src/viewer/graph.ts
@@ -4329,7 +4420,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
+import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
 import { join as join3, dirname as dirname3 } from "node:path";
 
 // src/schema/feature.ts
@@ -4369,7 +4460,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4378,18 +4469,18 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile5, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
@@ -4423,7 +4514,7 @@ function parseInitConfig(input) {
 // src/init/readConfig.ts
 async function readInitConfig(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    const raw = await readFile6(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -4606,7 +4697,7 @@ async function handle(root, projectRoot, req, res) {
     return;
   }
   try {
-    const file = await readFile7(target);
+    const file = await readFile8(target);
     res.writeHead(200, { "Content-Type": contentType(target) });
     res.end(file);
   } catch {
