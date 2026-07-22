@@ -28,7 +28,13 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    - Pending(🟡) concepts are user-authored drafts under check. On a clean result, the caller
      promotes them to green; on a conflict, they stay pending and the reason is recorded via
      `note-conflict`. Settled green/red concepts are never auto-changed by this check.
-4. Proceed with save/commit only when there are zero unresolved conflicts.
+4. **Record the attestation (always, regardless of outcome):**
+   `node "<cli>" attest-consistency <slug> --result pass|conflict --root .`
+   The attestation is bound to the concept's contract hash — editing the concept invalidates
+   it, so re-run this check (and re-attest) after any revision. On a conflict, also record
+   the reason via `note-conflict` as before.
+5. Proceed with save/commit only when there are zero unresolved conflicts. Green promotion
+   is engine-gated: it requires a fresh `pass` attestation for that concept.
 
 ## Commit gate (D17)
 

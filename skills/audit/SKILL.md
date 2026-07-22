@@ -40,8 +40,12 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
    `conceptpowers-check-consistency` for each or to decide whether to revise/split them.
    Do **not** refer to pending concepts as "unapproved" — they are user-authored drafts, not
    auto-inferred proposals.
-6. **Report**: present the list of gaps + violations + unapproved (red) concepts + lingering pending
-   (non-blocking) + recommended actions.
+6. **Quality floor of green concepts:** run `node "<cli>" quality <slug> --root .` for each
+   green concept; report any deficiencies (rule-less concepts predate the quality gate).
+   Recommended action: fill the missing rules with the user — do not auto-fill; demotion is
+   a human decision.
+7. **Report**: present the list of gaps + violations + unapproved (red) concepts + lingering pending
+   (non-blocking) + quality deficiencies + recommended actions.
    - The baseline is read-only, so create/modify concepts only after user confirmation.
 
 ## Backfill modes

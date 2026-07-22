@@ -123,6 +123,14 @@ concept's content, not a separate approval toggle. The engine backs this with a 
 through this path) and `approve` acts only on a red concept. (Whether the consistency check actually
 passed before a promotion remains the agent's judgment — that part is not machine-verifiable.)
 
+Two engine-enforced floors back the promotion: a **quality floor** (a green concept must
+carry at least one enforceable rule — or, for a term-only concept, a non-empty example —
+each rule ≥10 chars) and a **consistency attestation** (promotion requires a fresh
+`check-consistency` result recorded via `attest-consistency`, hash-bound to the concept's
+contract so any edit invalidates it). The commit gate likewise asks when a staged concept
+change has no fresh attestation. The attestation is the agent's self-report — it can't
+prove the check was *thorough*, but it makes skipping the step impossible to hide.
+
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
 ### What happens at commit time
