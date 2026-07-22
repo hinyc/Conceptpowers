@@ -11,6 +11,8 @@ import { writeFeature } from "../../src/store/featureStore.js";
 import { writeLock } from "../../src/drift/lock.js";
 import { contractHash } from "../../src/drift/hash.js";
 import { appendHistory } from "../../src/drift/history.js";
+import { parseConcept } from "../../src/schema/concept.js";
+import { recordAttest } from "../../src/concept/attest.js";
 
 let root: string;
 beforeEach(() => {
@@ -242,5 +244,38 @@ describe("decidePreToolUse", () => {
     const reason = r!.hookSpecificOutput.permissionDecisionReason!;
     expect(reason).not.toContain("<");
     expect(reason).not.toContain("\n");
+  });
+
+  it("스테이징된 개념 변경에 신선한 pass 증빙이 없으면 ask", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "gated", category: ["behavior"], title: "T", actions: {},
+      description: { definition: "정의" }, purpose: { reason: "이유" },
+      principle: { immutableRules: ["이 개념의 규칙은 열 글자 이상"] },
+    } as any);
+    const out = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/concepts/data/gated.json"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("충돌 검사 미실행");
+  });
+
+  it("신선한 pass 증빙이 있으면 이 분기를 통과한다", async () => {
+    await scaffoldInit(root, {});
+    const c = parseConcept({
+      slug: "gated", category: ["behavior"], title: "T", actions: {},
+      description: { definition: "정의" }, purpose: { reason: "이유" },
+      principle: { immutableRules: ["이 개념의 규칙은 열 글자 이상"] },
+    });
+    await writeConcept(root, c);
+    await recordAttest(root, c, "pass");
+    const out = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/concepts/data/gated.json"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("충돌 검사 미실행");
   });
 });
