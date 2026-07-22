@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-approve
-description: Use when the user wants to approve a concept ("conceptpowers approve", "개념 승인", "이 개념 확정") — flip its status from red (unapproved) to green (approved) — in a Conceptpowers-active project. Approval is user-gated; the agent never approves on its own.
+name: approve
+description: Use when the user wants to approve a concept ("개념 승인", "이 개념 확정") — flip its status from red (unapproved) to green (approved). Approval is user-gated; the agent never approves on its own.
 ---
 
 # Conceptpowers: Approve Concept (user-gated)
@@ -16,7 +16,7 @@ truth; `red` concepts are proposals (e.g. auto-inferred during a full scan) awai
 
 ## Steps
 
-1. **Consistency check first**: run `conceptpowers-check-consistency` for the target concept against
+1. **Consistency check first**: run `conceptpowers:check-consistency` for the target concept against
    all existing concepts.
    - Resolve conflicts using the status-aware rule: green wins over red; a green↔green conflict stops
      and goes back to the user. Do not approve while an unresolved conflict remains.

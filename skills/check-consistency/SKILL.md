@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-check-consistency
-description: Use when defining or modifying a concept in a Conceptpowers-active project, and as the commit gate. Compares the new/changed concept against all existing concepts to detect conflicts or violations; only passes when zero conflicts.
+name: check-consistency
+description: Use when defining or modifying a concept in a governance-active project, and as the commit gate. Compares the new/changed concept against all existing concepts to detect conflicts or violations; only passes when zero conflicts.
 ---
 
 # Conceptpowers: Check Consistency (concept ↔ concept)
@@ -43,4 +43,4 @@ When adding or modifying a concept, verify there is no conflict or violation aga
 - **Unapproved (red) concepts do not hard-block a commit**, but the commit gate surfaces them with an
   emphasized warning (`⚠️ UNAPPROVED CONCEPTS`). When you see it, show the warning prominently and ask
   the user "commit anyway?" — proceed only on explicit confirmation. Approving the concepts first
-  (manual edit, or `conceptpowers-approve` on explicit user request) is preferred.
+  (manual edit, or `conceptpowers:approve` on explicit user request) is preferred.

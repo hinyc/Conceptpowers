@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-sync
-description: Use after updating the Conceptpowers plugin, or whenever the viewer/concepts:view script looks stale, in a Conceptpowers-active project. Refreshes plugin-generated artifacts (viewer assets, manifest, concepts:view script) to the installed version. Never touches the baseline.
+name: sync
+description: Use after updating the plugin, or whenever the viewer/concepts:view script looks stale. Refreshes plugin-generated artifacts (viewer assets, manifest, concepts:view script) to the installed version. Never touches the baseline.
 ---
 
 # Conceptpowers: Sync
@@ -31,7 +31,7 @@ settings are left untouched. Running `conceptpowers init` again does the same pa
 ## Steps
 
 1. Confirm the project is initialized (the `CONCEPTPOWERS-ACTIVE` context is present, or
-   `docs/conceptpowers/init.json` exists). If not, use `conceptpowers-init` instead.
+   `docs/conceptpowers/init.json` exists). If not, use `conceptpowers:init` instead.
 2. Run the deterministic CLI (path is in the session context or the plugin dist):
    `node "<cli>" sync --root .`
 3. Report the JSON result to the user: `scriptStatus` (no-package | unchanged | set | kept) and

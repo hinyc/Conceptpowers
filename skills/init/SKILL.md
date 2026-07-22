@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-init
-description: Use when the user wants to enable Conceptpowers governance on a project ("conceptpowers init", "개념 거버넌스 켜기", "concept 강제 활성화"). Scaffolds docs/conceptpowers and the activation marker.
+name: init
+description: Use when the user wants to enable concept governance on a project ("개념 거버넌스 켜기", "init"). Scaffolds docs/conceptpowers and the activation marker.
 ---
 
 # Conceptpowers: Init
@@ -24,7 +24,7 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
    `node "<cli>" init --root . --mode <incremental|strict> --lang <ko|en>`
 4. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 5. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
-6. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers-audit`.
+6. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
 
 ## Full-scan procedure (strict)
 
@@ -36,14 +36,14 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 2. **Enumerate features by screen**: analyze what each screen/view renders and list the features it
    exposes to the user. Merge with step 1 into a deduplicated feature list.
 3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
-   implementing `codePaths` filled in (the *feature → code* link) via `conceptpowers-define-feature`.
+   implementing `codePaths` filled in (the *feature → code* link) via `conceptpowers:define-feature`.
 4. **Infer concepts and wire features to them**: for each feature with no covering concept, infer a
    concept (define-concept) — auto-inferred concepts are saved with `status: red` (unapproved) — then
    record the concept slug in that feature's `concepts` (the *feature → concept* link).
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
    concept applies (utils/types/config/scripts, etc.), write **`@concept:none`** explicitly rather than
-   leaving them untagged. Then run `conceptpowers-update-mapping` (`node "<cli>" map ...`) so concept and
+   leaving them untagged. Then run `conceptpowers:update-mapping` (`node "<cli>" map ...`) so concept and
    feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
    real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.)
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
@@ -57,6 +57,6 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 - Concept `status` (3-state model):
   - `green` — user-approved and consistent; source of truth.
   - `pending` — user-authored draft; auto-promotes to `green` after a passing consistency check,
-    else stays pending until resolved. See `conceptpowers-define-concept`.
+    else stays pending until resolved. See `conceptpowers:define-concept`.
   - `red` — auto-inferred (full scan) proposal awaiting user review and approval.
-    See the `conceptpowers-approve` skill.
+    See the `conceptpowers:approve` skill.

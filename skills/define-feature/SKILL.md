@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-define-feature
-description: Use when you identify a feature surface (button/action/route/command) that should appear in the knowledge graph, in a Conceptpowers-active project. Records a feature spec and wires it to its concept(s) and implementing code so the concept·feature·code graph stays connected.
+name: define-feature
+description: Use when you identify a feature surface (button/action/route/command) that should appear in the knowledge graph, in a governance-active project. Records a feature spec and wires it to its concept(s) and implementing code so the concept·feature·code graph stays connected.
 ---
 
 # Conceptpowers: Define Feature
@@ -21,14 +21,14 @@ Write the feature content in the project's output language (the `locale` from `i
    route handler, or command. Give it a short `title` and one-line `description`.
 2. **Wire feature → code** (`codePaths`): list the files that implement this feature.
 3. **Wire feature → concept** (`concepts`): list the concept slug(s) this feature realizes.
-   - If no concept covers it yet, define it first with `conceptpowers-define-concept`, then come back.
+   - If no concept covers it yet, define it first with `conceptpowers:define-concept`, then come back.
 4. **Decide the slug** (kebab-case, globally unique) and `group` (domain folder, optional).
 5. **Validate and record** via the engine (it checks the schema and rejects duplicate slugs):
    `node "<cli>" feature --root . --file <feature.json>`
    - The JSON must match the feature schema: `{ slug, group?, title, description?, concepts[], codePaths[] }`.
    - Written to `docs/conceptpowers/features/[group/]<slug>.json`.
 6. **Wire concept → code** for the same files: ensure each implementing file carries a
-   `@concept:<slug>` tag and refresh the cache with `conceptpowers-update-mapping`
+   `@concept:<slug>` tag and refresh the cache with `conceptpowers:update-mapping`
    (`node "<cli>" map --root . <files...>`). This makes concept and feature converge on the same file node.
 7. **Regenerate the graph**: `node "<cli>" render --root .`
 

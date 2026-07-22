@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-update-mapping
-description: Use after modifying code to sync @concept tags and the mapping cache, or run manually to refresh concept↔code links in a Conceptpowers-active project.
+name: update-mapping
+description: Use after modifying code to sync @concept tags and the mapping cache, or run manually to refresh concept↔code links in a governance-active project.
 ---
 
 # Conceptpowers: Update Mapping

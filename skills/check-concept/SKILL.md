@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-check-concept
-description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a Conceptpowers-active project. Finds the related concept(s) and judges whether the change violates their allow/restrict/immutable rules.
+name: check-concept
+description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a governance-active project. Finds the related concept(s) and judges whether the change violates their allow/restrict/immutable rules.
 ---
 
 # Conceptpowers: Check Concept (code ↔ concept)
@@ -19,7 +19,7 @@ Judge whether a new feature or behavior change (tests included) violates the rel
 
 1. Check the `@concept:<slug>` tag in the target files (or the `git diff` target).
    If there is no tag, search `concepts/data/` semantically for the related concept.
-2. If **no related concept exists** → define it first with `conceptpowers-define-concept` (rule 2).
+2. If **no related concept exists** → define it first with `conceptpowers:define-concept` (rule 2).
 3. Read the related concept's **actions.allow / actions.restrict / principle.immutableRules**.
 4. Judge whether the planned change violates those rules:
    - **No violation** → proceed. When changing code, update the `@concept` tag/mapping too (update-mapping).

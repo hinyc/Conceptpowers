@@ -1,6 +1,6 @@
 ---
-name: conceptpowers-update-baseline
-description: Use ONLY when the user explicitly asks to modify the baseline (a concept, feature spec, architecture, or infra) in a Conceptpowers-active project. The agent never modifies baseline on its own.
+name: update-baseline
+description: Use ONLY when the user explicitly asks to modify the baseline (a concept, feature spec, architecture, or infra) in a governance-active project. The agent never modifies baseline on its own.
 ---
 
 # Conceptpowers: Update Baseline (user-only)
@@ -15,7 +15,7 @@ Modify the baseline (all of `docs/conceptpowers/`) (rule 4).
 
 1. Confirm which baseline is changing: concept / feature spec / architecture / infra.
 2. **When modifying a concept**:
-   - Before applying the change, run `conceptpowers-check-consistency` to check for conflicts/violations
+   - Before applying the change, run `conceptpowers:check-consistency` to check for conflicts/violations
      against other concepts.
    - Save only when there are zero conflicts, then regenerate the viewer: `node "<cli>" render --root .`
    - If the concept change affects existing code (@concept links), report the impact scope to the user.

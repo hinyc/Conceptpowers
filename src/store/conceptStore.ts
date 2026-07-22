@@ -98,7 +98,7 @@ export async function setConceptStatus(
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
         `Cannot promote to green — no fresh passing consistency attestation for ${slug}. ` +
-          `Run conceptpowers-check-consistency, then record it: ` +
+          `Run conceptpowers:check-consistency, then record it: ` +
           `attest-consistency ${slug} --result pass`,
       )
     }

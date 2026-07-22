@@ -22,6 +22,6 @@
 
 ## 충돌이 없는 이유
 
-- 스킬 이름은 `conceptpowers-` 접두사로 분리된다.
+- 스킬 이름은 플러그인 네임스페이스(`conceptpowers:<skill>`)로 분리된다.
 - 훅은 가산적으로 실행되며, Conceptpowers 훅은 `init.json` 없으면 무동작이다.
 - Conceptpowers는 superpowers의 프로세스 스킬을 재정의하지 않는다.
