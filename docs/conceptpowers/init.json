@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "enabled": true,
+  "backfillMode": "incremental",
+  "enforceScope": "new-feature-behavior",
+  "locale": "ko",
+  "versionCheck": true,
+  "ignoreGlobs": [
+    "docs/conceptpowers/**",
+    "dist/**",
+    "build/**",
+    "node_modules/**",
+    "**/*.generated.*"
+  ],
+  "project": {
+    "name": "",
+    "description": ""
+  }
+}
