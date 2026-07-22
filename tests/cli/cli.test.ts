@@ -6,6 +6,8 @@ import { join } from "node:path";
 import { runCli } from "../../src/cli.js";
 import { writeConcept, readConcept } from "../../src/store/conceptStore.js";
 import { readHistory } from "../../src/drift/history.js";
+import { recordAttest } from "../../src/concept/attest.js";
+import { parseConcept } from "../../src/schema/concept.js";
 
 let root: string;
 beforeEach(() => {
@@ -72,11 +74,13 @@ describe("runCli", () => {
   });
   it("approve가 red 개념을 green으로 승인한다", async () => {
     await runCli(["init", "--root", root]);
-    await writeConcept(root, {
+    const concept = {
       slug: "admin-role", group: "auth", category: ["role"], title: "Admin",
       description: { definition: "d" }, purpose: { reason: "r" },
-      actions: {}, principle: {}, status: "red",
-    });
+      actions: {}, principle: { immutableRules: ["이 개념의 규칙은 열 글자 이상이다"] }, status: "red",
+    };
+    await writeConcept(root, concept);
+    await recordAttest(root, parseConcept(concept), "pass");
     const code = await runCli(["approve", "--root", root, "admin-role"]);
     expect(code).toBe(0);
     const c = await readConcept(root, "admin-role");

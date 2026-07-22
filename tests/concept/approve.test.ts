@@ -6,11 +6,13 @@ import { join } from 'node:path'
 import { scaffoldInit } from '../../src/init/scaffold.js'
 import { writeConcept } from '../../src/store/conceptStore.js'
 import { approveConcept } from '../../src/concept/approve.js'
+import { recordAttest } from '../../src/concept/attest.js'
+import { parseConcept } from '../../src/schema/concept.js'
 
 const baseConcept = {
   slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin',
   description: { definition: 'd' }, purpose: { reason: 'r' },
-  actions: {}, principle: {}, status: 'red'
+  actions: {}, principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] }, status: 'red'
 }
 
 describe('approveConcept', () => {
@@ -21,6 +23,7 @@ describe('approveConcept', () => {
     await writeConcept(root, baseConcept)
   })
   it('red 개념을 green으로 승인한다', async () => {
+    await recordAttest(root, parseConcept(baseConcept), 'pass')
     const c = await approveConcept(root, 'admin-role')
     expect(c.status).toBe('green')
   })

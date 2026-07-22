@@ -4,6 +4,8 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { writeConcept, listConcepts, readConcept, slugExists, setConceptStatus, editConceptContent } from '../../src/store/conceptStore.js'
+import { recordAttest } from '../../src/concept/attest.js'
+import { parseConcept } from '../../src/schema/concept.js'
 
 const base = {
   slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin Role',
@@ -46,8 +48,10 @@ describe('conceptStore', () => {
     expect(updated?.title).toBe('v2')
   })
   it('setConceptStatus가 status를 불변으로 갱신한다', async () => {
-    await writeConcept(root, base as any)
+    const qualified = { ...base, principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] } }
+    await writeConcept(root, qualified as any)
     expect((await readConcept(root, 'admin-role'))?.status).toBe('red')
+    await recordAttest(root, parseConcept(qualified), 'pass')
     const updated = await setConceptStatus(root, 'admin-role', 'green')
     expect(updated.status).toBe('green')
     expect(updated.title).toBe('Admin Role') // 나머지 보존
@@ -68,7 +72,9 @@ describe('conceptStore', () => {
   it('pending은 green/red로 정착할 수 있다', async () => {
     await writeConcept(root, { ...base, status: 'pending' } as any)
     await expect(setConceptStatus(root, 'admin-role', 'red')).resolves.toBeTruthy()
-    await writeConcept(root, { ...base, status: 'pending' } as any)
+    const qualified = { ...base, status: 'pending', principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] } }
+    await writeConcept(root, qualified as any)
+    await recordAttest(root, parseConcept(qualified), 'pass')
     expect((await setConceptStatus(root, 'admin-role', 'green')).status).toBe('green')
   })
   it('동일 상태로의 전이는 허용한다(idempotent)', async () => {

@@ -5,6 +5,8 @@ import { join, dirname } from 'node:path'
 import { cpPaths } from '../paths.js'
 import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js'
 import { clearPendingConflict } from '../concept/pendingConflicts.js'
+import { checkConceptQuality } from '../concept/quality.js'
+import { readAttestLog, freshPassAttest } from '../concept/attest.js'
 
 function fileFor(root: string, c: Concept): string {
   const dataDir = cpPaths(root).conceptsData
@@ -80,6 +82,25 @@ export async function setConceptStatus(
       `Illegal status transition: ${from} → ${status} (${slug}). ` +
         `green/red are settled; only red→green (human approval) and pending→green/red are allowed.`,
     )
+  }
+  // green 승격 전제조건: 결정론적 품질 최소치 + 신선한 충돌 검사 증빙.
+  // (증빙은 자기신고 — 검사의 성실성까지 보증하지 않고, 단계 생략만 막는다.)
+  if (status === 'green' && from !== 'green') {
+    const quality = checkConceptQuality(concept)
+    if (!quality.ok) {
+      throw new Error(
+        `Cannot promote to green — quality deficiencies for ${slug}: ` +
+          `${quality.deficiencies.join('; ')}. ` +
+          `Fill the missing parts together with the user (define-concept), then retry.`,
+      )
+    }
+    if (!freshPassAttest(await readAttestLog(root), concept)) {
+      throw new Error(
+        `Cannot promote to green — no fresh passing consistency attestation for ${slug}. ` +
+          `Run conceptpowers-check-consistency, then record it: ` +
+          `attest-consistency ${slug} --result pass`,
+      )
+    }
   }
   const updated = await writeConcept(root, { ...concept, status })
   if (status === 'green') await clearPendingConflict(root, slug)

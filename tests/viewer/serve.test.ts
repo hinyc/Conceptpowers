@@ -9,6 +9,8 @@ import {
   contentType, safeResolve, browserCommand, startServer, isLocalRequest, handleApi, type ApiRequest,
 } from '../../src/viewer/serve.js'
 import { writeConcept, readConcept } from '../../src/store/conceptStore.js'
+import { recordAttest } from '../../src/concept/attest.js'
+import { parseConcept } from '../../src/schema/concept.js'
 
 describe('contentType', () => {
   it('확장자별 MIME을 반환한다', () => {
@@ -105,7 +107,9 @@ describe('handleApi', () => {
   })
 
   it('POST status: red→green 승인 + 디스크 반영', async () => {
-    await writeConcept(root, base as never)
+    const qualified = { ...base, principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] } }
+    await writeConcept(root, qualified as never)
+    await recordAttest(root, parseConcept(qualified as never), 'pass')
     const r = await handleApi(root, req({
       method: 'POST', url: '/api/concept/admin-role/status', body: JSON.stringify({ status: 'green' }),
     }))
