@@ -31,8 +31,10 @@ interaction to two checkpoints, not zero.
 1. **Enumerate candidates**: read `reference/` material and scan the code, then present a numbered
    candidate list — one line each ("결제 불변성 — 결제 후 가격·수량 변경 금지", …). Include where
    each came from (reference doc vs code).
-2. **Scope confirmation (checkpoint 1)**: the user picks which candidates to proceed with
-   (all / some / add ones the list missed).
+2. **Scope confirmation (checkpoint 1)**: ask which candidates to proceed with. The choices
+   **MUST include "전체 (define all candidates)" as the first option**, in addition to
+   multi-selecting individual candidates — never force the user to tick every item one by one.
+   Also allow adding candidates the list missed (free-form).
 3. **Draft all selected**: write full drafts (definition, analogy, allow/restrict, immutable rules)
    for every selected candidate — plain language first, technical terms only as parenthetical aids —
    and present them **together** for review.
