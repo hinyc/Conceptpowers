@@ -19,6 +19,7 @@ export function cpPaths(root: string) {
     alignmentLock: join(base, 'concepts', '.alignment', 'alignment.lock.json'),
     alignmentHistory: join(base, 'concepts', '.alignment', 'history.json'),
     alignmentLastCommit: join(base, 'concepts', '.alignment', 'last-commit'),
-    pendingConflicts: join(base, 'concepts', '.alignment', 'pending-conflicts.json')
+    pendingConflicts: join(base, 'concepts', '.alignment', 'pending-conflicts.json'),
+    attestFile: join(base, 'concepts', '.alignment', 'attest.json')
   } as const
 }
