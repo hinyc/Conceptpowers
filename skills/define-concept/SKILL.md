@@ -46,9 +46,11 @@ Write the concept content in the project's output language (the `locale` from `i
    consistency check (step 6). Auto-inferred concepts (full scan) are born `red`, not pending.
    - **No conflict** (step 6 passed) → set `status: green`. The user authored it and it is
      consistent, so it becomes the source of truth.
-     - The engine **refuses** the green promotion unless the quality floor passes AND a fresh
-       passing attestation exists (recorded in step 6 via `attest-consistency`). If refused,
-       fix the deficiencies / re-run the check instead of overriding.
+     - Engine-side promotion (`setConceptStatus`/`approve`) **refuses** without the quality floor
+       passing AND a fresh passing attestation (recorded in step 6 via `attest-consistency`).
+       Concepts written directly to disk as `green` (this step's normal path) bypass that check —
+       they are backstopped at the commit gate instead, which asks (not blocks) on quality-floor
+       failures or a missing attestation.
    - **Conflict** → keep `status: pending` and record why it cannot settle:
      `node "<cli>" note-conflict <slug> --reason "<which concept it conflicts with and how>" --root .`
      Surface the conflict to the user (revise or split); do not force green.

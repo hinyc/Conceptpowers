@@ -277,5 +277,60 @@ describe("decidePreToolUse", () => {
       changedFiles: ["docs/conceptpowers/concepts/data/gated.json"],
     });
     expect(out?.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("충돌 검사 미실행");
+    // 아키텍처상 이 픽스처는 다른 게이트를 전혀 건드리지 않아야 한다(allow) —
+    // 실패하면 픽스처를 조정하지 말고 실제로 온 decision을 보고할 것.
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("allow");
+  });
+
+  it("group 하위 경로(behavior/<slug>.json)로 스테이징된 개념도 파일명에서 slug를 뽑아 증빙을 요구한다", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "grouped", group: "behavior", category: ["behavior"], title: "G", actions: {},
+      description: { definition: "정의" }, purpose: { reason: "이유" },
+      principle: { immutableRules: ["이 개념의 규칙은 열 글자 이상"] },
+    } as any);
+    const out = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/concepts/data/behavior/grouped.json"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("충돌 검사 미실행");
+  });
+
+  it("규칙 없는 green 개념을 직접 파일로 작성(bypass)해 스테이징하면 품질 미달로 ask한다", async () => {
+    await scaffoldInit(root, {});
+    // setConceptStatus를 거치지 않고 writeConcept로 직접 green을 쓰는 것이
+    // define-concept 표준 흐름의 우회 경로다 — 규칙이 하나도 없다.
+    await writeConcept(root, {
+      slug: "no-rules", category: ["behavior"], title: "N", status: "green",
+      description: { definition: "정의" }, purpose: { reason: "이유" },
+      actions: {}, principle: {},
+    } as any);
+    const out = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/concepts/data/no-rules.json"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("품질 미달");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("no-rules");
+  });
+
+  it("규칙 없고(품질 미달) 증빙도 없는 green 개념은 품질 미달 ask가 먼저 뜬다(순서 검증)", async () => {
+    await scaffoldInit(root, {});
+    await writeConcept(root, {
+      slug: "no-rules-2", category: ["behavior"], title: "N2", status: "green",
+      description: { definition: "정의" }, purpose: { reason: "이유" },
+      actions: {}, principle: {},
+    } as any);
+    const out = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/concepts/data/no-rules-2.json"],
+    });
+    expect(out?.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(out?.hookSpecificOutput.permissionDecisionReason).toContain("품질 미달");
+    expect(out?.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("충돌 검사 미실행");
   });
 });
