@@ -28,9 +28,19 @@ Write the concept content in the project's output language (the `locale` from `i
 Human-owns-contract still applies: the AI drafts and asks; the user confirms. Batch reduces the
 interaction to two checkpoints, not zero.
 
-1. **Enumerate candidates**: read `reference/` material and scan the code, then present a numbered
-   candidate list — one line each ("결제 불변성 — 결제 후 가격·수량 변경 금지", …). Include where
-   each came from (reference doc vs code).
+1. **Enumerate candidates** from ALL of these sources — do not skip any (a list built from only
+   one source is incomplete):
+   - **`reference/` documents**: glossary terms, domain rules, spec'd behaviors.
+   - **UI surfaces in the code (필수)**: walk the nav menus, routes/pages, and every button /
+     form submit / menu action — each user-facing menu or action is a concept candidate
+     (예: "주문 취소 버튼" → 취소 정책 개념, "관리자 메뉴" → 관리자 권한 개념). This mirrors the
+     init-strict full scan's feature enumeration; screens and actions that never appear in
+     reference docs still carry intent worth defining.
+   - **Domain logic in the code**: validation rules, permission checks, state transitions,
+     terms embedded in identifiers.
+   Present the merged result as a numbered candidate list — one line each
+   ("결제 불변성 — 결제 후 가격·수량 변경 금지", …) with the source marked
+   (reference doc / UI surface / code logic).
 2. **Scope confirmation (checkpoint 1)**: ask which candidates to proceed with. The choices
    **MUST include "전체 (define all candidates)" as the first option**, in addition to
    multi-selecting individual candidates — never force the user to tick every item one by one.
