@@ -13,6 +13,9 @@ import { approveConcept } from "./concept/approve.js";
 import { computeDrift } from "./drift/detect.js";
 import { noteChange } from "./drift/note.js";
 import { setPendingConflict, clearPendingConflict } from "./concept/pendingConflicts.js";
+import { readConcept } from "./store/conceptStore.js";
+import { checkConceptQuality } from "./concept/quality.js";
+import { recordAttest } from "./concept/attest.js";
 
 type Out = (s: string) => void;
 
@@ -136,6 +139,39 @@ export async function runCli(
     .option("--root <root>", "프로젝트 루트", process.cwd())
     .action(async (slug, o) => {
       await clearPendingConflict(o.root, slug);
+    });
+
+  program
+    .command("quality")
+    .description("개념의 결정론적 품질 최소치 검사 (green 승격 전제조건)")
+    .argument("<slug>")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (slug, o) => {
+      const concept = await readConcept(o.root, slug);
+      if (!concept) {
+        out(JSON.stringify({ error: `Concept not found: ${slug}` }));
+        code = 1;
+        return;
+      }
+      const r = checkConceptQuality(concept);
+      out(JSON.stringify(r));
+      if (!r.ok) code = 1;
+    });
+
+  program
+    .command("attest-consistency")
+    .description("check-consistency 실행 결과를 계약 해시에 묶어 기록 (증빙)")
+    .argument("<slug>")
+    .requiredOption("--result <result>", "pass|conflict")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (slug, o) => {
+      if (o.result !== "pass" && o.result !== "conflict") {
+        throw new Error(`--result must be pass|conflict, got: ${o.result}`);
+      }
+      const concept = await readConcept(o.root, slug);
+      if (!concept) throw new Error(`Concept not found: ${slug}`);
+      const entry = await recordAttest(o.root, concept, o.result);
+      out(JSON.stringify({ ok: true, slug, ...entry }));
     });
 
   try {
