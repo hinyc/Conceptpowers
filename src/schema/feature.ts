@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // feature는 "기능"의 1급 엔티티. 관련 개념(concepts)과 구현 경로(codePaths)의 단일 원본이다.
 // concept↔feature 역방향(개념→기능)은 뷰어가 이 선언으로부터 파생한다.
-const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__'])
+const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__', 'none'])
 const slug = z
   .string()
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')

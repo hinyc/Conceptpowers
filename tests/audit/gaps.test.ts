@@ -22,6 +22,10 @@ describe('findConceptlessFiles', () => {
     writeFileSync(join(root, 'src/b.ts'), 'export const b = 1\n')
     expect(await findConceptlessFiles(root, ['src/b.ts'], DEFAULT_IGNORE)).toEqual(['src/b.ts'])
   })
+  it('@concept:none(개념 없음 명시)도 마커로 인정해 통과시킨다', async () => {
+    writeFileSync(join(root, 'src/n.ts'), '// @concept:none\nexport const n = 1\n')
+    expect(await findConceptlessFiles(root, ['src/n.ts'], DEFAULT_IGNORE)).toEqual([])
+  })
   it('여러 개념 태그를 가진 파일도 통과한다(다중 컨셉 허용)', async () => {
     writeFileSync(join(root, 'src/c.ts'), '/* @concept:user-role @concept:admin-role */\n')
     expect(await findConceptlessFiles(root, ['src/c.ts'], DEFAULT_IGNORE)).toEqual([])

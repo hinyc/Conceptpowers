@@ -100,7 +100,7 @@ describe("decidePreToolUse", () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("개념 없는 코드");
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("foo.ts");
   });
-  it("ignoreGlobs에 매칭되는 util 파일은 태그 없어도 경고하지 않는다", async () => {
+  it("손으로 쓴 util 파일도 마커가 없으면 경고한다(이제 자동 제외 아님)", async () => {
     await scaffoldInit(root, {});
     mkdirSync(join(root, "src/utils"), { recursive: true });
     writeFileSync(join(root, "src/utils/bar.ts"), "export const bar = 1\n");
@@ -108,6 +108,29 @@ describe("decidePreToolUse", () => {
       tool: "Bash",
       input: { command: "git commit -m x" },
       changedFiles: ["src/utils/bar.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("개념 없는 코드");
+  });
+  it("@concept:none 마커를 명시하면(개념 없음) 경고하지 않는다", async () => {
+    await scaffoldInit(root, {});
+    mkdirSync(join(root, "src/utils"), { recursive: true });
+    writeFileSync(join(root, "src/utils/bar.ts"), "// @concept:none\nexport const bar = 1\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["src/utils/bar.ts"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("개념 없는 코드");
+  });
+  it("재생성물 경로(dist/**)는 마커 없어도 경고하지 않는다", async () => {
+    await scaffoldInit(root, {});
+    mkdirSync(join(root, "dist"), { recursive: true });
+    writeFileSync(join(root, "dist/out.js"), "export const x = 1\n");
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["dist/out.js"],
     });
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("개념 없는 코드");
   });

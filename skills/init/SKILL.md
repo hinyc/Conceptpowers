@@ -40,8 +40,12 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 4. **Infer concepts and wire features to them**: for each feature with no covering concept, infer a
    concept (define-concept) — auto-inferred concepts are saved with `status: red` (unapproved) — then
    record the concept slug in that feature's `concepts` (the *feature → concept* link).
-5. **Wire concept → code**: add `@concept:<slug>` tags to the implementing files and run
-   `conceptpowers-update-mapping` (`node "<cli>" map ...`) so concept and feature converge on the same file.
+5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
+   files. **Every governed code file must carry an explicit marker at the top** — for files where no
+   concept applies (utils/types/config/scripts, etc.), write **`@concept:none`** explicitly rather than
+   leaving them untagged. Then run `conceptpowers-update-mapping` (`node "<cli>" map ...`) so concept and
+   feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
+   real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.)
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
    (red) concepts + the wired graph, and tell the user to review and approve the red concepts.
 

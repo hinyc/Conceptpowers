@@ -28,9 +28,15 @@ describe('ignoreGlobs', () => {
   it('누락 시 합리적 기본값을 채운다', () => {
     const g = parseInitConfig({ ...base }).ignoreGlobs
     expect(Array.isArray(g)).toBe(true)
-    expect(g).toContain('**/*.d.ts')
-    expect(g).toContain('**/utils/**')
-    expect(g).toContain('docs/conceptpowers/**') // 플러그인 생성물(뷰어 등) 제외
+    // 자동 제외 대상: 생성물·빌드 산출물·외부 의존성
+    expect(g).toContain('docs/conceptpowers/**')
+    expect(g).toContain('dist/**')
+    expect(g).toContain('node_modules/**')
+    expect(g).toContain('**/*.generated.*')
+    // utils/types/config 등 손으로 쓴 코드는 더 이상 자동 제외하지 않는다(@concept:none 필요)
+    expect(g).not.toContain('**/utils/**')
+    expect(g).not.toContain('**/*.d.ts')
+    expect(g).not.toContain('**/*.config.*')
   })
   it('스캐폴드 산출물 경로(뷰어 js)를 매칭 제외한다', () => {
     const { ignoreGlobs } = parseInitConfig({ version: '0.1.0', enabled: true })

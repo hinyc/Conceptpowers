@@ -133,6 +133,7 @@ A `git commit` is bracketed by two hooks, with the verification skills expected 
 
 | Condition in the staged changes | Decision | What you see |
 | --- | --- | --- |
+| A hand-written code file carries **no `@concept` marker** at all | **ask** | `[WARNING] 개념 없는 코드 …` — add `@concept:<slug>`, or an explicit `@concept:none` when no concept applies, or commit anyway. Every governed code file must be marked; only regenerated/external code (`ignoreGlobs`: `dist/**`, `**/*.generated.*`, …) is exempt |
 | An `@concept:` tag points to a concept that **doesn't exist** | **ask** | `[WARNING] undefined concept tag …` — define it or fix the tag, or commit anyway |
 | A concept **changed** since its code was last aligned, but that related code is **not in this commit** (drift) | **ask** | `[CONCEPT DRIFT] …` with the recorded *reason it changed* — stage the code too, or override (recorded as `[Drift Ignored]`) |
 | The staged changes touch a still-🔴 **unapproved** concept | **ask** | `[WARNING] UNAPPROVED CONCEPTS …` — review/approve, or commit anyway |

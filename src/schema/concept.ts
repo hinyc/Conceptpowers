@@ -3,7 +3,8 @@ import { z } from 'zod'
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term'])
 export type ConceptCategory = z.infer<typeof ConceptCategory>
 
-const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__'])
+// 'none'은 `@concept:none`(개념 없음 명시) 예약 마커라 실제 개념 slug로 쓸 수 없다.
+const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__', 'none'])
 const slug = z
   .string()
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')

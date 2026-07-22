@@ -26,6 +26,12 @@ describe('auditIntegrity', () => {
     expect(r.unknownTags).toEqual([{ slug: 'ghost', file: 'src/a.ts' }])
     expect(r.ok).toBe(false)
   })
+  it('@concept:none(예약 마커)은 미지 태그로 보고하지 않는다', async () => {
+    writeFileSync(join(root, 'src/n.ts'), '// @concept:none\n')
+    const r = await auditIntegrity(root, ['src/n.ts'])
+    expect(r.unknownTags).toEqual([])
+    expect(r.ok).toBe(true)
+  })
   it('미승인(red) 개념을 unapproved로 보고하지만 ok는 막지 않는다', async () => {
     await writeConcept(root, { slug: 'red-one', category: ['feature'], title: 'R', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'red' })
     await writeConcept(root, { slug: 'green-one', category: ['feature'], title: 'G', description: { definition: 'd' }, purpose: { reason: 'r' }, actions: {}, principle: {}, status: 'green' })

@@ -19,9 +19,12 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
    that need a concept but have no `@concept` tag. For each:
    - If a related concept already exists → suggest adding the tag (update-mapping).
    - If no concept exists → suggest define-concept.
-   - Note: the commit gate also flags concept-less code automatically (any governed code file with no
-     `@concept` tag → `[WARNING] 개념 없는 코드`). Files matching `init.json` `ignoreGlobs`
-     (type-only/utils/config/build) are exempt; a single file may carry multiple `@concept` tags.
+   - If the file is genuinely concept-agnostic (utils/types/config/scripts) → suggest an explicit
+     **`@concept:none`** marker (not silence). Every hand-written code file should carry a top marker.
+   - Note: the commit gate flags concept-less code automatically (any governed code file with **no**
+     `@concept` marker → `[WARNING] 개념 없는 코드`). `@concept:none` counts as marked and passes.
+     Only regenerated/external code matching `init.json` `ignoreGlobs` (`dist/**`, `**/*.generated.*`, …)
+     is exempt; a single file may carry multiple `@concept` tags.
 2b. **Feature coverage (knowledge graph)**: check that each user-facing feature surface is recorded as a
    feature spec under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code)
    filled in. For any surface missing a spec, or a spec missing those links, suggest

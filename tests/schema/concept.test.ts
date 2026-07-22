@@ -20,9 +20,10 @@ describe('ConceptSchema', () => {
   it('잘못된 slug를 거부한다', () => {
     expect(() => parseConcept({ ...valid, slug: 'Admin Role' })).toThrow()
   })
-  it('예약어 slug(constructor/__proto__)를 거부한다 (보안 C-1)', () => {
+  it('예약어 slug(constructor/__proto__/none)를 거부한다 (보안 C-1 · none 마커 예약)', () => {
     expect(() => parseConcept({ ...valid, slug: 'constructor' })).toThrow()
     expect(() => parseConcept({ ...valid, slug: 'prototype' })).toThrow()
+    expect(() => parseConcept({ ...valid, slug: 'none' })).toThrow() // @concept:none 마커와 충돌 방지
   })
   it('category가 비면 거부한다', () => {
     expect(() => parseConcept({ ...valid, category: [] })).toThrow()
