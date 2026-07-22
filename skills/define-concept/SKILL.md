@@ -19,7 +19,7 @@ Write the concept content in the project's output language (the `locale` from `i
 
 1. Check the related feature spec in `features/`. If none exists, create it with
    `conceptpowers-define-feature` (agree on a one-line spec with the user first). Once this concept's
-   slug is decided (step 4), add it to that feature's `concepts` so the *feature → concept* graph edge
+   slug is decided (step 5), add it to that feature's `concepts` so the *feature → concept* graph edge
    exists — a concept with no feature pointing at it is an orphan in the knowledge graph.
 2. Decide the concept's **category**: feature | behavior | role | permission | term (multiple allowed).
 3. Fill in the following structure together with the user:
@@ -47,7 +47,7 @@ Write the concept content in the project's output language (the `locale` from `i
    - **No conflict** (step 6 passed) → set `status: green`. The user authored it and it is
      consistent, so it becomes the source of truth.
      - The engine **refuses** the green promotion unless the quality floor passes AND a fresh
-       passing attestation exists (recorded in step 5 via `attest-consistency`). If refused,
+       passing attestation exists (recorded in step 6 via `attest-consistency`). If refused,
        fix the deficiencies / re-run the check instead of overriding.
    - **Conflict** → keep `status: pending` and record why it cannot settle:
      `node "<cli>" note-conflict <slug> --reason "<which concept it conflicts with and how>" --root .`
