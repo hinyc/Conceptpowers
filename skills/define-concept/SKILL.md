@@ -14,7 +14,39 @@ When no concept exists for a new feature/behavior/role/permission/term, define t
 
 Write the concept content in the project's output language (the `locale` from `init.json`).
 
-## Steps (interactive)
+## Mode selection (ask first)
+
+- If the user **already named a specific concept/topic** ("결제 불변성 개념 정의해줘") → run the
+  **single flow** (Steps below) for that concept.
+- If the user invoked define-concept **without naming one** → ask which mode:
+  1. **전체 일괄 정의 (batch)** — scan `reference/` docs and the codebase, enumerate every concept
+     candidate, and define them together (batch flow below).
+  2. **특정 개념 하나** — the user names the concept/topic, then the single flow runs.
+
+## Batch flow (전체 일괄 정의)
+
+Human-owns-contract still applies: the AI drafts and asks; the user confirms. Batch reduces the
+interaction to two checkpoints, not zero.
+
+1. **Enumerate candidates**: read `reference/` material and scan the code, then present a numbered
+   candidate list — one line each ("결제 불변성 — 결제 후 가격·수량 변경 금지", …). Include where
+   each came from (reference doc vs code).
+2. **Scope confirmation (checkpoint 1)**: the user picks which candidates to proceed with
+   (all / some / add ones the list missed).
+3. **Draft all selected**: write full drafts (definition, analogy, allow/restrict, immutable rules)
+   for every selected candidate — plain language first, technical terms only as parenthetical aids —
+   and present them **together** for review.
+4. **Batch review (checkpoint 2)**: the user confirms / edits / drops each draft.
+   - **Confirmed** drafts → continue with the single-flow steps 5-10 per concept (quality self-check
+     already done in drafting; run consistency check across the whole batch at once, attest each,
+     save as `green`).
+   - Drafts the user wants to **keep but not review now** → save as `red` (unapproved), to be
+     approved later via `conceptpowers:approve`.
+   - Dropped drafts → do not save.
+5. Wire each saved concept to a feature spec (single-flow step 1) and `@concept` tags, then
+   regenerate the viewer once at the end: `node "<cli>" render --root .`
+
+## Steps (interactive, single flow)
 
 > **Reference first (필수):** 개념을 구성하기 전에 `docs/conceptpowers/reference/`를 반드시 먼저
 > 확인한다 — 폴더 목록을 보고, 관련 자료(용어집, 외부 스펙, PRD, 기존 산출물 등)가 있으면 전부 읽어서
