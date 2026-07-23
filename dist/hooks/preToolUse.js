@@ -4372,6 +4372,17 @@ async function readInitConfig(root) {
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
 var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 
+// src/init/referenceGitignore.ts
+var CONTENT = [
+  "# reference material stays local by default (may contain confidential documents)",
+  "# only the external-path list (paths.md) and the scaffold guide (README.md) are shared",
+  "*",
+  "!.gitignore",
+  "!README.md",
+  "!paths.md",
+  ""
+].join("\n");
+
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {

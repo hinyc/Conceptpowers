@@ -4305,6 +4305,7 @@ var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 import { mkdir as mkdir4, writeFile as writeFile4, access, readdir as readdir3 } from "node:fs/promises";
 import { join as join4, relative } from "node:path";
 var SEED_README = "README.md";
+var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore"]);
 async function listReferenceFiles(root) {
   const dir = cpPaths(root).reference;
   const out = [];
@@ -4322,8 +4323,19 @@ async function listReferenceFiles(root) {
     }
   }
   await walk(dir);
-  return out.filter((p) => p !== SEED_README).sort();
+  return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
 }
+
+// src/init/referenceGitignore.ts
+var CONTENT = [
+  "# reference material stays local by default (may contain confidential documents)",
+  "# only the external-path list (paths.md) and the scaffold guide (README.md) are shared",
+  "*",
+  "!.gitignore",
+  "!README.md",
+  "!paths.md",
+  ""
+].join("\n");
 
 // src/init/scaffold.ts
 async function isInitialized(root) {

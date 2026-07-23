@@ -22,7 +22,9 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 자료를 이 폴더에 복사하는 대신, \`paths.md\` 파일에 **참고할 로컬 경로 목록**을 적어둘 수 있습니다.
 - 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
-- 기밀 문서는 저장소 밖 경로로 연결해 두면 커밋될 일이 없습니다(경로 목록만 커밋됨).
+- **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
+  paths.md와 이 README뿐입니다. 기밀 문서를 넣어도 저장소에 올라가지 않고, 팀과 공유할
+  자료는 paths.md의 공용 경로로 연결하거나 .gitignore를 직접 수정해 추적하면 됩니다.
 
 ## 어떻게 쓰이나요
 - **개념을 만들거나 업그레이드·검증할 때만** 에이전트가 **관련된 자료만 골라 필요할 때 읽고** 반영합니다.
@@ -47,7 +49,9 @@ Put materials here for the agent to consult during concept work.
 - Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
-- Keep confidential documents outside the repo and link them by path — only the path list gets committed.
+- **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md
+  and this README are shared. Confidential documents stay local; to share material with the team,
+  link a shared location via paths.md or edit the .gitignore to track specific files.
 
 ## How it's used
 - The agent reads **only the relevant files, on demand**, and **only when authoring, upgrading, or validating a concept**.

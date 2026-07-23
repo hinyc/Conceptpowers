@@ -18,7 +18,7 @@ async function syncSafely(root: string): Promise<SyncResult> {
   try {
     return await syncGenerated(root)
   } catch {
-    return { scriptStatus: 'no-package', orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false }
+    return { scriptStatus: 'no-package', orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false, referenceGitignoreCreated: false }
   }
 }
 

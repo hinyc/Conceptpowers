@@ -30,8 +30,10 @@ export async function ensureReference(root: string): Promise<boolean> {
   return true
 }
 
-// 사용자가 넣은 참고 파일 목록(seed README 제외, reference/ 기준 상대경로).
+// 사용자가 넣은 참고 파일 목록(플러그인 메타 파일 제외, reference/ 기준 상대경로).
 // SessionStart 신호용 — 파일이 있을 때만 에이전트에 "참고하라"고 알린다.
+// paths.md는 사용자가 등록한 외부 경로 신호이므로 목록에 포함한다.
+const PLUGIN_META_FILES = new Set([SEED_README, '.gitignore'])
 export async function listReferenceFiles(root: string): Promise<string[]> {
   const dir = cpPaths(root).reference
   const out: string[] = []
@@ -49,5 +51,5 @@ export async function listReferenceFiles(root: string): Promise<string[]> {
     }
   }
   await walk(dir)
-  return out.filter((p) => p !== SEED_README).sort()
+  return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort()
 }

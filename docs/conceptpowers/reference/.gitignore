@@ -1,0 +1,6 @@
+# reference material stays local by default (may contain confidential documents)
+# only the external-path list (paths.md) and the scaffold guide (README.md) are shared
+*
+!.gitignore
+!README.md
+!paths.md

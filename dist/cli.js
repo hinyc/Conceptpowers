@@ -3051,8 +3051,8 @@ var {
 import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir8, writeFile as writeFile9, access as access3 } from "node:fs/promises";
-import { join as join10 } from "node:path";
+import { mkdir as mkdir9, writeFile as writeFile10, access as access4 } from "node:fs/promises";
+import { join as join11 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -7162,7 +7162,9 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 - \uC790\uB8CC\uB97C \uC774 \uD3F4\uB354\uC5D0 \uBCF5\uC0AC\uD558\uB294 \uB300\uC2E0, \`paths.md\` \uD30C\uC77C\uC5D0 **\uCC38\uACE0\uD560 \uB85C\uCEEC \uACBD\uB85C \uBAA9\uB85D**\uC744 \uC801\uC5B4\uB458 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
 - \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uC808\uB300 \uACBD\uB85C/\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C, \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
 - \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
-- \uAE30\uBC00 \uBB38\uC11C\uB294 \uC800\uC7A5\uC18C \uBC16 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD574 \uB450\uBA74 \uCEE4\uBC0B\uB420 \uC77C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uACBD\uB85C \uBAA9\uB85D\uB9CC \uCEE4\uBC0B\uB428).
+- **\uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uC740 \uAE30\uBCF8\uC801\uC73C\uB85C \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4** (\uD3F4\uB354 \uC804\uC6A9 .gitignore) \u2014 \uACF5\uC720\uB418\uB294 \uAC83\uC740
+  paths.md\uC640 \uC774 README\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
+  \uC790\uB8CC\uB294 paths.md\uC758 \uACF5\uC6A9 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAC70\uB098 .gitignore\uB97C \uC9C1\uC811 \uC218\uC815\uD574 \uCD94\uC801\uD558\uBA74 \uB429\uB2C8\uB2E4.
 
 ## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
 - **\uAC1C\uB150\uC744 \uB9CC\uB4E4\uAC70\uB098 \uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC** \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
@@ -7186,7 +7188,9 @@ Put materials here for the agent to consult during concept work.
 - Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
-- Keep confidential documents outside the repo and link them by path \u2014 only the path list gets committed.
+- **Files in this folder are NOT committed by default** (folder-level .gitignore) \u2014 only paths.md
+  and this README are shared. Confidential documents stay local; to share material with the team,
+  link a shared location via paths.md or edit the .gitignore to track specific files.
 
 ## How it's used
 - The agent reads **only the relevant files, on demand**, and **only when authoring, upgrading, or validating a concept**.
@@ -7250,7 +7254,7 @@ function buildInitHint(locale, opts) {
 
 // src/init/syncGenerated.ts
 import { readdir as readdir4, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join9 } from "node:path";
+import { join as join10 } from "node:path";
 
 // src/viewer/render.ts
 import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
@@ -7815,9 +7819,33 @@ async function ensureAlignmentGitignore(root) {
   }
 }
 
+// src/init/referenceGitignore.ts
+import { access as access3, mkdir as mkdir8, writeFile as writeFile9 } from "node:fs/promises";
+import { join as join9 } from "node:path";
+var CONTENT2 = [
+  "# reference material stays local by default (may contain confidential documents)",
+  "# only the external-path list (paths.md) and the scaffold guide (README.md) are shared",
+  "*",
+  "!.gitignore",
+  "!README.md",
+  "!paths.md",
+  ""
+].join("\n");
+async function ensureReferenceGitignore(root) {
+  const target = join9(cpPaths(root).reference, ".gitignore");
+  try {
+    await access3(target);
+    return false;
+  } catch {
+    await mkdir8(cpPaths(root).reference, { recursive: true });
+    await writeFile9(target, CONTENT2, "utf8");
+    return true;
+  }
+}
+
 // src/init/syncGenerated.ts
 async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join9(viewerDir, "index.html");
+  const keep = join10(viewerDir, "index.html");
   let removed = 0;
   async function walk(dir) {
     let entries;
@@ -7827,7 +7855,7 @@ async function cleanLegacyViewerHtml(viewerDir) {
       return;
     }
     for (const e of entries) {
-      const full = join9(dir, e.name);
+      const full = join10(dir, e.name);
       if (e.isDirectory()) {
         await walk(full);
         try {
@@ -7849,13 +7877,14 @@ async function syncGenerated(root) {
   const scriptStatus = await upsertViewerScript(root);
   const referenceReadmeCreated = await ensureReference(root);
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
-  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated };
+  const referenceGitignoreCreated = await ensureReferenceGitignore(root);
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated, referenceGitignoreCreated };
 }
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
-    await access3(cpPaths(root).initFile);
+    await access4(cpPaths(root).initFile);
     return true;
   } catch {
     return false;
@@ -7865,13 +7894,13 @@ async function syncSafely(root) {
   try {
     return await syncGenerated(root);
   } catch {
-    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false };
+    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false, referenceGitignoreCreated: false };
   }
 }
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
   for (const d of [p.features, p.reference, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
-    await mkdir8(d, { recursive: true });
+    await mkdir9(d, { recursive: true });
   if (await isInitialized(root)) {
     const synced2 = await syncSafely(root);
     return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
@@ -7884,10 +7913,10 @@ async function scaffoldInit(root, opts) {
     locale,
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile9(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile10(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile9(join10(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile9(join10(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile10(join11(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile10(join11(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncSafely(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
