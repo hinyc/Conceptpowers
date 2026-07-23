@@ -26,8 +26,9 @@ init 이후(처음부터든 중도든) 실행하면 **현재 단계를 진단**�
 0. **진단(읽기 전용)**: architecture/infra 템플릿 여부, reference/ 비어있는지, 개념 수·상태
    분포(green/pending/red), features 수, CLI audit 결과(gap·unknownTags). 단계 지도를 보고하고
    시작 지점을 제시.
-1. **baseline**: architecture.md/infra.md가 템플릿이면 — 개념의 상위 기준임을 설명하고 지금
-   작성할지/건너뛸지 질문. 작성은 사용자 몫(에이전트는 baseline을 직접 쓰지 않음, update-baseline 경유).
+1. **baseline**: architecture.md/infra.md가 템플릿이면 — 개념의 상위 기준임을 설명하고 작성
+   방식을 질문: 코드 분석 초안(권장, as-is 초안을 사용자가 리뷰·확정 후 저장) / 직접 작성 /
+   건너뛰기. 어느 쪽이든 사용자 확인 없이는 저장하지 않음(update-baseline 경유).
 2. **define**: 실행 전 reference/가 비었으면(스캐폴드 README만) "참고자료 없이 진행 vs 채우고
    재개" 질문. 이후 `conceptpowers:define-concept` 호출(개념이 적으면 batch 모드 권장).
 3. **check(audit)**: `conceptpowers:audit` 호출. gap / red / pending / 품질 미달을 보고하고
