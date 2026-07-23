@@ -1,9 +1,9 @@
 ---
-name: sync
-description: Use after updating the plugin, or whenever the viewer/concepts:view script looks stale. Refreshes plugin-generated artifacts (viewer assets, manifest, concepts:view script) to the installed version. Never touches the baseline.
+name: version-sync
+description: Use after updating the plugin (version sync — NOT concept↔code sync; that is update-mapping), or whenever the viewer/concepts:view script looks stale. Refreshes plugin-generated artifacts (viewer assets, manifest, concepts:view script) to the installed version. Never touches the baseline.
 ---
 
-# Conceptpowers: Sync
+# Conceptpowers: Version Sync (플러그인 버전 동기화)
 
 > **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
 > Tell the user this project is not initialized and that governance commands are disabled until
@@ -38,7 +38,7 @@ settings are left untouched. Running `conceptpowers init` again does the same pa
 1. Confirm the project is initialized (the `CONCEPTPOWERS-ACTIVE` context is present, or
    `docs/conceptpowers/init.json` exists). If not, use `conceptpowers:init` instead.
 2. Run the deterministic CLI (path is in the session context or the plugin dist):
-   `node "<cli>" sync --root .`
+   `node "<cli>" version-sync --root .`
 3. Report the JSON result to the user: `scriptStatus` (no-package | unchanged | set | kept) and
    `orphansRemoved` (count of old `*.html` files cleaned).
 4. Remind the user they can open the refreshed viewer with `npm run concepts:view`.

@@ -33,14 +33,14 @@ describe("runCli", () => {
     }));
     await runCli(["init", "--root", root]);
     let captured = "";
-    const code = await runCli(["sync", "--root", root], (s) => (captured += s));
+    const code = await runCli(["version-sync", "--root", root], (s) => (captured += s));
     expect(code).toBe(0);
     const r = JSON.parse(captured);
     expect(r.ok).toBe(true);
     expect(r).toHaveProperty("scriptStatus");
     expect(r).toHaveProperty("orphansRemoved");
   });
-  it("sync는 초기화되지 않은 프로젝트에서 에러를 반환한다", async () => {
+  it("version-sync(구명령 sync 별칭)는 초기화되지 않은 프로젝트에서 에러를 반환한다", async () => {
     let captured = "";
     const code = await runCli(["sync", "--root", root], (s) => (captured += s));
     expect(code).toBe(1);

@@ -8147,7 +8147,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
       viewerPath: VIEWER_INDEX
     }));
   });
-  program2.command("sync").description("\uD50C\uB7EC\uADF8\uC778 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uCD5C\uC2E0\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+  program2.command("version-sync").alias("sync").description("\uD50C\uB7EC\uADF8\uC778 \uBC84\uC804 \uB3D9\uAE30\uD654 \u2014 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uC124\uCE58 \uBC84\uC804\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify({ ok: true, ...await syncGenerated(o.root) }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {

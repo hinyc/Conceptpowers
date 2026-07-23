@@ -57,8 +57,9 @@ export async function runCli(
     });
 
   program
-    .command("sync")
-    .description("플러그인 생성물(뷰어 에셋·스크립트)을 최신으로 패치 (baseline 불변)")
+    .command("version-sync")
+    .alias("sync") // 구명령 호환 — 개념 동기화(map)와 혼동을 줄이기 위해 version-sync가 정식 이름
+    .description("플러그인 버전 동기화 — 생성물(뷰어 에셋·스크립트)을 설치 버전으로 패치 (baseline 불변)")
     .option("--root <dir>", "project root", process.cwd())
     .action(async (o) => {
       out(JSON.stringify({ ok: true, ...(await syncGenerated(o.root)) }));
