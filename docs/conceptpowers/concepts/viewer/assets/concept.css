@@ -126,6 +126,20 @@ li::marker { color: var(--muted); }
   .wrap { padding: 32px 10px 64px; }
 }
 
+/* 검색 */
+.search-in {
+  display: block; width: 100%; max-width: 520px;
+  margin: 14px 0 4px; padding: .5rem .75rem;
+  font: inherit; font-size: .95rem; color: var(--fg);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+}
+.search-in:focus { outline: none; border-color: var(--link); }
+.search-results code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .85rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 6px; padding: .1rem .35rem;
+}
+
 /* 목록 페이지(index) */
 .group { margin: 28px 0; }
 .group h2 {

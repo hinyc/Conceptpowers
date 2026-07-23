@@ -15,6 +15,8 @@ var I18N = {
     allConcepts: '전체 보기', focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
     copyPath: '경로 복사', copied: '복사됨', copyFailed: '복사 실패',
     home: '홈', zoomIn: '확대', zoomOut: '축소', zoomFit: '화면 맞춤',
+    searchPh: '검색 — 개념 · 기능 · 파일 경로(@concept 색인)', noResults: '검색 결과가 없습니다.',
+    fileResults: '파일 (@concept 색인)',
     back: '개념 목록', empty: '아직 개념이 없습니다.', loadError: '데이터를 불러오지 못했습니다.',
     notFound: '대상을 찾을 수 없습니다.',
     edit: '편집', save: '저장', cancel: '취소', setStatus: '상태 변경',
@@ -38,6 +40,8 @@ var I18N = {
     allConcepts: 'Show all', focusHint: 'Pick a concept to show only its related graph.',
     copyPath: 'Copy path', copied: 'Copied', copyFailed: 'Copy failed',
     home: 'Home', zoomIn: 'Zoom in', zoomOut: 'Zoom out', zoomFit: 'Fit to screen',
+    searchPh: 'Search — concepts · features · file paths (@concept index)', noResults: 'No results.',
+    fileResults: 'Files (@concept index)',
     back: 'Concepts', empty: 'No concepts yet.', loadError: 'Failed to load data.',
     notFound: 'Not found.',
     edit: 'Edit', save: 'Save', cancel: 'Cancel', setStatus: 'Change status',
@@ -188,6 +192,82 @@ function relatedFeatures(slug) {
     .filter(Boolean)
 }
 
+// ---- 검색 ----
+// 개념(제목·slug·그룹·분류) · 기능(제목·slug) · 파일 경로(@concept 색인 = 그래프의 파일 노드)를
+// 부분 일치로 찾는다. 파일 결과에는 그 파일에 연결된 개념·기능 링크를 함께 보여준다.
+function searchData(q) {
+  q = q.toLowerCase()
+  var m = state.manifest
+  var concepts = (m.concepts || []).filter(function (c) {
+    return (c.title + ' ' + c.slug + ' ' + (c.group || '') + ' ' + (c.category || []).join(' '))
+      .toLowerCase().indexOf(q) !== -1
+  })
+  var features = (m.features || []).filter(function (f) {
+    return (f.title + ' ' + f.slug).toLowerCase().indexOf(q) !== -1
+  })
+  var nodes = (m.graph && m.graph.nodes) || []
+  var edges = (m.graph && m.graph.edges) || []
+  var files = nodes
+    .filter(function (n) { return n.type === 'file' && String(n.title || n.label || '').toLowerCase().indexOf(q) !== -1 })
+    .map(function (n) {
+      var linked = edges.filter(function (e) { return e.target === n.id })
+      return {
+        path: n.title || n.label,
+        concepts: linked.filter(function (e) { return e.kind === 'concept-file' }).map(function (e) { return e.source.slice(2) }),
+        features: linked.filter(function (e) { return e.kind === 'feature-file' }).map(function (e) { return e.source.slice(2) })
+      }
+    })
+  return { concepts: concepts, features: features, files: files }
+}
+
+function renderSearchResults(q, box) {
+  var t = state.t
+  box.textContent = ''
+  var r = searchData(q)
+  if (!r.concepts.length && !r.features.length && !r.files.length) {
+    box.appendChild(h('p', { class: 'muted' }, t.noResults))
+    return
+  }
+  if (r.concepts.length) {
+    box.appendChild(h('section', { class: 'group' }, [
+      h('h2', null, t.conceptList),
+      h('ul', null, r.concepts.map(function (c) {
+        return h('li', null, [
+          statusBadge(c.status), ' ',
+          h('a', { href: '#/concept/' + c.slug }, displayName(c.title, c.slug)), ' ',
+          h('small', null, (c.group || '') + (c.category && c.category.length ? ' · ' + c.category.join(', ') : ''))
+        ])
+      }))
+    ]))
+  }
+  if (r.features.length) {
+    box.appendChild(h('section', { class: 'group' }, [
+      h('h2', null, t.featureList),
+      h('ul', null, r.features.map(function (f) {
+        return h('li', null, h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug)))
+      }))
+    ]))
+  }
+  if (r.files.length) {
+    box.appendChild(h('section', { class: 'group' }, [
+      h('h2', null, t.fileResults),
+      h('ul', null, r.files.map(function (f) {
+        var links = []
+        f.concepts.forEach(function (cs) {
+          if (links.length) links.push(' · ')
+          links.push(h('a', { href: '#/concept/' + cs }, displayName(conceptTitle(cs), cs)))
+        })
+        f.features.forEach(function (fs) {
+          var e = featureEntry(fs)
+          if (links.length) links.push(' · ')
+          links.push(h('a', { href: '#/feature/' + fs }, e ? displayName(e.title, fs) : fs))
+        })
+        return h('li', null, [h('code', null, f.path), links.length ? h('small', null, [' → '].concat(links)) : null])
+      }))
+    ]))
+  }
+}
+
 // ---- 뷰: 목록 ----
 // scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
 function viewIndex(scrollTo) {
@@ -222,13 +302,28 @@ function viewIndex(scrollTo) {
       ])
     : null
   var body = (m.concepts || []).length ? sections : [h('p', { class: 'muted' }, t.empty)]
+  // 검색: 입력이 있으면 목록 대신 결과를 보여주고, 지우면 목록으로 복귀한다.
+  var bodyBox = h('div', null, [body, featureSection])
+  var resultBox = h('div', { class: 'search-results' })
+  resultBox.style.display = 'none'
+  var searchIn = h('input', { type: 'search', class: 'search-in', placeholder: t.searchPh })
+  searchIn.addEventListener('input', function () {
+    var q = searchIn.value.trim()
+    if (!q) {
+      resultBox.textContent = ''; resultBox.style.display = 'none'; bodyBox.style.display = ''
+      return
+    }
+    bodyBox.style.display = 'none'; resultBox.style.display = ''
+    renderSearchResults(q, resultBox)
+  })
   setApp(h('div', { class: 'wrap' }, [
     breadcrumbs([{ label: t.home }]),
     h('header', { class: 'hero' }, [
       h('h1', null, t.appTitle),
-      h('nav', { class: 'pagenav' }, h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'))
+      h('nav', { class: 'pagenav' }, h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →')),
+      searchIn
     ]),
-    body, featureSection
+    resultBox, bodyBox
   ]))
   if (scrollTo) {
     var el = document.getElementById('g-' + scrollTo)
