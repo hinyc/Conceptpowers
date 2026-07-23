@@ -4585,8 +4585,9 @@ async function decidePreToolUse(root, ev) {
   if (ev.tool === "Bash" && isGitCommit(ev.input.command)) {
     const files = ev.changedFiles ?? await stagedFiles(root);
     const referencePrefix = `${CP_REL}/reference/`;
+    const REFERENCE_EXEMPT = /* @__PURE__ */ new Set(["README.md", "paths.md", ".gitignore"]);
     const stagedReference = files.map(normalizeRel).filter(
-      (f) => f.startsWith(referencePrefix) && f !== `${referencePrefix}README.md` && f !== `${referencePrefix}paths.md`
+      (f) => f.startsWith(referencePrefix) && !REFERENCE_EXEMPT.has(f.slice(referencePrefix.length))
     );
     if (stagedReference.length > 0) {
       const list = stagedReference.map((f) => sanitizeText(f)).join(", ");
