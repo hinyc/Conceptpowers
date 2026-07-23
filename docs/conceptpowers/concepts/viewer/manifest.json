@@ -51,6 +51,13 @@
   ],
   "features": [
     {
+      "slug": "auto-guided-setup",
+      "group": "governance",
+      "title": "단계 안내 오케스트레이터 (auto)",
+      "codePathCount": 1,
+      "url": "../../features/governance/auto-guided-setup.json"
+    },
+    {
       "slug": "commit-gate",
       "group": "governance",
       "title": "커밋 문지기",
@@ -145,6 +152,20 @@
         "title": "src/concept/attest.ts"
       },
       {
+        "id": "f:auto-guided-setup",
+        "label": "단계 안내 오케스트레이터 (auto)",
+        "type": "feature",
+        "href": "#/feature/auto-guided-setup",
+        "title": "auto-guided-setup"
+      },
+      {
+        "id": "p:skills/auto/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/auto/SKILL.md"
+      },
+      {
         "id": "f:commit-gate",
         "label": "커밋 문지기",
         "type": "feature",
@@ -199,6 +220,21 @@
         "source": "c:settled-status",
         "target": "p:src/concept/attest.ts",
         "kind": "concept-file"
+      },
+      {
+        "source": "f:auto-guided-setup",
+        "target": "c:human-owns-contract",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:auto-guided-setup",
+        "target": "c:ask-only-gate",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:auto-guided-setup",
+        "target": "p:skills/auto/SKILL.md",
+        "kind": "feature-file"
       },
       {
         "source": "f:commit-gate",

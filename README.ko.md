@@ -160,6 +160,7 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 | 스킬 | 언제 사용되나 | 무엇을 만들어내나 |
 | --- | --- | --- |
 | `conceptpowers:init` | **프로젝트당 한 번**, 거버넌스를 켤 때. `strict` 모드는 기존 코드베이스를 전체 스캔해 개념을 백필한다. | `docs/conceptpowers/` 스캐폴드 + `init.json` 마커(생기는 순간 훅이 살아난다). |
+| `conceptpowers:auto` | **init 이후 언제든**, "다음 뭐 하면 돼?" — 순서를 몰라도 되게 안내받고 싶을 때. | 현재 단계 진단 후 **baseline → define → audit → mapping** 순서로 스킬을 호출하는 단계 안내. 매 단계 경계에서 진행 여부를 묻고(건너뛰기 허용), 멱등이라 중도 도입·재개 모두 지원. |
 | `conceptpowers:define-feature` | 지식 그래프에 올라가야 할 **기능(버튼·액션·라우트·명령)을 발견했을 때**. | `features/` 아래 기능 JSON. `concepts`(기능 → 개념)와 `codePaths`(기능 → 코드)가 배선되어 그래프의 기능 링크 원천이 된다. |
 | `conceptpowers:define-concept` | 기존 개념이 **없는** 기능·역할·권한·용어를 추가하기 **전에**. | 🟡 pending으로 탄생하는 새 개념 JSON. 일관성 검사 통과 시 🟢 green이 되고, 그렇지 않으면 충돌 이유를 `note-conflict`로 기록한 채 pending 유지. (자동 유추 개념은 🔴 red.) |
 | `conceptpowers:check-concept` | 기능을 추가하거나 동작을 바꾸는 코드(테스트 포함)를 작성/변경하기 **전에**. | 판정 결과: 변경이 관련 개념의 allow / restrict / immutable 규칙을 위배하는가? (코드 ↔ 개념) |
