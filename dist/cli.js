@@ -7158,6 +7158,12 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 - \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uC678\uBD80 API/\uD45C\uC900 \uBA85\uC138, \uB514\uC790\uC778\xB7\uAE30\uD68D(PRD) \uBB38\uC11C, \uC120\uD589 \uC0AC\uB840, \uADDC\uC815\xB7\uC815\uCC45 \uB4F1
 - \uD615\uC2DD \uC790\uC720(.md, .txt \uB4F1). \uD558\uC704 \uD3F4\uB354\uB85C \uBD84\uB958\uD574\uB3C4 \uB429\uB2C8\uB2E4.
 
+## \uD30C\uC77C \uB300\uC2E0 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAE30 (paths.md)
+- \uC790\uB8CC\uB97C \uC774 \uD3F4\uB354\uC5D0 \uBCF5\uC0AC\uD558\uB294 \uB300\uC2E0, \`paths.md\` \uD30C\uC77C\uC5D0 **\uCC38\uACE0\uD560 \uB85C\uCEEC \uACBD\uB85C \uBAA9\uB85D**\uC744 \uC801\uC5B4\uB458 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uC808\uB300 \uACBD\uB85C/\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C, \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
+- \uAE30\uBC00 \uBB38\uC11C\uB294 \uC800\uC7A5\uC18C \uBC16 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD574 \uB450\uBA74 \uCEE4\uBC0B\uB420 \uC77C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uACBD\uB85C \uBAA9\uB85D\uB9CC \uCEE4\uBC0B\uB428).
+
 ## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
 - \uAC1C\uB150\uC744 \uC815\uC758\xB7\uAC80\uC99D\uD558\uAC70\uB098 \uC804\uC218 \uC810\uAC80(audit)\uD560 \uB54C, \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
 - \uC804\uBD80\uB97C \uD56D\uC0C1 \uC77D\uC9C0\uB294 \uC54A\uC2B5\uB2C8\uB2E4(\uD1A0\uD070 \uC808\uC57D). \uD30C\uC77C\uBA85\xB7\uAD6C\uC870\uB97C \uC54C\uC544\uBCF4\uAE30 \uC27D\uAC8C \uB450\uC138\uC694.
@@ -7174,6 +7180,12 @@ Put materials here for the agent to consult during concept work.
 ## What to put
 - Domain glossary, external API/standard specs, design/PRD docs, prior art, policies, etc.
 - Any format (.md, .txt, \u2026). Subfolders are fine.
+
+## Linking paths instead of copying files (paths.md)
+- Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
+- One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- The agent treats files in this folder and the locations listed in paths.md the same way.
+- Keep confidential documents outside the repo and link them by path \u2014 only the path list gets committed.
 
 ## How it's used
 - When defining, verifying, or auditing concepts, the agent reads **only the relevant files, on demand** and factors them in.

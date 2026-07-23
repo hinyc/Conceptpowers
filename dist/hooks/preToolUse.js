@@ -4575,7 +4575,9 @@ async function decidePreToolUse(root, ev) {
   if (ev.tool === "Bash" && isGitCommit(ev.input.command)) {
     const files = ev.changedFiles ?? await stagedFiles(root);
     const referencePrefix = `${CP_REL}/reference/`;
-    const stagedReference = files.map(normalizeRel).filter((f) => f.startsWith(referencePrefix) && f !== `${referencePrefix}README.md`);
+    const stagedReference = files.map(normalizeRel).filter(
+      (f) => f.startsWith(referencePrefix) && f !== `${referencePrefix}README.md` && f !== `${referencePrefix}paths.md`
+    );
     if (stagedReference.length > 0) {
       const list = stagedReference.map((f) => sanitizeText(f)).join(", ");
       return {

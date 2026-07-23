@@ -60,9 +60,15 @@ export async function decidePreToolUse(
     // reference 문서: 기밀(계약서·내부 명세·고객 정보 등)이 섞일 수 있어,
     // 스테이징되면 다른 검사보다 먼저 항상 확인을 받는다 (스캐폴드 README는 제외).
     const referencePrefix = `${CP_REL}/reference/`;
+    // README(스캐폴드)와 paths.md(외부 경로 목록 — 내용이 아니라 경로만)는 확인 대상에서 제외.
     const stagedReference = files
       .map(normalizeRel)
-      .filter((f) => f.startsWith(referencePrefix) && f !== `${referencePrefix}README.md`);
+      .filter(
+        (f) =>
+          f.startsWith(referencePrefix) &&
+          f !== `${referencePrefix}README.md` &&
+          f !== `${referencePrefix}paths.md`,
+      );
     if (stagedReference.length > 0) {
       const list = stagedReference.map((f) => sanitizeText(f)).join(", ");
       return {

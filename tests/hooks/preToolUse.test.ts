@@ -357,3 +357,13 @@ describe("reference 문서 커밋 확인", () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("gitignore");
   });
 });
+
+  it("경로 목록 파일(paths.md)만 스테이징이면 기밀 확인을 건너뛴다", async () => {
+    await scaffoldInit(root, {});
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/reference/paths.md"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("gitignore");
+  });

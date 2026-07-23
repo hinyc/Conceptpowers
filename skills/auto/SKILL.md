@@ -32,7 +32,7 @@ mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사�
 
 1. **baseline**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿
    그대로인지(주석 한 줄뿐인지) 확인.
-2. **reference**: `reference/`가 비었는지(파일 없음, 또는 스캐폴드 `README.md`뿐인지) 확인.
+2. **reference**: `reference/`가 비었는지 확인 — 파일 없음(스캐폴드 `README.md`뿐)이고 `paths.md`의 외부 경로 항목도 없으면 빈 것으로 본다. 비었으면 해당 단계에서 파일 추가 또는 **외부 로컬 경로 등록(paths.md, 여러 개 가능)**을 제안한다.
 3. **개념**: `concepts/data/` 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red).
 4. **feature**: `features/` 스펙 개수.
 5. **integrity**: `node "<cli>" audit --root . <source files...>` — unknownTags·미태깅 gap.

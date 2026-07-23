@@ -18,6 +18,12 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 도메인 용어집, 외부 API/표준 명세, 디자인·기획(PRD) 문서, 선행 사례, 규정·정책 등
 - 형식 자유(.md, .txt 등). 하위 폴더로 분류해도 됩니다.
 
+## 파일 대신 경로로 연결하기 (paths.md)
+- 자료를 이 폴더에 복사하는 대신, \`paths.md\` 파일에 **참고할 로컬 경로 목록**을 적어둘 수 있습니다.
+- 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
+- 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
+- 기밀 문서는 저장소 밖 경로로 연결해 두면 커밋될 일이 없습니다(경로 목록만 커밋됨).
+
 ## 어떻게 쓰이나요
 - 개념을 정의·검증하거나 전수 점검(audit)할 때, 에이전트가 **관련된 자료만 골라 필요할 때 읽고** 반영합니다.
 - 전부를 항상 읽지는 않습니다(토큰 절약). 파일명·구조를 알아보기 쉽게 두세요.
@@ -35,6 +41,12 @@ Put materials here for the agent to consult during concept work.
 ## What to put
 - Domain glossary, external API/standard specs, design/PRD docs, prior art, policies, etc.
 - Any format (.md, .txt, …). Subfolders are fine.
+
+## Linking paths instead of copying files (paths.md)
+- Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
+- One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- The agent treats files in this folder and the locations listed in paths.md the same way.
+- Keep confidential documents outside the repo and link them by path — only the path list gets committed.
 
 ## How it's used
 - When defining, verifying, or auditing concepts, the agent reads **only the relevant files, on demand** and factors them in.
