@@ -10,7 +10,7 @@ import { readFile as readFile8 } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve, sep } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
 import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir } from "node:fs/promises";
@@ -4351,6 +4351,7 @@ async function editConceptContent(root, slug3, patch) {
 // src/viewer/render.ts
 import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
 import { join as join4, dirname as dirname4 } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
@@ -4522,6 +4523,23 @@ async function readInitConfig(root) {
 }
 
 // src/viewer/render.ts
+async function readPluginVersion() {
+  const start = dirname4(fileURLToPath(import.meta.url));
+  let dir = start;
+  for (let i = 0; i < 6; i++) {
+    try {
+      const v = JSON.parse(
+        await readFile7(join4(dir, ".claude-plugin", "plugin.json"), "utf8")
+      )?.version;
+      return typeof v === "string" ? v : null;
+    } catch {
+      const parent = dirname4(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return null;
+}
 async function writeManifest(root) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
@@ -4529,9 +4547,13 @@ async function writeManifest(root) {
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
   await mkdir5(p.conceptsViewer, { recursive: true });
+  const manifest = {
+    ...buildManifest(concepts, features, locale, mapping),
+    generatorVersion: await readPluginVersion()
+  };
   await writeFile5(
     join4(p.conceptsViewer, "manifest.json"),
-    JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + "\n",
+    JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }
@@ -4744,15 +4766,15 @@ function runAsMain() {
   const argv = process.argv[1];
   if (!argv) return false;
   try {
-    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(argv);
+    return realpathSync(fileURLToPath2(import.meta.url)) === realpathSync(argv);
   } catch {
     return import.meta.url === pathToFileURL(argv).href;
   }
 }
 var isMain = runAsMain();
 if (isMain) {
-  const root = fileURLToPath(new URL("../../", import.meta.url));
-  const projectRoot = fileURLToPath(new URL("../../../../", import.meta.url));
+  const root = fileURLToPath2(new URL("../../", import.meta.url));
+  const projectRoot = fileURLToPath2(new URL("../../../../", import.meta.url));
   startServer({ root, projectRoot, entry: "concepts/viewer/index.html", open: true }).then(({ url }) => {
     console.log(`Conceptpowers \uBDF0\uC5B4: ${url}  (\uD3B8\uC9D1 \uAC00\uB2A5 \xB7 \uC885\uB8CC: Ctrl+C)`);
   }).catch((err) => {

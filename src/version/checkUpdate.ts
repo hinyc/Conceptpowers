@@ -27,8 +27,8 @@ function defaultCacheDir(): string {
   return process.env.CONCEPTPOWERS_CACHE_DIR ?? join(homedir(), ".cache", "conceptpowers");
 }
 
-// 설치된 plugin.json에서 version 읽기. 실패 시 null.
-async function readInstalledVersion(pluginRoot: string): Promise<string | null> {
+// 설치된 plugin.json에서 version 읽기. 실패 시 null. (세션 시작 자동 sync도 사용)
+export async function readInstalledVersion(pluginRoot: string): Promise<string | null> {
   try {
     const text = await readFile(join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;

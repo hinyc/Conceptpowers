@@ -32,6 +32,26 @@ async function copyAsset(name: string, target: string): Promise<void> {
   await writeFile(target, await readAsset(name))
 }
 
+// 플러그인 자신의 버전(.claude-plugin/plugin.json)을 상위 탐색으로 읽는다. 실패 시 null.
+// manifest에 "이 산출물을 만든 버전"을 도장 찍어, 세션 시작 훅이 업데이트 후 자동 sync에 쓴다.
+async function readPluginVersion(): Promise<string | null> {
+  const start = dirname(fileURLToPath(import.meta.url))
+  let dir = start
+  for (let i = 0; i < 6; i++) {
+    try {
+      const v = JSON.parse(
+        await readFile(join(dir, '.claude-plugin', 'plugin.json'), 'utf8')
+      )?.version
+      return typeof v === 'string' ? v : null
+    } catch {
+      const parent = dirname(dir)
+      if (parent === dir) break
+      dir = parent
+    }
+  }
+  return null
+}
+
 // 매니페스트(manifest.json)만 다시 쓴다. 정적 에셋 복사는 하지 않으므로
 // 실행 중인 뷰어 서버(serve.mjs)가 자신·에셋을 덮어쓰는 일 없이 데이터 변경을 반영할 수 있다.
 export async function writeManifest(root: string): Promise<void> {
@@ -42,9 +62,13 @@ export async function writeManifest(root: string): Promise<void> {
   const p = cpPaths(root)
 
   await mkdir(p.conceptsViewer, { recursive: true })
+  const manifest = {
+    ...buildManifest(concepts, features, locale, mapping),
+    generatorVersion: await readPluginVersion()
+  }
   await writeFile(
     join(p.conceptsViewer, 'manifest.json'),
-    JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + '\n',
+    JSON.stringify(manifest, null, 2) + '\n',
     'utf8'
   )
 }

@@ -282,5 +282,6 @@
         "kind": "feature-file"
       }
     ]
-  }
+  },
+  "generatorVersion": "0.10.2"
 }

@@ -1,6 +1,6 @@
 // tests/hooks/sessionStart.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildSessionStartOutput } from "../../src/hooks/sessionStart.js";
@@ -53,6 +53,24 @@ describe("buildSessionStartOutput", () => {
     expect(ctx).toContain("<CONCEPTPOWERS-REFERENCE-PATHS>");
     expect(ctx).toContain("no/such/dir");
     expect(ctx).toContain("missing");
+  });
+  it("플러그인이 업데이트되면(설치>생성 버전) 자동 sync하고 블록으로 알린다", async () => {
+    await scaffoldInit(root, {});
+    const manifestPath = join(root, "docs/conceptpowers/concepts/viewer/manifest.json");
+    const m = JSON.parse(readFileSync(manifestPath, "utf8"));
+    expect(typeof m.generatorVersion).toBe("string"); // 생성 시 도장 확인
+    writeFileSync(manifestPath, JSON.stringify({ ...m, generatorVersion: "0.0.1" }));
+    const o = await buildSessionStartOutput(root, process.cwd());
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("<CONCEPTPOWERS-SYNC>");
+    expect(ctx).toContain("v0.0.1");
+    const after = JSON.parse(readFileSync(manifestPath, "utf8"));
+    expect(after.generatorVersion).not.toBe("0.0.1"); // 재도장 확인
+  });
+  it("생성 버전이 설치 버전과 같으면 자동 sync 블록이 없다", async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, process.cwd());
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-SYNC>");
   });
   it("paths.md의 경로가 전부 유효하면 경고 블록이 없다", async () => {
     await scaffoldInit(root, {});

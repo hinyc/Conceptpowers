@@ -7727,6 +7727,23 @@ async function copyAsset(name, target) {
   await mkdir5(dirname5(target), { recursive: true });
   await writeFile5(target, await readAsset(name));
 }
+async function readPluginVersion() {
+  const start = dirname5(fileURLToPath(import.meta.url));
+  let dir = start;
+  for (let i = 0; i < 6; i++) {
+    try {
+      const v = JSON.parse(
+        await readFile7(join5(dir, ".claude-plugin", "plugin.json"), "utf8")
+      )?.version;
+      return typeof v === "string" ? v : null;
+    } catch {
+      const parent = dirname5(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return null;
+}
 async function writeManifest(root) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
@@ -7734,9 +7751,13 @@ async function writeManifest(root) {
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
   await mkdir5(p.conceptsViewer, { recursive: true });
+  const manifest = {
+    ...buildManifest(concepts, features, locale, mapping),
+    generatorVersion: await readPluginVersion()
+  };
   await writeFile5(
     join5(p.conceptsViewer, "manifest.json"),
-    JSON.stringify(buildManifest(concepts, features, locale, mapping), null, 2) + "\n",
+    JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }

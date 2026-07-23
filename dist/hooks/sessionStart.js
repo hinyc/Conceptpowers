@@ -8,10 +8,11 @@ var __export = (target, all) => {
 };
 
 // src/hooks/sessionStart.ts
-import { join as join7 } from "node:path";
+import { join as join12 } from "node:path";
+import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir5, writeFile as writeFile5, access as access2 } from "node:fs/promises";
+import { mkdir as mkdir8, writeFile as writeFile9, access as access4 } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4109,7 +4110,147 @@ function parseInitConfig(input) {
 }
 
 // src/i18n/messages.ts
+var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
+
+\uC774 \uD3F4\uB354\uC5D0 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD560 \uC790\uB8CC\uB97C \uB123\uC73C\uC138\uC694.
+
+## \uBB34\uC5C7\uC744 \uB123\uB098\uC694
+- \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uC678\uBD80 API/\uD45C\uC900 \uBA85\uC138, \uB514\uC790\uC778\xB7\uAE30\uD68D(PRD) \uBB38\uC11C, \uC120\uD589 \uC0AC\uB840, \uADDC\uC815\xB7\uC815\uCC45 \uB4F1
+- \uD615\uC2DD \uC790\uC720(.md, .txt \uB4F1). \uD558\uC704 \uD3F4\uB354\uB85C \uBD84\uB958\uD574\uB3C4 \uB429\uB2C8\uB2E4.
+
+## \uD30C\uC77C \uB300\uC2E0 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAE30 (paths.md)
+- \uC790\uB8CC\uB97C \uC774 \uD3F4\uB354\uC5D0 \uBCF5\uC0AC\uD558\uB294 \uB300\uC2E0, \`paths.md\` \uD30C\uC77C\uC5D0 **\uCC38\uACE0\uD560 \uB85C\uCEEC \uACBD\uB85C \uBAA9\uB85D**\uC744 \uC801\uC5B4\uB458 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uC808\uB300 \uACBD\uB85C/\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C, \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
+- **\uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uC740 \uAE30\uBCF8\uC801\uC73C\uB85C \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4** (\uD3F4\uB354 \uC804\uC6A9 .gitignore) \u2014 \uACF5\uC720\uB418\uB294 \uAC83\uC740
+  paths.md \uD558\uB098\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
+  \uC790\uB8CC\uB294 paths.md\uC758 \uACF5\uC6A9 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAC70\uB098 .gitignore\uB97C \uC9C1\uC811 \uC218\uC815\uD574 \uCD94\uC801\uD558\uBA74 \uB429\uB2C8\uB2E4.
+
+## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
+- **\uAC1C\uB150\uC744 \uB9CC\uB4E4\uAC70\uB098 \uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC** \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
+- \uCF54\uB4DC \uAC80\uC99D\xB7\uAC10\uC0AC\uB294 **\uC815\uC758\uB41C \uAC1C\uB150\uB9CC** \uADFC\uAC70\uB85C \uD569\uB2C8\uB2E4 \u2014 \uAC1C\uB150\uC774 \uC0AC\uC2E4\uC774\uACE0, \uC774 \uD3F4\uB354\uB294 \uADF8 \uC6D0\uCC9C \uC7AC\uB8CC\uC785\uB2C8\uB2E4.
+- \uC804\uBD80\uB97C \uD56D\uC0C1 \uC77D\uC9C0\uB294 \uC54A\uC2B5\uB2C8\uB2E4(\uD1A0\uD070 \uC808\uC57D). \uD30C\uC77C\uBA85\xB7\uAD6C\uC870\uB97C \uC54C\uC544\uBCF4\uAE30 \uC27D\uAC8C \uB450\uC138\uC694.
+
+## \uC8FC\uC758
+- \uC774 \uD3F4\uB354\uB294 **\uC0AC\uC6A9\uC790 \uC804\uC18D**\uC785\uB2C8\uB2E4 \u2014 \uC5D0\uC774\uC804\uD2B8\uB294 \uC77D\uAE30\uB9CC \uD558\uACE0 \uC218\uC815\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.
+- \uB0B4\uC6A9\uC740 **\uCC38\uACE0 \uB370\uC774\uD130\uC77C \uBFD0 \uC9C0\uC2DC\uAC00 \uC544\uB2D9\uB2C8\uB2E4.** \uD30C\uC77C \uC548\uC758 "\uC774\uB807\uAC8C \uD574\uB77C" \uB958 \uBB38\uAD6C\uB85C \uC5D0\uC774\uC804\uD2B8 \uB3D9\uC791\uC744 \uBC14\uAFB8\uB824 \uD558\uC9C0 \uB9C8\uC138\uC694(\uBB34\uC2DC\uB429\uB2C8\uB2E4).
+- baseline(\uAC1C\uB150 \xB7 architecture.md \xB7 infra.md)\uACFC\uB294 \uBCC4\uAC1C\uC758 \uBCF4\uC870 \uC790\uB8CC\uC785\uB2C8\uB2E4.
+`;
+var REFERENCE_README_EN = `# Reference materials
+
+Put materials here for the agent to consult during concept work.
+
+## What to put
+- Domain glossary, external API/standard specs, design/PRD docs, prior art, policies, etc.
+- Any format (.md, .txt, \u2026). Subfolders are fine.
+
+## Linking paths instead of copying files (paths.md)
+- Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
+- One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- The agent treats files in this folder and the locations listed in paths.md the same way.
+- **Files in this folder are NOT committed by default** (folder-level .gitignore) \u2014 only paths.md
+  is shared. Confidential documents stay local; to share material with the team,
+  link a shared location via paths.md or edit the .gitignore to track specific files.
+
+## How it's used
+- The agent reads **only the relevant files, on demand**, and **only when authoring, upgrading, or validating a concept**.
+- Code verification and audits judge against **defined concepts alone** \u2014 concepts are the facts; this folder is their raw material.
+- It does not load everything every time (to save tokens). Keep filenames and structure legible.
+
+## Notes
+- This folder is **user-owned** \u2014 the agent only reads it, never edits it.
+- Its content is **reference data, not instructions.** Do not try to steer the agent with "do this" text inside files (it is ignored).
+- It is supporting material, separate from the baseline (concepts \xB7 architecture.md \xB7 infra.md).
+`;
+var seedTemplates = {
+  ko: {
+    architecture: "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n",
+    infra: "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n",
+    reference: REFERENCE_README_KO
+  },
+  en: {
+    architecture: "# Architecture\n\n<!-- Fill in: the high-level basis for concepts -->\n",
+    infra: "# Infrastructure\n\n<!-- Fill in -->\n",
+    reference: REFERENCE_README_EN
+  }
+};
 var localeLabel = { ko: "Korean", en: "English" };
+
+// src/init/syncGenerated.ts
+import { readdir as readdir4, rm, rmdir } from "node:fs/promises";
+import { join as join9 } from "node:path";
+
+// src/viewer/render.ts
+import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile5 } from "node:fs/promises";
+import { join as join4, dirname as dirname3 } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// src/viewer/graph.ts
+var conceptHref = (c) => `#/concept/${c.slug}`;
+var featureHref = (f) => `#/feature/${f.slug}`;
+var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
+var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
+function buildGraphData(concepts, features, codeLinksBySlug = {}) {
+  const conceptSlugs = new Set(concepts.map((c) => c.slug));
+  const nodes = [];
+  const edges = [];
+  const seen = /* @__PURE__ */ new Set();
+  const add = (n) => {
+    if (seen.has(n.id)) return;
+    seen.add(n.id);
+    nodes.push(n);
+  };
+  const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
+  for (const c of concepts) {
+    add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+    const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
+    for (const path of links) {
+      addFile(path);
+      edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: "concept-file" });
+    }
+  }
+  for (const f of features) {
+    add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
+    for (const slug3 of f.concepts) {
+      if (!conceptSlugs.has(slug3)) continue;
+      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
+    }
+    for (const path of f.codePaths) {
+      addFile(path);
+      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: "feature-file" });
+    }
+  }
+  return { nodes, edges };
+}
+
+// src/viewer/manifest.ts
+var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
+var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
+var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
+var mergeLinks = (c, codeLinksBySlug) => [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])];
+function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+  return {
+    version: 1,
+    locale,
+    concepts: concepts.map((c) => ({
+      slug: c.slug,
+      group: c.group ?? "",
+      title: c.title,
+      status: c.status,
+      category: c.category,
+      url: conceptUrl(c),
+      codeLinks: mergeLinks(c, codeLinksBySlug)
+    })),
+    features: features.map((f) => ({
+      slug: f.slug,
+      group: f.group ?? "",
+      title: f.title,
+      codePathCount: f.codePaths.length,
+      url: featureUrl(f)
+    })),
+    graph: buildGraphData(concepts, features, codeLinksBySlug)
+  };
+}
 
 // src/store/conceptStore.ts
 import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
@@ -4297,14 +4438,120 @@ async function readInitConfig(root) {
   }
 }
 
+// src/viewer/render.ts
+async function readAsset(name) {
+  const start = dirname3(fileURLToPath(import.meta.url));
+  let dir = start;
+  for (let i = 0; i < 6; i++) {
+    try {
+      return await readFile5(join4(dir, "assets", name));
+    } catch {
+      const parent = dirname3(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  throw new Error(`asset not found: ${name} (search start: ${start})`);
+}
+async function copyAsset(name, target) {
+  await mkdir4(dirname3(target), { recursive: true });
+  await writeFile4(target, await readAsset(name));
+}
+async function readPluginVersion() {
+  const start = dirname3(fileURLToPath(import.meta.url));
+  let dir = start;
+  for (let i = 0; i < 6; i++) {
+    try {
+      const v = JSON.parse(
+        await readFile5(join4(dir, ".claude-plugin", "plugin.json"), "utf8")
+      )?.version;
+      return typeof v === "string" ? v : null;
+    } catch {
+      const parent = dirname3(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return null;
+}
+async function writeManifest(root) {
+  const concepts = await listConcepts(root);
+  const features = await listFeatures(root);
+  const mapping = await readMappingCache(root);
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const p = cpPaths(root);
+  await mkdir4(p.conceptsViewer, { recursive: true });
+  const manifest = {
+    ...buildManifest(concepts, features, locale, mapping),
+    generatorVersion: await readPluginVersion()
+  };
+  await writeFile4(
+    join4(p.conceptsViewer, "manifest.json"),
+    JSON.stringify(manifest, null, 2) + "\n",
+    "utf8"
+  );
+}
+async function renderViewerToDisk(root) {
+  await writeManifest(root);
+  const p = cpPaths(root);
+  await copyAsset("index.html", join4(p.conceptsViewer, "index.html"));
+  await copyAsset("viewer.js", join4(p.conceptsViewer, "assets", "viewer.js"));
+  await copyAsset("serve.mjs", join4(p.conceptsViewer, "serve.mjs"));
+  await copyAsset("concept.css", p.cssTarget);
+}
+
 // src/init/packageScript.ts
+import { readFile as readFile6, writeFile as writeFile5 } from "node:fs/promises";
+import { join as join5 } from "node:path";
+var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
 var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
+function isPluginManaged(cmd) {
+  return cmd.includes("conceptpowers/concepts/viewer/");
+}
+async function upsertViewerScript(root) {
+  const pkgPath = join5(root, "package.json");
+  let raw;
+  try {
+    raw = await readFile6(pkgPath, "utf8");
+  } catch {
+    return "no-package";
+  }
+  let pkg;
+  try {
+    pkg = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`package.json \uD30C\uC2F1 \uC2E4\uD328: ${error.message}`);
+  }
+  const scripts = pkg.scripts ?? {};
+  const existing = scripts[VIEWER_SCRIPT_NAME];
+  if (existing === VIEWER_COMMAND) return "unchanged";
+  if (existing && !isPluginManaged(existing)) return "kept";
+  const next = {
+    ...pkg,
+    scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND }
+  };
+  await writeFile5(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  return "set";
+}
 
 // src/init/reference.ts
-import { mkdir as mkdir4, writeFile as writeFile4, access, readdir as readdir3 } from "node:fs/promises";
-import { join as join4, relative } from "node:path";
+import { mkdir as mkdir5, writeFile as writeFile6, access, readdir as readdir3 } from "node:fs/promises";
+import { join as join6, relative } from "node:path";
 var SEED_README = "README.md";
+async function ensureReference(root) {
+  const dir = cpPaths(root).reference;
+  await mkdir5(dir, { recursive: true });
+  const readme = join6(dir, SEED_README);
+  try {
+    await access(readme);
+    return false;
+  } catch {
+  }
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  await writeFile6(readme, seedTemplates[locale].reference, "utf8");
+  return true;
+}
 var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore"]);
 async function listReferenceFiles(root) {
   const dir = cpPaths(root).reference;
@@ -4317,7 +4564,7 @@ async function listReferenceFiles(root) {
       return;
     }
     for (const e of entries) {
-      const full = join4(d, e.name);
+      const full = join6(d, e.name);
       if (e.isDirectory()) await walk(full);
       else out.push(relative(dir, full));
     }
@@ -4326,8 +4573,26 @@ async function listReferenceFiles(root) {
   return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
 }
 
+// src/init/alignmentGitignore.ts
+import { access as access2, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
+import { join as join7 } from "node:path";
+var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
+async function ensureAlignmentGitignore(root) {
+  const target = join7(cpPaths(root).alignmentDir, ".gitignore");
+  try {
+    await access2(target);
+    return false;
+  } catch {
+    await mkdir6(cpPaths(root).alignmentDir, { recursive: true });
+    await writeFile7(target, CONTENT, "utf8");
+    return true;
+  }
+}
+
 // src/init/referenceGitignore.ts
-var CONTENT = [
+import { access as access3, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
+import { join as join8 } from "node:path";
+var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
   "# only the external-path list (paths.md) is shared; README is regenerated locally",
   "*",
@@ -4335,11 +4600,60 @@ var CONTENT = [
   "!paths.md",
   ""
 ].join("\n");
+async function ensureReferenceGitignore(root) {
+  const target = join8(cpPaths(root).reference, ".gitignore");
+  try {
+    await access3(target);
+    return false;
+  } catch {
+    await mkdir7(cpPaths(root).reference, { recursive: true });
+    await writeFile8(target, CONTENT2, "utf8");
+    return true;
+  }
+}
+
+// src/init/syncGenerated.ts
+async function cleanLegacyViewerHtml(viewerDir) {
+  const keep = join9(viewerDir, "index.html");
+  let removed = 0;
+  async function walk(dir) {
+    let entries;
+    try {
+      entries = await readdir4(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = join9(dir, e.name);
+      if (e.isDirectory()) {
+        await walk(full);
+        try {
+          if ((await readdir4(full)).length === 0) await rmdir(full);
+        } catch {
+        }
+      } else if (e.name.endsWith(".html") && full !== keep) {
+        await rm(full);
+        removed++;
+      }
+    }
+  }
+  await walk(viewerDir);
+  return removed;
+}
+async function syncGenerated(root) {
+  await renderViewerToDisk(root);
+  const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
+  const scriptStatus = await upsertViewerScript(root);
+  const referenceReadmeCreated = await ensureReference(root);
+  const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
+  const referenceGitignoreCreated = await ensureReferenceGitignore(root);
+  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated, referenceGitignoreCreated };
+}
 
 // src/init/scaffold.ts
 async function isInitialized(root) {
   try {
-    await access2(cpPaths(root).initFile);
+    await access4(cpPaths(root).initFile);
     return true;
   } catch {
     return false;
@@ -4347,22 +4661,22 @@ async function isInitialized(root) {
 }
 
 // src/init/referencePaths.ts
-import { readFile as readFile5, readdir as readdir4, stat } from "node:fs/promises";
+import { readFile as readFile7, readdir as readdir5, stat } from "node:fs/promises";
 import { homedir } from "node:os";
-import { isAbsolute, join as join5 } from "node:path";
+import { isAbsolute, join as join10 } from "node:path";
 var PATHS_FILE = "paths.md";
 function parseReferencePaths(content) {
   return content.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#")).map((line) => line.replace(/^[-*]\s+/, "").trim()).filter((line) => line !== "");
 }
 function resolveReferencePath(root, raw) {
-  if (raw === "~" || raw.startsWith("~/")) return join5(homedir(), raw.slice(1));
+  if (raw === "~" || raw.startsWith("~/")) return join10(homedir(), raw.slice(1));
   if (isAbsolute(raw)) return raw;
-  return join5(root, raw);
+  return join10(root, raw);
 }
 async function checkReferencePaths(root) {
   let content;
   try {
-    content = await readFile5(join5(cpPaths(root).reference, PATHS_FILE), "utf8");
+    content = await readFile7(join10(cpPaths(root).reference, PATHS_FILE), "utf8");
   } catch {
     return [];
   }
@@ -4373,7 +4687,7 @@ async function checkReferencePaths(root) {
     try {
       const s = await stat(resolved);
       if (s.isDirectory()) {
-        status = (await readdir4(resolved)).length > 0 ? "ok" : "empty";
+        status = (await readdir5(resolved)).length > 0 ? "ok" : "empty";
       } else {
         status = "ok";
       }
@@ -4386,20 +4700,20 @@ async function checkReferencePaths(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile8 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile6(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile8(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile7 } from "node:fs/promises";
+import { readFile as readFile9 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile7(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile9(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4457,11 +4771,6 @@ async function computeDrift(root) {
   return items;
 }
 
-// src/version/checkUpdate.ts
-import { readFile as readFile8, writeFile as writeFile6, mkdir as mkdir6 } from "node:fs/promises";
-import { homedir as homedir2 } from "node:os";
-import { join as join6 } from "node:path";
-
 // src/version/compareSemver.ts
 var SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
 function parse(v) {
@@ -4481,16 +4790,19 @@ function isNewer(remote, installed) {
 }
 
 // src/version/checkUpdate.ts
+import { readFile as readFile10, writeFile as writeFile10, mkdir as mkdir9 } from "node:fs/promises";
+import { homedir as homedir2 } from "node:os";
+import { join as join11 } from "node:path";
 var DEFAULT_URL = "https://raw.githubusercontent.com/hinyc/Conceptpowers/main/.claude-plugin/plugin.json";
 var DEFAULT_TTL = 864e5;
 var DEFAULT_TIMEOUT = 1500;
 var CACHE_FILE = "update-check.json";
 function defaultCacheDir() {
-  return process.env.CONCEPTPOWERS_CACHE_DIR ?? join6(homedir2(), ".cache", "conceptpowers");
+  return process.env.CONCEPTPOWERS_CACHE_DIR ?? join11(homedir2(), ".cache", "conceptpowers");
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile8(join6(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile10(join11(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -4499,7 +4811,7 @@ async function readInstalledVersion(pluginRoot) {
 }
 async function readCache(cacheDir) {
   try {
-    const text = await readFile8(join6(cacheDir, CACHE_FILE), "utf8");
+    const text = await readFile10(join11(cacheDir, CACHE_FILE), "utf8");
     const data = JSON.parse(text);
     if (typeof data?.checkedAt === "number" && typeof data?.latest === "string") {
       return { checkedAt: data.checkedAt, latest: data.latest };
@@ -4511,8 +4823,8 @@ async function readCache(cacheDir) {
 }
 async function writeCache(cacheDir, cache) {
   try {
-    await mkdir6(cacheDir, { recursive: true });
-    await writeFile6(join6(cacheDir, CACHE_FILE), JSON.stringify(cache));
+    await mkdir9(cacheDir, { recursive: true });
+    await writeFile10(join11(cacheDir, CACHE_FILE), JSON.stringify(cache));
   } catch {
   }
 }
@@ -4555,7 +4867,33 @@ async function checkForUpdate(pluginRoot, opts = {}) {
 // src/hooks/sessionStart.ts
 async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   if (!await isInitialized(root)) return null;
-  const cli = join7(pluginRoot, "dist", "cli.js");
+  const cli = join12(pluginRoot, "dist", "cli.js");
+  let autoSyncBlock = "";
+  try {
+    const installed = await readInstalledVersion(pluginRoot);
+    if (installed) {
+      let generator = null;
+      try {
+        const m = JSON.parse(
+          await readFile11(join12(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
+        );
+        generator = typeof m?.generatorVersion === "string" ? m.generatorVersion : null;
+      } catch {
+        generator = null;
+      }
+      if (!generator || isNewer(installed, generator)) {
+        await syncGenerated(root);
+        autoSyncBlock = "\n" + [
+          "<CONCEPTPOWERS-SYNC>",
+          `Plugin-generated artifacts were auto-synced to v${installed}${generator ? ` (were generated by v${generator})` : " (previously unstamped)"} at session start \u2014 viewer assets, concepts:view script, and folder gitignores. The baseline (concepts/features/architecture/infra/reference) was NOT touched.`,
+          "Mention this to the user in one concise line. If docs/conceptpowers/ shows modified generated files in git, this sync is why \u2014 committing them is safe and expected.",
+          "</CONCEPTPOWERS-SYNC>"
+        ].join("\n");
+      }
+    }
+  } catch {
+    autoSyncBlock = "";
+  }
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
   const all = await listConcepts(root);
@@ -4642,7 +4980,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
           `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
           "Tell the user once, in one concise line, that an update is available and how to apply it:",
           "  /plugin marketplace update conceptpowers-dev",
-          "After updating, suggest running the conceptpowers:sync skill (or `conceptpowers sync`) once to refresh generated viewer assets and the concepts:view script. This only touches plugin-generated files; the baseline (concepts/specs/architecture/infra) is left untouched.",
+          "After updating, generated artifacts (viewer assets, concepts:view script) are auto-synced at the next session start \u2014 no manual sync needed. The baseline (concepts/specs/architecture/infra) is never touched.",
           "Updates are manual by design; do not nag repeatedly within this session.",
           "</CONCEPTPOWERS-UPDATE>"
         ].join("\n");
@@ -4654,14 +4992,14 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   return {
     hookSpecificOutput: {
       hookEventName: "SessionStart",
-      additionalContext: context + referenceBlock + pathsBlock + driftBlock + updateBlock
+      additionalContext: context + autoSyncBlock + referenceBlock + pathsBlock + driftBlock + updateBlock
     }
   };
 }
 var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   const root = process.cwd();
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join7(process.cwd());
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? join12(process.cwd());
   buildSessionStartOutput(root, pluginRoot).then((o) => {
     if (o) process.stdout.write(JSON.stringify(o));
     process.exit(0);
