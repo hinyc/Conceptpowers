@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile11 } from "node:fs/promises";
+import { readFile as readFile12 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir9, writeFile as writeFile10, access as access4 } from "node:fs/promises";
@@ -7163,7 +7163,7 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 - \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uC808\uB300 \uACBD\uB85C/\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C, \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
 - \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
 - **\uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uC740 \uAE30\uBCF8\uC801\uC73C\uB85C \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4** (\uD3F4\uB354 \uC804\uC6A9 .gitignore) \u2014 \uACF5\uC720\uB418\uB294 \uAC83\uC740
-  paths.md\uC640 \uC774 README\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
+  paths.md \uD558\uB098\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
   \uC790\uB8CC\uB294 paths.md\uC758 \uACF5\uC6A9 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAC70\uB098 .gitignore\uB97C \uC9C1\uC811 \uC218\uC815\uD574 \uCD94\uC801\uD558\uBA74 \uB429\uB2C8\uB2E4.
 
 ## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
@@ -7189,7 +7189,7 @@ Put materials here for the agent to consult during concept work.
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) \u2014 only paths.md
-  and this README are shared. Confidential documents stay local; to share material with the team,
+  is shared. Confidential documents stay local; to share material with the team,
   link a shared location via paths.md or edit the .gitignore to track specific files.
 
 ## How it's used
@@ -7802,6 +7802,26 @@ async function ensureReference(root) {
   await writeFile7(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
+var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore"]);
+async function listReferenceFiles(root) {
+  const dir = cpPaths(root).reference;
+  const out = [];
+  async function walk(d) {
+    let entries;
+    try {
+      entries = await readdir3(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = join7(d, e.name);
+      if (e.isDirectory()) await walk(full);
+      else out.push(relative(dir, full));
+    }
+  }
+  await walk(dir);
+  return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
+}
 
 // src/init/alignmentGitignore.ts
 import { access as access2, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
@@ -7824,10 +7844,9 @@ import { access as access3, mkdir as mkdir8, writeFile as writeFile9 } from "nod
 import { join as join9 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
-  "# only the external-path list (paths.md) and the scaffold guide (README.md) are shared",
+  "# only the external-path list (paths.md) is shared; README is regenerated locally",
   "*",
   "!.gitignore",
-  "!README.md",
   "!paths.md",
   ""
 ].join("\n");
@@ -8045,6 +8064,45 @@ async function noteChange(root, slug3, reason, at) {
   return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
 }
 
+// src/init/referencePaths.ts
+import { readFile as readFile11, readdir as readdir5, stat } from "node:fs/promises";
+import { homedir } from "node:os";
+import { isAbsolute, join as join12 } from "node:path";
+var PATHS_FILE = "paths.md";
+function parseReferencePaths(content) {
+  return content.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#")).map((line) => line.replace(/^[-*]\s+/, "").trim()).filter((line) => line !== "");
+}
+function resolveReferencePath(root, raw) {
+  if (raw === "~" || raw.startsWith("~/")) return join12(homedir(), raw.slice(1));
+  if (isAbsolute(raw)) return raw;
+  return join12(root, raw);
+}
+async function checkReferencePaths(root) {
+  let content;
+  try {
+    content = await readFile11(join12(cpPaths(root).reference, PATHS_FILE), "utf8");
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const raw of parseReferencePaths(content)) {
+    const resolved = resolveReferencePath(root, raw);
+    let status;
+    try {
+      const s = await stat(resolved);
+      if (s.isDirectory()) {
+        status = (await readdir5(resolved)).length > 0 ? "ok" : "empty";
+      } else {
+        status = "ok";
+      }
+    } catch {
+      status = "missing";
+    }
+    out.push({ raw, resolved, status });
+  }
+  return out;
+}
+
 // src/cli.ts
 async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
@@ -8085,7 +8143,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     await renderViewerToDisk(o.root);
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile11(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile12(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
@@ -8118,6 +8176,13 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     const r = checkConceptQuality(concept);
     out(JSON.stringify(r));
     if (!r.ok) code = 1;
+  });
+  program2.command("reference").description("\uCC38\uACE0\uC790\uB8CC \uD604\uD669 \u2014 \uD3F4\uB354 \uD30C\uC77C + paths.md \uC678\uBD80 \uACBD\uB85C \uAC80\uC99D (\uC5C6\uC74C/\uBE48 \uD3F4\uB354 \uC2DC exit 1)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    const files = await listReferenceFiles(o.root);
+    const external = await checkReferencePaths(o.root);
+    const ok = external.every((p) => p.status === "ok");
+    out(JSON.stringify({ ok, files, external }));
+    if (!ok) code = 1;
   });
   program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (o.result !== "pass" && o.result !== "conflict") {

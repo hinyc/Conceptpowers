@@ -16,6 +16,8 @@ import { setPendingConflict, clearPendingConflict } from "./concept/pendingConfl
 import { readConcept } from "./store/conceptStore.js";
 import { checkConceptQuality } from "./concept/quality.js";
 import { recordAttest } from "./concept/attest.js";
+import { listReferenceFiles } from "./init/reference.js";
+import { checkReferencePaths } from "./init/referencePaths.js";
 
 type Out = (s: string) => void;
 
@@ -164,6 +166,18 @@ export async function runCli(
       const r = checkConceptQuality(concept);
       out(JSON.stringify(r));
       if (!r.ok) code = 1;
+    });
+
+  program
+    .command("reference")
+    .description("참고자료 현황 — 폴더 파일 + paths.md 외부 경로 검증 (없음/빈 폴더 시 exit 1)")
+    .option("--root <dir>", "project root", process.cwd())
+    .action(async (o) => {
+      const files = await listReferenceFiles(o.root);
+      const external = await checkReferencePaths(o.root);
+      const ok = external.every((p) => p.status === "ok");
+      out(JSON.stringify({ ok, files, external }));
+      if (!ok) code = 1;
     });
 
   program

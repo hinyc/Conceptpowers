@@ -4375,10 +4375,9 @@ var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 // src/init/referenceGitignore.ts
 var CONTENT = [
   "# reference material stays local by default (may contain confidential documents)",
-  "# only the external-path list (paths.md) and the scaffold guide (README.md) are shared",
+  "# only the external-path list (paths.md) is shared; README is regenerated locally",
   "*",
   "!.gitignore",
-  "!README.md",
   "!paths.md",
   ""
 ].join("\n");

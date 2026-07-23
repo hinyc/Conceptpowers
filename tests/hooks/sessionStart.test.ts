@@ -42,6 +42,28 @@ describe("buildSessionStartOutput", () => {
     const o = await buildSessionStartOutput(root, "/plugin");
     expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-REFERENCE>");
   });
+  it("paths.md의 경로가 없거나 비면 경고 블록으로 알린다", async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(
+      join(root, "docs/conceptpowers/reference/paths.md"),
+      "- no/such/dir\n",
+    );
+    const o = await buildSessionStartOutput(root, "/plugin");
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("<CONCEPTPOWERS-REFERENCE-PATHS>");
+    expect(ctx).toContain("no/such/dir");
+    expect(ctx).toContain("missing");
+  });
+  it("paths.md의 경로가 전부 유효하면 경고 블록이 없다", async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, "spec.md"), "명세");
+    writeFileSync(
+      join(root, "docs/conceptpowers/reference/paths.md"),
+      "- spec.md\n",
+    );
+    const o = await buildSessionStartOutput(root, "/plugin");
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain("<CONCEPTPOWERS-REFERENCE-PATHS>");
+  });
   it("ko면 Output language 디렉티브가 Korean이다 (기본)", async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, "/plugin");

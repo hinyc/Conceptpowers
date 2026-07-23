@@ -23,7 +23,7 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
 - **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
-  paths.md와 이 README뿐입니다. 기밀 문서를 넣어도 저장소에 올라가지 않고, 팀과 공유할
+  paths.md 하나뿐입니다. 기밀 문서를 넣어도 저장소에 올라가지 않고, 팀과 공유할
   자료는 paths.md의 공용 경로로 연결하거나 .gitignore를 직접 수정해 추적하면 됩니다.
 
 ## 어떻게 쓰이나요
@@ -50,7 +50,7 @@ Put materials here for the agent to consult during concept work.
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md
-  and this README are shared. Confidential documents stay local; to share material with the team,
+  is shared. Confidential documents stay local; to share material with the team,
   link a shared location via paths.md or edit the .gitignore to track specific files.
 
 ## How it's used

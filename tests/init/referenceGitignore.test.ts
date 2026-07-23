@@ -13,14 +13,14 @@ describe('ensureReferenceGitignore', () => {
     root = await mkdtemp(join(tmpdir(), 'cp-ref-gi-'))
   })
 
-  it('reference/.gitignore를 생성 — 전체 무시하되 paths.md·README.md는 추적', async () => {
+  it('reference/.gitignore를 생성 — 전체 무시하되 paths.md만 추적', async () => {
     const created = await ensureReferenceGitignore(root)
     expect(created).toBe(true)
     const content = await readFile(
       join(cpPaths(root).reference, '.gitignore'), 'utf8')
     expect(content).toContain('*')
     expect(content).toContain('!paths.md')
-    expect(content).toContain('!README.md')
+    expect(content).not.toContain('!README.md')
     expect(content).toContain('!.gitignore')
   })
 
