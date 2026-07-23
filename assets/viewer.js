@@ -17,6 +17,8 @@ var I18N = {
     home: '홈', zoomIn: '확대', zoomOut: '축소', zoomFit: '화면 맞춤',
     searchPh: '검색 — 개념 · 기능 · 파일 경로(@concept 색인)', noResults: '검색 결과가 없습니다.',
     fileResults: '파일 (@concept 색인)',
+    architecture: '아키텍처', infra: '인프라',
+    docEmpty: '아직 작성되지 않았습니다 — 이 문서는 사용자가 직접 채웁니다.',
     back: '개념 목록', empty: '아직 개념이 없습니다.', loadError: '데이터를 불러오지 못했습니다.',
     notFound: '대상을 찾을 수 없습니다.',
     edit: '편집', save: '저장', cancel: '취소', setStatus: '상태 변경',
@@ -42,6 +44,8 @@ var I18N = {
     home: 'Home', zoomIn: 'Zoom in', zoomOut: 'Zoom out', zoomFit: 'Fit to screen',
     searchPh: 'Search — concepts · features · file paths (@concept index)', noResults: 'No results.',
     fileResults: 'Files (@concept index)',
+    architecture: 'Architecture', infra: 'Infrastructure',
+    docEmpty: 'Not written yet — this document is user-authored.',
     back: 'Concepts', empty: 'No concepts yet.', loadError: 'Failed to load data.',
     notFound: 'Not found.',
     edit: 'Edit', save: 'Save', cancel: 'Cancel', setStatus: 'Change status',
@@ -192,6 +196,126 @@ function relatedFeatures(slug) {
     .filter(Boolean)
 }
 
+// ---- 간이 마크다운 렌더러 ----
+// 의존성 0 원칙에 따라 직접 구현. DOM을 h()로만 생성(innerHTML 미사용)해 XSS를 차단한다.
+// 지원: 제목(#~######) · 목록(-,*,1. + 2칸 들여쓰기 중첩) · 코드펜스 · 인용(>) · 표(|) ·
+// 구분선(---) · 인라인 `코드`/**굵게**/[링크](url). 그 외는 문단으로 취급.
+function mdInline(text) {
+  var out = []
+  var re = /(`[^`]*`)|(\*\*[^*]+\*\*)|(\[([^\]]+)\]\(([^)\s]+)\))/g
+  var last = 0, m
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    if (m[1]) out.push(h('code', null, m[1].slice(1, -1)))
+    else if (m[2]) out.push(h('strong', null, m[2].slice(2, -2)))
+    else if (m[3]) {
+      var href = m[5]
+      if (/^(https?:\/\/|#|\.{0,2}\/)/.test(href)) out.push(h('a', { href: href }, m[4]))
+      else out.push(m[4]) // javascript: 등 비허용 스킴은 텍스트로만
+    }
+    last = re.lastIndex
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
+
+function renderMarkdown(md) {
+  md = md.replace(/<!--[\s\S]*?-->/g, '') // 템플릿 안내용 HTML 주석 제거
+  var root = h('div', { class: 'md' })
+  var lines = md.split(/\r?\n/)
+  var i = 0
+  function isTableRow(s) { return /^\s*\|.*\|\s*$/.test(s) }
+  function cells(row) {
+    return row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (s) { return s.trim() })
+  }
+  while (i < lines.length) {
+    var L = lines[i]
+    if (/^\s*$/.test(L)) { i++; continue }
+    if (/^```/.test(L)) {
+      var code = []; i++
+      while (i < lines.length && !/^```/.test(lines[i])) { code.push(lines[i]); i++ }
+      i++
+      root.appendChild(h('pre', null, h('code', null, code.join('\n'))))
+      continue
+    }
+    var mH = L.match(/^(#{1,6})\s+(.*)$/)
+    if (mH) { root.appendChild(h('h' + mH[1].length, null, mdInline(mH[2]))); i++; continue }
+    if (/^\s*-{3,}\s*$/.test(L)) { root.appendChild(h('hr')); i++; continue }
+    if (/^>\s?/.test(L)) {
+      var qs = []
+      while (i < lines.length && /^>\s?/.test(lines[i])) { qs.push(lines[i].replace(/^>\s?/, '')); i++ }
+      root.appendChild(h('blockquote', null, h('p', null, mdInline(qs.join(' ')))))
+      continue
+    }
+    if (isTableRow(L)) {
+      var rows = []
+      while (i < lines.length && isTableRow(lines[i])) { rows.push(lines[i]); i++ }
+      var hasHeader = rows.length > 1 && /^[\s|:\-]+$/.test(rows[1])
+      var table = h('table')
+      var bodyRows = rows
+      if (hasHeader) {
+        table.appendChild(h('thead', null, h('tr', null, cells(rows[0]).map(function (c) { return h('th', null, mdInline(c)) }))))
+        bodyRows = rows.slice(2)
+      }
+      table.appendChild(h('tbody', null, bodyRows.map(function (r) {
+        return h('tr', null, cells(r).map(function (c) { return h('td', null, mdInline(c)) }))
+      })))
+      root.appendChild(table)
+      continue
+    }
+    var mList = L.match(/^(\s*)([-*]|\d+\.)\s+(.*)$/)
+    if (mList) {
+      var items = []
+      while (i < lines.length) {
+        var ml = lines[i].match(/^(\s*)([-*]|\d+\.)\s+(.*)$/)
+        if (!ml) break
+        items.push({ indent: ml[1].length, ordered: /^\d/.test(ml[2]), text: ml[3] })
+        i++
+      }
+      var list = h(items[0].ordered ? 'ol' : 'ul')
+      var lastLi = null, sub = null
+      items.forEach(function (it) {
+        if (it.indent >= 2 && lastLi) {
+          if (!sub) { sub = h(it.ordered ? 'ol' : 'ul'); lastLi.appendChild(sub) }
+          sub.appendChild(h('li', null, mdInline(it.text)))
+        } else {
+          sub = null
+          lastLi = h('li', null, mdInline(it.text))
+          list.appendChild(lastLi)
+        }
+      })
+      root.appendChild(list)
+      continue
+    }
+    var para = [L]; i++
+    while (i < lines.length && lines[i].trim() &&
+      !/^(#{1,6}\s|```|>|\s*([-*]|\d+\.)\s|\s*\|.*\|\s*$)/.test(lines[i]) && !/^\s*-{3,}\s*$/.test(lines[i])) {
+      para.push(lines[i]); i++
+    }
+    root.appendChild(h('p', null, mdInline(para.join(' '))))
+  }
+  return root
+}
+
+// ---- 뷰: 아키텍처/인프라 문서 ----
+function viewDoc(kind) {
+  var t = state.t
+  var label = kind === 'architecture' ? t.architecture : t.infra
+  fetch('../../' + kind + '/' + kind + '.md', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text() })
+    .then(function (md) {
+      // 첫 제목과 주석을 걷어냈을 때 내용이 없으면 "작성 전" 안내를 함께 보여준다.
+      var stripped = md.replace(/<!--[\s\S]*?-->/g, '').replace(/^#.*$/m, '').trim()
+      setApp(h('div', { class: 'wrap' }, [
+        breadcrumbs([{ label: t.home, href: '#/' }, { label: label }]),
+        renderMarkdown(md),
+        stripped ? null : h('p', { class: 'muted' }, t.docEmpty),
+        pagenav()
+      ]))
+    })
+    .catch(renderError)
+}
+
 // ---- 검색 ----
 // 개념(제목·slug·그룹·분류) · 기능(제목·slug) · 파일 경로(@concept 색인 = 그래프의 파일 노드)를
 // 부분 일치로 찾는다. 파일 결과에는 그 파일에 연결된 개념·기능 링크를 함께 보여준다.
@@ -320,7 +444,11 @@ function viewIndex(scrollTo) {
     breadcrumbs([{ label: t.home }]),
     h('header', { class: 'hero' }, [
       h('h1', null, t.appTitle),
-      h('nav', { class: 'pagenav' }, h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →')),
+      h('nav', { class: 'pagenav' }, [
+        h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'), ' · ',
+        h('a', { href: '#/architecture' }, t.architecture), ' · ',
+        h('a', { href: '#/infra' }, t.infra)
+      ]),
       searchIn
     ]),
     resultBox, bodyBox
@@ -883,6 +1011,8 @@ function route() {
   if (parts[0] === 'feature' && parts[1]) return viewFeature(decodeURIComponent(parts[1]))
   if (parts[0] === 'graph') return viewGraph(parts[1] ? decodeURIComponent(parts[1]) : null)
   if (parts[0] === 'group' && parts[1]) return viewIndex(decodeURIComponent(parts[1]))
+  if (parts[0] === 'architecture') return viewDoc('architecture')
+  if (parts[0] === 'infra') return viewDoc('infra')
   return viewIndex()
 }
 

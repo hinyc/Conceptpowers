@@ -126,6 +126,27 @@ li::marker { color: var(--muted); }
   .wrap { padding: 32px 10px 64px; }
 }
 
+/* 문서(architecture/infra) 마크다운 */
+.md h1 { font-size: 1.7rem; margin: 0 0 1rem; }
+.md h2 { font-size: 1.25rem; margin: 1.6rem 0 .5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.md h3 { font-size: 1.05rem; margin: 1.1rem 0 .4rem; }
+.md pre {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; overflow-x: auto;
+}
+.md pre code, .md code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .88em;
+}
+.md code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: .05rem .3rem; }
+.md pre code { background: none; border: none; padding: 0; }
+.md blockquote { color: var(--muted); border-left: 3px solid var(--border); margin: .8rem 0; padding-left: .9rem; }
+.md blockquote p { margin: 0; }
+.md hr { border: none; border-top: 1px solid var(--border); margin: 1.4rem 0; }
+.md table { border-collapse: collapse; margin: .8rem 0; display: block; overflow-x: auto; }
+.md th, .md td { border: 1px solid var(--border); padding: .35rem .7rem; text-align: left; }
+.md th { background: var(--surface); }
+
 /* 검색 */
 .search-in {
   display: block; width: 100%; max-width: 520px;

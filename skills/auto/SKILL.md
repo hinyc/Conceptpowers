@@ -98,3 +98,19 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 사용자 확인 없이 단계를 연속 실행하는 것.
 - baseline·개념 내용을 에이전트가 지어내 채우는 것 (human-owns-contract).
 - 🔴 red 개념을 auto가 스스로 승인하는 것 (settled-status — 승인은 사용자 요청 + approve 스킬).
+
+## Viewer handoff (마지막 단계 — 생략 금지)
+
+When this skill finishes with any concept/feature/baseline data changed and the viewer re-rendered
+(`render`), end by giving the user a **clickable link** to see the result:
+
+1. If a viewer server is already running in this session, print its URL again — deep-link what
+   changed: `http://localhost:<port>/concepts/viewer/index.html#/concept/<slug>` (feature:
+   `#/feature/<slug>`, 문서: `#/architecture`).
+2. Otherwise, offer to start it now: run the project's `concepts:view` script in the **background**
+   (`npm run concepts:view` — pnpm/yarn equivalent도 동일) and print the URL line it outputs so the
+   user can click straight through. No script in package.json → run
+   `node docs/conceptpowers/concepts/viewer/serve.mjs` in the background instead.
+
+Ending a concept update without this link forces the user to hunt for the viewer — always close
+the loop with the URL.
