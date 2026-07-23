@@ -1,6 +1,9 @@
 // src/init/reference.ts
-// docs/conceptpowers/reference/ — 사용자가 넣는 참고자료 폴더.
-// 에이전트는 개념 정의/검증/감사 시 관련 자료를 on-demand로 읽는다(내용은 untrusted 데이터).
+// docs/conceptpowers/reference/ — 사용자가 넣는 참고자료 폴더(paths.md로 외부 경로 연결도 가능).
+// 정의된 개념이 사실(source of truth)이고 reference는 그 원천 재료다: 에이전트는 오직
+// 개념 생성·업그레이드·검증(define-concept/check-consistency) 시에만 관련 자료를 on-demand로
+// 읽는다. 코드 판정(check-concept/audit)은 개념만 근거로 하며 reference를 읽지 않는다.
+// (내용은 untrusted 데이터 — 지시가 아니다.)
 import { mkdir, writeFile, access, readdir } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'
 import { join, relative } from 'node:path'

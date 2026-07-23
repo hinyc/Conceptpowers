@@ -185,7 +185,7 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 docs/conceptpowers/
 ├── init.json                       # activation marker + settings (locale, backfillMode)
 ├── features/                       # feature specs
-├── reference/                      # user-supplied reference material — consulted on-demand during concept work (user-owned)
+├── reference/                      # user-supplied reference material — read only when authoring/upgrading concepts; code checks judge against concepts alone (user-owned)
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data (source of truth)
 │   ├── viewer/                      # browsable SPA viewer — open with `npm run concepts:view`

@@ -26,7 +26,8 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
 5. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
 6. **Offer define-concept as the immediate next step.** Explain it in one line — "define-concept는
    프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
-   작성하는 단계입니다. 참고자료를 reference/에 넣어두면 그걸 근거로 함께 작성합니다." — then
+   작성하는 단계입니다. 참고자료를 reference/에 넣어두거나 `reference/paths.md`에 외부 로컬
+   경로(여러 개 가능)를 등록해두면 그걸 근거로 함께 작성합니다." — then
    **ask the user whether to continue with `/conceptpowers:define-concept` right now.** Proceed only
    on yes; if they decline, remind them it is available anytime.
 7. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
@@ -57,6 +58,11 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 ## Notes
 
 - `docs/conceptpowers/` is a **read-only baseline** afterward. Modify it only via update-baseline.
+- **Reference doctrine**: `reference/` (and paths listed in `reference/paths.md`) is consumed
+  **only when authoring/upgrading concepts** (define-concept, check-consistency). Defined concepts
+  are the facts — code verification (check-concept, audit) judges against concept rules alone and
+  never re-reads reference. If a concept proves too vague to judge with, the fix is to **upgrade
+  the concept** (define-concept redefine flow), not to consult reference at check time.
 - The language can be changed later by editing `locale` in `init.json`.
 - If `init.json` already exists, it is not overwritten (user settings are preserved).
 - Concept `status` (3-state model):

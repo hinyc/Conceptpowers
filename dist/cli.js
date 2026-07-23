@@ -7165,7 +7165,8 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 - \uAE30\uBC00 \uBB38\uC11C\uB294 \uC800\uC7A5\uC18C \uBC16 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD574 \uB450\uBA74 \uCEE4\uBC0B\uB420 \uC77C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uACBD\uB85C \uBAA9\uB85D\uB9CC \uCEE4\uBC0B\uB428).
 
 ## \uC5B4\uB5BB\uAC8C \uC4F0\uC774\uB098\uC694
-- \uAC1C\uB150\uC744 \uC815\uC758\xB7\uAC80\uC99D\uD558\uAC70\uB098 \uC804\uC218 \uC810\uAC80(audit)\uD560 \uB54C, \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
+- **\uAC1C\uB150\uC744 \uB9CC\uB4E4\uAC70\uB098 \uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC** \uC5D0\uC774\uC804\uD2B8\uAC00 **\uAD00\uB828\uB41C \uC790\uB8CC\uB9CC \uACE8\uB77C \uD544\uC694\uD560 \uB54C \uC77D\uACE0** \uBC18\uC601\uD569\uB2C8\uB2E4.
+- \uCF54\uB4DC \uAC80\uC99D\xB7\uAC10\uC0AC\uB294 **\uC815\uC758\uB41C \uAC1C\uB150\uB9CC** \uADFC\uAC70\uB85C \uD569\uB2C8\uB2E4 \u2014 \uAC1C\uB150\uC774 \uC0AC\uC2E4\uC774\uACE0, \uC774 \uD3F4\uB354\uB294 \uADF8 \uC6D0\uCC9C \uC7AC\uB8CC\uC785\uB2C8\uB2E4.
 - \uC804\uBD80\uB97C \uD56D\uC0C1 \uC77D\uC9C0\uB294 \uC54A\uC2B5\uB2C8\uB2E4(\uD1A0\uD070 \uC808\uC57D). \uD30C\uC77C\uBA85\xB7\uAD6C\uC870\uB97C \uC54C\uC544\uBCF4\uAE30 \uC27D\uAC8C \uB450\uC138\uC694.
 
 ## \uC8FC\uC758
@@ -7188,7 +7189,8 @@ Put materials here for the agent to consult during concept work.
 - Keep confidential documents outside the repo and link them by path \u2014 only the path list gets committed.
 
 ## How it's used
-- When defining, verifying, or auditing concepts, the agent reads **only the relevant files, on demand** and factors them in.
+- The agent reads **only the relevant files, on demand**, and **only when authoring, upgrading, or validating a concept**.
+- Code verification and audits judge against **defined concepts alone** \u2014 concepts are the facts; this folder is their raw material.
 - It does not load everything every time (to save tokens). Keep filenames and structure legible.
 
 ## Notes

@@ -25,7 +25,8 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 기밀 문서는 저장소 밖 경로로 연결해 두면 커밋될 일이 없습니다(경로 목록만 커밋됨).
 
 ## 어떻게 쓰이나요
-- 개념을 정의·검증하거나 전수 점검(audit)할 때, 에이전트가 **관련된 자료만 골라 필요할 때 읽고** 반영합니다.
+- **개념을 만들거나 업그레이드·검증할 때만** 에이전트가 **관련된 자료만 골라 필요할 때 읽고** 반영합니다.
+- 코드 검증·감사는 **정의된 개념만** 근거로 합니다 — 개념이 사실이고, 이 폴더는 그 원천 재료입니다.
 - 전부를 항상 읽지는 않습니다(토큰 절약). 파일명·구조를 알아보기 쉽게 두세요.
 
 ## 주의
@@ -49,7 +50,8 @@ Put materials here for the agent to consult during concept work.
 - Keep confidential documents outside the repo and link them by path — only the path list gets committed.
 
 ## How it's used
-- When defining, verifying, or auditing concepts, the agent reads **only the relevant files, on demand** and factors them in.
+- The agent reads **only the relevant files, on demand**, and **only when authoring, upgrading, or validating a concept**.
+- Code verification and audits judge against **defined concepts alone** — concepts are the facts; this folder is their raw material.
 - It does not load everything every time (to save tokens). Keep filenames and structure legible.
 
 ## Notes

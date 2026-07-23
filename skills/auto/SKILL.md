@@ -32,7 +32,7 @@ mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사�
 
 1. **baseline**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿
    그대로인지(주석 한 줄뿐인지) 확인.
-2. **reference**: `reference/`가 비었는지 확인 — 파일 없음(스캐폴드 `README.md`뿐)이고 `paths.md`의 외부 경로 항목도 없으면 빈 것으로 본다. 비었으면 해당 단계에서 파일 추가 또는 **외부 로컬 경로 등록(paths.md, 여러 개 가능)**을 제안한다.
+2. **reference**: `reference/`가 비었는지 확인 — 파일 없음(스캐폴드 `README.md`뿐)이고 `paths.md`의 외부 경로 항목도 없으면 빈 것으로 본다. **존재 확인만 한다(디렉터리 목록·paths.md 항목 유무) — 내용은 읽지 않는다.** reference 내용은 오직 개념 정의·업그레이드 시점(define-concept/check-consistency)에만 읽는다. 비었으면 Stage 2에서 파일 추가 또는 **외부 로컬 경로 등록(paths.md, 여러 개 가능)**을 제안한다.
 3. **개념**: `concepts/data/` 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red).
 4. **feature**: `features/` 스펙 개수.
 5. **integrity**: `node "<cli>" audit --root . <source files...>` — unknownTags·미태깅 gap.
@@ -64,7 +64,10 @@ architecture.md / infra.md가 아직 템플릿이면:
 1. **reference 확인 (실행 전 필수)**: `reference/`가 비어 있으면 —
    "reference/ 폴더가 비어 있습니다. 이대로 진행하면 코드·UI만 근거로 개념 후보를 뽑게
    됩니다. 용어집·PRD·외부 명세가 있다면 지금 넣는 것이 정의 품질에 좋습니다."
-   → **그냥 진행 / 파일을 넣을 테니 잠시 중단** 을 묻는다. 조용히 건너뛰지 않는다.
+   → **① 그냥 진행 / ② 파일을 넣을 테니 잠시 중단 / ③ 외부 로컬 경로 등록**(경로 여러 개
+   가능 — 입력받아 `reference/paths.md`에 기록하면 정의 시 바로 사용)을 묻는다.
+   조용히 건너뛰지 않는다. 개념 정의(define-concept)가 reference를 읽는 **유일한** 시점이다 —
+   이후 검증·감사는 정의된 개념만 근거로 한다.
 2. `conceptpowers:define-concept` 실행. 기존 개념이 없거나 적으면 **batch(전체 일괄 정의)**
    모드를 권장하고, 사용자가 특정 개념만 원하면 single 플로우로.
 3. define 내부의 체크포인트(후보 범위 확정, 일괄 리뷰)는 그 스킬 규칙 그대로 따른다 —
@@ -72,9 +75,12 @@ architecture.md / infra.md가 아직 템플릿이면:
 
 ## Stage 3 — Check (audit 전수 점검)
 
-1. `conceptpowers:audit` 실행 (reference 확인 포함, 그 스킬 절차 그대로).
+1. `conceptpowers:audit` 실행 — **정의된 개념만 근거로 판정**한다(reference 내용 안 읽음,
+   그 스킬 절차 그대로).
 2. 결과를 항목별로 보고하고 **각각 어떻게 처리할지** 묻는다:
    - **개념 없는 gap** → define으로 되돌아가 정의(Stage 2 루프백) / `@concept:none` 마킹 / 보류.
+   - **판단 불가(개념 모호)** → 해당 개념의 어느 규칙이 모호한지 보여주고, define-concept의
+     업그레이드 진입점으로 보강 권장(Stage 2 루프백 — 그때 reference를 읽는다) / 보류.
    - **🔴 red(미승인)** → 사용자가 검토 후 승인 원하면 `conceptpowers:approve`(사용자
      게이트 — auto가 스스로 승인하지 않는다) / 보류.
    - **🟡 pending(미정착)** → `conceptpowers:check-consistency` 재실행으로 정착 시도 /
