@@ -1,6 +1,6 @@
 {
   "name": "conceptpowers",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Concept-driven development governance for Claude Code",
   "type": "module",
   "bin": {
