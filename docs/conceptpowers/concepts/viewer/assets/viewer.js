@@ -14,7 +14,7 @@ var I18N = {
     openGraph: '지식 그래프 보기', conceptNode: '개념', featureNode: '기능', fileNode: '파일',
     allConcepts: '전체 보기', focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
     copyPath: '경로 복사', copied: '복사됨', copyFailed: '복사 실패',
-    home: '홈', zoomIn: '확대', zoomOut: '축소', zoomFit: '화면 맞춤',
+    home: '홈', fitWidth: '폭맞춤', fitPage: '쪽맞춤', zoomLabel: '배율',
     searchPh: '검색 — 개념 · 기능 · 파일 경로(@concept 색인)', noResults: '검색 결과가 없습니다.',
     fileResults: '파일 (@concept 색인)',
     architecture: '아키텍처', infra: '인프라',
@@ -41,7 +41,7 @@ var I18N = {
     openGraph: 'View Knowledge Graph', conceptNode: 'Concept', featureNode: 'Feature', fileNode: 'File',
     allConcepts: 'Show all', focusHint: 'Pick a concept to show only its related graph.',
     copyPath: 'Copy path', copied: 'Copied', copyFailed: 'Copy failed',
-    home: 'Home', zoomIn: 'Zoom in', zoomOut: 'Zoom out', zoomFit: 'Fit to screen',
+    home: 'Home', fitWidth: 'Fit width', fitPage: 'Fit page', zoomLabel: 'Zoom',
     searchPh: 'Search — concepts · features · file paths (@concept index)', noResults: 'No results.',
     fileResults: 'Files (@concept index)',
     architecture: 'Architecture', infra: 'Infrastructure',
@@ -789,7 +789,8 @@ function viewGraph(focusSlug) {
   var effective = isAll ? null
     : (focusSlug || (concepts.length ? concepts[0].slug : null))
   var data = effective ? subgraphFor(full, effective) : full
-  var legend = h('span', { class: 'legend' }, [
+  // 노드 색상 범례 — 그래프 우측 상단에 오버레이로 항상 표시
+  var legend = h('div', { class: 'graph-legend' }, [
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--concept' }), t.conceptNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--feature' }), t.featureNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--file' }), t.fileNode])
@@ -807,33 +808,27 @@ function viewGraph(focusSlug) {
     h('header', { class: 'graph-bar' }, [
       crumbs,
       concepts.length ? focusSelect(concepts, effective || '__all') : null,
-      zoomBox,
-      legend
+      zoomBox
     ]),
-    svg
+    svg,
+    legend
   ]), { graph: true })
   renderGraph(svg, data, ++renderGen, zoomBox)
 }
 
 // 의존성 없는 force-directed 시뮬레이션. 라벨은 textContent로만 설정한다.
-// 카메라(viewBox) 줌/팬: 휠 확대/축소 · 빈 배경 드래그 팬 · 버튼(＋/−/화면맞춤).
-// 기본은 autoFit — 사용자가 개입하기 전까지 매 프레임 그래프 전체가 화면에 꽉 차게 맞춘다.
+// 카메라(viewBox) 배율: 프리셋 선택(폭맞춤·쪽맞춤·75~200%) — 휠 줌은 민감해서 제공하지 않는다.
+// 휠은 상하좌우 스크롤(팬), 빈 배경 드래그도 팬. 기본은 폭맞춤이며, 사용자가 팬하기 전까지
+// 시뮬레이션이 움직이는 동안 계속 다시 맞춘다(추적).
 function renderGraph(svg, data, gen, zoomBox) {
   var NS = 'http://www.w3.org/2000/svg'
   function size() { return { w: svg.clientWidth || window.innerWidth, h: svg.clientHeight || (window.innerHeight - 56) } }
   var dim = size(), W = dim.w, H = dim.h
   var view = { x: 0, y: 0, w: W, h: H }
-  var autoFit = true
+  var trackMode = 'fitw' // 'fitw'(폭맞춤) | 'fitp'(쪽맞춤) — 퍼센트 배율은 추적 없음
+  var tracking = true // 팬/스크롤하는 순간 false — 같은 옵션을 다시 선택하면 재추적
   function applyView() { svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h) }
   applyView()
-  function zoomAt(factor, cx, cy) {
-    autoFit = false
-    var nw = Math.max(W / 8, Math.min(W * 4, view.w / factor))
-    var nh = nw * (H / W)
-    view.x = cx - (cx - view.x) * (nw / view.w)
-    view.y = cy - (cy - view.y) * (nh / view.h)
-    view.w = nw; view.h = nh; applyView()
-  }
   var n = data.nodes.length || 1
   var nodes = data.nodes.map(function (d, i) {
     var a = i / n * Math.PI * 2, R = Math.min(W, H) * 0.32
@@ -851,28 +846,51 @@ function renderGraph(svg, data, gen, zoomBox) {
     return { x: (ev.clientX - r.left) / r.width * view.w + view.x, y: (ev.clientY - r.top) / r.height * view.h + view.y }
   }
 
-  // 그래프 전체가 화면에 들어오도록 카메라를 맞춘다(라벨 폭 여유 포함).
-  function fitView() {
-    if (!nodes.length) return
-    var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9
+  // 노드 경계 상자(라벨 폭 여유 포함)
+  function bbox() {
+    var b = { minX: 1e9, minY: 1e9, maxX: -1e9, maxY: -1e9 }
     nodes.forEach(function (d) {
-      if (d.x < minX) minX = d.x; if (d.x > maxX) maxX = d.x
-      if (d.y < minY) minY = d.y; if (d.y > maxY) maxY = d.y
+      if (d.x < b.minX) b.minX = d.x; if (d.x > b.maxX) b.maxX = d.x
+      if (d.y < b.minY) b.minY = d.y; if (d.y > b.maxY) b.maxY = d.y
     })
-    var pad = 60, labelRoom = 150
-    var bw = (maxX - minX) + pad * 2 + labelRoom, bh = (maxY - minY) + pad * 2
+    return b
+  }
+  var PAD = 60, LABEL_ROOM = 150
+  // 쪽맞춤: 그래프 전체가 화면 안에 들어오게
+  function fitPage() {
+    if (!nodes.length) return
+    var b = bbox()
+    var bw = (b.maxX - b.minX) + PAD * 2 + LABEL_ROOM, bh = (b.maxY - b.minY) + PAD * 2
     var ar = W / H
     if (bw / bh > ar) bh = bw / ar; else bw = bh * ar
-    view.x = (minX + maxX + labelRoom) / 2 - bw / 2
-    view.y = (minY + maxY) / 2 - bh / 2
+    view.x = (b.minX + b.maxX + LABEL_ROOM) / 2 - bw / 2
+    view.y = (b.minY + b.maxY) / 2 - bh / 2
     view.w = bw; view.h = bh; applyView()
   }
+  // 폭맞춤(기본): 그래프 폭을 화면 폭에 맞추고 위 정렬 — 세로로 길면 휠 스크롤로 내려본다
+  function fitWidth() {
+    if (!nodes.length) return
+    var b = bbox()
+    var bw = (b.maxX - b.minX) + PAD * 2 + LABEL_ROOM
+    view.x = b.minX - PAD
+    view.y = b.minY - PAD
+    view.w = bw; view.h = bw * (H / W); applyView()
+  }
+  // 퍼센트 배율: 100% = 1css픽셀 : 1좌표. 현재 중심 유지.
+  function setPercent(p) {
+    var cx = view.x + view.w / 2, cy = view.y + view.h / 2
+    view.w = W / (p / 100); view.h = H / (p / 100)
+    view.x = cx - view.w / 2; view.y = cy - view.h / 2; applyView()
+  }
 
-  // 휠 줌(포인터 기준) + 빈 배경 드래그 팬
+  // 휠 = 스크롤(팬). 줌은 휠에 두지 않는다(민감도 문제) — 배율은 프리셋 선택으로만.
   svg.addEventListener('wheel', function (ev) {
     ev.preventDefault()
-    var p = toLocal(ev)
-    zoomAt(ev.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y)
+    tracking = false
+    var r = svg.getBoundingClientRect()
+    view.x += ev.deltaX / r.width * view.w
+    view.y += ev.deltaY / r.height * view.h
+    applyView()
   }, { passive: false })
   svg.addEventListener('mousedown', function (ev) {
     var t = ev.target
@@ -881,7 +899,7 @@ function renderGraph(svg, data, gen, zoomBox) {
       t = t.parentNode
     }
     ev.preventDefault()
-    autoFit = false
+    tracking = false
     var start = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y }
     var r = svg.getBoundingClientRect()
     function mv(e2) {
@@ -893,15 +911,20 @@ function renderGraph(svg, data, gen, zoomBox) {
     window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up)
   })
 
-  // 줌 버튼: ＋ / − / 화면맞춤
+  // 배율 프리셋 선택: 폭맞춤(기본) · 쪽맞춤 · 75~200%
   if (zoomBox) {
-    var bIn = h('button', { type: 'button', title: state.t.zoomIn }, '＋')
-    var bOut = h('button', { type: 'button', title: state.t.zoomOut }, '−')
-    var bFit = h('button', { type: 'button', title: state.t.zoomFit }, '⤢')
-    bIn.addEventListener('click', function () { zoomAt(1.3, view.x + view.w / 2, view.y + view.h / 2) })
-    bOut.addEventListener('click', function () { zoomAt(1 / 1.3, view.x + view.w / 2, view.y + view.h / 2) })
-    bFit.addEventListener('click', function () { autoFit = true; fitView() })
-    zoomBox.appendChild(bIn); zoomBox.appendChild(bOut); zoomBox.appendChild(bFit)
+    var zsel = h('select', { class: 'graph-focus graph-zoom-sel', 'aria-label': state.t.zoomLabel })
+    ;[['fitw', state.t.fitWidth], ['fitp', state.t.fitPage],
+      ['75', '75%'], ['100', '100%'], ['125', '125%'], ['150', '150%'], ['200', '200%']
+    ].forEach(function (o) { zsel.appendChild(h('option', { value: o[0] }, o[1])) })
+    zsel.value = 'fitw'
+    zsel.addEventListener('change', function () {
+      var v = zsel.value
+      if (v === 'fitw') { trackMode = 'fitw'; tracking = true; fitWidth() }
+      else if (v === 'fitp') { trackMode = 'fitp'; tracking = true; fitPage() }
+      else { tracking = false; setPercent(parseInt(v, 10)) }
+    })
+    zoomBox.appendChild(zsel)
   }
 
   // 파일 노드 호버 툴팁: 전체 경로 + 경로 복사 버튼. graph-shell 안에 두어 라우트 전환 시 함께 제거된다.
@@ -943,7 +966,7 @@ function renderGraph(svg, data, gen, zoomBox) {
     })
     lines.forEach(function (l, i) { var e = edges[i]; l.setAttribute('x1', e.s.x); l.setAttribute('y1', e.s.y); l.setAttribute('x2', e.t.x); l.setAttribute('y2', e.t.y) })
     groups.forEach(function (g, i) { g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')') })
-    if (autoFit) fitView() // 사용자가 줌/팬하기 전까지는 항상 화면에 꽉 차게
+    if (tracking) { trackMode === 'fitp' ? fitPage() : fitWidth() } // 팬하기 전까지 배치 추적
     tip.reposition() // 노드가 움직이는 동안 툴팁을 따라붙인다
     requestAnimationFrame(tick)
   }

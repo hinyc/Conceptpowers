@@ -244,14 +244,17 @@ body.viewing-graph .graph-shell { height: 100vh; display: flex; flex-direction: 
   margin-left: 12px; padding: 4px 8px; font-size: .85rem;
   color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
 }
-.graph-bar .legend { margin-left: auto; display: flex; gap: 14px; color: var(--muted); font-size: .85rem; }
-.graph-zoom { display: flex; gap: 6px; margin-left: 10px; }
-.graph-zoom button {
-  cursor: pointer; width: 30px; height: 30px; font-size: .95rem; line-height: 1;
-  color: var(--fg-soft); background: var(--bg);
-  border: 1px solid var(--border); border-radius: 6px;
+.graph-zoom { display: flex; margin-left: 10px; }
+
+/* 노드 색상 범례: 그래프 캔버스 우측 상단 오버레이 */
+.graph-shell { position: relative; }
+.graph-legend {
+  position: absolute; top: 70px; right: 14px; z-index: 10;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 14px; font-size: .85rem; color: var(--fg-soft);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .1);
 }
-.graph-zoom button:hover { border-color: var(--link); color: var(--link); }
 .graph-bar .lg { display: inline-flex; align-items: center; gap: .35rem; }
 .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
 .dot--concept { background: var(--link); }
