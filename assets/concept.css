@@ -1,3 +1,4 @@
+/* @concept:none */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -12,7 +13,7 @@
   --allow-bg: #eaf6ec;
   --restrict: #cf222e;
   --restrict-bg: #fbeaea;
-  --maxw: 46rem; /* 본문 측정폭: 한 줄을 너무 길지 않게 */
+  --maxw: 1280px; /* 본문 최대폭 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -48,8 +49,16 @@ body {
 .wrap {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 48px 20px 96px;
+  padding: 48px 10px 96px;
 }
+
+/* 경로 내비게이션 (breadcrumbs) */
+.crumbs { font-size: .85rem; color: var(--muted); margin-bottom: 14px; }
+.crumbs a { color: var(--link); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+.crumb-sep { margin: 0 .45rem; color: var(--muted); }
+.crumb--current { color: var(--fg-soft); font-weight: 600; }
+.graph-bar .crumbs { margin-bottom: 0; flex: 0 0 auto; }
 
 /* 제목 위계 */
 h1, h2, h3 { line-height: 1.3; color: var(--fg); }
@@ -114,7 +123,7 @@ li::marker { color: var(--muted); }
 @media (max-width: 600px) {
   .cols { flex-direction: column; }
   body { font-size: 16px; }
-  .wrap { padding: 32px 16px 64px; }
+  .wrap { padding: 32px 10px 64px; }
 }
 
 /* 목록 페이지(index) */
@@ -201,6 +210,13 @@ body.viewing-graph .graph-shell { height: 100vh; display: flex; flex-direction: 
   color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
 }
 .graph-bar .legend { margin-left: auto; display: flex; gap: 14px; color: var(--muted); font-size: .85rem; }
+.graph-zoom { display: flex; gap: 6px; margin-left: 10px; }
+.graph-zoom button {
+  cursor: pointer; width: 30px; height: 30px; font-size: .95rem; line-height: 1;
+  color: var(--fg-soft); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+}
+.graph-zoom button:hover { border-color: var(--link); color: var(--link); }
 .graph-bar .lg { display: inline-flex; align-items: center; gap: .35rem; }
 .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
 .dot--concept { background: var(--link); }

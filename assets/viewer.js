@@ -1,6 +1,7 @@
+// @concept:none
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
-// 해시 라우트: #/ (목록) · #/concept/:slug · #/feature/:slug · #/graph(/:focusSlug)
+// 해시 라우트: #/ (목록) · #/group/:g (목록의 그룹 위치) · #/concept/:slug · #/feature/:slug · #/graph(/:focusSlug)
 'use strict'
 
 var I18N = {
@@ -13,6 +14,7 @@ var I18N = {
     openGraph: '지식 그래프 보기', conceptNode: '개념', featureNode: '기능', fileNode: '파일',
     allConcepts: '전체 보기', focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
     copyPath: '경로 복사', copied: '복사됨', copyFailed: '복사 실패',
+    home: '홈', zoomIn: '확대', zoomOut: '축소', zoomFit: '화면 맞춤',
     back: '개념 목록', empty: '아직 개념이 없습니다.', loadError: '데이터를 불러오지 못했습니다.',
     notFound: '대상을 찾을 수 없습니다.',
     edit: '편집', save: '저장', cancel: '취소', setStatus: '상태 변경',
@@ -35,6 +37,7 @@ var I18N = {
     openGraph: 'View Knowledge Graph', conceptNode: 'Concept', featureNode: 'Feature', fileNode: 'File',
     allConcepts: 'Show all', focusHint: 'Pick a concept to show only its related graph.',
     copyPath: 'Copy path', copied: 'Copied', copyFailed: 'Copy failed',
+    home: 'Home', zoomIn: 'Zoom in', zoomOut: 'Zoom out', zoomFit: 'Fit to screen',
     back: 'Concepts', empty: 'No concepts yet.', loadError: 'Failed to load data.',
     notFound: 'Not found.',
     edit: 'Edit', save: 'Save', cancel: 'Cancel', setStatus: 'Change status',
@@ -119,6 +122,17 @@ function pagenav() {
     h('a', { href: '#/graph' }, t.graphTitle)
   ])
 }
+// 경로 내비게이션. items: [{label, href?}] — 마지막(또는 href 없는 항목)은 현재 위치로 표시.
+function breadcrumbs(items) {
+  var kids = []
+  items.forEach(function (it, i) {
+    if (i) kids.push(h('span', { class: 'crumb-sep' }, '›'))
+    kids.push(it.href
+      ? h('a', { class: 'crumb', href: it.href }, it.label)
+      : h('span', { class: 'crumb crumb--current' }, it.label))
+  })
+  return h('nav', { class: 'crumbs' }, kids)
+}
 
 // ---- 데이터 ----
 function fetchJson(url) {
@@ -159,6 +173,12 @@ function conceptTitle(slug) {
   var e = conceptEntry(slug)
   return e ? e.title : slug
 }
+// 표시명: 제목이 slug(파일명)와 다르면 "제목 (slug)"로 병기한다.
+// 예: 한국어 제목 "영점 절차"에 slug "rezero-procedure" → "영점 절차 (rezero-procedure)"
+function displayName(title, slug) {
+  if (!title || title === slug) return slug
+  return title + ' (' + slug + ')'
+}
 // 개념을 참조하는 기능들(그래프 엣지에서 역추적)
 function relatedFeatures(slug) {
   var edges = (state.manifest.graph && state.manifest.graph.edges) || []
@@ -169,7 +189,8 @@ function relatedFeatures(slug) {
 }
 
 // ---- 뷰: 목록 ----
-function viewIndex() {
+// scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
+function viewIndex(scrollTo) {
   var t = state.t
   var m = state.manifest
   var groups = {}
@@ -178,23 +199,23 @@ function viewIndex() {
     ;(groups[g] = groups[g] || []).push(c)
   })
   var sections = Object.keys(groups).map(function (g) {
-    return h('section', { class: 'group' }, [
+    return h('section', { class: 'group', id: 'g-' + g }, [
       h('h2', null, g),
       h('ul', null, groups[g].map(function (c) {
         return h('li', null, [
           statusBadge(c.status), ' ',
-          h('a', { href: '#/concept/' + c.slug }, c.title), ' ',
+          h('a', { href: '#/concept/' + c.slug }, displayName(c.title, c.slug)), ' ',
           h('small', null, (c.category || []).join(', '))
         ])
       }))
     ])
   })
   var featureSection = (m.features || []).length
-    ? h('section', { class: 'group' }, [
+    ? h('section', { class: 'group', id: 'g-__features' }, [
         h('h2', null, t.featureList),
         h('ul', null, m.features.map(function (f) {
           return h('li', null, [
-            h('a', { href: '#/feature/' + f.slug }, f.title), ' ',
+            h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug)), ' ',
             h('small', null, String(f.codePathCount))
           ])
         }))
@@ -202,12 +223,17 @@ function viewIndex() {
     : null
   var body = (m.concepts || []).length ? sections : [h('p', { class: 'muted' }, t.empty)]
   setApp(h('div', { class: 'wrap' }, [
+    breadcrumbs([{ label: t.home }]),
     h('header', { class: 'hero' }, [
       h('h1', null, t.appTitle),
       h('nav', { class: 'pagenav' }, h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'))
     ]),
     body, featureSection
   ]))
+  if (scrollTo) {
+    var el = document.getElementById('g-' + scrollTo)
+    if (el) el.scrollIntoView()
+  }
 }
 
 // ---- 뷰: 개념 상세 ----
@@ -278,11 +304,17 @@ function renderConceptRead(slug) {
       state.editing = true; renderConcept(slug)
     })
   }
+  var group = (entry && entry.group) || '(ungrouped)'
   var sections = [
+    breadcrumbs([
+      { label: t.home, href: '#/' },
+      { label: group, href: '#/group/' + encodeURIComponent(group) },
+      { label: displayName(c.title, slug) }
+    ]),
     h('header', { class: 'hero' }, [
       c.eyebrow ? h('span', { class: 'hero__eyebrow' }, c.eyebrow) : null,
       statusBadge(c.status),
-      h('h1', null, c.title),
+      h('h1', null, displayName(c.title, slug)),
       h('p', null, c.description.definition),
       h('p', { class: 'cats' }, (c.category || []).join(' · '))
     ]),
@@ -308,7 +340,7 @@ function renderConceptRead(slug) {
       ? h('section', { class: 'section' }, [
           h('h2', null, t.relatedFeatures),
           h('ul', { class: 'links' }, related.map(function (f) {
-            return h('li', null, h('a', { href: '#/feature/' + f.slug }, f.title))
+            return h('li', null, h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug)))
           }))
         ])
       : null,
@@ -421,8 +453,15 @@ function renderConceptEdit(slug) {
   })
   cancelBtn.addEventListener('click', function () { state.editing = false; renderConcept(slug) })
 
+  var editEntry = conceptEntry(slug)
+  var editGroup = (editEntry && editEntry.group) || '(ungrouped)'
   setApp(h('div', { class: 'wrap' }, [
-    h('header', { class: 'hero' }, [statusBadge(c.status), h('h1', null, c.title)]),
+    breadcrumbs([
+      { label: t.home, href: '#/' },
+      { label: editGroup, href: '#/group/' + encodeURIComponent(editGroup) },
+      { label: displayName(c.title, slug) }
+    ]),
+    h('header', { class: 'hero' }, [statusBadge(c.status), h('h1', null, displayName(c.title, slug))]),
     h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
     h('section', { class: 'section edit-form' }, [
       field(t.title, f.title), field(t.eyebrow, f.eyebrow),
@@ -456,16 +495,21 @@ function viewFeature(slug) {
     var conceptLinks = (f.concepts || []).map(function (cs) {
       var e = conceptEntry(cs)
       return e
-        ? h('li', null, h('a', { href: '#/concept/' + cs }, e.title))
+        ? h('li', null, h('a', { href: '#/concept/' + cs }, displayName(e.title, cs)))
         : h('li', null, h('span', { class: 'muted' }, cs))
     })
     var paths = (f.codePaths || []).length
       ? h('ul', { class: 'paths' }, f.codePaths.map(function (p) { return h('li', null, h('code', null, p)) }))
       : null
     setApp(h('div', { class: 'wrap' }, [
+      breadcrumbs([
+        { label: t.home, href: '#/' },
+        { label: t.featureList, href: '#/group/__features' },
+        { label: displayName(f.title, slug) }
+      ]),
       h('header', { class: 'hero' }, [
         h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
-        h('h1', null, f.title),
+        h('h1', null, displayName(f.title, slug)),
         f.description ? h('p', null, f.description) : null
       ]),
       h('section', { class: 'section' }, [
@@ -503,7 +547,7 @@ function focusSelect(concepts, value) {
   var t = state.t
   var sel = h('select', { class: 'graph-focus', 'aria-label': t.conceptNode })
   sel.appendChild(h('option', { value: '__all' }, t.allConcepts))
-  concepts.forEach(function (c) { sel.appendChild(h('option', { value: c.slug }, c.title)) })
+  concepts.forEach(function (c) { sel.appendChild(h('option', { value: c.slug }, displayName(c.title, c.slug))) })
   sel.value = value
   sel.addEventListener('change', function () { window.location.hash = '/graph/' + sel.value })
   return sel
@@ -525,24 +569,45 @@ function viewGraph(focusSlug) {
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--file' }), t.fileNode])
   ])
   var svg = h('svg', { id: 'graph', class: 'graph' })
+  var zoomBox = h('span', { class: 'graph-zoom' })
+  var crumbs = effective
+    ? breadcrumbs([
+        { label: t.home, href: '#/' },
+        { label: t.graphTitle, href: '#/graph/__all' },
+        { label: displayName(conceptTitle(effective), effective) }
+      ])
+    : breadcrumbs([{ label: t.home, href: '#/' }, { label: t.graphTitle }])
   setApp(h('div', { class: 'graph-shell' }, [
     h('header', { class: 'graph-bar' }, [
-      h('a', { class: 'back', href: '#/' }, '← ' + t.back),
-      h('strong', null, t.graphTitle),
+      crumbs,
       concepts.length ? focusSelect(concepts, effective || '__all') : null,
+      zoomBox,
       legend
     ]),
     svg
   ]), { graph: true })
-  renderGraph(svg, data, ++renderGen)
+  renderGraph(svg, data, ++renderGen, zoomBox)
 }
 
 // 의존성 없는 force-directed 시뮬레이션. 라벨은 textContent로만 설정한다.
-function renderGraph(svg, data, gen) {
+// 카메라(viewBox) 줌/팬: 휠 확대/축소 · 빈 배경 드래그 팬 · 버튼(＋/−/화면맞춤).
+// 기본은 autoFit — 사용자가 개입하기 전까지 매 프레임 그래프 전체가 화면에 꽉 차게 맞춘다.
+function renderGraph(svg, data, gen, zoomBox) {
   var NS = 'http://www.w3.org/2000/svg'
   function size() { return { w: svg.clientWidth || window.innerWidth, h: svg.clientHeight || (window.innerHeight - 56) } }
   var dim = size(), W = dim.w, H = dim.h
-  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H)
+  var view = { x: 0, y: 0, w: W, h: H }
+  var autoFit = true
+  function applyView() { svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h) }
+  applyView()
+  function zoomAt(factor, cx, cy) {
+    autoFit = false
+    var nw = Math.max(W / 8, Math.min(W * 4, view.w / factor))
+    var nh = nw * (H / W)
+    view.x = cx - (cx - view.x) * (nw / view.w)
+    view.y = cy - (cy - view.y) * (nh / view.h)
+    view.w = nw; view.h = nh; applyView()
+  }
   var n = data.nodes.length || 1
   var nodes = data.nodes.map(function (d, i) {
     var a = i / n * Math.PI * 2, R = Math.min(W, H) * 0.32
@@ -555,10 +620,66 @@ function renderGraph(svg, data, gen) {
   var gE = h('g'); svg.appendChild(gE)
   var gN = h('g'); svg.appendChild(gN)
   var lines = edges.map(function () { var l = document.createElementNS(NS, 'line'); l.setAttribute('class', 'gedge'); gE.appendChild(l); return l })
-  function toLocal(ev) { var r = svg.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H } }
+  function toLocal(ev) {
+    var r = svg.getBoundingClientRect()
+    return { x: (ev.clientX - r.left) / r.width * view.w + view.x, y: (ev.clientY - r.top) / r.height * view.h + view.y }
+  }
+
+  // 그래프 전체가 화면에 들어오도록 카메라를 맞춘다(라벨 폭 여유 포함).
+  function fitView() {
+    if (!nodes.length) return
+    var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9
+    nodes.forEach(function (d) {
+      if (d.x < minX) minX = d.x; if (d.x > maxX) maxX = d.x
+      if (d.y < minY) minY = d.y; if (d.y > maxY) maxY = d.y
+    })
+    var pad = 60, labelRoom = 150
+    var bw = (maxX - minX) + pad * 2 + labelRoom, bh = (maxY - minY) + pad * 2
+    var ar = W / H
+    if (bw / bh > ar) bh = bw / ar; else bw = bh * ar
+    view.x = (minX + maxX + labelRoom) / 2 - bw / 2
+    view.y = (minY + maxY) / 2 - bh / 2
+    view.w = bw; view.h = bh; applyView()
+  }
+
+  // 휠 줌(포인터 기준) + 빈 배경 드래그 팬
+  svg.addEventListener('wheel', function (ev) {
+    ev.preventDefault()
+    var p = toLocal(ev)
+    zoomAt(ev.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y)
+  }, { passive: false })
+  svg.addEventListener('mousedown', function (ev) {
+    var t = ev.target
+    while (t && t !== svg) { // 노드 위 드래그는 노드 이동이 우선
+      if (t.getAttribute && /\bgnode\b/.test(t.getAttribute('class') || '')) return
+      t = t.parentNode
+    }
+    ev.preventDefault()
+    autoFit = false
+    var start = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y }
+    var r = svg.getBoundingClientRect()
+    function mv(e2) {
+      view.x = start.vx - (e2.clientX - start.x) / r.width * view.w
+      view.y = start.vy - (e2.clientY - start.y) / r.height * view.h
+      applyView()
+    }
+    function up() { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up) }
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up)
+  })
+
+  // 줌 버튼: ＋ / − / 화면맞춤
+  if (zoomBox) {
+    var bIn = h('button', { type: 'button', title: state.t.zoomIn }, '＋')
+    var bOut = h('button', { type: 'button', title: state.t.zoomOut }, '−')
+    var bFit = h('button', { type: 'button', title: state.t.zoomFit }, '⤢')
+    bIn.addEventListener('click', function () { zoomAt(1.3, view.x + view.w / 2, view.y + view.h / 2) })
+    bOut.addEventListener('click', function () { zoomAt(1 / 1.3, view.x + view.w / 2, view.y + view.h / 2) })
+    bFit.addEventListener('click', function () { autoFit = true; fitView() })
+    zoomBox.appendChild(bIn); zoomBox.appendChild(bOut); zoomBox.appendChild(bFit)
+  }
 
   // 파일 노드 호버 툴팁: 전체 경로 + 경로 복사 버튼. graph-shell 안에 두어 라우트 전환 시 함께 제거된다.
-  var tip = buildFileTip(svg, W, H)
+  var tip = buildFileTip(svg, function () { return view })
 
   var groups = nodes.map(function (d) {
     var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'gnode gnode--' + d.type)
@@ -596,15 +717,16 @@ function renderGraph(svg, data, gen) {
     })
     lines.forEach(function (l, i) { var e = edges[i]; l.setAttribute('x1', e.s.x); l.setAttribute('y1', e.s.y); l.setAttribute('x2', e.t.x); l.setAttribute('y2', e.t.y) })
     groups.forEach(function (g, i) { g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')') })
+    if (autoFit) fitView() // 사용자가 줌/팬하기 전까지는 항상 화면에 꽉 차게
     tip.reposition() // 노드가 움직이는 동안 툴팁을 따라붙인다
     requestAnimationFrame(tick)
   }
   if (data.nodes.length) requestAnimationFrame(tick)
 }
 
-// 파일 노드 호버 툴팁 빌더: 전체 경로 표시 + 경로 복사 버튼. 노드 좌표(뷰박스 W×H)를
+// 파일 노드 호버 툴팁 빌더: 전체 경로 표시 + 경로 복사 버튼. 노드 좌표(현재 뷰박스 기준)를
 // 화면 좌표로 변환해 fixed 위치에 띄우고, 노드↔툴팁 사이 이동을 허용하도록 지연 숨김한다.
-function buildFileTip(svg, W, H) {
+function buildFileTip(svg, getView) {
   var el = document.createElement('div'); el.className = 'gtip'; el.style.display = 'none'
   var pathEl = document.createElement('span'); pathEl.className = 'gtip__path'
   var copyBtn = document.createElement('button'); copyBtn.type = 'button'; copyBtn.className = 'gtip__copy'
@@ -616,8 +738,9 @@ function buildFileTip(svg, W, H) {
   function place() {
     if (!active) return
     var r = svg.getBoundingClientRect()
-    el.style.left = (r.left + active.x / W * r.width + 12) + 'px'
-    el.style.top = (r.top + active.y / H * r.height - 8) + 'px'
+    var v = getView()
+    el.style.left = (r.left + (active.x - v.x) / v.w * r.width + 12) + 'px'
+    el.style.top = (r.top + (active.y - v.y) / v.h * r.height - 8) + 'px'
   }
   function hide() { active = null; el.style.display = 'none' }
   function clearHide() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null } }
@@ -661,6 +784,7 @@ function route() {
   if (parts[0] === 'concept' && parts[1]) return viewConcept(decodeURIComponent(parts[1]))
   if (parts[0] === 'feature' && parts[1]) return viewFeature(decodeURIComponent(parts[1]))
   if (parts[0] === 'graph') return viewGraph(parts[1] ? decodeURIComponent(parts[1]) : null)
+  if (parts[0] === 'group' && parts[1]) return viewIndex(decodeURIComponent(parts[1]))
   return viewIndex()
 }
 
