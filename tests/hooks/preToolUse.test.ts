@@ -334,3 +334,26 @@ describe("decidePreToolUse", () => {
     expect(out?.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("충돌 검사 미실행");
   });
 });
+
+describe("reference 문서 커밋 확인", () => {
+  it("reference/ 문서가 스테이징되면 기밀 확인 ask", async () => {
+    await scaffoldInit(root, {});
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/reference/내부계약서.md"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe("ask");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("reference");
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain("gitignore");
+  });
+  it("스캐폴드 README.md만 스테이징이면 이 분기는 건너뛴다", async () => {
+    await scaffoldInit(root, {});
+    const r = await decidePreToolUse(root, {
+      tool: "Bash",
+      input: { command: "git commit -m x" },
+      changedFiles: ["docs/conceptpowers/reference/README.md"],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? "").not.toContain("gitignore");
+  });
+});
