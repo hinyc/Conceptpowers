@@ -319,12 +319,15 @@ function renderConceptRead(slug) {
       h('p', { class: 'cats' }, (c.category || []).join(' · '))
     ]),
     editBar,
-    h('section', { class: 'section' }, [
-      h('h2', null, t.description),
-      h('p', null, c.description.definition),
-      c.description.analogy ? h('p', { class: 'analogy' }, c.description.analogy) : null,
-      ul(c.description.components)
-    ]),
+    // 정의는 hero(제목 아래)에서 이미 보여주므로 여기서 반복하지 않는다.
+    (c.description.analogy || (c.description.components || []).length || c.description.example)
+      ? h('section', { class: 'section' }, [
+          h('h2', null, t.description),
+          c.description.analogy ? h('p', { class: 'analogy' }, c.description.analogy) : null,
+          ul(c.description.components),
+          c.description.example ? h('p', null, c.description.example) : null
+        ])
+      : null,
     h('section', { class: 'section' }, [
       h('h2', null, t.purpose), h('p', null, c.purpose.reason), ul(c.purpose.benefits)
     ]),
