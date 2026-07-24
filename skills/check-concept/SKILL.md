@@ -26,10 +26,30 @@ code check wastes tokens and lets unwritten rules influence verdicts untraceably
 is too vague to decide with, that is a **concept defect** — surface it (verdict ③ below), don't
 paper over it with reference lookups.
 
+**Read narrow, not wide.** This skill runs on nearly every code change, so its cost has to stay
+flat as the project grows: tag → index → 1–3 concept files (step 1). A tagged file costs one
+small read; scanning `concepts/data/` in a 100-concept project costs a hundred times that and
+buys nothing the index does not already give you.
+
 ## Steps
 
-1. Check the `@concept:<slug>` tag in the target files (or the `git diff` target).
-   If there is no tag, search `concepts/data/` semantically for the related concept.
+1. **Locate the related concept(s) — cheapest path first. Never read `concepts/data/` wholesale.**
+   - **a. Tag (free)** — read the `@concept:<slug>` marker(s) at the top of the target files
+     (or the `git diff` target). If present, that IS the answer → go to step 3.
+   - **b. Index (one small file)** — no tag: read
+     `docs/conceptpowers/concepts/viewer/manifest.json` **once**. Its `concepts[]` entries carry
+     `slug / title / group / category / codeLinks` at roughly 200 bytes each — the whole index for
+     100 concepts is smaller than three concept files. Match the target path against `codeLinks`
+     (reverse index: which concepts already govern this file), then narrow by `title` / `category`.
+     If the manifest is missing or stale, fall back to `docs/conceptpowers/.cache/mapping.json`
+     (slug → files).
+   - **c. Targeted read** — open only the 1–3 candidate concept files the index surfaced
+     (`concepts/data/<group>/<slug>.json`).
+   - **d. Last resort** — only if the index yields no candidate, grep `concepts/data/` by keyword.
+     Reading every concept file is never the right move; if keyword grep also fails, treat it as
+     "no related concept" (step 2).
+   - After the judgment, if the file had no tag but a concept matched, add the `@concept` tag
+     (update-mapping) — that turns every future check on this file back into path (a).
 2. If **no related concept exists** → define it first with `conceptpowers:define-concept` (rule 2).
 3. Read the related concept's **actions.allow / actions.restrict / principle.immutableRules**.
 4. Judge whether the planned change violates those rules — the verdict is one of **three**:
