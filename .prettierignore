@@ -1,0 +1,17 @@
+# 의존성·빌드 산출물
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+
+# 번들 산출물 — src/viewer/serve.ts에서 생성됨(직접 편집 금지)
+assets/serve.mjs
+
+# 개념 baseline + 뷰어 생성물 — 사용자 소유이거나 플러그인이 생성한다
+docs/conceptpowers
+
+# 작업 기록물 — 작성 시점의 원문을 그대로 보존한다(재포맷은 이력만 흐린다)
+.superpowers
+docs/plans
+docs/specs
+docs/superpowers
