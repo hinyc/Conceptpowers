@@ -7599,6 +7599,36 @@ async function setConceptStatus(root, slug3, status) {
   if (status === "green") await clearPendingConflict(root, slug3);
   return updated;
 }
+var EDITABLE_FIELDS = [
+  "category",
+  "number",
+  "title",
+  "eyebrow",
+  "description",
+  "purpose",
+  "actions",
+  "principle",
+  "relations",
+  "codeLinks"
+];
+async function editConceptContent(root, slug3, patch) {
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  const safe = {};
+  for (const key of EDITABLE_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(patch, key) && patch[key] !== void 0) {
+      safe[key] = patch[key];
+    }
+  }
+  const nextStatus = concept.status === "green" ? "pending" : concept.status;
+  return writeConcept(root, {
+    ...concept,
+    ...safe,
+    slug: concept.slug,
+    group: concept.group,
+    status: nextStatus
+  });
+}
 
 // src/store/featureStore.ts
 import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
@@ -8199,6 +8229,29 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
     await approveConcept(o.root, slug3);
     await renderViewerToDisk(o.root);
+  });
+  program2.command("edit-concept").description(
+    "\uAC1C\uB150 \uBCF8\uBB38 \uC218\uC815 \u2014 \uC0AC\uC6A9\uC790 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC2E4\uD589\uD55C\uB2E4. green \uAC1C\uB150\uC740 \uC790\uB3D9\uC73C\uB85C pending\uC73C\uB85C \uB0B4\uB824\uAC00\uBA70, approve\uB85C \uC0AC\uB78C\uC774 \uB2E4\uC2DC \uC2B9\uC778\uD574\uC57C \uAC1C\uB150\uC73C\uB85C \uC7AC\uD65C\uC131\uD654\uB41C\uB2E4 (human-owns-contract\xB7settled-status)."
+  ).argument("<slug>").requiredOption("--file <path>", "\uC218\uC815\uD560 \uD544\uB4DC\uB9CC \uB2F4\uC740 \uD328\uCE58 JSON \uACBD\uB85C").option("--reason <reason>", "\uBCC0\uACBD \uC0AC\uC720 (drift \uC774\uB825\uC5D0 \uAE30\uB85D)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    const before = await readConcept(o.root, slug3);
+    if (!before) {
+      out(JSON.stringify({ error: `Concept not found: ${slug3}` }));
+      code = 1;
+      return;
+    }
+    const wasGreen = before.status === "green";
+    const patch = JSON.parse(await readFile12(o.file, "utf8"));
+    const concept = await editConceptContent(o.root, slug3, patch);
+    if (o.reason) await noteChange(o.root, slug3, o.reason);
+    await renderViewerToDisk(o.root);
+    out(
+      JSON.stringify({
+        ok: true,
+        slug: slug3,
+        status: concept.status,
+        downgradedToPending: wasGreen
+      })
+    );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     const feature = await writeFeature(o.root, JSON.parse(await readFile12(o.file, "utf8")));

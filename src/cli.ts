@@ -13,7 +13,7 @@ import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
 import { noteChange } from './drift/note.js';
 import { setPendingConflict, clearPendingConflict } from './concept/pendingConflicts.js';
-import { readConcept } from './store/conceptStore.js';
+import { readConcept, editConceptContent } from './store/conceptStore.js';
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
 import { listReferenceFiles } from './init/reference.js';
@@ -95,6 +95,38 @@ export async function runCli(
     .action(async (slug, o) => {
       await approveConcept(o.root, slug);
       await renderViewerToDisk(o.root);
+    });
+
+  program
+    .command('edit-concept')
+    .description(
+      '개념 본문 수정 — 사용자 승인 후에만 실행한다. green 개념은 자동으로 pending으로 내려가며, ' +
+        'approve로 사람이 다시 승인해야 개념으로 재활성화된다 (human-owns-contract·settled-status).'
+    )
+    .argument('<slug>')
+    .requiredOption('--file <path>', '수정할 필드만 담은 패치 JSON 경로')
+    .option('--reason <reason>', '변경 사유 (drift 이력에 기록)')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (slug, o) => {
+      const before = await readConcept(o.root, slug);
+      if (!before) {
+        out(JSON.stringify({ error: `Concept not found: ${slug}` }));
+        code = 1;
+        return;
+      }
+      const wasGreen = before.status === 'green';
+      const patch = JSON.parse(await readFile(o.file, 'utf8'));
+      const concept = await editConceptContent(o.root, slug, patch);
+      if (o.reason) await noteChange(o.root, slug, o.reason);
+      await renderViewerToDisk(o.root);
+      out(
+        JSON.stringify({
+          ok: true,
+          slug,
+          status: concept.status,
+          downgradedToPending: wasGreen,
+        })
+      );
     });
 
   program

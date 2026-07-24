@@ -54,8 +54,12 @@ buys nothing the index does not already give you.
 3. Read the related concept's **actions.allow / actions.restrict / principle.immutableRules**.
 4. Judge whether the planned change violates those rules — the verdict is one of **three**:
    - ① **No violation** → proceed. When changing code, update the `@concept` tag/mapping too (update-mapping).
-   - ② **Violation** → **do not modify the code.** Report to the user and let them choose one:
-     (a) explicitly update the concept (update-baseline), or (b) split it into a new feature/concept.
+   - ② **Violation** → **do not modify the code on your own.** Report to the user and let them choose one:
+     (a) **update the concept** — allowed, but only with the user's explicit approval of the exact
+     change, via `conceptpowers:update-baseline` (`edit-concept`); this drops a green concept to
+     `pending`, so it no longer governs code until the user manually re-approves it
+     (`conceptpowers:approve`), or (b) split it into a new feature/concept. Never edit the concept
+     silently to make the code pass.
    - ③ **Undecidable (concept too vague)** — the concept's rules genuinely cannot answer
      "does this change violate it?" → do NOT guess and do NOT fall back to reference/. Tell the
      user: "개념 `<slug>`의 규칙만으로는 이 변경의 위반 여부를 판단할 수 없습니다" — name the
@@ -67,4 +71,6 @@ buys nothing the index does not already give you.
 
 ## Prohibited
 
-- The agent must not modify a concept (baseline) on its own to justify a change (rule 4).
+- The agent must not modify a concept on its **own judgment** to justify a change (rule 4).
+  Editing a concept is allowed only with the user's explicit approval of the exact change, and the
+  result is `pending` (manual re-approval required) — never a silent green edit.

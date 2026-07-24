@@ -89,6 +89,75 @@ describe('runCli', () => {
     const c = await readConcept(root, 'admin-role');
     expect(c?.status).toBe('green');
   });
+  it('edit-concept는 green 개념을 수정하면 pending으로 내린다 (사람 재승인 필요)', async () => {
+    await runCli(['init', '--root', root]);
+    const concept = {
+      slug: 'admin-role',
+      group: 'auth',
+      category: ['role'],
+      title: 'Admin',
+      description: { definition: 'd' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] },
+      status: 'green',
+    };
+    await writeConcept(root, concept);
+    const patchFile = join(root, 'patch.json');
+    writeFileSync(patchFile, JSON.stringify({ title: '관리자 역할' }));
+    let captured = '';
+    const code = await runCli(
+      ['edit-concept', 'admin-role', '--file', patchFile, '--reason', '표현 정리', '--root', root],
+      (s) => (captured += s)
+    );
+    expect(code).toBe(0);
+    expect(JSON.parse(captured)).toMatchObject({
+      ok: true,
+      slug: 'admin-role',
+      status: 'pending',
+      downgradedToPending: true,
+    });
+    const c = await readConcept(root, 'admin-role');
+    expect(c?.title).toBe('관리자 역할');
+    expect(c?.status).toBe('pending');
+    const h = await readHistory(root);
+    expect(h.some((e) => e.slug === 'admin-role' && e.reason === '표현 정리')).toBe(true);
+  });
+  it('edit-concept는 red/pending 개념의 상태는 유지한다', async () => {
+    await runCli(['init', '--root', root]);
+    await writeConcept(root, {
+      slug: 'draft-role',
+      category: ['role'],
+      title: 'Draft',
+      description: { definition: 'd' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+      status: 'red',
+    } as any);
+    const patchFile = join(root, 'patch2.json');
+    writeFileSync(patchFile, JSON.stringify({ title: 'Draft2' }));
+    let captured = '';
+    const code = await runCli(
+      ['edit-concept', 'draft-role', '--file', patchFile, '--root', root],
+      (s) => (captured += s)
+    );
+    expect(code).toBe(0);
+    expect(JSON.parse(captured)).toMatchObject({ status: 'red', downgradedToPending: false });
+    expect((await readConcept(root, 'draft-role'))?.title).toBe('Draft2');
+  });
+  it('edit-concept는 없는 개념에 에러+exit 1', async () => {
+    await runCli(['init', '--root', root]);
+    const patchFile = join(root, 'patch3.json');
+    writeFileSync(patchFile, JSON.stringify({ title: 'x' }));
+    let captured = '';
+    const code = await runCli(
+      ['edit-concept', 'ghost', '--file', patchFile, '--root', root],
+      (s) => (captured += s)
+    );
+    expect(code).toBe(1);
+    expect(JSON.parse(captured).error).toMatch(/not found/i);
+  });
   it('status는 drift 개수를 포함한다', async () => {
     let captured = '';
     await runCli(['init', '--root', root], () => {});
