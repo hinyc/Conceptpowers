@@ -4202,7 +4202,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
   };
   const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
-    add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+    add({
+      id: `c:${c.slug}`,
+      label: c.title,
+      type: "concept",
+      href: conceptHref(c),
+      title: c.slug
+    });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
       addFile(path);
@@ -4210,7 +4216,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     }
   }
   for (const f of features) {
-    add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
+    add({
+      id: `f:${f.slug}`,
+      label: f.title,
+      type: "feature",
+      href: featureHref(f),
+      title: f.slug
+    });
     for (const slug3 of f.concepts) {
       if (!conceptSlugs.has(slug3)) continue;
       edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
@@ -4227,7 +4239,9 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
 var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-var mergeLinks = (c, codeLinksBySlug) => [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])];
+var mergeLinks = (c, codeLinksBySlug) => [
+  .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
+];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
   return {
     version: 1,
@@ -4647,7 +4661,13 @@ async function syncGenerated(root) {
   const referenceReadmeCreated = await ensureReference(root);
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
   const referenceGitignoreCreated = await ensureReferenceGitignore(root);
-  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated, referenceGitignoreCreated };
+  return {
+    scriptStatus,
+    orphansRemoved,
+    referenceReadmeCreated,
+    alignmentGitignoreCreated,
+    referenceGitignoreCreated
+  };
 }
 
 // src/init/scaffold.ts

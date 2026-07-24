@@ -1,4 +1,7 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 export default defineConfig({
-  test: { include: ['tests/**/*.test.ts'], coverage: { provider: 'v8', include: ['src/**'], lines: 80 } }
-})
+  test: {
+    include: ['tests/**/*.test.ts'],
+    coverage: { provider: 'v8', include: ['src/**'], lines: 80 },
+  },
+});

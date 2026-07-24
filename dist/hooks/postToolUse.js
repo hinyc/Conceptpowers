@@ -4471,7 +4471,14 @@ async function isMergeCommit(root) {
   return out.trim().split(/\s+/).length > 2;
 }
 async function committedFiles(root) {
-  const out = await git(root, ["diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "HEAD"]);
+  const out = await git(root, [
+    "diff-tree",
+    "--root",
+    "--no-commit-id",
+    "--name-only",
+    "-r",
+    "HEAD"
+  ]);
   if (!out) return [];
   return out.split("\n").map((l) => l.trim()).filter(Boolean);
 }

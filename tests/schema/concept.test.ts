@@ -1,57 +1,60 @@
-import { describe, it, expect } from 'vitest'
-import { ConceptSchema, parseConcept } from '../../src/schema/concept.js'
+import { describe, it, expect } from 'vitest';
+import { ConceptSchema, parseConcept } from '../../src/schema/concept.js';
 
 const valid = {
-  slug: 'admin-role', group: 'auth', category: ['role'], title: 'Admin Role',
+  slug: 'admin-role',
+  group: 'auth',
+  category: ['role'],
+  title: 'Admin Role',
   description: { definition: '운영자 권한 계층' },
   purpose: { reason: '리소스 배분' },
   actions: { allow: ['역할 지정'], restrict: ['직접 개발 불가'] },
-  principle: { immutableRules: ['모든 변경은 감사 로그'] }
-}
+  principle: { immutableRules: ['모든 변경은 감사 로그'] },
+};
 
 describe('ConceptSchema', () => {
   it('유효한 개념을 파싱하고 기본값을 채운다', () => {
-    const c = parseConcept(valid)
-    expect(c.slug).toBe('admin-role')
-    expect(c.category).toEqual(['role'])
-    expect(c.relations.related).toEqual([])     // 기본값
-    expect(c.codeLinks).toEqual([])
-  })
+    const c = parseConcept(valid);
+    expect(c.slug).toBe('admin-role');
+    expect(c.category).toEqual(['role']);
+    expect(c.relations.related).toEqual([]); // 기본값
+    expect(c.codeLinks).toEqual([]);
+  });
   it('잘못된 slug를 거부한다', () => {
-    expect(() => parseConcept({ ...valid, slug: 'Admin Role' })).toThrow()
-  })
+    expect(() => parseConcept({ ...valid, slug: 'Admin Role' })).toThrow();
+  });
   it('예약어 slug(constructor/__proto__/none)를 거부한다 (보안 C-1 · none 마커 예약)', () => {
-    expect(() => parseConcept({ ...valid, slug: 'constructor' })).toThrow()
-    expect(() => parseConcept({ ...valid, slug: 'prototype' })).toThrow()
-    expect(() => parseConcept({ ...valid, slug: 'none' })).toThrow() // @concept:none 마커와 충돌 방지
-  })
+    expect(() => parseConcept({ ...valid, slug: 'constructor' })).toThrow();
+    expect(() => parseConcept({ ...valid, slug: 'prototype' })).toThrow();
+    expect(() => parseConcept({ ...valid, slug: 'none' })).toThrow(); // @concept:none 마커와 충돌 방지
+  });
   it('category가 비면 거부한다', () => {
-    expect(() => parseConcept({ ...valid, category: [] })).toThrow()
-  })
+    expect(() => parseConcept({ ...valid, category: [] })).toThrow();
+  });
   it('알 수 없는 category 값을 거부한다', () => {
-    expect(() => parseConcept({ ...valid, category: ['nope'] })).toThrow()
-  })
+    expect(() => parseConcept({ ...valid, category: ['nope'] })).toThrow();
+  });
   it('group 경로 traversal을 거부한다 (C2)', () => {
-    expect(() => parseConcept({ ...valid, group: '../../../tmp/evil' })).toThrow()
-    expect(() => parseConcept({ ...valid, group: '../../etc' })).toThrow()
-    expect(() => parseConcept({ ...valid, group: '/abs/path' })).toThrow()
-  })
+    expect(() => parseConcept({ ...valid, group: '../../../tmp/evil' })).toThrow();
+    expect(() => parseConcept({ ...valid, group: '../../etc' })).toThrow();
+    expect(() => parseConcept({ ...valid, group: '/abs/path' })).toThrow();
+  });
   it('유효한 group 값을 허용한다 (C2)', () => {
-    expect(() => parseConcept({ ...valid, group: 'auth' })).not.toThrow()
-    expect(() => parseConcept({ ...valid, group: 'auth/admin' })).not.toThrow()
-    expect(() => parseConcept({ ...valid, group: '' })).not.toThrow()
-    expect(() => parseConcept({ ...valid, group: 'my-group/sub-section' })).not.toThrow()
-  })
+    expect(() => parseConcept({ ...valid, group: 'auth' })).not.toThrow();
+    expect(() => parseConcept({ ...valid, group: 'auth/admin' })).not.toThrow();
+    expect(() => parseConcept({ ...valid, group: '' })).not.toThrow();
+    expect(() => parseConcept({ ...valid, group: 'my-group/sub-section' })).not.toThrow();
+  });
   it('status 기본값은 red(미승인)이다', () => {
-    expect(parseConcept(valid).status).toBe('red')
-  })
+    expect(parseConcept(valid).status).toBe('red');
+  });
   it('status green을 허용한다', () => {
-    expect(parseConcept({ ...valid, status: 'green' }).status).toBe('green')
-  })
+    expect(parseConcept({ ...valid, status: 'green' }).status).toBe('green');
+  });
   it('status pending을 허용한다', () => {
-    expect(parseConcept({ ...valid, status: 'pending' }).status).toBe('pending')
-  })
+    expect(parseConcept({ ...valid, status: 'pending' }).status).toBe('pending');
+  });
   it('알 수 없는 status 값을 거부한다', () => {
-    expect(() => parseConcept({ ...valid, status: 'yellow' })).toThrow()
-  })
-})
+    expect(() => parseConcept({ ...valid, status: 'yellow' })).toThrow();
+  });
+});

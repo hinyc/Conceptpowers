@@ -1,11 +1,11 @@
 // @concept:ask-only-gate
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { readFile } from "node:fs/promises";
-import { isInitialized } from "../init/scaffold.js";
-import { reconcileAfterCommit, type ReconcileResult } from "../drift/reconcile.js";
-import { cpPaths } from "../paths.js";
-import { writeFileAtomic } from "../util/atomicWrite.js";
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { readFile } from 'node:fs/promises';
+import { isInitialized } from '../init/scaffold.js';
+import { reconcileAfterCommit, type ReconcileResult } from '../drift/reconcile.js';
+import { cpPaths } from '../paths.js';
+import { writeFileAtomic } from '../util/atomicWrite.js';
 
 const execFileAsync = promisify(execFile);
 const isGitCommit = (cmd?: string) => !!cmd && /\bgit\s+commit\b/.test(cmd);
@@ -18,7 +18,7 @@ export interface PostToolEvent {
 
 async function git(root: string, args: string[]): Promise<string | null> {
   try {
-    const { stdout } = await execFileAsync("git", ["--no-pager", ...args], { cwd: root });
+    const { stdout } = await execFileAsync('git', ['--no-pager', ...args], { cwd: root });
     return stdout;
   } catch {
     return null;
@@ -26,35 +26,45 @@ async function git(root: string, args: string[]): Promise<string | null> {
 }
 
 async function headSha(root: string): Promise<string | null> {
-  const out = await git(root, ["rev-parse", "HEAD"]);
+  const out = await git(root, ['rev-parse', 'HEAD']);
   return out ? out.trim() : null;
 }
 
 // 머지 커밋(부모 2개 이상)이면 diff-tree 파일목록이 비거나 모호하므로 신뢰하지 않는다.
 async function isMergeCommit(root: string): Promise<boolean> {
-  const out = await git(root, ["rev-list", "--parents", "-n", "1", "HEAD"]);
+  const out = await git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']);
   if (!out) return false;
   return out.trim().split(/\s+/).length > 2; // sha + parent(s)
 }
 
 async function committedFiles(root: string): Promise<string[]> {
   // --root: 최초(부모 없는) 커밋도 파일 목록을 내도록 한다.
-  const out = await git(root, ["diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "HEAD"]);
+  const out = await git(root, [
+    'diff-tree',
+    '--root',
+    '--no-commit-id',
+    '--name-only',
+    '-r',
+    'HEAD',
+  ]);
   if (!out) return [];
-  return out.split("\n").map((l) => l.trim()).filter(Boolean);
+  return out
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
 }
 
 async function readLastCommit(root: string): Promise<string> {
   try {
-    return (await readFile(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile(cpPaths(root).alignmentLastCommit, 'utf8')).trim();
   } catch {
-    return "";
+    return '';
   }
 }
 
 async function writeLastCommit(root: string, sha: string): Promise<void> {
   try {
-    await writeFileAtomic(cpPaths(root).alignmentLastCommit, sha + "\n");
+    await writeFileAtomic(cpPaths(root).alignmentLastCommit, sha + '\n');
   } catch {
     /* best-effort */
   }
@@ -62,10 +72,10 @@ async function writeLastCommit(root: string, sha: string): Promise<void> {
 
 export async function runPostToolUse(
   root: string,
-  ev: PostToolEvent,
+  ev: PostToolEvent
 ): Promise<ReconcileResult | null> {
   if (!(await isInitialized(root))) return null;
-  if (!(ev.tool === "Bash" && isGitCommit(ev.input.command))) return null;
+  if (!(ev.tool === 'Bash' && isGitCommit(ev.input.command))) return null;
 
   // 명시적 파일목록(테스트/프로그램 경로)은 그대로 신뢰한다.
   if (ev.committedFiles) {
@@ -101,11 +111,11 @@ export async function runPostToolUse(
 
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  let raw = "";
-  process.stdin.on("data", (c) => (raw += c));
-  process.stdin.on("end", async () => {
+  let raw = '';
+  process.stdin.on('data', (c) => (raw += c));
+  process.stdin.on('end', async () => {
     try {
-      const payload = JSON.parse(raw || "{}");
+      const payload = JSON.parse(raw || '{}');
       await runPostToolUse(process.cwd(), {
         tool: payload.tool_name,
         input: payload.tool_input ?? {},

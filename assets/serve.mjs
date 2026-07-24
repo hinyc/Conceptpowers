@@ -4251,9 +4251,7 @@ async function writeConcept(root, input) {
   const concept = parseConcept(input);
   const target = fileFor(root, concept);
   const existing = await listConcepts(root);
-  const duplicate = existing.find(
-    (c) => c.slug === concept.slug && fileFor(root, c) !== target
-  );
+  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
@@ -4340,12 +4338,17 @@ async function editConceptContent(root, slug3, patch) {
   const safe = {};
   for (const key of EDITABLE_FIELDS) {
     if (Object.prototype.hasOwnProperty.call(patch, key) && patch[key] !== void 0) {
-      ;
       safe[key] = patch[key];
     }
   }
   const nextStatus = concept.status === "green" ? "pending" : concept.status;
-  return writeConcept(root, { ...concept, ...safe, slug: concept.slug, group: concept.group, status: nextStatus });
+  return writeConcept(root, {
+    ...concept,
+    ...safe,
+    slug: concept.slug,
+    group: concept.group,
+    status: nextStatus
+  });
 }
 
 // src/viewer/render.ts
@@ -4370,7 +4373,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
   };
   const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
-    add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+    add({
+      id: `c:${c.slug}`,
+      label: c.title,
+      type: "concept",
+      href: conceptHref(c),
+      title: c.slug
+    });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
       addFile(path);
@@ -4378,7 +4387,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     }
   }
   for (const f of features) {
-    add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
+    add({
+      id: `f:${f.slug}`,
+      label: f.title,
+      type: "feature",
+      href: featureHref(f),
+      title: f.slug
+    });
     for (const slug3 of f.concepts) {
       if (!conceptSlugs.has(slug3)) continue;
       edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
@@ -4395,7 +4410,9 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
 var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-var mergeLinks = (c, codeLinksBySlug) => [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])];
+var mergeLinks = (c, codeLinksBySlug) => [
+  .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
+];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
   return {
     version: 1,
@@ -4632,7 +4649,8 @@ async function handleApi(projectRoot, req) {
       return { status: 400, json: { error: "invalid JSON body" } };
     }
     const status = ConceptStatus.safeParse(parsed.status);
-    if (!status.success) return { status: 400, json: { error: "status must be green|pending|red" } };
+    if (!status.success)
+      return { status: 400, json: { error: "status must be green|pending|red" } };
     try {
       const concept = await setConceptStatus(projectRoot, slug3, status.data);
       await writeManifest(projectRoot);
@@ -4653,7 +4671,8 @@ async function handleApi(projectRoot, req) {
       return { status: 400, json: { error: "invalid JSON body" } };
     }
     const patch = parsed.patch;
-    if (!patch || typeof patch !== "object") return { status: 400, json: { error: "patch object required" } };
+    if (!patch || typeof patch !== "object")
+      return { status: 400, json: { error: "patch object required" } };
     try {
       const before = await readConcept(projectRoot, slug3);
       const wasGreen = before?.status === "green";
@@ -4700,7 +4719,12 @@ async function handle(root, projectRoot, req, res) {
     }
     try {
       const body = req.method === "GET" ? "" : await readBody(req);
-      const result = await handleApi(projectRoot, { method: req.method || "GET", url, headers: req.headers, body });
+      const result = await handleApi(projectRoot, {
+        method: req.method || "GET",
+        url,
+        headers: req.headers,
+        body
+      });
       sendJson(res, result.status, result.json);
     } catch (error) {
       sendJson(res, 400, { error: error.message });

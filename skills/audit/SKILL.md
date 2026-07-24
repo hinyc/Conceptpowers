@@ -39,10 +39,10 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
      `@concept` marker → `[WARNING] 개념 없는 코드`). `@concept:none` counts as marked and passes.
      Only regenerated/external code matching `init.json` `ignoreGlobs` (`dist/**`, `**/*.generated.*`, …)
      is exempt; a single file may carry multiple `@concept` tags.
-2b. **Feature coverage (knowledge graph)**: check that each user-facing feature surface is recorded as a
-   feature spec under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code)
-   filled in. For any surface missing a spec, or a spec missing those links, suggest
-   `conceptpowers:define-feature`. This is what keeps the `#/graph` view connected (concept · feature · code).
+     2b. **Feature coverage (knowledge graph)**: check that each user-facing feature surface is recorded as a
+     feature spec under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code)
+     filled in. For any surface missing a spec, or a spec missing those links, suggest
+     `conceptpowers:define-feature`. This is what keeps the `#/graph` view connected (concept · feature · code).
 3. **Verify existing links (semantic judgment)**: for each `@concept` link, sample-check that the code
    complies with the concept's allow/restrict/immutable rules (reuse check-concept — concepts only,
    three-way verdict). When a link is **undecidable** (the concept's rules are too vague to judge

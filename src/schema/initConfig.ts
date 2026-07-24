@@ -1,7 +1,7 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
-export const LocaleSchema = z.enum(['ko', 'en'])
-export type Locale = z.infer<typeof LocaleSchema>
+export const LocaleSchema = z.enum(['ko', 'en']);
+export type Locale = z.infer<typeof LocaleSchema>;
 
 export const InitConfigSchema = z.object({
   version: z.string(),
@@ -15,13 +15,16 @@ export const InitConfigSchema = z.object({
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
   ignoreGlobs: z.array(z.string()).default([
     'docs/conceptpowers/**', // 플러그인 생성물(뷰어 등)
-    'dist/**', 'build/**', // 빌드 산출물
+    'dist/**',
+    'build/**', // 빌드 산출물
     'node_modules/**', // 외부 의존성
-    '**/*.generated.*' // 코드 생성물
+    '**/*.generated.*', // 코드 생성물
   ]),
-  project: z.object({ name: z.string().default(''), description: z.string().default('') }).default({})
-})
-export type InitConfig = z.infer<typeof InitConfigSchema>
+  project: z
+    .object({ name: z.string().default(''), description: z.string().default('') })
+    .default({}),
+});
+export type InitConfig = z.infer<typeof InitConfigSchema>;
 export function parseInitConfig(input: unknown): InitConfig {
-  return InitConfigSchema.parse(input)
+  return InitConfigSchema.parse(input);
 }

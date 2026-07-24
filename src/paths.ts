@@ -1,9 +1,9 @@
-import { join } from 'node:path'
+import { join } from 'node:path';
 
-export const CP_REL = 'docs/conceptpowers'
+export const CP_REL = 'docs/conceptpowers';
 
 export function cpPaths(root: string) {
-  const base = join(root, CP_REL)
+  const base = join(root, CP_REL);
   return {
     base,
     initFile: join(base, 'init.json'),
@@ -20,6 +20,6 @@ export function cpPaths(root: string) {
     alignmentHistory: join(base, 'concepts', '.alignment', 'history.json'),
     alignmentLastCommit: join(base, 'concepts', '.alignment', 'last-commit'),
     pendingConflicts: join(base, 'concepts', '.alignment', 'pending-conflicts.json'),
-    attestFile: join(base, 'concepts', '.alignment', 'attest.json')
-  } as const
+    attestFile: join(base, 'concepts', '.alignment', 'attest.json'),
+  } as const;
 }

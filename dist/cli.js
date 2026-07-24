@@ -7278,7 +7278,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
   };
   const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
-    add({ id: `c:${c.slug}`, label: c.title, type: "concept", href: conceptHref(c), title: c.slug });
+    add({
+      id: `c:${c.slug}`,
+      label: c.title,
+      type: "concept",
+      href: conceptHref(c),
+      title: c.slug
+    });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
       addFile(path);
@@ -7286,7 +7292,13 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     }
   }
   for (const f of features) {
-    add({ id: `f:${f.slug}`, label: f.title, type: "feature", href: featureHref(f), title: f.slug });
+    add({
+      id: `f:${f.slug}`,
+      label: f.title,
+      type: "feature",
+      href: featureHref(f),
+      title: f.slug
+    });
     for (const slug3 of f.concepts) {
       if (!conceptSlugs.has(slug3)) continue;
       edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
@@ -7303,7 +7315,9 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
 var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-var mergeLinks = (c, codeLinksBySlug) => [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])];
+var mergeLinks = (c, codeLinksBySlug) => [
+  .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
+];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
   return {
     version: 1,
@@ -7516,9 +7530,7 @@ async function writeConcept(root, input) {
   const concept = parseConcept(input);
   const target = fileFor(root, concept);
   const existing = await listConcepts(root);
-  const duplicate = existing.find(
-    (c) => c.slug === concept.slug && fileFor(root, c) !== target
-  );
+  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
@@ -7918,7 +7930,13 @@ async function syncGenerated(root) {
   const referenceReadmeCreated = await ensureReference(root);
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
   const referenceGitignoreCreated = await ensureReferenceGitignore(root);
-  return { scriptStatus, orphansRemoved, referenceReadmeCreated, alignmentGitignoreCreated, referenceGitignoreCreated };
+  return {
+    scriptStatus,
+    orphansRemoved,
+    referenceReadmeCreated,
+    alignmentGitignoreCreated,
+    referenceGitignoreCreated
+  };
 }
 
 // src/init/scaffold.ts
@@ -7934,12 +7952,25 @@ async function syncSafely(root) {
   try {
     return await syncGenerated(root);
   } catch {
-    return { scriptStatus: "no-package", orphansRemoved: 0, referenceReadmeCreated: false, alignmentGitignoreCreated: false, referenceGitignoreCreated: false };
+    return {
+      scriptStatus: "no-package",
+      orphansRemoved: 0,
+      referenceReadmeCreated: false,
+      alignmentGitignoreCreated: false,
+      referenceGitignoreCreated: false
+    };
   }
 }
 async function scaffoldInit(root, opts) {
   const p = cpPaths(root);
-  for (const d of [p.features, p.reference, p.conceptsData, p.conceptsViewer, p.architecture, p.infra])
+  for (const d of [
+    p.features,
+    p.reference,
+    p.conceptsData,
+    p.conceptsViewer,
+    p.architecture,
+    p.infra
+  ])
     await mkdir9(d, { recursive: true });
   if (await isInitialized(root)) {
     const synced2 = await syncSafely(root);
@@ -8141,20 +8172,26 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
     const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
-    out(buildInitHint(o.lang, {
-      viewerScriptAdded: result.viewerScriptAdded,
-      viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
-      viewerPath: VIEWER_INDEX
-    }));
+    out(
+      buildInitHint(o.lang, {
+        viewerScriptAdded: result.viewerScriptAdded,
+        viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
+        viewerPath: VIEWER_INDEX
+      })
+    );
   });
-  program2.command("version-sync").alias("sync").description("\uD50C\uB7EC\uADF8\uC778 \uBC84\uC804 \uB3D9\uAE30\uD654 \u2014 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uC124\uCE58 \uBC84\uC804\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+  program2.command("version-sync").alias("sync").description(
+    "\uD50C\uB7EC\uADF8\uC778 \uBC84\uC804 \uB3D9\uAE30\uD654 \u2014 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uC124\uCE58 \uBC84\uC804\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)"
+  ).option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify({ ok: true, ...await syncGenerated(o.root) }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    out(JSON.stringify({
-      initialized: await isInitialized(o.root),
-      drift: (await computeDrift(o.root)).length
-    }));
+    out(
+      JSON.stringify({
+        initialized: await isInitialized(o.root),
+        drift: (await computeDrift(o.root)).length
+      })
+    );
   });
   program2.command("render").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     await renderViewerToDisk(o.root);

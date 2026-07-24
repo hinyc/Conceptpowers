@@ -40,9 +40,9 @@ interaction to two checkpoints, not zero.
      actions that never appear in reference docs still carry intent worth defining.
    - **Domain logic in the code**: validation rules, permission checks, state transitions,
      terms embedded in identifiers.
-   Present the merged result as a numbered candidate list — one line each
-   ("결제 불변성 — 결제 후 가격·수량 변경 금지", …) with the source marked
-   (reference doc / UI surface / code logic).
+     Present the merged result as a numbered candidate list — one line each
+     ("결제 불변성 — 결제 후 가격·수량 변경 금지", …) with the source marked
+     (reference doc / UI surface / code logic).
 2. **Scope confirmation (checkpoint 1)**: ask which candidates to proceed with. The choices
    **MUST include "전체 (define all candidates)" as the first option**, in addition to
    multi-selecting individual candidates — never force the user to tick every item one by one.
@@ -119,7 +119,7 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
 
 1. Check the related feature spec in `features/`. If none exists, create it with
    `conceptpowers:define-feature` (agree on a one-line spec with the user first). Once this concept's
-   slug is decided (step 5), add it to that feature's `concepts` so the *feature → concept* graph edge
+   slug is decided (step 5), add it to that feature's `concepts` so the _feature → concept_ graph edge
    exists — a concept with no feature pointing at it is an orphan in the knowledge graph.
 2. Decide the concept's **category**: feature | behavior | role | permission | term (multiple allowed).
 3. Fill in the following structure together with the user:
@@ -142,7 +142,7 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
 6. **Consistency check**: run the `conceptpowers:check-consistency` skill to confirm no conflict or
    violation against existing concepts.
 7. **Set the `status` — born `pending`; promote to `green` only after the step-6 consistency check passes (never default to green).**
-   The agent only ever *promotes* a user-authored pending to green after a passing
+   The agent only ever _promotes_ a user-authored pending to green after a passing
    consistency check (step 6). Auto-inferred concepts (full scan) are born `red`, not pending.
    - **No conflict** (step 6 passed) → set `status: green`. The user authored it and it is
      consistent, so it becomes the source of truth.

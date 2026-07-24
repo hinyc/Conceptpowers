@@ -11,7 +11,7 @@ description: Use when you identify a feature surface (button/action/route/comman
 > any step below without the marker.
 
 A **feature** is a first-class entity in the knowledge graph. It is the single source of the
-*feature → concept* link (which concept the feature realizes) and the *feature → code* link
+_feature → concept_ link (which concept the feature realizes) and the _feature → code_ link
 (which files implement it). Without a feature spec, the graph cannot show "this feature relates
 to that concept and is built by that code" — so define a feature whenever you surface a new one.
 

@@ -42,10 +42,10 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 2. **Enumerate features by screen**: analyze what each screen/view renders and list the features it
    exposes to the user. Merge with step 1 into a deduplicated feature list.
 3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
-   implementing `codePaths` filled in (the *feature → code* link) via `conceptpowers:define-feature`.
+   implementing `codePaths` filled in (the _feature → code_ link) via `conceptpowers:define-feature`.
 4. **Infer concepts and wire features to them**: for each feature with no covering concept, infer a
    concept (define-concept) — auto-inferred concepts are saved with `status: red` (unapproved) — then
-   record the concept slug in that feature's `concepts` (the *feature → concept* link).
+   record the concept slug in that feature's `concepts` (the _feature → concept_ link).
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
    concept applies (utils/types/config/scripts, etc.), write **`@concept:none`** explicitly rather than
