@@ -19,7 +19,7 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 형식 자유(.md, .txt 등). 하위 폴더로 분류해도 됩니다.
 
 ## 파일 대신 경로로 연결하기 (paths.md)
-- 자료를 이 폴더에 복사하는 대신, \`paths.md\` 파일에 **참고할 로컬 경로 목록**을 적어둘 수 있습니다.
+- 자료를 이 폴더에 복사하는 대신, **이미 만들어진 \`paths.md\`**(안내 주석 포함)에 **참고할 로컬 경로 목록**을 적으면 됩니다.
 - 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
 - **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
@@ -46,7 +46,7 @@ Put materials here for the agent to consult during concept work.
 - Any format (.md, .txt, …). Subfolders are fine.
 
 ## Linking paths instead of copying files (paths.md)
-- Instead of copying material here, list **local paths to consult** in a \`paths.md\` file.
+- Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md

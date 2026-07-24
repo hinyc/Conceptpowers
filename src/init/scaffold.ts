@@ -35,6 +35,7 @@ async function syncSafely(root: string): Promise<SyncResult> {
       scriptStatus: 'no-package',
       orphansRemoved: 0,
       referenceReadmeCreated: false,
+      referencePathsCreated: false,
       alignmentGitignoreCreated: false,
       referenceGitignoreCreated: false,
     };

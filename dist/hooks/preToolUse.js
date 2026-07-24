@@ -4372,6 +4372,28 @@ async function readInitConfig(root) {
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
 var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 
+// src/init/referencePaths.ts
+var PATHS_TEMPLATE = [
+  "# Reference paths \u2014 external documents to consult when authoring concepts.",
+  "#",
+  '# List one path per line. Lines starting with "#" are comments and are ignored,',
+  "# so this file registers nothing until you add real (uncommented) entries.",
+  "#",
+  "# These are read ONLY while defining, upgrading, or verifying a concept",
+  "# (define-concept / check-consistency) \u2014 never during ordinary code checks.",
+  "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
+  "#",
+  "# Accepted forms:",
+  "#   ~/Documents/domain-glossary/     home-relative folder (all files inside)",
+  "#   /Users/me/specs/auth.md          absolute file",
+  "#   docs/legal/contract.pdf          repo-relative path",
+  "#",
+  "# Uncomment and edit the examples below, or add your own:",
+  "#   ~/work/product-specs/",
+  "#   /absolute/path/to/domain-rules.md",
+  ""
+].join("\n");
+
 // src/init/referenceGitignore.ts
 var CONTENT = [
   "# reference material stays local by default (may contain confidential documents)",

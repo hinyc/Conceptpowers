@@ -78,6 +78,22 @@ describe('buildSessionStartOutput', () => {
       '<CONCEPTPOWERS-REFERENCE-PATHS>'
     );
   });
+  it('폴더 파일이 없어도 유효한 외부 경로가 등록되면 참고자료 블록으로 알린다', async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, 'spec.md'), '명세');
+    // reference 폴더엔 사용자 파일이 없고(템플릿 paths.md/README만), paths.md가 외부 파일을 가리킨다
+    writeFileSync(join(root, 'docs/conceptpowers/reference/paths.md'), '- spec.md\n');
+    const o = await buildSessionStartOutput(root, '/plugin');
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain('<CONCEPTPOWERS-REFERENCE>');
+    expect(ctx).toContain('external location');
+    expect(ctx).toContain('spec.md');
+  });
+  it('빈 템플릿 paths.md만 있으면(등록 0) 참고자료 블록이 없다', async () => {
+    await scaffoldInit(root, {}); // paths.md 템플릿이 이미 깔림(전부 주석)
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPTPOWERS-REFERENCE>');
+  });
   it('ko면 Output language 디렉티브가 Korean이다 (기본)', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, '/plugin');

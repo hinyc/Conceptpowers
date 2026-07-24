@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { renderViewerToDisk } from '../viewer/render.js';
 import { upsertViewerScript, type ViewerScriptStatus } from './packageScript.js';
 import { ensureReference } from './reference.js';
+import { ensureReferencePaths } from './referencePaths.js';
 import { ensureAlignmentGitignore } from './alignmentGitignore.js';
 import { ensureReferenceGitignore } from './referenceGitignore.js';
 import { cpPaths } from '../paths.js';
@@ -15,6 +16,7 @@ export interface SyncResult {
   scriptStatus: ViewerScriptStatus;
   orphansRemoved: number;
   referenceReadmeCreated: boolean;
+  referencePathsCreated: boolean;
   alignmentGitignoreCreated: boolean;
   referenceGitignoreCreated: boolean;
 }
@@ -56,12 +58,14 @@ export async function syncGenerated(root: string): Promise<SyncResult> {
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
   const scriptStatus = await upsertViewerScript(root);
   const referenceReadmeCreated = await ensureReference(root); // reference/ 폴더 + 안내 README 보장
+  const referencePathsCreated = await ensureReferencePaths(root); // reference/paths.md 안내 템플릿 보장
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root); // last-commit 추적 제외 보장
   const referenceGitignoreCreated = await ensureReferenceGitignore(root); // 기밀 기본 로컬 전용 보장
   return {
     scriptStatus,
     orphansRemoved,
     referenceReadmeCreated,
+    referencePathsCreated,
     alignmentGitignoreCreated,
     referenceGitignoreCreated,
   };

@@ -32,8 +32,9 @@ export async function ensureReference(root: string): Promise<boolean> {
 
 // 사용자가 넣은 참고 파일 목록(플러그인 메타 파일 제외, reference/ 기준 상대경로).
 // SessionStart 신호용 — 파일이 있을 때만 에이전트에 "참고하라"고 알린다.
-// paths.md는 사용자가 등록한 외부 경로 신호이므로 목록에 포함한다.
-const PLUGIN_META_FILES = new Set([SEED_README, '.gitignore']);
+// paths.md도 플러그인이 깔아두는 안내 템플릿이라 제외한다(빈 템플릿이 "자료 있음"
+// 오신호를 내지 않도록). 외부 경로 신호는 checkReferencePaths(경로 검증)가 담당한다.
+const PLUGIN_META_FILES = new Set([SEED_README, '.gitignore', 'paths.md']);
 export async function listReferenceFiles(root: string): Promise<string[]> {
   const dir = cpPaths(root).reference;
   const out: string[] = [];
