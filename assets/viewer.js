@@ -1453,6 +1453,7 @@ function renderGraph(svg, data, gen, zoomBox) {
         d.x = p.x;
         d.y = p.y;
         d.drag = true;
+        heat = Math.max(heat, REHEAT); // 끌린 노드 주변만 다시 자리를 잡도록 약하게 데운다
       }
       function up() {
         window.removeEventListener('mousemove', mv);
@@ -1481,54 +1482,78 @@ function renderGraph(svg, data, gen, zoomBox) {
     gN.appendChild(g);
     return g;
   });
+  // 배치 물리의 세기(heat). 1에서 시작해 매 프레임 조금씩 식으며, MIN_HEAT 아래로 내려가면
+  // 계산을 멈춰 그래프가 완전히 정지한다. 드래그처럼 배치가 흐트러지는 조작에만 약하게 다시 데운다.
+  var heat = 1;
+  var COOLING = 0.98; // 프레임당 감쇠 — 약 3초면 정지
+  var MIN_HEAT = 0.02; // 이 아래는 정지로 간주
+  var REHEAT = 0.25; // 드래그 시 되살리는 세기(초기의 1/4)
+  var DAMPING = 0.8; // 속도 감쇠 — 높을수록 출렁인다
+  var MAX_SPEED = 3; // 프레임당 최대 이동(px)
+  var MAX_REPULSION = 1.5; // 반발력 상한 — 노드가 겹쳐도 튕겨나가지 않게 한다
   function tick() {
     if (gen !== renderGen) return; // 라우트가 바뀌면 루프 종료
-    for (var i = 0; i < nodes.length; i++)
-      for (var j = i + 1; j < nodes.length; j++) {
-        var a = nodes[i],
-          b = nodes[j],
-          dx = a.x - b.x,
-          dy = a.y - b.y,
-          d2 = dx * dx + dy * dy + 0.01,
-          dd = Math.sqrt(d2),
-          f = 2600 / d2;
-        a.vx += (dx / dd) * f;
-        a.vy += (dy / dd) * f;
-        b.vx -= (dx / dd) * f;
-        b.vy -= (dy / dd) * f;
-      }
-    edges.forEach(function (e) {
-      var dx = e.t.x - e.s.x,
-        dy = e.t.y - e.s.y,
-        dd = Math.sqrt(dx * dx + dy * dy) + 0.01,
-        f = (dd - 96) * 0.02;
-      e.s.vx += (dx / dd) * f;
-      e.s.vy += (dy / dd) * f;
-      e.t.vx -= (dx / dd) * f;
-      e.t.vy -= (dy / dd) * f;
-    });
-    nodes.forEach(function (d) {
-      d.vx += (W / 2 - d.x) * 0.002;
-      d.vy += (H / 2 - d.y) * 0.002;
-      d.vx *= 0.85;
-      d.vy *= 0.85;
-      if (!d.fixed) {
-        d.x += d.vx;
-        d.y += d.vy;
-      }
-      d.x = Math.max(24, Math.min(W - 24, d.x));
-      d.y = Math.max(24, Math.min(H - 24, d.y));
-    });
-    lines.forEach(function (l, i) {
-      var e = edges[i];
-      l.setAttribute('x1', e.s.x);
-      l.setAttribute('y1', e.s.y);
-      l.setAttribute('x2', e.t.x);
-      l.setAttribute('y2', e.t.y);
-    });
-    groups.forEach(function (g, i) {
-      g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')');
-    });
+    if (heat > MIN_HEAT) {
+      for (var i = 0; i < nodes.length; i++)
+        for (var j = i + 1; j < nodes.length; j++) {
+          var a = nodes[i],
+            b = nodes[j],
+            dx = a.x - b.x,
+            dy = a.y - b.y,
+            d2 = dx * dx + dy * dy + 0.01,
+            dd = Math.sqrt(d2),
+            // 반발력에 상한을 둔다 — 상한이 없으면 두 노드가 겹칠 때 힘이 발산해 서로 튕겨낸다.
+            f = Math.min(2600 / d2, MAX_REPULSION) * heat;
+          a.vx += (dx / dd) * f;
+          a.vy += (dy / dd) * f;
+          b.vx -= (dx / dd) * f;
+          b.vy -= (dy / dd) * f;
+        }
+      edges.forEach(function (e) {
+        var dx = e.t.x - e.s.x,
+          dy = e.t.y - e.s.y,
+          dd = Math.sqrt(dx * dx + dy * dy) + 0.01,
+          f = (dd - 96) * 0.02 * heat;
+        e.s.vx += (dx / dd) * f;
+        e.s.vy += (dy / dd) * f;
+        e.t.vx -= (dx / dd) * f;
+        e.t.vy -= (dy / dd) * f;
+      });
+      nodes.forEach(function (d) {
+        d.vx += (W / 2 - d.x) * 0.002 * heat;
+        d.vy += (H / 2 - d.y) * 0.002 * heat;
+        d.vx *= DAMPING;
+        d.vy *= DAMPING;
+        // 속도 상한 — 한 프레임에 크게 도약해 시선을 끄는 움직임을 막는다.
+        var sp = Math.sqrt(d.vx * d.vx + d.vy * d.vy);
+        if (sp > MAX_SPEED) {
+          d.vx = (d.vx / sp) * MAX_SPEED;
+          d.vy = (d.vy / sp) * MAX_SPEED;
+        }
+        if (!d.fixed) {
+          d.x += d.vx;
+          d.y += d.vy;
+        }
+        // 경계에 닿으면 해당 축 속도를 죽인다 — 남겨두면 벽을 밀며 떠는 움직임이 된다.
+        var cx = Math.max(24, Math.min(W - 24, d.x));
+        var cy = Math.max(24, Math.min(H - 24, d.y));
+        if (cx !== d.x) d.vx = 0;
+        if (cy !== d.y) d.vy = 0;
+        d.x = cx;
+        d.y = cy;
+      });
+      lines.forEach(function (l, i) {
+        var e = edges[i];
+        l.setAttribute('x1', e.s.x);
+        l.setAttribute('y1', e.s.y);
+        l.setAttribute('x2', e.t.x);
+        l.setAttribute('y2', e.t.y);
+      });
+      groups.forEach(function (g, i) {
+        g.setAttribute('transform', 'translate(' + nodes[i].x + ',' + nodes[i].y + ')');
+      });
+      heat *= COOLING; // 식히기: 초기 정렬을 마치면 스스로 멎는다
+    }
     if (tracking) {
       trackMode === 'fitp' ? fitPage() : fitWidth();
     } // 팬하기 전까지 배치 추적
