@@ -1,7 +1,8 @@
 // @concept:none
 // assets/sidebar.js — 개념/기능 상세 화면 좌측 사이드바(목록) 열고/닫기.
 // viewer.js가 정의하는 h()/state/displayName/conceptListSections/featureListSection에 의존한다.
-// 로드 순서: index.html에서 viewer.js 다음에 로드.
+// 로드 순서: index.html에서 sidebar.js를 viewer.js보다 먼저 로드한다(전역 의존은
+// 호출 시점에만 필요하므로 순서 자체는 안전하지만, 스펙이 지정한 순서를 따른다).
 'use strict';
 
 var CPSidebar = (function () {

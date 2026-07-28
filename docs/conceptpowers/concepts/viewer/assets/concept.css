@@ -96,7 +96,7 @@ body {
   z-index: 40;
   transform: translateX(-100%);
   transition: transform 0.2s ease, visibility 0.2s;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 .shell--open .side {
   visibility: visible;
@@ -178,8 +178,11 @@ body {
     padding: 0 10px;
   }
   .side {
-    visibility: hidden;
-    pointer-events: none;
+    /* 데스크톱 도킹 패널은 transition:none이라 애니메이션이 필요 없다 — display:none으로
+       닫힘 시 flex 트랙(260px+gap)을 완전히 접어야 .wrap의 margin:0 auto가 다시 살아난다. */
+    display: none;
+    visibility: visible;
+    pointer-events: auto;
     position: sticky;
     top: 24px;
     left: auto;
@@ -193,11 +196,11 @@ body {
     background: var(--surface);
     transform: none;
     transition: none;
+    box-shadow: none;
     z-index: 1;
   }
   .shell--open .side {
-    visibility: visible;
-    pointer-events: auto;
+    display: block;
   }
   .side-backdrop {
     display: none !important;
