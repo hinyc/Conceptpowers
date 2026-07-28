@@ -124,6 +124,8 @@ flowchart LR
 증빙은 에이전트의 자기신고라 검사의 성실성까지 보증하지는 않지만, 단계를 건너뛴 사실은
 숨길 수 없게 만든다.
 
+개념의 내용을 수정하는 것(`conceptpowers:update-baseline`)은 정착된 개념을 건드리는 유일한 경로다: 사용자가 정확한 변경 내용을 명시적으로 승인할 때만 허용되며, 수정하면 항상 🟢 green → 🟡 pending으로 내려간다 — 개념은 새 `check-consistency`가 통과하고 사용자가 `conceptpowers:approve`로 다시 승격시킬 때까지 코드 검증에 쓰이지 않는다. 에이전트는 green 상태를 유지하려고 개념 JSON을 직접 손대지 않는다.
+
 green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가 양보(수정/재플래그)하며, **green ↔ green** 충돌은 중단하고 사용자에게 올린다.
 
 ### 커밋 시점에 일어나는 일
@@ -169,7 +171,8 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 | `conceptpowers:approve`           | 사용자가 🔴 개념을 **명시적으로 확정**할 때.                                                           | 자동 유추된 🔴 red 개념을 일관성 검사 _뒤_ 🟢 green으로 승급하고 뷰어를 다시 렌더링한다. 에이전트가 임의로 승인하지 않는다.                                                      |
 | `conceptpowers:update-mapping`    | **코드 편집 후** `@concept` 링크를 갱신할 때 — 혹은 언제든 재동기화.                                   | 갱신된 `@concept` 태그(진실의 원천) + 재빌드된 `.cache/mapping.json`.                                                                                                            |
 | `conceptpowers:audit`             | **언제든**, 프로젝트 전수 점검용.                                                                      | 개념 없는 gap 목록, 깨진 `@concept` 링크, 미승인 🔴 개념 — 각각 권장 조치와 함께.                                                                                                |
-| `conceptpowers:update-baseline`   | 사용자가 baseline 수정을 **명시적으로 요청할 때만**.                                                   | 요청된 baseline 수정. 개념의 계약이 바뀌면 `note-change`로 이유를 기록한다.                                                                                                      |
+| `conceptpowers:update-baseline`   | 사용자가 baseline 수정을 **명시적으로 요청할 때만**.                                                   | 요청된 baseline 수정. 개념의 계약이 바뀌면 `note-change`로 이유를 기록하고, 수정된 🟢 green 개념은 🟡 pending으로 내려가 재승인 전까지 대기한다.                                 |
+| `conceptpowers:version-sync`      | **플러그인 자체가 업데이트된 후**, 또는 뷰어/`concepts:view` 스크립트가 낡아 보일 때.                  | 뷰어(`index.html`, `assets/viewer.js`, `concept.css`, `manifest.json`)를 재렌더하고 `concepts:view` 스크립트를 설치된 플러그인 버전으로 갱신한다. baseline은 건드리지 않는다.    |
 
 ### 프로젝트 구조
 

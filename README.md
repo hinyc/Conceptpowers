@@ -131,6 +131,8 @@ contract so any edit invalidates it). The commit gate likewise asks when a stage
 change has no fresh attestation. The attestation is the agent's self-report — it can't
 prove the check was _thorough_, but it makes skipping the step impossible to hide.
 
+Editing a concept's content (`conceptpowers:update-baseline`) is the one path that touches a settled concept: it's allowed only with the user's explicit approval of the exact change, and it always demotes 🟢 green → 🟡 pending — the concept stops governing code until a fresh `check-consistency` passes and the user re-promotes it with `conceptpowers:approve`. The agent never hand-edits a concept's JSON to keep it green.
+
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
 ### What happens at commit time
@@ -176,7 +178,8 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 | `conceptpowers:approve`           | When the user **confirms** a 🔴 concept on explicit user request.                                                               | Promotes an auto-inferred 🔴 red concept to 🟢 green _after_ a consistency check, then re-renders the viewer. The agent never approves on its own.                                                                                |
 | `conceptpowers:update-mapping`    | **After editing code**, to refresh the `@concept` links — or anytime, to resync.                                                | Updated `@concept` tags (source of truth) + a rebuilt `.cache/mapping.json`.                                                                                                                                                      |
 | `conceptpowers:audit`             | **Anytime**, for a whole-project sweep.                                                                                         | A list of concept-less gaps, broken `@concept` links, and unapproved 🔴 concepts, each with a recommended action.                                                                                                                 |
-| `conceptpowers:update-baseline`   | **Only** when the user explicitly asks to edit the baseline.                                                                    | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`.                                                                                                                             |
+| `conceptpowers:update-baseline`   | **Only** when the user explicitly asks to edit the baseline.                                                                    | The requested baseline edit; when a concept's contract changes, records the reason via `note-change`, and demotes an edited 🟢 green concept to 🟡 pending until re-approved.                                                     |
+| `conceptpowers:version-sync`      | **After the plugin itself updates**, or anytime the viewer / `concepts:view` script looks stale.                                | Re-renders the viewer (`index.html`, `assets/viewer.js`, `concept.css`, `manifest.json`) and refreshes the `concepts:view` script to the installed plugin version. Never touches the baseline.                                    |
 
 ### Project structure
 
