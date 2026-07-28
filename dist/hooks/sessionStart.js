@@ -4510,6 +4510,7 @@ async function renderViewerToDisk(root) {
   const p = cpPaths(root);
   await copyAsset("index.html", join4(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join4(p.conceptsViewer, "assets", "viewer.js"));
+  await copyAsset("sidebar.js", join4(p.conceptsViewer, "assets", "sidebar.js"));
   await copyAsset("serve.mjs", join4(p.conceptsViewer, "serve.mjs"));
   await copyAsset("concept.css", p.cssTarget);
 }
