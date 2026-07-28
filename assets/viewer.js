@@ -678,13 +678,18 @@ function conceptListSections(active) {
         null,
         groups[g].map(function (c) {
           var isActive = !!(active && active.kind === 'concept' && active.slug === c.slug);
+          var label = displayName(c.title, c.slug);
           return h('li', { class: isActive ? 'active' : null }, [
             statusBadge(c.status),
             ' ',
             h(
               'a',
-              { href: '#/concept/' + c.slug, 'aria-current': isActive ? 'page' : null },
-              displayName(c.title, c.slug)
+              {
+                href: '#/concept/' + c.slug,
+                'aria-current': isActive ? 'page' : null,
+                title: label,
+              },
+              label
             ),
             ' ',
             h('small', null, (c.category || []).join(', ')),
@@ -705,11 +710,16 @@ function featureListSection(active) {
       null,
       m.features.map(function (f) {
         var isActive = !!(active && active.kind === 'feature' && active.slug === f.slug);
+        var label = displayName(f.title, f.slug);
         return h('li', { class: isActive ? 'active' : null }, [
           h(
             'a',
-            { href: '#/feature/' + f.slug, 'aria-current': isActive ? 'page' : null },
-            displayName(f.title, f.slug)
+            {
+              href: '#/feature/' + f.slug,
+              'aria-current': isActive ? 'page' : null,
+              title: label,
+            },
+            label
           ),
           ' ',
           h('small', null, String(f.codePathCount)),

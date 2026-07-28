@@ -95,6 +95,7 @@ body {
   z-index: 40;
   transform: translateX(-100%);
   transition: transform 0.2s ease;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
 }
 .shell--open .side {
   display: block;
@@ -125,12 +126,25 @@ body {
   font-size: 0.72rem;
 }
 .side .group li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
   padding: 0.4rem 0.3rem;
 }
 .side .group a {
+  display: inline-block;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
   font-size: 0.92rem;
 }
 .side .group small {
+  flex: 1 0 100%;
   display: block;
   margin-left: 0;
   font-size: 0.75rem;
@@ -143,7 +157,6 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
   z-index: 35;
 }
 .shell--open .side-backdrop {
