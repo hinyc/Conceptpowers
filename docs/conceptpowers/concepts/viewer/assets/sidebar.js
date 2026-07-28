@@ -54,9 +54,11 @@ var CPSidebar = (function () {
     if (escBound) return;
     escBound = true;
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && currentShell && currentShell.classList.contains('shell--open')) {
-        setOpen(false);
-      }
+      if (ev.key !== 'Escape') return;
+      // 상세 화면을 떠나면 currentShell은 분리된 노드가 된다 — 그때의 Esc는 무시해야
+      // 사용자가 명시적으로 닫지 않은 상태를 localStorage에 쓰지 않는다.
+      if (currentShell && !currentShell.isConnected) currentShell = null;
+      if (currentShell && currentShell.classList.contains('shell--open')) setOpen(false);
     });
   }
 
@@ -87,7 +89,7 @@ var CPSidebar = (function () {
       '☰'
     );
     toggleBtn.addEventListener('click', function () {
-      setOpen(!currentShell.classList.contains('shell--open'));
+      setOpen(!toggleBtn.closest('.shell').classList.contains('shell--open'));
     });
     var closeBtn = h(
       'button',
