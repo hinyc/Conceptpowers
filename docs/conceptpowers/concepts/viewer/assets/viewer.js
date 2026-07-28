@@ -211,6 +211,25 @@ function statusBadge(status) {
         : t.statusUnapproved;
   return h('span', { class: 'badge badge--' + (status || 'red') }, label);
 }
+// 사이드바용 축약 표시: 알약형 배지 대신 상태색 "|" 한 글자만 붙인다(레이블은 title/aria-label로 유지).
+function statusDot(status) {
+  var t = state.t;
+  var label =
+    status === 'green'
+      ? t.statusApproved
+      : status === 'pending'
+        ? t.statusPending
+        : t.statusUnapproved;
+  return h(
+    'span',
+    {
+      class: 'status-dot status-dot--' + (status || 'red'),
+      'aria-label': label,
+      title: label,
+    },
+    '|'
+  );
+}
 // 클립보드 복사. localhost는 보안 컨텍스트라 navigator.clipboard가 동작하지만,
 // 안 될 경우 textarea + execCommand로 폴백한다.
 function copyText(s) {
@@ -663,7 +682,8 @@ function renderSearchResults(q, box) {
 
 // ---- 뷰: 목록 ----
 // active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
-function conceptListSections(active) {
+// compact: true면 사이드바용 축약 상태 표시(statusDot)를 쓰고, 기본(목록 페이지)은 알약형 배지 그대로.
+function conceptListSections(active, compact) {
   var m = state.manifest;
   var groups = {};
   (m.concepts || []).forEach(function (c) {
@@ -680,7 +700,7 @@ function conceptListSections(active) {
           var isActive = !!(active && active.kind === 'concept' && active.slug === c.slug);
           var label = displayName(c.title, c.slug);
           return h('li', { class: isActive ? 'active' : null }, [
-            statusBadge(c.status),
+            compact ? statusDot(c.status) : statusBadge(c.status),
             ' ',
             h(
               'a',

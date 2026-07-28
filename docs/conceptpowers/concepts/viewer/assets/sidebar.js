@@ -66,7 +66,7 @@ var CPSidebar = (function () {
   function sidebarListNode(activeKind, activeSlug) {
     var t = state.t;
     var active = { kind: activeKind, slug: activeSlug };
-    var sections = conceptListSections(active);
+    var sections = conceptListSections(active, true);
     var featureSection = featureListSection(active);
     var body = sections.length ? sections : [h('p', { class: 'muted' }, t.empty)];
     return h('div', { class: 'side__list' }, [body, featureSection]);

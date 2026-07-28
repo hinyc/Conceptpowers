@@ -136,7 +136,10 @@ body {
 }
 .side .group a {
   display: inline-block;
-  flex: 1 1 auto;
+  /* flex-basis:auto는 잘리기 전 전체 텍스트 너비를 기준으로 줄바꿈을 계산해,
+     앞의 상태 표시자가 아무리 작아도 다음 줄로 밀려난다 — 0%로 둬야 grow가
+     남은 공간을 채우고 그 안에서 ellipsis가 잘라낸다. */
+  flex: 1 1 0%;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -535,6 +538,24 @@ li::marker {
 }
 .group li .badge {
   margin-right: 0.4rem;
+}
+
+/* 사이드바 축약 상태 표시(알약형 배지 대신 색상 "|" 한 글자) */
+.status-dot {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 0.95rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+.status-dot--green {
+  color: #1a7f37;
+}
+.status-dot--pending {
+  color: #9a6b00;
+}
+.status-dot--red {
+  color: #b42318;
 }
 
 /* 관련 링크 목록 (관련 기능 / 관련 개념) */
