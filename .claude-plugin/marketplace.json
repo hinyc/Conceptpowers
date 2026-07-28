@@ -6,7 +6,7 @@
     {
       "name": "conceptpowers",
       "description": "Concept-driven development governance for Claude Code",
-      "version": "0.10.11",
+      "version": "0.10.12",
       "source": "./",
       "author": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" }
     }
