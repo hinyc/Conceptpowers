@@ -75,6 +75,9 @@ var I18N = {
     category: '분류',
     codeLinksLabel: '코드 경로',
     linesHint: '한 줄에 하나씩',
+    sidebarOpenLabel: '개념 목록 열기',
+    sidebarCloseLabel: '개념 목록 닫기',
+    closeSidebar: '닫기',
   },
   en: {
     appTitle: 'Concepts',
@@ -146,6 +149,9 @@ var I18N = {
     category: 'Category',
     codeLinksLabel: 'Code paths',
     linesHint: 'one per line',
+    sidebarOpenLabel: 'Open concept list',
+    sidebarCloseLabel: 'Close concept list',
+    closeSidebar: 'Close',
   },
 };
 
@@ -656,26 +662,35 @@ function renderSearchResults(q, box) {
 }
 
 // ---- 뷰: 목록 ----
-// scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
-function viewIndex(scrollTo) {
-  var t = state.t;
+// active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
+function conceptListSections(active) {
   var m = state.manifest;
   var groups = {};
   (m.concepts || []).forEach(function (c) {
     var g = c.group || '(ungrouped)';
     (groups[g] = groups[g] || []).push(c);
   });
-  var sections = Object.keys(groups).map(function (g) {
+  return Object.keys(groups).map(function (g) {
     return h('section', { class: 'group', id: 'g-' + g }, [
       h('h2', null, g),
       h(
         'ul',
         null,
         groups[g].map(function (c) {
-          return h('li', null, [
+          var isActive = !!(active && active.kind === 'concept' && active.slug === c.slug);
+          var label = displayName(c.title, c.slug);
+          return h('li', { class: isActive ? 'active' : null }, [
             statusBadge(c.status),
             ' ',
-            h('a', { href: '#/concept/' + c.slug }, displayName(c.title, c.slug)),
+            h(
+              'a',
+              {
+                href: '#/concept/' + c.slug,
+                'aria-current': isActive ? 'page' : null,
+                title: label,
+              },
+              label
+            ),
             ' ',
             h('small', null, (c.category || []).join(', ')),
           ]);
@@ -683,22 +698,42 @@ function viewIndex(scrollTo) {
       ),
     ]);
   });
-  var featureSection = (m.features || []).length
-    ? h('section', { class: 'group', id: 'g-__features' }, [
-        h('h2', null, t.featureList),
-        h(
-          'ul',
-          null,
-          m.features.map(function (f) {
-            return h('li', null, [
-              h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug)),
-              ' ',
-              h('small', null, String(f.codePathCount)),
-            ]);
-          })
-        ),
-      ])
-    : null;
+}
+function featureListSection(active) {
+  var t = state.t;
+  var m = state.manifest;
+  if (!(m.features || []).length) return null;
+  return h('section', { class: 'group', id: 'g-__features' }, [
+    h('h2', null, t.featureList),
+    h(
+      'ul',
+      null,
+      m.features.map(function (f) {
+        var isActive = !!(active && active.kind === 'feature' && active.slug === f.slug);
+        var label = displayName(f.title, f.slug);
+        return h('li', { class: isActive ? 'active' : null }, [
+          h(
+            'a',
+            {
+              href: '#/feature/' + f.slug,
+              'aria-current': isActive ? 'page' : null,
+              title: label,
+            },
+            label
+          ),
+          ' ',
+          h('small', null, String(f.codePathCount)),
+        ]);
+      })
+    ),
+  ]);
+}
+// scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
+function viewIndex(scrollTo) {
+  var t = state.t;
+  var m = state.manifest;
+  var sections = conceptListSections(null);
+  var featureSection = featureListSection(null);
   var body = (m.concepts || []).length ? sections : [h('p', { class: 'muted' }, t.empty)];
   // 검색: 입력이 있으면 목록 대신 결과를 보여주고, 지우면 목록으로 복귀한다.
   var bodyBox = h('div', null, [body, featureSection]);
@@ -909,7 +944,7 @@ function renderConceptRead(slug) {
       h('a', { class: 'graph-link', href: '#/graph/' + slug }, t.openGraph + ' →'),
     ]),
   ];
-  setApp(h('div', { class: 'wrap' }, sections));
+  setApp(CPSidebar.shell('concept', slug, h('div', { class: 'wrap' }, sections)));
 }
 
 // ---- 편집 폼 헬퍼 ----
@@ -1057,47 +1092,51 @@ function renderConceptEdit(slug) {
   var editEntry = conceptEntry(slug);
   var editGroup = (editEntry && editEntry.group) || '(ungrouped)';
   setApp(
-    h('div', { class: 'wrap' }, [
-      breadcrumbs([
-        { label: t.home, href: '#/' },
-        { label: editGroup, href: '#/group/' + encodeURIComponent(editGroup) },
-        { label: displayName(c.title, slug) },
-      ]),
-      h('header', { class: 'hero' }, [
-        statusBadge(c.status),
-        h('h1', null, displayName(c.title, slug)),
-      ]),
-      h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
-      h('section', { class: 'section edit-form' }, [
-        field(t.title, f.title),
-        field(t.eyebrow, f.eyebrow),
-        field(t.category, catBox),
-        h('h2', null, t.description),
-        field(t.definition, f.definition),
-        field(t.analogy, f.analogy),
-        field(t.components, f.components, t.linesHint),
-        field(t.example, f.example),
-        h('h2', null, t.purpose),
-        field(t.reason, f.reason),
-        field(t.benefits, f.benefits, t.linesHint),
-        field(t.vision, f.vision),
-        field(t.painPoints, f.painPoints, t.linesHint),
-        h('h2', null, t.allow + ' / ' + t.restrict),
-        field(t.allow, f.allow, t.linesHint),
-        field(t.restrict, f.restrict, t.linesHint),
-        field(t.interaction, f.interaction),
-        h('h2', null, t.principle),
-        field(t.immutableRules, f.immutableRules, t.linesHint),
-        field(t.tradeoffs, f.tradeoffs),
-        field(t.lifecycle, f.lifecycle, t.linesHint),
-        h('h2', null, t.relatedConcepts),
-        field('prev', f.prev),
-        field('next', f.next),
-        field(t.relatedSlugs, f.related, t.linesHint),
-        field(t.codeLinksLabel, f.codeLinks, t.linesHint),
-      ]),
-      h('nav', { class: 'pagenav' }, [h('a', { href: '#/' }, t.conceptList)]),
-    ])
+    CPSidebar.shell(
+      'concept',
+      slug,
+      h('div', { class: 'wrap' }, [
+        breadcrumbs([
+          { label: t.home, href: '#/' },
+          { label: editGroup, href: '#/group/' + encodeURIComponent(editGroup) },
+          { label: displayName(c.title, slug) },
+        ]),
+        h('header', { class: 'hero' }, [
+          statusBadge(c.status),
+          h('h1', null, displayName(c.title, slug)),
+        ]),
+        h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
+        h('section', { class: 'section edit-form' }, [
+          field(t.title, f.title),
+          field(t.eyebrow, f.eyebrow),
+          field(t.category, catBox),
+          h('h2', null, t.description),
+          field(t.definition, f.definition),
+          field(t.analogy, f.analogy),
+          field(t.components, f.components, t.linesHint),
+          field(t.example, f.example),
+          h('h2', null, t.purpose),
+          field(t.reason, f.reason),
+          field(t.benefits, f.benefits, t.linesHint),
+          field(t.vision, f.vision),
+          field(t.painPoints, f.painPoints, t.linesHint),
+          h('h2', null, t.allow + ' / ' + t.restrict),
+          field(t.allow, f.allow, t.linesHint),
+          field(t.restrict, f.restrict, t.linesHint),
+          field(t.interaction, f.interaction),
+          h('h2', null, t.principle),
+          field(t.immutableRules, f.immutableRules, t.linesHint),
+          field(t.tradeoffs, f.tradeoffs),
+          field(t.lifecycle, f.lifecycle, t.linesHint),
+          h('h2', null, t.relatedConcepts),
+          field('prev', f.prev),
+          field('next', f.next),
+          field(t.relatedSlugs, f.related, t.linesHint),
+          field(t.codeLinksLabel, f.codeLinks, t.linesHint),
+        ]),
+        h('nav', { class: 'pagenav' }, [h('a', { href: '#/' }, t.conceptList)]),
+      ])
+    )
   );
 }
 
@@ -1124,24 +1163,28 @@ function viewFeature(slug) {
           )
         : null;
       setApp(
-        h('div', { class: 'wrap' }, [
-          breadcrumbs([
-            { label: t.home, href: '#/' },
-            { label: t.featureList, href: '#/group/__features' },
-            { label: displayName(f.title, slug) },
-          ]),
-          h('header', { class: 'hero' }, [
-            h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
-            h('h1', null, displayName(f.title, slug)),
-            f.description ? h('p', null, f.description) : null,
-          ]),
-          h('section', { class: 'section' }, [
-            h('h2', null, t.relatedConcepts),
-            h('ul', { class: 'links' }, conceptLinks),
-          ]),
-          h('section', { class: 'section' }, [h('h2', null, t.implementationPaths), paths]),
-          pagenav(),
-        ])
+        CPSidebar.shell(
+          'feature',
+          slug,
+          h('div', { class: 'wrap' }, [
+            breadcrumbs([
+              { label: t.home, href: '#/' },
+              { label: t.featureList, href: '#/group/__features' },
+              { label: displayName(f.title, slug) },
+            ]),
+            h('header', { class: 'hero' }, [
+              h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
+              h('h1', null, displayName(f.title, slug)),
+              f.description ? h('p', null, f.description) : null,
+            ]),
+            h('section', { class: 'section' }, [
+              h('h2', null, t.relatedConcepts),
+              h('ul', { class: 'links' }, conceptLinks),
+            ]),
+            h('section', { class: 'section' }, [h('h2', null, t.implementationPaths), paths]),
+            pagenav(),
+          ])
+        )
       );
     })
     .catch(renderError);
