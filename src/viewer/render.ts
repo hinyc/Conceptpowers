@@ -80,6 +80,7 @@ export async function renderViewerToDisk(root: string): Promise<void> {
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
   await copyAsset('index.html', join(p.conceptsViewer, 'index.html'));
   await copyAsset('viewer.js', join(p.conceptsViewer, 'assets', 'viewer.js'));
+  await copyAsset('sidebar.js', join(p.conceptsViewer, 'assets', 'sidebar.js'));
   await copyAsset('serve.mjs', join(p.conceptsViewer, 'serve.mjs'));
   await copyAsset('concept.css', p.cssTarget);
 }

@@ -75,6 +75,9 @@ var I18N = {
     category: '분류',
     codeLinksLabel: '코드 경로',
     linesHint: '한 줄에 하나씩',
+    sidebarOpenLabel: '개념 목록 열기',
+    sidebarCloseLabel: '개념 목록 닫기',
+    closeSidebar: '닫기',
   },
   en: {
     appTitle: 'Concepts',
@@ -146,6 +149,9 @@ var I18N = {
     category: 'Category',
     codeLinksLabel: 'Code paths',
     linesHint: 'one per line',
+    sidebarOpenLabel: 'Open concept list',
+    sidebarCloseLabel: 'Close concept list',
+    closeSidebar: 'Close',
   },
 };
 
@@ -928,7 +934,7 @@ function renderConceptRead(slug) {
       h('a', { class: 'graph-link', href: '#/graph/' + slug }, t.openGraph + ' →'),
     ]),
   ];
-  setApp(h('div', { class: 'wrap' }, sections));
+  setApp(CPSidebar.shell('concept', slug, h('div', { class: 'wrap' }, sections)));
 }
 
 // ---- 편집 폼 헬퍼 ----
@@ -1076,47 +1082,51 @@ function renderConceptEdit(slug) {
   var editEntry = conceptEntry(slug);
   var editGroup = (editEntry && editEntry.group) || '(ungrouped)';
   setApp(
-    h('div', { class: 'wrap' }, [
-      breadcrumbs([
-        { label: t.home, href: '#/' },
-        { label: editGroup, href: '#/group/' + encodeURIComponent(editGroup) },
-        { label: displayName(c.title, slug) },
-      ]),
-      h('header', { class: 'hero' }, [
-        statusBadge(c.status),
-        h('h1', null, displayName(c.title, slug)),
-      ]),
-      h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
-      h('section', { class: 'section edit-form' }, [
-        field(t.title, f.title),
-        field(t.eyebrow, f.eyebrow),
-        field(t.category, catBox),
-        h('h2', null, t.description),
-        field(t.definition, f.definition),
-        field(t.analogy, f.analogy),
-        field(t.components, f.components, t.linesHint),
-        field(t.example, f.example),
-        h('h2', null, t.purpose),
-        field(t.reason, f.reason),
-        field(t.benefits, f.benefits, t.linesHint),
-        field(t.vision, f.vision),
-        field(t.painPoints, f.painPoints, t.linesHint),
-        h('h2', null, t.allow + ' / ' + t.restrict),
-        field(t.allow, f.allow, t.linesHint),
-        field(t.restrict, f.restrict, t.linesHint),
-        field(t.interaction, f.interaction),
-        h('h2', null, t.principle),
-        field(t.immutableRules, f.immutableRules, t.linesHint),
-        field(t.tradeoffs, f.tradeoffs),
-        field(t.lifecycle, f.lifecycle, t.linesHint),
-        h('h2', null, t.relatedConcepts),
-        field('prev', f.prev),
-        field('next', f.next),
-        field(t.relatedSlugs, f.related, t.linesHint),
-        field(t.codeLinksLabel, f.codeLinks, t.linesHint),
-      ]),
-      h('nav', { class: 'pagenav' }, [h('a', { href: '#/' }, t.conceptList)]),
-    ])
+    CPSidebar.shell(
+      'concept',
+      slug,
+      h('div', { class: 'wrap' }, [
+        breadcrumbs([
+          { label: t.home, href: '#/' },
+          { label: editGroup, href: '#/group/' + encodeURIComponent(editGroup) },
+          { label: displayName(c.title, slug) },
+        ]),
+        h('header', { class: 'hero' }, [
+          statusBadge(c.status),
+          h('h1', null, displayName(c.title, slug)),
+        ]),
+        h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
+        h('section', { class: 'section edit-form' }, [
+          field(t.title, f.title),
+          field(t.eyebrow, f.eyebrow),
+          field(t.category, catBox),
+          h('h2', null, t.description),
+          field(t.definition, f.definition),
+          field(t.analogy, f.analogy),
+          field(t.components, f.components, t.linesHint),
+          field(t.example, f.example),
+          h('h2', null, t.purpose),
+          field(t.reason, f.reason),
+          field(t.benefits, f.benefits, t.linesHint),
+          field(t.vision, f.vision),
+          field(t.painPoints, f.painPoints, t.linesHint),
+          h('h2', null, t.allow + ' / ' + t.restrict),
+          field(t.allow, f.allow, t.linesHint),
+          field(t.restrict, f.restrict, t.linesHint),
+          field(t.interaction, f.interaction),
+          h('h2', null, t.principle),
+          field(t.immutableRules, f.immutableRules, t.linesHint),
+          field(t.tradeoffs, f.tradeoffs),
+          field(t.lifecycle, f.lifecycle, t.linesHint),
+          h('h2', null, t.relatedConcepts),
+          field('prev', f.prev),
+          field('next', f.next),
+          field(t.relatedSlugs, f.related, t.linesHint),
+          field(t.codeLinksLabel, f.codeLinks, t.linesHint),
+        ]),
+        h('nav', { class: 'pagenav' }, [h('a', { href: '#/' }, t.conceptList)]),
+      ])
+    )
   );
 }
 
@@ -1143,24 +1153,28 @@ function viewFeature(slug) {
           )
         : null;
       setApp(
-        h('div', { class: 'wrap' }, [
-          breadcrumbs([
-            { label: t.home, href: '#/' },
-            { label: t.featureList, href: '#/group/__features' },
-            { label: displayName(f.title, slug) },
-          ]),
-          h('header', { class: 'hero' }, [
-            h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
-            h('h1', null, displayName(f.title, slug)),
-            f.description ? h('p', null, f.description) : null,
-          ]),
-          h('section', { class: 'section' }, [
-            h('h2', null, t.relatedConcepts),
-            h('ul', { class: 'links' }, conceptLinks),
-          ]),
-          h('section', { class: 'section' }, [h('h2', null, t.implementationPaths), paths]),
-          pagenav(),
-        ])
+        CPSidebar.shell(
+          'feature',
+          slug,
+          h('div', { class: 'wrap' }, [
+            breadcrumbs([
+              { label: t.home, href: '#/' },
+              { label: t.featureList, href: '#/group/__features' },
+              { label: displayName(f.title, slug) },
+            ]),
+            h('header', { class: 'hero' }, [
+              h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
+              h('h1', null, displayName(f.title, slug)),
+              f.description ? h('p', null, f.description) : null,
+            ]),
+            h('section', { class: 'section' }, [
+              h('h2', null, t.relatedConcepts),
+              h('ul', { class: 'links' }, conceptLinks),
+            ]),
+            h('section', { class: 'section' }, [h('h2', null, t.implementationPaths), paths]),
+            pagenav(),
+          ])
+        )
       );
     })
     .catch(renderError);

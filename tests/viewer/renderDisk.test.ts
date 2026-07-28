@@ -19,6 +19,7 @@ it('단일 SPA 에셋(index.html, viewer.js, serve.mjs, css)을 디스크에 쓴
   await renderViewerToDisk(root);
   expect(existsSync(viewer('index.html'))).toBe(true);
   expect(existsSync(viewer('assets/viewer.js'))).toBe(true);
+  expect(existsSync(viewer('assets/sidebar.js'))).toBe(true);
   expect(existsSync(viewer('serve.mjs'))).toBe(true);
   expect(existsSync(viewer('assets/concept.css'))).toBe(true);
 });
@@ -94,6 +95,7 @@ it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {
 it('viewer.js와 index.html이 서로를 참조한다', async () => {
   await renderViewerToDisk(root);
   expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/viewer.js');
+  expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/sidebar.js');
 });
 
 it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {
