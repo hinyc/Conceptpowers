@@ -1,0 +1,16 @@
+{
+  "slug": "feature-registry",
+  "group": "governance",
+  "title": "기능 명세와 이름표 규칙",
+  "description": "기능을 1급 기록으로 두어 개념과 코드를 잇고, 개념·기능 이름표가 프로젝트 전체에서 유일하도록 강제한다.",
+  "concepts": [
+    "feature-spec-bridge",
+    "globally-unique-slug"
+  ],
+  "codePaths": [
+    "src/schema/feature.ts",
+    "src/store/featureStore.ts",
+    "src/schema/concept.ts",
+    "src/store/conceptStore.ts"
+  ]
+}

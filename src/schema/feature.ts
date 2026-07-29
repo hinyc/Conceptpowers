@@ -1,3 +1,4 @@
+// @concept:feature-spec-bridge @concept:globally-unique-slug
 import { z } from 'zod';
 
 // feature는 "기능"의 1급 엔티티. 관련 개념(concepts)과 구현 경로(codePaths)의 단일 원본이다.

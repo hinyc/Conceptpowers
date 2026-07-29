@@ -1,0 +1,12 @@
+{
+  "slug": "prompt-injection-defense",
+  "group": "platform",
+  "title": "비신뢰 입력 무장해제",
+  "description": "사람이 자유롭게 쓴 문장을 AI에게 넘기기 전에 비가시 문자와 구역 구분 기호를 걷어낸다.",
+  "concepts": [
+    "untrusted-text-sanitization"
+  ],
+  "codePaths": [
+    "src/drift/safe.ts"
+  ]
+}

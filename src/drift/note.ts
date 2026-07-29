@@ -1,3 +1,4 @@
+// @concept:contract-hash
 import { readConcept } from '../store/conceptStore.js';
 import { contractHash } from './hash.js';
 import { appendHistory } from './history.js';

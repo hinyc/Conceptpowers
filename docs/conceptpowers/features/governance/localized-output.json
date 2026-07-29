@@ -1,0 +1,14 @@
+{
+  "slug": "localized-output",
+  "group": "governance",
+  "title": "산출물 출력 언어",
+  "description": "프로젝트에 설정된 언어로 개념 문서와 사용자 안내를 쓴다.",
+  "concepts": [
+    "output-locale"
+  ],
+  "codePaths": [
+    "src/i18n/messages.ts",
+    "src/schema/initConfig.ts",
+    "src/init/readConfig.ts"
+  ]
+}

@@ -1,3 +1,4 @@
+// @concept:pending-conflict-tracking
 // pending 개념의 충돌 사유 저장소. 개념 JSON을 오염시키지 않도록 .alignment에 분리 보관한다.
 import { readFile } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';

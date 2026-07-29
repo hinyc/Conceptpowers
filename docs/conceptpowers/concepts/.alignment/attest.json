@@ -13,5 +13,115 @@
     "hash": "c38a55c04067",
     "result": "pass",
     "at": "2026-07-22T05:18:42.337Z"
+  },
+  "home-search": {
+    "hash": "09c8085cfbbb",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.599Z"
+  },
+  "sidebar-search": {
+    "hash": "ddf61f099fea",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.642Z"
+  },
+  "sidebar-toggle": {
+    "hash": "3f79d43c9c88",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.683Z"
+  },
+  "concept-inline-edit": {
+    "hash": "26279e1f3654",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.725Z"
+  },
+  "knowledge-graph-view": {
+    "hash": "694bd9e9900f",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.765Z"
+  },
+  "copy-code-path": {
+    "hash": "57f445f62020",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.738Z"
+  },
+  "contract-hash": {
+    "hash": "f0a8a4768fb3",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.847Z"
+  },
+  "drift-reconcile": {
+    "hash": "cfe9b5e09b76",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.888Z"
+  },
+  "audit-gap-detection": {
+    "hash": "e1198b5b7af4",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.929Z"
+  },
+  "concept-code-mapping": {
+    "hash": "af5c4caffdea",
+    "result": "pass",
+    "at": "2026-07-29T03:30:22.971Z"
+  },
+  "feature-spec-bridge": {
+    "hash": "cc5fa65432b2",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.983Z"
+  },
+  "globally-unique-slug": {
+    "hash": "ee9e098f1319",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.796Z"
+  },
+  "pending-conflict-tracking": {
+    "hash": "1a1b4c653000",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.095Z"
+  },
+  "reference-first-duty": {
+    "hash": "7eb89c3befb6",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.136Z"
+  },
+  "output-locale": {
+    "hash": "fc89cb832d28",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.177Z"
+  },
+  "viewer-local-write-guard": {
+    "hash": "6ef9cbc9644f",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.220Z"
+  },
+  "untrusted-text-sanitization": {
+    "hash": "a91d91f83e53",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.265Z"
+  },
+  "atomic-baseline-write": {
+    "hash": "c83e2a8d9319",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.844Z"
+  },
+  "generated-not-hand-edited": {
+    "hash": "2e61b3de3730",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.349Z"
+  },
+  "plugin-version-sync": {
+    "hash": "1f7f05754a0a",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.893Z"
+  },
+  "init-gate": {
+    "hash": "210f0acba01b",
+    "result": "pass",
+    "at": "2026-07-29T03:30:23.433Z"
+  },
+  "reference-privacy": {
+    "hash": "65479e3bc867",
+    "result": "pass",
+    "at": "2026-07-29T04:42:07.939Z"
   }
 }

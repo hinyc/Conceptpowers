@@ -1,3 +1,4 @@
+// @concept:concept-code-mapping
 // src/mapping/scan.ts
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';

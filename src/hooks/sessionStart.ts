@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 // src/hooks/sessionStart.ts
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';

@@ -1,0 +1,19 @@
+{
+  "slug": "plugin-lifecycle",
+  "group": "platform",
+  "title": "플러그인 생애주기",
+  "description": "초기화되지 않은 프로젝트에서는 명령을 거절하고, 도구가 올라가면 생성물만 새 버전으로 맞춘다. 생성물은 손으로 고치지 않는다.",
+  "concepts": [
+    "init-gate",
+    "plugin-version-sync",
+    "generated-not-hand-edited"
+  ],
+  "codePaths": [
+    "src/cli.ts",
+    "src/init/scaffold.ts",
+    "src/init/syncGenerated.ts",
+    "src/version/checkUpdate.ts",
+    "src/viewer/render.ts",
+    "src/hooks/sessionStart.ts"
+  ]
+}

@@ -1,3 +1,4 @@
+// @concept:output-locale
 // src/init/readConfig.ts
 import { readFile } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';

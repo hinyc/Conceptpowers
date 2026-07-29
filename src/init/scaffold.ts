@@ -1,3 +1,4 @@
+// @concept:init-gate
 // src/init/scaffold.ts
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';

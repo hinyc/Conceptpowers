@@ -1,3 +1,4 @@
+// @concept:untrusted-text-sanitization
 // drift 경로 비교와 LLM 컨텍스트 주입을 위한 안전 유틸.
 
 // git이 내놓는 경로(repo-root 상대, POSIX)와 feature codePaths/태그 경로의

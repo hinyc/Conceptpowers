@@ -1,3 +1,4 @@
+// @concept:viewer-local-write-guard
 // src/viewer/serve.ts — Conceptpowers 뷰어 로컬 서버.
 // 빌드 시 esbuild가 엔진(zod 포함)을 인라인 번들해 assets/serve.mjs로 출력한다.
 // 따라서 배포본은 런타임 의존성 0이면서 실제 엔진 가드 로직을 그대로 사용한다(드리프트 없음).

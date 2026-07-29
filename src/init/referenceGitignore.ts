@@ -1,4 +1,4 @@
-// @concept:none
+// @concept:reference-privacy
 // src/init/referenceGitignore.ts
 // reference/에는 기밀 문서(계약서·내부 명세 등)가 들어올 수 있어 기본은 로컬 전용이다.
 // 폴더 전용 .gitignore로 전체를 무시하되, 공유 가능한 것은 paths.md(외부 경로 목록) 하나뿐이다.

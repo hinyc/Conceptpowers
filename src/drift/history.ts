@@ -1,3 +1,4 @@
+// @concept:drift-reconcile
 import { readFile } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';
 import { History, HistoryEntry } from '../schema/alignment.js';

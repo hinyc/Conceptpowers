@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited
 // src/viewer/render.ts
 // 뷰어를 디스크에 만든다. 개념마다 HTML을 굽지 않고, 데이터는 원본 JSON으로 두고
 // 단일 SPA(index.html + viewer.js)가 manifest.json을 통해 data/*.json을 fetch해 렌더한다.

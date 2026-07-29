@@ -1,3 +1,4 @@
+// @concept:output-locale
 // src/i18n/messages.ts
 // 사람이 직접 보는, 코드가 결정론적으로 출력하는 텍스트만 ko/en 두 벌로 관리한다.
 // (init 안내/seed 템플릿). 뷰어 라벨은 정적 에셋 assets/viewer.js가 자체 보유한다.

@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
 
 function parse(v: string): [number, number, number] | null {

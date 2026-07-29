@@ -1,3 +1,4 @@
+// @concept:audit-gap-detection
 // src/audit/gaps.ts
 // 개념 없는 코드(@concept 태그가 없는 거버넌스 대상 코드 파일) 탐지.
 import { readFile } from 'node:fs/promises';

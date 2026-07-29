@@ -1,0 +1,14 @@
+{
+  "slug": "viewer-sidebar",
+  "group": "viewer",
+  "title": "상세 화면 사이드바",
+  "description": "개념·기능 상세 화면 왼쪽에 목록 서랍을 두고, 열고 닫은 선택을 기억하며, 상단 검색창으로 목록을 좁힌다.",
+  "concepts": [
+    "sidebar-toggle",
+    "sidebar-search"
+  ],
+  "codePaths": [
+    "assets/sidebar.js",
+    "assets/concept.css"
+  ]
+}

@@ -1,3 +1,4 @@
+// @concept:reference-first-duty @concept:reference-privacy
 // src/init/reference.ts
 // docs/conceptpowers/reference/ — 사용자가 넣는 참고자료 폴더(paths.md로 외부 경로 연결도 가능).
 // 정의된 개념이 사실(source of truth)이고 reference는 그 원천 재료다: 에이전트는 오직

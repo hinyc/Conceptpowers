@@ -1,3 +1,4 @@
+// @concept:init-gate
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';

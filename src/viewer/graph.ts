@@ -1,3 +1,4 @@
+// @concept:knowledge-graph-view
 // src/viewer/graph.ts
 // concept · feature · 구현 경로(file)의 관계를 지식 그래프 데이터로 표현한다.
 // 렌더는 클라이언트(assets/viewer.js)가 담당하고, 여기서는 순수 데이터만 만든다.

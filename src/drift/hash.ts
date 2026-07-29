@@ -1,3 +1,4 @@
+// @concept:contract-hash
 import { createHash } from 'node:crypto';
 import type { Concept } from '../schema/concept.js';
 

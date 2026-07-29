@@ -1,12 +1,96 @@
 {
-  "ask-only-gate": [
-    "src/hooks/preToolUse.ts",
-    "src/hooks/postToolUse.ts"
+  "sidebar-search": [
+    "assets/sidebar.js"
+  ],
+  "sidebar-toggle": [
+    "assets/sidebar.js"
+  ],
+  "home-search": [
+    "assets/viewer.js"
+  ],
+  "knowledge-graph-view": [
+    "assets/viewer.js",
+    "src/viewer/graph.ts"
+  ],
+  "concept-inline-edit": [
+    "assets/viewer.js"
+  ],
+  "copy-code-path": [
+    "assets/viewer.js"
   ],
   "settled-status": [
-    "src/store/conceptStore.ts",
+    "assets/viewer.js",
     "src/concept/approve.ts",
+    "src/concept/attest.ts",
     "src/concept/quality.ts",
-    "src/concept/attest.ts"
+    "src/store/conceptStore.ts"
+  ],
+  "audit-gap-detection": [
+    "src/audit/audit.ts",
+    "src/audit/gaps.ts",
+    "src/util/glob.ts"
+  ],
+  "init-gate": [
+    "src/cli.ts",
+    "src/init/scaffold.ts"
+  ],
+  "pending-conflict-tracking": [
+    "src/concept/pendingConflicts.ts"
+  ],
+  "contract-hash": [
+    "src/drift/detect.ts",
+    "src/drift/hash.ts",
+    "src/drift/lock.ts",
+    "src/drift/note.ts"
+  ],
+  "drift-reconcile": [
+    "src/drift/history.ts",
+    "src/drift/reconcile.ts"
+  ],
+  "untrusted-text-sanitization": [
+    "src/drift/safe.ts"
+  ],
+  "ask-only-gate": [
+    "src/hooks/postToolUse.ts",
+    "src/hooks/preToolUse.ts"
+  ],
+  "plugin-version-sync": [
+    "src/hooks/sessionStart.ts",
+    "src/init/syncGenerated.ts",
+    "src/version/checkUpdate.ts",
+    "src/version/compareSemver.ts"
+  ],
+  "output-locale": [
+    "src/i18n/messages.ts",
+    "src/init/readConfig.ts"
+  ],
+  "reference-first-duty": [
+    "src/init/reference.ts",
+    "src/init/referencePaths.ts"
+  ],
+  "reference-privacy": [
+    "src/init/reference.ts",
+    "src/init/referenceGitignore.ts",
+    "src/init/referencePaths.ts"
+  ],
+  "concept-code-mapping": [
+    "src/mapping/scan.ts"
+  ],
+  "feature-spec-bridge": [
+    "src/schema/feature.ts",
+    "src/store/featureStore.ts"
+  ],
+  "globally-unique-slug": [
+    "src/schema/feature.ts"
+  ],
+  "atomic-baseline-write": [
+    "src/util/atomicWrite.ts"
+  ],
+  "generated-not-hand-edited": [
+    "src/viewer/manifest.ts",
+    "src/viewer/render.ts"
+  ],
+  "viewer-local-write-guard": [
+    "src/viewer/serve.ts"
   ]
 }

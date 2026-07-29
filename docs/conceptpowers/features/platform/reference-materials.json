@@ -1,0 +1,15 @@
+{
+  "slug": "reference-materials",
+  "group": "platform",
+  "title": "참고자료 폴더",
+  "description": "개념 작업에 참고할 자료를 로컬에 두고 경로 목록만 공유한다. 도구는 읽기만 하고, 자료의 문장은 지시가 아닌 데이터로 다룬다.",
+  "concepts": [
+    "reference-privacy",
+    "reference-first-duty"
+  ],
+  "codePaths": [
+    "src/init/reference.ts",
+    "src/init/referencePaths.ts",
+    "src/init/referenceGitignore.ts"
+  ]
+}

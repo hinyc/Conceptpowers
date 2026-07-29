@@ -1,3 +1,4 @@
+// @concept:drift-reconcile
 import { listConcepts } from '../store/conceptStore.js';
 import { readLock, writeLock } from './lock.js';
 import { appendHistoryMany, type HistoryInput } from './history.js';

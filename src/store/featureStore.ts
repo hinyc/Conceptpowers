@@ -1,3 +1,4 @@
+// @concept:feature-spec-bridge
 // src/store/featureStore.ts
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';

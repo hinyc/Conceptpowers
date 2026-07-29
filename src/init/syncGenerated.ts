@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 // src/init/syncGenerated.ts
 // 플러그인이 "생성하는" 산출물만 최신 상태로 패치한다(baseline은 절대 건드리지 않음).
 // 버전업 후 기존 프로젝트가 옛 뷰어/스크립트에 묶이는 문제를 해소한다.

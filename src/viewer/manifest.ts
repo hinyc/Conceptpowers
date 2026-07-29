@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited
 // src/viewer/manifest.ts
 // 뷰어가 부팅 시 읽는 매니페스트를 만든다. 개념/기능의 "원본 JSON 위치(URL)"와
 // 목록 렌더에 필요한 최소 메타, 그리고 지식 그래프 데이터를 담는다.

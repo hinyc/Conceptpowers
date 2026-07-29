@@ -17,6 +17,97 @@
       ]
     },
     {
+      "slug": "audit-gap-detection",
+      "group": "governance",
+      "title": "표식 없는 코드 찾아내기",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/audit-gap-detection.json",
+      "codeLinks": [
+        "src/audit/gaps.ts",
+        "src/audit/audit.ts",
+        "src/util/glob.ts"
+      ]
+    },
+    {
+      "slug": "concept-code-mapping",
+      "group": "governance",
+      "title": "개념에서 코드로 가는 지도",
+      "status": "green",
+      "category": [
+        "term",
+        "behavior"
+      ],
+      "url": "../data/governance/concept-code-mapping.json",
+      "codeLinks": [
+        "src/mapping/scan.ts"
+      ]
+    },
+    {
+      "slug": "contract-hash",
+      "group": "governance",
+      "title": "약속만 지문을 찍는다",
+      "status": "green",
+      "category": [
+        "term",
+        "behavior"
+      ],
+      "url": "../data/governance/contract-hash.json",
+      "codeLinks": [
+        "src/drift/hash.ts",
+        "src/drift/detect.ts",
+        "src/drift/lock.ts",
+        "src/drift/note.ts"
+      ]
+    },
+    {
+      "slug": "drift-reconcile",
+      "group": "governance",
+      "title": "커밋 뒤 따라왔는지 결산한다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/drift-reconcile.json",
+      "codeLinks": [
+        "src/drift/reconcile.ts",
+        "src/drift/history.ts",
+        "src/drift/detect.ts"
+      ]
+    },
+    {
+      "slug": "feature-spec-bridge",
+      "group": "governance",
+      "title": "기능은 개념과 코드를 잇는 다리",
+      "status": "green",
+      "category": [
+        "term",
+        "behavior"
+      ],
+      "url": "../data/governance/feature-spec-bridge.json",
+      "codeLinks": [
+        "src/schema/feature.ts",
+        "src/store/featureStore.ts"
+      ]
+    },
+    {
+      "slug": "globally-unique-slug",
+      "group": "governance",
+      "title": "이름표는 프로젝트 전체에서 하나뿐",
+      "status": "green",
+      "category": [
+        "term"
+      ],
+      "url": "../data/governance/globally-unique-slug.json",
+      "codeLinks": [
+        "src/schema/concept.ts",
+        "src/schema/feature.ts",
+        "src/store/conceptStore.ts"
+      ]
+    },
+    {
       "slug": "human-owns-contract",
       "group": "governance",
       "title": "개념의 주인은 사람",
@@ -29,6 +120,48 @@
       "codeLinks": [
         "skills/define-concept/SKILL.md",
         "skills/update-baseline/SKILL.md"
+      ]
+    },
+    {
+      "slug": "output-locale",
+      "group": "governance",
+      "title": "산출물은 정해진 언어로",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/output-locale.json",
+      "codeLinks": [
+        "src/i18n/messages.ts",
+        "src/schema/initConfig.ts",
+        "src/init/readConfig.ts"
+      ]
+    },
+    {
+      "slug": "pending-conflict-tracking",
+      "group": "governance",
+      "title": "충돌하면 멈추고 이유를 남긴다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/pending-conflict-tracking.json",
+      "codeLinks": [
+        "src/concept/pendingConflicts.ts"
+      ]
+    },
+    {
+      "slug": "reference-first-duty",
+      "group": "governance",
+      "title": "참고자료는 개념 만들 때 한 번만",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/reference-first-duty.json",
+      "codeLinks": [
+        "src/init/reference.ts",
+        "src/init/referencePaths.ts"
       ]
     },
     {
@@ -45,7 +178,194 @@
         "src/store/conceptStore.ts",
         "src/concept/approve.ts",
         "src/concept/quality.ts",
-        "src/concept/attest.ts"
+        "src/concept/attest.ts",
+        "assets/viewer.js"
+      ]
+    },
+    {
+      "slug": "atomic-baseline-write",
+      "group": "platform",
+      "title": "쓰다 만 파일은 남기지 않는다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/platform/atomic-baseline-write.json",
+      "codeLinks": [
+        "src/util/atomicWrite.ts",
+        "src/drift/lock.ts",
+        "src/drift/history.ts",
+        "src/concept/pendingConflicts.ts",
+        "src/concept/attest.ts",
+        "src/hooks/postToolUse.ts"
+      ]
+    },
+    {
+      "slug": "generated-not-hand-edited",
+      "group": "platform",
+      "title": "만들어진 것은 손대지 않는다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/platform/generated-not-hand-edited.json",
+      "codeLinks": [
+        "src/viewer/render.ts",
+        "src/viewer/manifest.ts"
+      ]
+    },
+    {
+      "slug": "init-gate",
+      "group": "platform",
+      "title": "시작하지 않은 곳에서는 아무것도 하지 않는다",
+      "status": "green",
+      "category": [
+        "permission"
+      ],
+      "url": "../data/platform/init-gate.json",
+      "codeLinks": [
+        "src/cli.ts",
+        "src/init/scaffold.ts"
+      ]
+    },
+    {
+      "slug": "plugin-version-sync",
+      "group": "platform",
+      "title": "도구가 올라가면 껍데기만 맞춘다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/platform/plugin-version-sync.json",
+      "codeLinks": [
+        "src/init/syncGenerated.ts",
+        "src/version/checkUpdate.ts",
+        "src/version/compareSemver.ts",
+        "src/hooks/sessionStart.ts"
+      ]
+    },
+    {
+      "slug": "reference-privacy",
+      "group": "platform",
+      "title": "참고자료는 밖으로 나가지 않는다",
+      "status": "green",
+      "category": [
+        "permission",
+        "behavior"
+      ],
+      "url": "../data/platform/reference-privacy.json",
+      "codeLinks": [
+        "src/init/reference.ts",
+        "src/init/referenceGitignore.ts",
+        "src/init/referencePaths.ts"
+      ]
+    },
+    {
+      "slug": "untrusted-text-sanitization",
+      "group": "platform",
+      "title": "남이 쓴 글은 무장해제하고 넘긴다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/platform/untrusted-text-sanitization.json",
+      "codeLinks": [
+        "src/drift/safe.ts"
+      ]
+    },
+    {
+      "slug": "viewer-local-write-guard",
+      "group": "platform",
+      "title": "고치는 문은 내 컴퓨터에서만 열린다",
+      "status": "green",
+      "category": [
+        "permission",
+        "behavior"
+      ],
+      "url": "../data/platform/viewer-local-write-guard.json",
+      "codeLinks": [
+        "src/viewer/serve.ts"
+      ]
+    },
+    {
+      "slug": "concept-inline-edit",
+      "group": "viewer",
+      "title": "보면서 바로 고치기",
+      "status": "green",
+      "category": [
+        "feature",
+        "permission"
+      ],
+      "url": "../data/viewer/concept-inline-edit.json",
+      "codeLinks": [
+        "assets/viewer.js",
+        "src/store/conceptStore.ts"
+      ]
+    },
+    {
+      "slug": "copy-code-path",
+      "group": "viewer",
+      "title": "경로 한 번에 복사",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/copy-code-path.json",
+      "codeLinks": [
+        "assets/viewer.js"
+      ]
+    },
+    {
+      "slug": "home-search",
+      "group": "viewer",
+      "title": "한 곳에서 다 찾기",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/home-search.json",
+      "codeLinks": [
+        "assets/viewer.js"
+      ]
+    },
+    {
+      "slug": "knowledge-graph-view",
+      "group": "viewer",
+      "title": "관계를 그림으로 보기",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/knowledge-graph-view.json",
+      "codeLinks": [
+        "assets/viewer.js",
+        "src/viewer/graph.ts"
+      ]
+    },
+    {
+      "slug": "sidebar-search",
+      "group": "viewer",
+      "title": "옆 목록 안에서만 걸러내기",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/sidebar-search.json",
+      "codeLinks": [
+        "assets/sidebar.js"
+      ]
+    },
+    {
+      "slug": "sidebar-toggle",
+      "group": "viewer",
+      "title": "내가 닫으면 닫힌 채로",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/sidebar-toggle.json",
+      "codeLinks": [
+        "assets/sidebar.js"
       ]
     }
   ],
@@ -65,11 +385,109 @@
       "url": "../../features/governance/commit-gate.json"
     },
     {
+      "slug": "concept-audit",
+      "group": "governance",
+      "title": "개념 없는 코드 감사와 매핑",
+      "codePathCount": 4,
+      "url": "../../features/governance/concept-audit.json"
+    },
+    {
       "slug": "concept-status-governance",
       "group": "governance",
       "title": "개념 신호등 관리",
       "codePathCount": 4,
       "url": "../../features/governance/concept-status-governance.json"
+    },
+    {
+      "slug": "consistency-check",
+      "group": "governance",
+      "title": "개념 간 충돌 검사",
+      "codePathCount": 2,
+      "url": "../../features/governance/consistency-check.json"
+    },
+    {
+      "slug": "drift-detection",
+      "group": "governance",
+      "title": "개념 어긋남 탐지와 결산",
+      "codePathCount": 6,
+      "url": "../../features/governance/drift-detection.json"
+    },
+    {
+      "slug": "feature-registry",
+      "group": "governance",
+      "title": "기능 명세와 이름표 규칙",
+      "codePathCount": 4,
+      "url": "../../features/governance/feature-registry.json"
+    },
+    {
+      "slug": "localized-output",
+      "group": "governance",
+      "title": "산출물 출력 언어",
+      "codePathCount": 3,
+      "url": "../../features/governance/localized-output.json"
+    },
+    {
+      "slug": "plugin-lifecycle",
+      "group": "platform",
+      "title": "플러그인 생애주기",
+      "codePathCount": 6,
+      "url": "../../features/platform/plugin-lifecycle.json"
+    },
+    {
+      "slug": "prompt-injection-defense",
+      "group": "platform",
+      "title": "비신뢰 입력 무장해제",
+      "codePathCount": 1,
+      "url": "../../features/platform/prompt-injection-defense.json"
+    },
+    {
+      "slug": "reference-materials",
+      "group": "platform",
+      "title": "참고자료 폴더",
+      "codePathCount": 3,
+      "url": "../../features/platform/reference-materials.json"
+    },
+    {
+      "slug": "safe-storage",
+      "group": "platform",
+      "title": "안전한 기록 저장",
+      "codePathCount": 1,
+      "url": "../../features/platform/safe-storage.json"
+    },
+    {
+      "slug": "viewer-code-path-copy",
+      "group": "viewer",
+      "title": "코드 경로 복사",
+      "codePathCount": 1,
+      "url": "../../features/viewer/viewer-code-path-copy.json"
+    },
+    {
+      "slug": "viewer-concept-editing",
+      "group": "viewer",
+      "title": "뷰어에서 개념 편집",
+      "codePathCount": 3,
+      "url": "../../features/viewer/viewer-concept-editing.json"
+    },
+    {
+      "slug": "viewer-knowledge-graph",
+      "group": "viewer",
+      "title": "지식 그래프 화면",
+      "codePathCount": 2,
+      "url": "../../features/viewer/viewer-knowledge-graph.json"
+    },
+    {
+      "slug": "viewer-search",
+      "group": "viewer",
+      "title": "뷰어 검색",
+      "codePathCount": 2,
+      "url": "../../features/viewer/viewer-search.json"
+    },
+    {
+      "slug": "viewer-sidebar",
+      "group": "viewer",
+      "title": "상세 화면 사이드바",
+      "codePathCount": 2,
+      "url": "../../features/viewer/viewer-sidebar.json"
     }
   ],
   "graph": {
@@ -96,6 +514,146 @@
         "title": "src/hooks/postToolUse.ts"
       },
       {
+        "id": "c:audit-gap-detection",
+        "label": "표식 없는 코드 찾아내기",
+        "type": "concept",
+        "href": "#/concept/audit-gap-detection",
+        "title": "audit-gap-detection"
+      },
+      {
+        "id": "p:src/audit/gaps.ts",
+        "label": "gaps.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/audit/gaps.ts"
+      },
+      {
+        "id": "p:src/audit/audit.ts",
+        "label": "audit.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/audit/audit.ts"
+      },
+      {
+        "id": "p:src/util/glob.ts",
+        "label": "glob.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/glob.ts"
+      },
+      {
+        "id": "c:concept-code-mapping",
+        "label": "개념에서 코드로 가는 지도",
+        "type": "concept",
+        "href": "#/concept/concept-code-mapping",
+        "title": "concept-code-mapping"
+      },
+      {
+        "id": "p:src/mapping/scan.ts",
+        "label": "scan.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/mapping/scan.ts"
+      },
+      {
+        "id": "c:contract-hash",
+        "label": "약속만 지문을 찍는다",
+        "type": "concept",
+        "href": "#/concept/contract-hash",
+        "title": "contract-hash"
+      },
+      {
+        "id": "p:src/drift/hash.ts",
+        "label": "hash.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/hash.ts"
+      },
+      {
+        "id": "p:src/drift/detect.ts",
+        "label": "detect.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/detect.ts"
+      },
+      {
+        "id": "p:src/drift/lock.ts",
+        "label": "lock.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/lock.ts"
+      },
+      {
+        "id": "p:src/drift/note.ts",
+        "label": "note.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/note.ts"
+      },
+      {
+        "id": "c:drift-reconcile",
+        "label": "커밋 뒤 따라왔는지 결산한다",
+        "type": "concept",
+        "href": "#/concept/drift-reconcile",
+        "title": "drift-reconcile"
+      },
+      {
+        "id": "p:src/drift/reconcile.ts",
+        "label": "reconcile.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/reconcile.ts"
+      },
+      {
+        "id": "p:src/drift/history.ts",
+        "label": "history.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/history.ts"
+      },
+      {
+        "id": "c:feature-spec-bridge",
+        "label": "기능은 개념과 코드를 잇는 다리",
+        "type": "concept",
+        "href": "#/concept/feature-spec-bridge",
+        "title": "feature-spec-bridge"
+      },
+      {
+        "id": "p:src/schema/feature.ts",
+        "label": "feature.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/feature.ts"
+      },
+      {
+        "id": "p:src/store/featureStore.ts",
+        "label": "featureStore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/store/featureStore.ts"
+      },
+      {
+        "id": "c:globally-unique-slug",
+        "label": "이름표는 프로젝트 전체에서 하나뿐",
+        "type": "concept",
+        "href": "#/concept/globally-unique-slug",
+        "title": "globally-unique-slug"
+      },
+      {
+        "id": "p:src/schema/concept.ts",
+        "label": "concept.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/concept.ts"
+      },
+      {
+        "id": "p:src/store/conceptStore.ts",
+        "label": "conceptStore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/store/conceptStore.ts"
+      },
+      {
         "id": "c:human-owns-contract",
         "label": "개념의 주인은 사람",
         "type": "concept",
@@ -117,18 +675,74 @@
         "title": "skills/update-baseline/SKILL.md"
       },
       {
+        "id": "c:output-locale",
+        "label": "산출물은 정해진 언어로",
+        "type": "concept",
+        "href": "#/concept/output-locale",
+        "title": "output-locale"
+      },
+      {
+        "id": "p:src/i18n/messages.ts",
+        "label": "messages.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/i18n/messages.ts"
+      },
+      {
+        "id": "p:src/schema/initConfig.ts",
+        "label": "initConfig.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/initConfig.ts"
+      },
+      {
+        "id": "p:src/init/readConfig.ts",
+        "label": "readConfig.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/readConfig.ts"
+      },
+      {
+        "id": "c:pending-conflict-tracking",
+        "label": "충돌하면 멈추고 이유를 남긴다",
+        "type": "concept",
+        "href": "#/concept/pending-conflict-tracking",
+        "title": "pending-conflict-tracking"
+      },
+      {
+        "id": "p:src/concept/pendingConflicts.ts",
+        "label": "pendingConflicts.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/pendingConflicts.ts"
+      },
+      {
+        "id": "c:reference-first-duty",
+        "label": "참고자료는 개념 만들 때 한 번만",
+        "type": "concept",
+        "href": "#/concept/reference-first-duty",
+        "title": "reference-first-duty"
+      },
+      {
+        "id": "p:src/init/reference.ts",
+        "label": "reference.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/reference.ts"
+      },
+      {
+        "id": "p:src/init/referencePaths.ts",
+        "label": "referencePaths.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/referencePaths.ts"
+      },
+      {
         "id": "c:settled-status",
         "label": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
         "type": "concept",
         "href": "#/concept/settled-status",
         "title": "settled-status"
-      },
-      {
-        "id": "p:src/store/conceptStore.ts",
-        "label": "conceptStore.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/store/conceptStore.ts"
       },
       {
         "id": "p:src/concept/approve.ts",
@@ -152,6 +766,202 @@
         "title": "src/concept/attest.ts"
       },
       {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
+      },
+      {
+        "id": "c:atomic-baseline-write",
+        "label": "쓰다 만 파일은 남기지 않는다",
+        "type": "concept",
+        "href": "#/concept/atomic-baseline-write",
+        "title": "atomic-baseline-write"
+      },
+      {
+        "id": "p:src/util/atomicWrite.ts",
+        "label": "atomicWrite.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/atomicWrite.ts"
+      },
+      {
+        "id": "c:generated-not-hand-edited",
+        "label": "만들어진 것은 손대지 않는다",
+        "type": "concept",
+        "href": "#/concept/generated-not-hand-edited",
+        "title": "generated-not-hand-edited"
+      },
+      {
+        "id": "p:src/viewer/render.ts",
+        "label": "render.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/render.ts"
+      },
+      {
+        "id": "p:src/viewer/manifest.ts",
+        "label": "manifest.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/manifest.ts"
+      },
+      {
+        "id": "c:init-gate",
+        "label": "시작하지 않은 곳에서는 아무것도 하지 않는다",
+        "type": "concept",
+        "href": "#/concept/init-gate",
+        "title": "init-gate"
+      },
+      {
+        "id": "p:src/cli.ts",
+        "label": "cli.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/cli.ts"
+      },
+      {
+        "id": "p:src/init/scaffold.ts",
+        "label": "scaffold.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/scaffold.ts"
+      },
+      {
+        "id": "c:plugin-version-sync",
+        "label": "도구가 올라가면 껍데기만 맞춘다",
+        "type": "concept",
+        "href": "#/concept/plugin-version-sync",
+        "title": "plugin-version-sync"
+      },
+      {
+        "id": "p:src/init/syncGenerated.ts",
+        "label": "syncGenerated.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/syncGenerated.ts"
+      },
+      {
+        "id": "p:src/version/checkUpdate.ts",
+        "label": "checkUpdate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/version/checkUpdate.ts"
+      },
+      {
+        "id": "p:src/version/compareSemver.ts",
+        "label": "compareSemver.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/version/compareSemver.ts"
+      },
+      {
+        "id": "p:src/hooks/sessionStart.ts",
+        "label": "sessionStart.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/sessionStart.ts"
+      },
+      {
+        "id": "c:reference-privacy",
+        "label": "참고자료는 밖으로 나가지 않는다",
+        "type": "concept",
+        "href": "#/concept/reference-privacy",
+        "title": "reference-privacy"
+      },
+      {
+        "id": "p:src/init/referenceGitignore.ts",
+        "label": "referenceGitignore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/referenceGitignore.ts"
+      },
+      {
+        "id": "c:untrusted-text-sanitization",
+        "label": "남이 쓴 글은 무장해제하고 넘긴다",
+        "type": "concept",
+        "href": "#/concept/untrusted-text-sanitization",
+        "title": "untrusted-text-sanitization"
+      },
+      {
+        "id": "p:src/drift/safe.ts",
+        "label": "safe.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/safe.ts"
+      },
+      {
+        "id": "c:viewer-local-write-guard",
+        "label": "고치는 문은 내 컴퓨터에서만 열린다",
+        "type": "concept",
+        "href": "#/concept/viewer-local-write-guard",
+        "title": "viewer-local-write-guard"
+      },
+      {
+        "id": "p:src/viewer/serve.ts",
+        "label": "serve.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/serve.ts"
+      },
+      {
+        "id": "c:concept-inline-edit",
+        "label": "보면서 바로 고치기",
+        "type": "concept",
+        "href": "#/concept/concept-inline-edit",
+        "title": "concept-inline-edit"
+      },
+      {
+        "id": "c:copy-code-path",
+        "label": "경로 한 번에 복사",
+        "type": "concept",
+        "href": "#/concept/copy-code-path",
+        "title": "copy-code-path"
+      },
+      {
+        "id": "c:home-search",
+        "label": "한 곳에서 다 찾기",
+        "type": "concept",
+        "href": "#/concept/home-search",
+        "title": "home-search"
+      },
+      {
+        "id": "c:knowledge-graph-view",
+        "label": "관계를 그림으로 보기",
+        "type": "concept",
+        "href": "#/concept/knowledge-graph-view",
+        "title": "knowledge-graph-view"
+      },
+      {
+        "id": "p:src/viewer/graph.ts",
+        "label": "graph.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/graph.ts"
+      },
+      {
+        "id": "c:sidebar-search",
+        "label": "옆 목록 안에서만 걸러내기",
+        "type": "concept",
+        "href": "#/concept/sidebar-search",
+        "title": "sidebar-search"
+      },
+      {
+        "id": "p:assets/sidebar.js",
+        "label": "sidebar.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/sidebar.js"
+      },
+      {
+        "id": "c:sidebar-toggle",
+        "label": "내가 닫으면 닫힌 채로",
+        "type": "concept",
+        "href": "#/concept/sidebar-toggle",
+        "title": "sidebar-toggle"
+      },
+      {
         "id": "f:auto-guided-setup",
         "label": "단계 안내 오케스트레이터 (auto)",
         "type": "feature",
@@ -173,11 +983,116 @@
         "title": "commit-gate"
       },
       {
+        "id": "f:concept-audit",
+        "label": "개념 없는 코드 감사와 매핑",
+        "type": "feature",
+        "href": "#/feature/concept-audit",
+        "title": "concept-audit"
+      },
+      {
         "id": "f:concept-status-governance",
         "label": "개념 신호등 관리",
         "type": "feature",
         "href": "#/feature/concept-status-governance",
         "title": "concept-status-governance"
+      },
+      {
+        "id": "f:consistency-check",
+        "label": "개념 간 충돌 검사",
+        "type": "feature",
+        "href": "#/feature/consistency-check",
+        "title": "consistency-check"
+      },
+      {
+        "id": "f:drift-detection",
+        "label": "개념 어긋남 탐지와 결산",
+        "type": "feature",
+        "href": "#/feature/drift-detection",
+        "title": "drift-detection"
+      },
+      {
+        "id": "f:feature-registry",
+        "label": "기능 명세와 이름표 규칙",
+        "type": "feature",
+        "href": "#/feature/feature-registry",
+        "title": "feature-registry"
+      },
+      {
+        "id": "f:localized-output",
+        "label": "산출물 출력 언어",
+        "type": "feature",
+        "href": "#/feature/localized-output",
+        "title": "localized-output"
+      },
+      {
+        "id": "f:plugin-lifecycle",
+        "label": "플러그인 생애주기",
+        "type": "feature",
+        "href": "#/feature/plugin-lifecycle",
+        "title": "plugin-lifecycle"
+      },
+      {
+        "id": "f:prompt-injection-defense",
+        "label": "비신뢰 입력 무장해제",
+        "type": "feature",
+        "href": "#/feature/prompt-injection-defense",
+        "title": "prompt-injection-defense"
+      },
+      {
+        "id": "f:reference-materials",
+        "label": "참고자료 폴더",
+        "type": "feature",
+        "href": "#/feature/reference-materials",
+        "title": "reference-materials"
+      },
+      {
+        "id": "f:safe-storage",
+        "label": "안전한 기록 저장",
+        "type": "feature",
+        "href": "#/feature/safe-storage",
+        "title": "safe-storage"
+      },
+      {
+        "id": "f:viewer-code-path-copy",
+        "label": "코드 경로 복사",
+        "type": "feature",
+        "href": "#/feature/viewer-code-path-copy",
+        "title": "viewer-code-path-copy"
+      },
+      {
+        "id": "f:viewer-concept-editing",
+        "label": "뷰어에서 개념 편집",
+        "type": "feature",
+        "href": "#/feature/viewer-concept-editing",
+        "title": "viewer-concept-editing"
+      },
+      {
+        "id": "f:viewer-knowledge-graph",
+        "label": "지식 그래프 화면",
+        "type": "feature",
+        "href": "#/feature/viewer-knowledge-graph",
+        "title": "viewer-knowledge-graph"
+      },
+      {
+        "id": "f:viewer-search",
+        "label": "뷰어 검색",
+        "type": "feature",
+        "href": "#/feature/viewer-search",
+        "title": "viewer-search"
+      },
+      {
+        "id": "f:viewer-sidebar",
+        "label": "상세 화면 사이드바",
+        "type": "feature",
+        "href": "#/feature/viewer-sidebar",
+        "title": "viewer-sidebar"
+      },
+      {
+        "id": "p:assets/concept.css",
+        "label": "concept.css",
+        "type": "file",
+        "href": "",
+        "title": "assets/concept.css"
       }
     ],
     "edges": [
@@ -192,6 +1107,86 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:audit-gap-detection",
+        "target": "p:src/audit/gaps.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:audit-gap-detection",
+        "target": "p:src/audit/audit.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:audit-gap-detection",
+        "target": "p:src/util/glob.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/mapping/scan.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:src/drift/hash.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:src/drift/detect.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:src/drift/lock.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:src/drift/note.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/drift/reconcile.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/drift/history.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/drift/detect.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:src/schema/feature.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:src/store/featureStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:src/schema/feature.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:human-owns-contract",
         "target": "p:skills/define-concept/SKILL.md",
         "kind": "concept-file"
@@ -199,6 +1194,36 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-baseline/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:src/i18n/messages.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:src/init/readConfig.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:pending-conflict-tracking",
+        "target": "p:src/concept/pendingConflicts.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:src/init/reference.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:src/init/referencePaths.ts",
         "kind": "concept-file"
       },
       {
@@ -219,6 +1244,146 @@
       {
         "source": "c:settled-status",
         "target": "p:src/concept/attest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/util/atomicWrite.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/drift/lock.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/drift/history.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/concept/pendingConflicts.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/concept/attest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/hooks/postToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:src/viewer/render.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:src/viewer/manifest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:src/init/scaffold.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/init/syncGenerated.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/version/checkUpdate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/version/compareSemver.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/init/reference.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/init/referenceGitignore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/init/referencePaths.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:untrusted-text-sanitization",
+        "target": "p:src/drift/safe.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-local-write-guard",
+        "target": "p:src/viewer/serve.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-inline-edit",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-inline-edit",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:copy-code-path",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:knowledge-graph-view",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:knowledge-graph-view",
+        "target": "p:src/viewer/graph.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:sidebar-search",
+        "target": "p:assets/sidebar.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:sidebar-toggle",
+        "target": "p:assets/sidebar.js",
         "kind": "concept-file"
       },
       {
@@ -252,6 +1417,36 @@
         "kind": "feature-file"
       },
       {
+        "source": "f:concept-audit",
+        "target": "c:audit-gap-detection",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "c:concept-code-mapping",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "p:src/audit/gaps.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "p:src/audit/audit.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "p:src/mapping/scan.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "p:src/util/glob.ts",
+        "kind": "feature-file"
+      },
+      {
         "source": "f:concept-status-governance",
         "target": "c:settled-status",
         "kind": "feature-concept"
@@ -280,8 +1475,298 @@
         "source": "f:concept-status-governance",
         "target": "p:src/concept/attest.ts",
         "kind": "feature-file"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "c:pending-conflict-tracking",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "c:reference-first-duty",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "p:src/concept/pendingConflicts.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "p:src/concept/attest.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "c:contract-hash",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "c:drift-reconcile",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/hash.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/detect.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/reconcile.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/lock.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/note.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "p:src/drift/history.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "c:feature-spec-bridge",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "c:globally-unique-slug",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "p:src/schema/feature.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "p:src/store/featureStore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "p:src/schema/concept.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:localized-output",
+        "target": "c:output-locale",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:localized-output",
+        "target": "p:src/i18n/messages.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:localized-output",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:localized-output",
+        "target": "p:src/init/readConfig.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:init-gate",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:plugin-version-sync",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:generated-not-hand-edited",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/cli.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/init/scaffold.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/init/syncGenerated.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/version/checkUpdate.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/viewer/render.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:prompt-injection-defense",
+        "target": "c:untrusted-text-sanitization",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:prompt-injection-defense",
+        "target": "p:src/drift/safe.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "c:reference-privacy",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "c:reference-first-duty",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "p:src/init/reference.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "p:src/init/referencePaths.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "p:src/init/referenceGitignore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:safe-storage",
+        "target": "c:atomic-baseline-write",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:safe-storage",
+        "target": "p:src/util/atomicWrite.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-code-path-copy",
+        "target": "c:copy-code-path",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-code-path-copy",
+        "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "c:concept-inline-edit",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "c:viewer-local-write-guard",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "p:src/viewer/serve.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-knowledge-graph",
+        "target": "c:knowledge-graph-view",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-knowledge-graph",
+        "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-knowledge-graph",
+        "target": "p:src/viewer/graph.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "c:home-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "c:sidebar-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "p:assets/sidebar.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "c:sidebar-toggle",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "c:sidebar-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "p:assets/sidebar.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "p:assets/concept.css",
+        "kind": "feature-file"
       }
     ]
   },
-  "generatorVersion": "0.10.12"
+  "generatorVersion": "0.10.13"
 }

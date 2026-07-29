@@ -1,4 +1,4 @@
-// @concept:none
+// @concept:sidebar-search @concept:sidebar-toggle
 // assets/sidebar.js — 개념/기능 상세 화면 좌측 사이드바(목록) 열고/닫기.
 // viewer.js가 정의하는 h()/state/displayName/conceptListSections/featureListSection에 의존한다.
 // 로드 순서: index.html에서 sidebar.js를 viewer.js보다 먼저 로드한다(전역 의존은

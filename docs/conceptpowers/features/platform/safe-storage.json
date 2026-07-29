@@ -1,0 +1,12 @@
+{
+  "slug": "safe-storage",
+  "group": "platform",
+  "title": "안전한 기록 저장",
+  "description": "기록 파일을 임시 파일에 쓴 뒤 교체해, 저장 도중 멈춰도 깨진 파일이 남지 않게 한다.",
+  "concepts": [
+    "atomic-baseline-write"
+  ],
+  "codePaths": [
+    "src/util/atomicWrite.ts"
+  ]
+}

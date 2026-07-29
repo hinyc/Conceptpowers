@@ -1,3 +1,4 @@
+// @concept:atomic-baseline-write
 import { writeFile, rename, mkdir, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 

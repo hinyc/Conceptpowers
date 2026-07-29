@@ -1,3 +1,4 @@
+// @concept:contract-hash
 import { listConcepts } from '../store/conceptStore.js';
 import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';

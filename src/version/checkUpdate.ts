@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';

@@ -1,0 +1,12 @@
+{
+  "slug": "viewer-code-path-copy",
+  "group": "viewer",
+  "title": "코드 경로 복사",
+  "description": "개념·기능에 연결된 코드 경로를 클립보드로 복사하고 성공·실패를 즉시 알린다.",
+  "concepts": [
+    "copy-code-path"
+  ],
+  "codePaths": [
+    "assets/viewer.js"
+  ]
+}

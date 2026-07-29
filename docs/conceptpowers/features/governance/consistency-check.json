@@ -1,0 +1,14 @@
+{
+  "slug": "consistency-check",
+  "group": "governance",
+  "title": "개념 간 충돌 검사",
+  "description": "새 개념이 기존 개념과 부딪히는지 검사하고, 부딪히면 확정을 미룬 채 사유를 남긴다. 검사 시점에만 참고자료를 읽는다.",
+  "concepts": [
+    "pending-conflict-tracking",
+    "reference-first-duty"
+  ],
+  "codePaths": [
+    "src/concept/pendingConflicts.ts",
+    "src/concept/attest.ts"
+  ]
+}

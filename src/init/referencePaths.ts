@@ -1,4 +1,4 @@
-// @concept:none
+// @concept:reference-first-duty @concept:reference-privacy
 // src/init/referencePaths.ts
 // reference/paths.md — 사용자가 등록한 외부 참고자료 경로 목록(여러 개, 절대/상대, 파일/폴더).
 // 여기서는 그 목록을 파싱·검증만 한다(내용은 읽지 않는다 — 내용 읽기는 개념 정의 시점의
