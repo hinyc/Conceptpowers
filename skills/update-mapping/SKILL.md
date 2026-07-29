@@ -30,6 +30,8 @@ Sync the `@concept` tags (the source-of-truth on the code side) with the `mappin
    - For a from-scratch rebuild (e.g. recovering a corrupted cache), pass the whole source with
      `--full`: `node "<cli>" map --full --root . <all source files...>` — this discards every
      existing entry and rebuilds from only the given files.
+   - Then refresh the viewer/graph: `node "<cli>" render --root .` (matches Stage 4 of
+     `conceptpowers:auto` — map then render).
 3. If a tag points to an undefined concept (audit unknownTags), define the concept (define-concept) or fix the tag.
 
 ## Note
@@ -39,5 +41,5 @@ Sync the `@concept` tags (the source-of-truth on the code side) with the `mappin
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
 After `render`, always end with a clickable viewer link (render prints the path + serve command).
-Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/feature/<slug>` —
+Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/feature/<slug>` / `#/architecture` —
 otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.
