@@ -78,6 +78,7 @@ var I18N = {
     sidebarOpenLabel: '개념 목록 열기',
     sidebarCloseLabel: '개념 목록 닫기',
     closeSidebar: '닫기',
+    sidebarSearchPh: '개념 · 기능 검색',
   },
   en: {
     appTitle: 'Concepts',
@@ -152,6 +153,7 @@ var I18N = {
     sidebarOpenLabel: 'Open concept list',
     sidebarCloseLabel: 'Close concept list',
     closeSidebar: 'Close',
+    sidebarSearchPh: 'Search concepts · features',
   },
 };
 

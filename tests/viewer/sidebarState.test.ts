@@ -58,3 +58,14 @@ describe('CPSidebar 열림 상태', () => {
     expect(sidebar.isOpen()).toBe(true);
   });
 });
+
+describe('사이드바 검색 i18n', () => {
+  it('ko/en 번역에 sidebarSearchPh 키가 있다', () => {
+    const ctx: Record<string, unknown> = { window: { innerWidth: 1280, localStorage: makeLocalStorage() }, document: {} };
+    vm.createContext(ctx);
+    vm.runInContext(viewerSrc, ctx);
+    const i18n = ctx.I18N as { ko: Record<string, string>; en: Record<string, string> };
+    expect(i18n.ko.sidebarSearchPh).toBeTruthy();
+    expect(i18n.en.sidebarSearchPh).toBeTruthy();
+  });
+});
