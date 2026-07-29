@@ -1,3 +1,4 @@
+// @concept:none
 // tests/viewer/sidebarState.test.ts
 // CPSidebar.isOpen/setOpen(assets/sidebar.js)을 node:vm으로 로드해 검증한다.
 // 순수 상태 판단(localStorage + width)만 하므로 DOM 없이 스텁으로 평가 가능.
@@ -65,7 +66,10 @@ describe('CPSidebar 열림 상태', () => {
 
 describe('사이드바 검색 i18n', () => {
   it('ko/en 번역에 sidebarSearchPh 키가 있다', () => {
-    const ctx: Record<string, unknown> = { window: { innerWidth: 1280, localStorage: makeLocalStorage() }, document: {} };
+    const ctx: Record<string, unknown> = {
+      window: { innerWidth: 1280, localStorage: makeLocalStorage() },
+      document: {},
+    };
     vm.createContext(ctx);
     vm.runInContext(viewerSrc, ctx);
     const i18n = ctx.I18N as { ko: Record<string, string>; en: Record<string, string> };

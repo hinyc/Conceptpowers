@@ -73,9 +73,15 @@ var CPSidebar = (function () {
   }
 
   function matchesQuery(text, q) {
-    q = String(q || '').trim().toLowerCase();
+    q = String(q || '')
+      .trim()
+      .toLowerCase();
     if (!q) return true;
-    return String(text || '').toLowerCase().indexOf(q) !== -1;
+    return (
+      String(text || '')
+        .toLowerCase()
+        .indexOf(q) !== -1
+    );
   }
 
   function filterSideList(listNode, noResultsNode, q) {
@@ -94,7 +100,8 @@ var CPSidebar = (function () {
       group.style.display = anyItemVisible ? '' : 'none';
       if (anyItemVisible) anyGroupVisible = true;
     }
-    noResultsNode.style.display = anyGroupVisible ? 'none' : '';
+    var hasQuery = !!String(q || '').trim();
+    noResultsNode.style.display = !hasQuery || anyGroupVisible ? 'none' : '';
   }
 
   function shell(activeKind, activeSlug, wrapNode) {
@@ -143,6 +150,13 @@ var CPSidebar = (function () {
     });
     searchIn.addEventListener('input', function () {
       filterSideList(listNode, noResultsNode, searchIn.value);
+    });
+    searchIn.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return;
+      if (!searchIn.value) return;
+      ev.stopPropagation();
+      searchIn.value = '';
+      filterSideList(listNode, noResultsNode, '');
     });
     var aside = h('aside', { id: 'cp-side', class: 'side' }, [
       h('div', { class: 'side__head' }, [h('strong', null, t.conceptList), closeBtn]),
