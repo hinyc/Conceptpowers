@@ -1,9 +1,10 @@
-// @concept:settled-status
+// @concept:settled-status @concept:atomic-baseline-write
 // src/store/conceptStore.ts
-import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join } from 'node:path';
 import { cpPaths } from '../paths.js';
+import { writeFileAtomic } from '../util/atomicWrite.js';
 import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js';
 import { clearPendingConflict } from '../concept/pendingConflicts.js';
 import { checkConceptQuality } from '../concept/quality.js';
@@ -22,8 +23,8 @@ export async function writeConcept(root: string, input: unknown): Promise<Concep
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, JSON.stringify(concept, null, 2) + '\n', 'utf8');
+  // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
+  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + '\n');
   return concept;
 }
 

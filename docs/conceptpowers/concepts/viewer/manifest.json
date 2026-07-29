@@ -193,6 +193,8 @@
       "url": "../data/platform/atomic-baseline-write.json",
       "codeLinks": [
         "src/util/atomicWrite.ts",
+        "src/store/conceptStore.ts",
+        "src/store/featureStore.ts",
         "src/drift/lock.ts",
         "src/drift/history.ts",
         "src/concept/pendingConflicts.ts",
@@ -1254,6 +1256,16 @@
       {
         "source": "c:atomic-baseline-write",
         "target": "p:src/util/atomicWrite.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:src/store/featureStore.ts",
         "kind": "concept-file"
       },
       {

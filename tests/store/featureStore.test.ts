@@ -1,6 +1,6 @@
 // tests/store/featureStore.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync } from 'node:fs';
+import { lstatSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { writeFeature, listFeatures, readFeature } from '../../src/store/featureStore.js';
@@ -44,5 +44,21 @@ describe('featureStore', () => {
   });
   it('기능이 없으면 빈 배열을 반환한다', async () => {
     expect(await listFeatures(root)).toEqual([]);
+  });
+  it('덮어쓸 때 원자적 저장을 쓴다 — 심볼릭 링크를 따라가 다른 파일을 오염시키지 않는다', async () => {
+    await writeFeature(root, { ...base, title: 'v1' } as any);
+    const target = join(root, 'docs', 'conceptpowers', 'features', 'auth', 'user-login.json');
+    // 미끼는 유효한 v1 내용 — 덮어쓰기 전 중복 검사가 읽어도 죽지 않아야 한다.
+    const v1 = readFileSync(target, 'utf8');
+    const decoy = join(root, 'decoy.json');
+    writeFileSync(decoy, v1);
+    rmSync(target);
+    symlinkSync(decoy, target);
+
+    await writeFeature(root, { ...base, title: 'v2' } as any);
+
+    expect(lstatSync(target).isSymbolicLink()).toBe(false);
+    expect(readFileSync(decoy, 'utf8')).toBe(v1);
+    expect((await readFeature(root, 'user-login'))?.title).toBe('v2');
   });
 });

@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 import { readFile as readFile6 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir5, writeFile as writeFile5, access } from "node:fs/promises";
+import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4108,8 +4108,24 @@ var InitConfigSchema = external_exports.object({
 });
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile, writeFile as writeFile2, readdir } from "node:fs/promises";
-import { join as join2, dirname as dirname2 } from "node:path";
+import { readFile, readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
+
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -4155,22 +4171,6 @@ var ConceptSchema = external_exports.object({
 });
 function parseConcept(input) {
   return ConceptSchema.parse(input);
-}
-
-// src/util/atomicWrite.ts
-import { writeFile, rename, mkdir, rm } from "node:fs/promises";
-import { dirname } from "node:path";
-var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir(dirname(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  try {
-    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
-  } catch (error) {
-    await rm(tmp, { force: true });
-    throw error;
-  }
 }
 
 // src/schema/alignment.ts
@@ -4239,8 +4239,8 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir3, readFile as readFile2, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname3 } from "node:path";
+import { readFile as readFile2, readdir as readdir2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
@@ -4288,7 +4288,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {

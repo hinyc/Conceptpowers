@@ -1,9 +1,10 @@
-// @concept:feature-spec-bridge
+// @concept:feature-spec-bridge @concept:atomic-baseline-write
 // src/store/featureStore.ts
-import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join } from 'node:path';
 import { cpPaths } from '../paths.js';
+import { writeFileAtomic } from '../util/atomicWrite.js';
 import { parseFeature, type Feature } from '../schema/feature.js';
 
 function fileFor(root: string, f: Feature): string {
@@ -19,8 +20,8 @@ export async function writeFeature(root: string, input: unknown): Promise<Featur
   if (duplicate) {
     throw new Error(`Duplicate feature slug: ${feature.slug} already exists (globally unique)`);
   }
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, JSON.stringify(feature, null, 2) + '\n', 'utf8');
+  // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
+  await writeFileAtomic(target, JSON.stringify(feature, null, 2) + '\n');
   return feature;
 }
 

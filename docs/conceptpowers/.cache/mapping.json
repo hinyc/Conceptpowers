@@ -84,6 +84,8 @@
     "src/schema/feature.ts"
   ],
   "atomic-baseline-write": [
+    "src/store/conceptStore.ts",
+    "src/store/featureStore.ts",
     "src/util/atomicWrite.ts"
   ],
   "generated-not-hand-edited": [

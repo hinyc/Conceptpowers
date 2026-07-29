@@ -1,8 +1,9 @@
 // tests/store/conceptStore.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, lstatSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   writeConcept,
   listConcepts,
@@ -101,6 +102,37 @@ describe('conceptStore', () => {
   it('동일 상태로의 전이는 허용한다(idempotent)', async () => {
     await writeConcept(root, { ...base, status: 'green' } as any);
     expect((await setConceptStatus(root, 'admin-role', 'green')).status).toBe('green');
+  });
+});
+
+describe('writeConcept 원자적 저장 (atomic-baseline-write)', () => {
+  it('덮어쓸 때 임시파일+rename 경로를 쓴다 — 심볼릭 링크를 따라가 다른 파일을 오염시키지 않는다', async () => {
+    await writeConcept(root, { ...base, title: 'v1' } as any);
+    const target = join(
+      root,
+      'docs',
+      'conceptpowers',
+      'concepts',
+      'data',
+      'auth',
+      'admin-role.json'
+    );
+    // 대상 파일을 미끼 파일로 향하는 심볼릭 링크로 바꿔치기한다.
+    // (미끼는 유효한 v1 내용 — 덮어쓰기 전 중복 검사가 읽어도 죽지 않아야 한다.)
+    const v1 = readFileSync(target, 'utf8');
+    const decoy = join(root, 'decoy.json');
+    writeFileSync(decoy, v1);
+    rmSync(target);
+    symlinkSync(decoy, target);
+
+    await writeConcept(root, { ...base, title: 'v2' } as any);
+
+    // rename 기반 저장은 링크 자체를 새 일반 파일로 교체한다 — 미끼는 그대로여야 한다.
+    expect(lstatSync(target).isSymbolicLink()).toBe(false);
+    expect(readFileSync(decoy, 'utf8')).toBe(v1);
+    expect((await readConcept(root, 'admin-role'))?.title).toBe('v2');
+    // 임시파일 잔여물도 없어야 한다.
+    expect(readdirSync(dirname(target)).filter((f) => f.endsWith('.tmp'))).toEqual([]);
   });
 });
 

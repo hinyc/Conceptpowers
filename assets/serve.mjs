@@ -13,8 +13,8 @@ import { extname, normalize, resolve, sep } from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir } from "node:fs/promises";
-import { join as join2, dirname as dirname2 } from "node:path";
+import { readFile as readFile3, readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -39,6 +39,22 @@ function cpPaths(root) {
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json")
   };
+}
+
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
 }
 
 // node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/external.js
@@ -4130,24 +4146,6 @@ function parseConcept(input) {
 
 // src/concept/pendingConflicts.ts
 import { readFile } from "node:fs/promises";
-
-// src/util/atomicWrite.ts
-import { writeFile, rename, mkdir, rm } from "node:fs/promises";
-import { dirname } from "node:path";
-var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir(dirname(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  try {
-    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
-  } catch (error) {
-    await rm(tmp, { force: true });
-    throw error;
-  }
-}
-
-// src/concept/pendingConflicts.ts
 async function readPendingConflicts(root) {
   try {
     const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
@@ -4255,8 +4253,7 @@ async function writeConcept(root, input) {
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
-  await mkdir2(dirname2(target), { recursive: true });
-  await writeFile2(target, JSON.stringify(concept, null, 2) + "\n", "utf8");
+  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }
 async function walkJson(dir) {
@@ -4352,8 +4349,8 @@ async function editConceptContent(root, slug3, patch) {
 }
 
 // src/viewer/render.ts
-import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
-import { join as join4, dirname as dirname4 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4438,8 +4435,8 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname3 } from "node:path";
+import { readFile as readFile4, readdir as readdir2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
@@ -4487,7 +4484,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
+import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
@@ -4541,7 +4538,7 @@ async function readInitConfig(root) {
 
 // src/viewer/render.ts
 async function readPluginVersion() {
-  const start = dirname4(fileURLToPath(import.meta.url));
+  const start = dirname2(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
@@ -4550,7 +4547,7 @@ async function readPluginVersion() {
       )?.version;
       return typeof v === "string" ? v : null;
     } catch {
-      const parent = dirname4(dir);
+      const parent = dirname2(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4563,12 +4560,12 @@ async function writeManifest(root) {
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir5(p.conceptsViewer, { recursive: true });
+  await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
     generatorVersion: await readPluginVersion()
   };
-  await writeFile5(
+  await writeFile3(
     join4(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"

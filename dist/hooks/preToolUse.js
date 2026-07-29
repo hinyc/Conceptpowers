@@ -12,7 +12,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
+import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4110,8 +4110,8 @@ function parseInitConfig(input) {
 }
 
 // src/store/conceptStore.ts
-import { mkdir, readFile as readFile3, writeFile, readdir } from "node:fs/promises";
-import { join as join2, dirname } from "node:path";
+import { readFile as readFile3, readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -4278,8 +4278,8 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir2, readFile as readFile4, writeFile as writeFile2, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname2 } from "node:path";
+import { readFile as readFile4, readdir as readdir2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
@@ -4327,8 +4327,8 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir3, writeFile as writeFile3 } from "node:fs/promises";
-import { join as join4, dirname as dirname3 } from "node:path";
+import { readFile as readFile5, mkdir, writeFile } from "node:fs/promises";
+import { join as join4, dirname } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";

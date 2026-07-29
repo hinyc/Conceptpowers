@@ -3051,7 +3051,7 @@ var {
 import { readFile as readFile12 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir10, writeFile as writeFile11, access as access5 } from "node:fs/promises";
+import { mkdir as mkdir8, writeFile as writeFile9, access as access5 } from "node:fs/promises";
 import { join as join12 } from "node:path";
 
 // src/paths.ts
@@ -7257,8 +7257,8 @@ import { readdir as readdir5, rm as rm2, rmdir } from "node:fs/promises";
 import { join as join11 } from "node:path";
 
 // src/viewer/render.ts
-import { mkdir as mkdir5, writeFile as writeFile5, readFile as readFile7 } from "node:fs/promises";
-import { join as join5, dirname as dirname5 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
+import { join as join5, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -7343,8 +7343,24 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/conceptStore.ts
-import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, readdir } from "node:fs/promises";
-import { join as join2, dirname as dirname2 } from "node:path";
+import { readFile as readFile3, readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
+
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -7394,24 +7410,6 @@ function parseConcept(input) {
 
 // src/concept/pendingConflicts.ts
 import { readFile } from "node:fs/promises";
-
-// src/util/atomicWrite.ts
-import { writeFile, rename, mkdir, rm } from "node:fs/promises";
-import { dirname } from "node:path";
-var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir(dirname(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
-  try {
-    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
-  } catch (error) {
-    await rm(tmp, { force: true });
-    throw error;
-  }
-}
-
-// src/concept/pendingConflicts.ts
 async function readPendingConflicts(root) {
   try {
     const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
@@ -7534,8 +7532,7 @@ async function writeConcept(root, input) {
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
-  await mkdir2(dirname2(target), { recursive: true });
-  await writeFile2(target, JSON.stringify(concept, null, 2) + "\n", "utf8");
+  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }
 async function walkJson(dir) {
@@ -7631,8 +7628,8 @@ async function editConceptContent(root, slug3, patch) {
 }
 
 // src/store/featureStore.ts
-import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, readdir as readdir2 } from "node:fs/promises";
-import { join as join3, dirname as dirname3 } from "node:path";
+import { readFile as readFile4, readdir as readdir2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
 
 // src/schema/feature.ts
 var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
@@ -7663,8 +7660,7 @@ async function writeFeature(root, input) {
   if (duplicate) {
     throw new Error(`Duplicate feature slug: ${feature.slug} already exists (globally unique)`);
   }
-  await mkdir3(dirname3(target), { recursive: true });
-  await writeFile3(target, JSON.stringify(feature, null, 2) + "\n", "utf8");
+  await writeFileAtomic(target, JSON.stringify(feature, null, 2) + "\n");
   return feature;
 }
 async function walkJson2(dir) {
@@ -7696,8 +7692,8 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir4, writeFile as writeFile4 } from "node:fs/promises";
-import { join as join4, dirname as dirname4 } from "node:path";
+import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
@@ -7728,8 +7724,8 @@ async function buildMapping(root, files) {
 }
 async function writeMappingCache(root, mapping) {
   const target = cpPaths(root).mappingCache;
-  await mkdir4(dirname4(target), { recursive: true });
-  await writeFile4(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
+  await mkdir2(dirname2(target), { recursive: true });
+  await writeFile2(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
 async function readMappingCache(root) {
   try {
@@ -7752,13 +7748,13 @@ async function readInitConfig(root) {
 
 // src/viewer/render.ts
 async function readAsset(name) {
-  const start = dirname5(fileURLToPath(import.meta.url));
+  const start = dirname3(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
       return await readFile7(join5(dir, "assets", name));
     } catch {
-      const parent = dirname5(dir);
+      const parent = dirname3(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -7766,11 +7762,11 @@ async function readAsset(name) {
   throw new Error(`asset not found: ${name} (search start: ${start})`);
 }
 async function copyAsset(name, target) {
-  await mkdir5(dirname5(target), { recursive: true });
-  await writeFile5(target, await readAsset(name));
+  await mkdir3(dirname3(target), { recursive: true });
+  await writeFile3(target, await readAsset(name));
 }
 async function readPluginVersion() {
-  const start = dirname5(fileURLToPath(import.meta.url));
+  const start = dirname3(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
@@ -7779,7 +7775,7 @@ async function readPluginVersion() {
       )?.version;
       return typeof v === "string" ? v : null;
     } catch {
-      const parent = dirname5(dir);
+      const parent = dirname3(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -7792,12 +7788,12 @@ async function writeManifest(root) {
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir5(p.conceptsViewer, { recursive: true });
+  await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
     generatorVersion: await readPluginVersion()
   };
-  await writeFile5(
+  await writeFile3(
     join5(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
@@ -7814,7 +7810,7 @@ async function renderViewerToDisk(root) {
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile8, writeFile as writeFile6 } from "node:fs/promises";
+import { readFile as readFile8, writeFile as writeFile4 } from "node:fs/promises";
 import { join as join6 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
@@ -7845,17 +7841,17 @@ async function upsertViewerScript(root) {
     ...pkg,
     scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND }
   };
-  await writeFile6(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  await writeFile4(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
   return "set";
 }
 
 // src/init/reference.ts
-import { mkdir as mkdir6, writeFile as writeFile7, access, readdir as readdir3 } from "node:fs/promises";
+import { mkdir as mkdir4, writeFile as writeFile5, access, readdir as readdir3 } from "node:fs/promises";
 import { join as join7, relative } from "node:path";
 var SEED_README = "README.md";
 async function ensureReference(root) {
   const dir = cpPaths(root).reference;
-  await mkdir6(dir, { recursive: true });
+  await mkdir4(dir, { recursive: true });
   const readme = join7(dir, SEED_README);
   try {
     await access(readme);
@@ -7863,7 +7859,7 @@ async function ensureReference(root) {
   } catch {
   }
   const locale = (await readInitConfig(root))?.locale ?? "ko";
-  await writeFile7(readme, seedTemplates[locale].reference, "utf8");
+  await writeFile5(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
 var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore", "paths.md"]);
@@ -7888,7 +7884,7 @@ async function listReferenceFiles(root) {
 }
 
 // src/init/referencePaths.ts
-import { readFile as readFile9, readdir as readdir4, stat, access as access2, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
+import { readFile as readFile9, readdir as readdir4, stat, access as access2, mkdir as mkdir5, writeFile as writeFile6 } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join as join8 } from "node:path";
 var PATHS_FILE = "paths.md";
@@ -7920,8 +7916,8 @@ async function ensureReferencePaths(root) {
     return false;
   } catch {
   }
-  await mkdir7(dir, { recursive: true });
-  await writeFile8(target, PATHS_TEMPLATE, "utf8");
+  await mkdir5(dir, { recursive: true });
+  await writeFile6(target, PATHS_TEMPLATE, "utf8");
   return true;
 }
 function parseReferencePaths(content) {
@@ -7959,7 +7955,7 @@ async function checkReferencePaths(root) {
 }
 
 // src/init/alignmentGitignore.ts
-import { access as access3, mkdir as mkdir8, writeFile as writeFile9 } from "node:fs/promises";
+import { access as access3, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join9 } from "node:path";
 var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
 async function ensureAlignmentGitignore(root) {
@@ -7968,14 +7964,14 @@ async function ensureAlignmentGitignore(root) {
     await access3(target);
     return false;
   } catch {
-    await mkdir8(cpPaths(root).alignmentDir, { recursive: true });
-    await writeFile9(target, CONTENT, "utf8");
+    await mkdir6(cpPaths(root).alignmentDir, { recursive: true });
+    await writeFile7(target, CONTENT, "utf8");
     return true;
   }
 }
 
 // src/init/referenceGitignore.ts
-import { access as access4, mkdir as mkdir9, writeFile as writeFile10 } from "node:fs/promises";
+import { access as access4, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
 import { join as join10 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
@@ -7991,8 +7987,8 @@ async function ensureReferenceGitignore(root) {
     await access4(target);
     return false;
   } catch {
-    await mkdir9(cpPaths(root).reference, { recursive: true });
-    await writeFile10(target, CONTENT2, "utf8");
+    await mkdir7(cpPaths(root).reference, { recursive: true });
+    await writeFile8(target, CONTENT2, "utf8");
     return true;
   }
 }
@@ -8076,7 +8072,7 @@ async function scaffoldInit(root, opts) {
     p.architecture,
     p.infra
   ])
-    await mkdir10(d, { recursive: true });
+    await mkdir8(d, { recursive: true });
   if (await isInitialized(root)) {
     const synced2 = await syncSafely(root);
     return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
@@ -8089,10 +8085,10 @@ async function scaffoldInit(root, opts) {
     locale,
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
-  await writeFile11(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
+  await writeFile9(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile11(join12(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile11(join12(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile9(join12(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile9(join12(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncSafely(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
