@@ -163,6 +163,23 @@ The gate **never hard-blocks** — every problem is an _ask_ (block **with** ove
 
 Adopting Conceptpowers on an existing project? `init` **strict** mode runs a _full scan_: it enumerates features by walking every button/action **and** analyzing on-screen content, then infers a (red) concept for each uncovered feature. This is thorough but **time- and token-intensive on large projects** — the init skill warns you before running it, and incremental backfill remains the default.
 
+### init.json settings
+
+`docs/conceptpowers/init.json` is both the activation marker and the per-project settings file.
+Missing fields fall back to their defaults, so files created by older versions keep working as-is.
+
+| Field                | Type · default                 | What it does                                                                                                                                                                                             |
+| -------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`            | string                         | Settings file format version. Written by init; you never edit it by hand.                                                                                                                                 |
+| `enabled`            | literal `true`                 | The activation marker. `false` is not accepted — to switch governance off, delete this file (or `docs/conceptpowers/`).                                                                                    |
+| `backfillMode`       | `incremental` \| `strict` · `incremental` | Adoption mode for existing codebases. `incremental` backfills concepts as you touch code; `strict` full-scans at init and infers red concepts.                                                   |
+| `enforceScope`       | literal `new-feature-behavior` | Enforcement scope. Only new features and behavior changes (tests included) are checked against concepts; plain refactoring, typos, and formatting are out of scope.                                        |
+| `locale`             | `ko` \| `en` · `ko`            | Language for generated artifacts (concept definitions, architecture docs) and user-facing messages.                                                                                                       |
+| `versionCheck`       | boolean · `true`               | Checks GitHub for a newer plugin version at session start and notifies in one line. Disable with `false` or the `CONCEPTPOWERS_NO_VERSION_CHECK` env var.                                                  |
+| `conceptDrivenTests` | boolean · `true`               | Tests are governed too — when enabled, the session-start rules instruct the agent to locate the concept(s) for the code under test before writing or modifying tests and derive scenarios from their allow/restrict/immutableRules. Only an explicit `false` disables it. |
+| `ignoreGlobs`        | string[] · generated/external globs | Path globs the commit gate exempts from the `@concept` marker requirement. Defaults cover only generated artifacts, build output, and external code (`docs/conceptpowers/**`, `dist/**`, `build/**`, `node_modules/**`, `**/*.generated.*`). Hand-written code always needs a marker — use `@concept:none` when no concept applies. |
+| `project`            | `{ name, description }`        | Project name and description metadata.                                                                                                                                                                    |
+
 ### Skills
 
 Each skill activates at a specific moment in the loop. The middle column is the trigger — _when_ you (or the agent, on your behalf) reach for it.
