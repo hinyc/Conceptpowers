@@ -173,6 +173,32 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 | `ignoreGlobs`        | string[] · 생성물·외부 코드 글롭 | 커밋 게이트가 `@concept` 마커를 요구하지 않는 경로 글롭. 기본값은 재생성물·빌드 산출물·외부 의존성(`docs/conceptpowers/**`, `dist/**`, `build/**`, `node_modules/**`, `**/*.generated.*`)만 제외한다. 손으로 쓴 코드는 예외 없이 마커가 필요하며, 개념이 없으면 `@concept:none`을 명시한다. |
 | `project`            | `{ name, description }`        | 프로젝트 이름·설명 메타데이터.                                                                                                                                                                       |
 
+전체 항목을 기본값으로 채운 예시 — 코드 블록 우상단의 복사 버튼으로 그대로 복사해
+`docs/conceptpowers/init.json`에 붙여 넣고 필요한 값만 고치면 된다:
+
+```json
+{
+  "version": "0.1.0",
+  "enabled": true,
+  "backfillMode": "incremental",
+  "enforceScope": "new-feature-behavior",
+  "locale": "ko",
+  "versionCheck": true,
+  "conceptDrivenTests": true,
+  "ignoreGlobs": [
+    "docs/conceptpowers/**",
+    "dist/**",
+    "build/**",
+    "node_modules/**",
+    "**/*.generated.*"
+  ],
+  "project": {
+    "name": "",
+    "description": ""
+  }
+}
+```
+
 ### 스킬
 
 각 스킬은 루프의 특정 순간에 켜진다. 가운데 열이 트리거 — _언제_ 당신(또는 당신을 대신한 에이전트)이 그 스킬에 손을 대는가다.

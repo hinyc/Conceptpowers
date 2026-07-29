@@ -180,6 +180,32 @@ Missing fields fall back to their defaults, so files created by older versions k
 | `ignoreGlobs`        | string[] · generated/external globs | Path globs the commit gate exempts from the `@concept` marker requirement. Defaults cover only generated artifacts, build output, and external code (`docs/conceptpowers/**`, `dist/**`, `build/**`, `node_modules/**`, `**/*.generated.*`). Hand-written code always needs a marker — use `@concept:none` when no concept applies. |
 | `project`            | `{ name, description }`        | Project name and description metadata.                                                                                                                                                                    |
 
+A full example with every field at its default — use the copy button on the code block, paste it
+into `docs/conceptpowers/init.json`, and change only what you need:
+
+```json
+{
+  "version": "0.1.0",
+  "enabled": true,
+  "backfillMode": "incremental",
+  "enforceScope": "new-feature-behavior",
+  "locale": "ko",
+  "versionCheck": true,
+  "conceptDrivenTests": true,
+  "ignoreGlobs": [
+    "docs/conceptpowers/**",
+    "dist/**",
+    "build/**",
+    "node_modules/**",
+    "**/*.generated.*"
+  ],
+  "project": {
+    "name": "",
+    "description": ""
+  }
+}
+```
+
 ### Skills
 
 Each skill activates at a specific moment in the loop. The middle column is the trigger — _when_ you (or the agent, on your behalf) reach for it.
