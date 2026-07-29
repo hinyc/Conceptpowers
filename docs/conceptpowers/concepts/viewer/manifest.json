@@ -46,6 +46,20 @@
       ]
     },
     {
+      "slug": "concept-driven-tests",
+      "group": "governance",
+      "title": "테스트도 개념에서 나온다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/concept-driven-tests.json",
+      "codeLinks": [
+        "src/schema/initConfig.ts",
+        "src/hooks/sessionStart.ts"
+      ]
+    },
+    {
       "slug": "contract-hash",
       "group": "governance",
       "title": "약속만 지문을 찍는다",
@@ -394,6 +408,13 @@
       "url": "../../features/governance/concept-audit.json"
     },
     {
+      "slug": "concept-driven-testing",
+      "group": "governance",
+      "title": "개념 기반 테스트 유도",
+      "codePathCount": 2,
+      "url": "../../features/governance/concept-driven-testing.json"
+    },
+    {
       "slug": "concept-status-governance",
       "group": "governance",
       "title": "개념 신호등 관리",
@@ -558,6 +579,27 @@
         "title": "src/mapping/scan.ts"
       },
       {
+        "id": "c:concept-driven-tests",
+        "label": "테스트도 개념에서 나온다",
+        "type": "concept",
+        "href": "#/concept/concept-driven-tests",
+        "title": "concept-driven-tests"
+      },
+      {
+        "id": "p:src/schema/initConfig.ts",
+        "label": "initConfig.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/initConfig.ts"
+      },
+      {
+        "id": "p:src/hooks/sessionStart.ts",
+        "label": "sessionStart.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/sessionStart.ts"
+      },
+      {
         "id": "c:contract-hash",
         "label": "약속만 지문을 찍는다",
         "type": "concept",
@@ -689,13 +731,6 @@
         "type": "file",
         "href": "",
         "title": "src/i18n/messages.ts"
-      },
-      {
-        "id": "p:src/schema/initConfig.ts",
-        "label": "initConfig.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/schema/initConfig.ts"
       },
       {
         "id": "p:src/init/readConfig.ts",
@@ -859,13 +894,6 @@
         "title": "src/version/compareSemver.ts"
       },
       {
-        "id": "p:src/hooks/sessionStart.ts",
-        "label": "sessionStart.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/sessionStart.ts"
-      },
-      {
         "id": "c:reference-privacy",
         "label": "참고자료는 밖으로 나가지 않는다",
         "type": "concept",
@@ -990,6 +1018,13 @@
         "type": "feature",
         "href": "#/feature/concept-audit",
         "title": "concept-audit"
+      },
+      {
+        "id": "f:concept-driven-testing",
+        "label": "개념 기반 테스트 유도",
+        "type": "feature",
+        "href": "#/feature/concept-driven-testing",
+        "title": "concept-driven-testing"
       },
       {
         "id": "f:concept-status-governance",
@@ -1126,6 +1161,16 @@
       {
         "source": "c:concept-code-mapping",
         "target": "p:src/mapping/scan.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:src/hooks/sessionStart.ts",
         "kind": "concept-file"
       },
       {
@@ -1459,6 +1504,21 @@
         "kind": "feature-file"
       },
       {
+        "source": "f:concept-driven-testing",
+        "target": "c:concept-driven-tests",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-driven-testing",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:concept-driven-testing",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "feature-file"
+      },
+      {
         "source": "f:concept-status-governance",
         "target": "c:settled-status",
         "kind": "feature-concept"
@@ -1780,5 +1840,5 @@
       }
     ]
   },
-  "generatorVersion": "0.10.13"
+  "generatorVersion": "0.10.14"
 }

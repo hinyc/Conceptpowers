@@ -1,0 +1,8 @@
+{
+  "slug": "concept-driven-testing",
+  "group": "governance",
+  "title": "개념 기반 테스트 유도",
+  "description": "설정이 켜진 프로젝트에서 테스트를 만들 때 대상의 개념을 먼저 찾아 규칙에서 시나리오를 뽑도록, 작업 시작 안내에 규칙을 넣는다.",
+  "concepts": ["concept-driven-tests"],
+  "codePaths": ["src/schema/initConfig.ts", "src/hooks/sessionStart.ts"]
+}
