@@ -72,6 +72,31 @@ var CPSidebar = (function () {
     return h('div', { class: 'side__list' }, [body, featureSection]);
   }
 
+  function matchesQuery(text, q) {
+    q = String(q || '').trim().toLowerCase();
+    if (!q) return true;
+    return String(text || '').toLowerCase().indexOf(q) !== -1;
+  }
+
+  function filterSideList(listNode, noResultsNode, q) {
+    var anyGroupVisible = false;
+    var groups = listNode.querySelectorAll('.group');
+    for (var i = 0; i < groups.length; i++) {
+      var group = groups[i];
+      var items = group.querySelectorAll('li');
+      var anyItemVisible = false;
+      for (var j = 0; j < items.length; j++) {
+        var li = items[j];
+        var visible = matchesQuery(li.textContent, q);
+        li.style.display = visible ? '' : 'none';
+        if (visible) anyItemVisible = true;
+      }
+      group.style.display = anyItemVisible ? '' : 'none';
+      if (anyItemVisible) anyGroupVisible = true;
+    }
+    noResultsNode.style.display = anyGroupVisible ? 'none' : '';
+  }
+
   function shell(activeKind, activeSlug, wrapNode) {
     var t = state.t;
     ensureEscHandler();
@@ -104,9 +129,26 @@ var CPSidebar = (function () {
     backdrop.addEventListener('click', function () {
       setOpen(false);
     });
+    var listNode = sidebarListNode(activeKind, activeSlug);
+    var noResultsNode = h(
+      'p',
+      { class: 'muted side-noresults', style: 'display:none' },
+      t.noResults
+    );
+    var searchIn = h('input', {
+      type: 'search',
+      class: 'side-search',
+      placeholder: t.sidebarSearchPh,
+      'aria-label': t.sidebarSearchPh,
+    });
+    searchIn.addEventListener('input', function () {
+      filterSideList(listNode, noResultsNode, searchIn.value);
+    });
     var aside = h('aside', { id: 'cp-side', class: 'side' }, [
       h('div', { class: 'side__head' }, [h('strong', null, t.conceptList), closeBtn]),
-      sidebarListNode(activeKind, activeSlug),
+      h('div', { class: 'side__search' }, [searchIn]),
+      listNode,
+      noResultsNode,
     ]);
     var body = h('div', { class: 'shell__body' }, [aside, backdrop, wrapNode]);
     var topbar = h('div', { class: 'shell__topbar' }, [toggleBtn]);
@@ -115,5 +157,5 @@ var CPSidebar = (function () {
     return shellEl;
   }
 
-  return { isOpen: isOpen, setOpen: setOpen, shell: shell };
+  return { isOpen: isOpen, setOpen: setOpen, shell: shell, matchesQuery: matchesQuery };
 })();
