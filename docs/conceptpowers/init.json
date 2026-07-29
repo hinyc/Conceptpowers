@@ -10,7 +10,8 @@
     "dist/**",
     "build/**",
     "node_modules/**",
-    "**/*.generated.*"
+    "**/*.generated.*",
+    "assets/serve.mjs"
   ],
   "project": {
     "name": "",

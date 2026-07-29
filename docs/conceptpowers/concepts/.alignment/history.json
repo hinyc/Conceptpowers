@@ -7,5 +7,14 @@
     "at": "2026-07-29T05:19:39.777Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "atomic-baseline-write",
+    "hash": "6ed7e08bd8df",
+    "prevHash": "6ed7e08bd8df",
+    "reason": "원자적 저장을 개념·기능 본문(writeConcept/writeFeature)까지 확장 — 코드 수정에 맞춰 적용 범위 갱신 (사용자 승인)",
+    "at": "2026-07-29T05:27:08.970Z",
+    "ignored": true,
+    "aligned": false
   }
 ]
