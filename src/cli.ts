@@ -22,6 +22,12 @@ import { checkReferencePaths } from './init/referencePaths.js';
 
 type Out = (s: string) => void;
 
+// render/approve/edit-concept가 공통으로 안내하는 뷰어 경로·서빙 명령.
+// 하드코딩 대신 packageScript.ts의 상수를 그대로 재사용한다.
+function viewerHint(): { viewer: string; serve: string } {
+  return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
+}
+
 export async function runCli(
   argv: string[],
   out: Out = (s) => process.stdout.write(s)
@@ -87,13 +93,7 @@ export async function runCli(
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (o) => {
       await renderViewerToDisk(o.root);
-      out(
-        JSON.stringify({
-          ok: true,
-          viewer: 'docs/conceptpowers/concepts/viewer/index.html',
-          serve: 'npm run concepts:view',
-        })
-      );
+      out(JSON.stringify({ ok: true, ...viewerHint() }));
     });
 
   program
@@ -103,6 +103,7 @@ export async function runCli(
     .action(async (slug, o) => {
       await approveConcept(o.root, slug);
       await renderViewerToDisk(o.root);
+      out(JSON.stringify({ ok: true, slug, ...viewerHint() }));
     });
 
   program
@@ -133,6 +134,7 @@ export async function runCli(
           slug,
           status: concept.status,
           downgradedToPending: wasGreen,
+          ...viewerHint(),
         })
       );
     });

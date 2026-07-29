@@ -84,10 +84,16 @@ describe('runCli', () => {
     };
     await writeConcept(root, concept);
     await recordAttest(root, parseConcept(concept), 'pass');
-    const code = await runCli(['approve', '--root', root, 'admin-role']);
+    let captured = '';
+    const code = await runCli(['approve', '--root', root, 'admin-role'], (s) => (captured += s));
     expect(code).toBe(0);
     const c = await readConcept(root, 'admin-role');
     expect(c?.status).toBe('green');
+    const r = JSON.parse(captured);
+    expect(r.ok).toBe(true);
+    expect(r.slug).toBe('admin-role');
+    expect(r.viewer).toContain('concepts/viewer/index.html');
+    expect(r.serve).toContain('concepts:view');
   });
   it('edit-concept는 green 개념을 수정하면 pending으로 내린다 (사람 재승인 필요)', async () => {
     await runCli(['init', '--root', root]);
@@ -111,12 +117,15 @@ describe('runCli', () => {
       (s) => (captured += s)
     );
     expect(code).toBe(0);
-    expect(JSON.parse(captured)).toMatchObject({
+    const editResult = JSON.parse(captured);
+    expect(editResult).toMatchObject({
       ok: true,
       slug: 'admin-role',
       status: 'pending',
       downgradedToPending: true,
     });
+    expect(editResult.viewer).toContain('concepts/viewer/index.html');
+    expect(editResult.serve).toContain('concepts:view');
     const c = await readConcept(root, 'admin-role');
     expect(c?.title).toBe('관리자 역할');
     expect(c?.status).toBe('pending');

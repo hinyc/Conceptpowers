@@ -8269,6 +8269,9 @@ async function noteChange(root, slug3, reason, at) {
 }
 
 // src/cli.ts
+function viewerHint() {
+  return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
+}
 async function runCli(argv, out = (s) => process.stdout.write(s)) {
   const program2 = new Command();
   program2.name("conceptpowers").exitOverride();
@@ -8308,17 +8311,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("render").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     await renderViewerToDisk(o.root);
-    out(
-      JSON.stringify({
-        ok: true,
-        viewer: "docs/conceptpowers/concepts/viewer/index.html",
-        serve: "npm run concepts:view"
-      })
-    );
+    out(JSON.stringify({ ok: true, ...viewerHint() }));
   });
   program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
     await approveConcept(o.root, slug3);
     await renderViewerToDisk(o.root);
+    out(JSON.stringify({ ok: true, slug: slug3, ...viewerHint() }));
   });
   program2.command("edit-concept").description(
     "\uAC1C\uB150 \uBCF8\uBB38 \uC218\uC815 \u2014 \uC0AC\uC6A9\uC790 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC2E4\uD589\uD55C\uB2E4. green \uAC1C\uB150\uC740 \uC790\uB3D9\uC73C\uB85C pending\uC73C\uB85C \uB0B4\uB824\uAC00\uBA70, approve\uB85C \uC0AC\uB78C\uC774 \uB2E4\uC2DC \uC2B9\uC778\uD574\uC57C \uAC1C\uB150\uC73C\uB85C \uC7AC\uD65C\uC131\uD654\uB41C\uB2E4 (human-owns-contract\xB7settled-status)."
@@ -8339,7 +8337,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
         ok: true,
         slug: slug3,
         status: concept.status,
-        downgradedToPending: wasGreen
+        downgradedToPending: wasGreen,
+        ...viewerHint()
       })
     );
   });
