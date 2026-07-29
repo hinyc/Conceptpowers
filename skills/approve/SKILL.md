@@ -5,10 +5,8 @@ description: Use when the user wants to approve a concept ("개념 승인", "이
 
 # Conceptpowers: Approve Concept (user-gated)
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 Flip a concept's `status` from `red` (unapproved) to `green` (approved). `green` is the source of
 truth; `red` concepts are proposals (e.g. auto-inferred during a full scan) awaiting user review.

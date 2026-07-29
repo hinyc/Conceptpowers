@@ -5,10 +5,8 @@ description: Use BEFORE adding a new feature/behavior/role/permission/term when 
 
 # Conceptpowers: Define Concept
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 When no concept exists for a new feature/behavior/role/permission/term, define the concept first (rules 2/6).
 

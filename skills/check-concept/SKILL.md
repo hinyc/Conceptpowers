@@ -5,10 +5,8 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 
 # Conceptpowers: Check Concept (code ↔ concept)
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 Judge whether a new feature or behavior change (tests included) violates the related concept (rules 3/8, D5/D14).
 

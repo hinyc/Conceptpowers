@@ -5,10 +5,8 @@ description: Use after updating the plugin (version sync — NOT concept↔code 
 
 # Conceptpowers: Version Sync (플러그인 버전 동기화)
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 Patch the **plugin-generated** artifacts of an already-initialized project up to the installed
 plugin version. Most generated files are produced at `init` time, so after a plugin update an

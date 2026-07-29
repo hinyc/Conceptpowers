@@ -5,10 +5,8 @@ description: Use after init when the user wants guided setup ("auto", "다음 �
 
 # Conceptpowers: Auto (단계 안내 오케스트레이터)
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된다 — baseline(상위 기준) 없이
 개념을 정의하거나, reference 없이 후보를 뽑거나, 매핑 없이 감사하면 결과가 부실해진다.

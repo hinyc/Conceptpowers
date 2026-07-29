@@ -5,10 +5,8 @@ description: Use when defining or modifying a concept in a governance-active pro
 
 # Conceptpowers: Check Consistency (concept ↔ concept)
 
-> **Precondition — init required:** if `docs/conceptpowers/init.json` does not exist, **STOP here**.
-> Tell the user this project is not initialized and that governance commands are disabled until
-> `/conceptpowers:init` is run (the engine CLI refuses too). Offer to run init now; do not execute
-> any step below without the marker.
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 When adding or modifying a concept, verify there is no conflict or violation against all existing concepts (rule 7, D11/D17).
 
