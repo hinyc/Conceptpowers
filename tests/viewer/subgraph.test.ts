@@ -1,3 +1,4 @@
+// @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/subgraph.test.ts
 // 브라우저 SPA(assets/viewer.js)의 순수 함수 subgraphFor를 node:vm으로 로드해 검증한다.
 // 최상위는 함수/변수 선언만 하므로(boot()는 index.html이 호출) DOM 없이 안전히 평가된다.

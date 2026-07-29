@@ -1,3 +1,4 @@
+// @concept:drift-reconcile @concept:contract-hash @concept:settled-status @concept:atomic-baseline-write
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

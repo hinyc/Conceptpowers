@@ -1,3 +1,4 @@
+// @concept:contract-hash
 import { describe, it, expect } from 'vitest';
 import { contractHash } from '../../src/drift/hash.js';
 import { parseConcept } from '../../src/schema/concept.js';

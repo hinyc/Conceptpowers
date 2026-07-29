@@ -1,3 +1,4 @@
+// @concept:drift-reconcile
 import { describe, it, expect } from 'vitest';
 import { AlignmentLock, History, HistoryEntry } from '../../src/schema/alignment.js';
 

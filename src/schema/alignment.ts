@@ -1,3 +1,4 @@
+// @concept:drift-reconcile
 import { z } from 'zod';
 
 export const LockEntry = z.object({ hash: z.string(), at: z.string() });

@@ -1,3 +1,4 @@
+// @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/schema/feature.test.ts
 import { describe, it, expect } from 'vitest';
 import { parseFeature } from '../../src/schema/feature.js';

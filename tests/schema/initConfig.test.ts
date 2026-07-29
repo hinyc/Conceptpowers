@@ -1,3 +1,4 @@
+// @concept:concept-driven-tests
 import { describe, it, expect } from 'vitest';
 import { parseInitConfig } from '../../src/schema/initConfig.js';
 

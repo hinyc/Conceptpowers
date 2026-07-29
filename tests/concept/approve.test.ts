@@ -1,3 +1,4 @@
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write
 // tests/concept/approve.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';

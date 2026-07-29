@@ -1,3 +1,4 @@
+// @concept:settled-status
 import { describe, it, expect } from 'vitest';
 import { checkConceptQuality } from '../../src/concept/quality.js';
 import { parseConcept } from '../../src/schema/concept.js';

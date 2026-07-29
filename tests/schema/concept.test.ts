@@ -1,3 +1,4 @@
+// @concept:none
 import { describe, it, expect } from 'vitest';
 import { ConceptSchema, parseConcept } from '../../src/schema/concept.js';
 

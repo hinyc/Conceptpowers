@@ -1,3 +1,4 @@
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:ask-only-gate
 // tests/integration/smoke.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';

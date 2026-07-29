@@ -1,3 +1,4 @@
+// @concept:init-gate
 // tests/cli/feature.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';

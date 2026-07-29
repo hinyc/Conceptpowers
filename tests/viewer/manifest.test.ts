@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/manifest.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildManifest } from '../../src/viewer/manifest.js';

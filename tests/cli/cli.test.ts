@@ -1,3 +1,4 @@
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile
 // tests/cli/cli.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from 'node:fs';

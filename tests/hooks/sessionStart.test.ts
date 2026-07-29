@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
 // tests/hooks/sessionStart.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';

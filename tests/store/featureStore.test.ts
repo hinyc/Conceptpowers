@@ -1,3 +1,4 @@
+// @concept:feature-spec-bridge @concept:atomic-baseline-write
 // tests/store/featureStore.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { lstatSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';

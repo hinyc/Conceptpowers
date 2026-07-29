@@ -1,3 +1,4 @@
+// @concept:output-locale
 // tests/i18n/messages.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildInitHint } from '../../src/i18n/messages.js';

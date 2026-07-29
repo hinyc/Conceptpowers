@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 // tests/init/packageScript.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';

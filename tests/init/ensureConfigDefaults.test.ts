@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync @concept:atomic-baseline-write
 // tests/init/ensureConfigDefaults.test.ts
 // 시나리오는 plugin-version-sync 개념의 규칙에서 도출했다(conceptDrivenTests).
 import { describe, it, expect, beforeEach } from 'vitest';

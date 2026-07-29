@@ -1,3 +1,4 @@
+// @concept:audit-gap-detection
 // tests/audit/gaps.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';

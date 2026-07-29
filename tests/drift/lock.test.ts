@@ -1,3 +1,4 @@
+// @concept:contract-hash
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

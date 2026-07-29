@@ -1,3 +1,4 @@
+// @concept:reference-first-duty @concept:reference-privacy @concept:init-gate
 // tests/init/reference.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';

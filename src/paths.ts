@@ -1,3 +1,4 @@
+// @concept:none
 import { join } from 'node:path';
 
 export const CP_REL = 'docs/conceptpowers';

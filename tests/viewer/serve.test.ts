@@ -1,3 +1,4 @@
+// @concept:viewer-local-write-guard @concept:settled-status @concept:atomic-baseline-write
 // tests/viewer/serve.test.ts
 // 뷰어 서버(src/viewer/serve.ts)의 순수 헬퍼·부팅 동작과 쓰기 API 라우터를 검증한다.
 // 배포본 assets/serve.mjs는 이 소스를 esbuild로 번들한 산출물이다.

@@ -1,3 +1,4 @@
+// @concept:audit-gap-detection @concept:settled-status @concept:atomic-baseline-write
 // tests/audit/audit.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// @concept:audit-gap-detection
 // tests/util/glob.test.ts
 import { describe, it, expect } from 'vitest';
 import { matchesAny } from '../../src/util/glob.js';

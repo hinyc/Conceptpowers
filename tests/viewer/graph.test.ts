@@ -1,3 +1,4 @@
+// @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/graph.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildGraphData } from '../../src/viewer/graph.js';

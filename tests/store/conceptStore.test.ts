@@ -1,3 +1,4 @@
+// @concept:settled-status @concept:atomic-baseline-write
 // tests/store/conceptStore.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, lstatSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';

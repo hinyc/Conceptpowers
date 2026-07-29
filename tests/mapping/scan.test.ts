@@ -1,3 +1,4 @@
+// @concept:concept-code-mapping
 // tests/mapping/scan.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';

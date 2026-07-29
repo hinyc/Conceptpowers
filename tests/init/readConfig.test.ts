@@ -1,3 +1,4 @@
+// @concept:output-locale @concept:init-gate
 // tests/init/readConfig.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';

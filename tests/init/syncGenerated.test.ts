@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync @concept:init-gate
 // tests/init/syncGenerated.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// @concept:init-gate
 // tests/init/scaffold.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, existsSync, readFileSync, writeFileSync } from 'node:fs';

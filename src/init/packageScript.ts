@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 // src/init/packageScript.ts
 // 대상 프로젝트의 package.json에 "뷰어 열기" 스크립트(concepts:view)를 보장한다.
 // 뷰어는 data/*.json을 fetch하므로 file://가 아닌 http로 열어야 한다.

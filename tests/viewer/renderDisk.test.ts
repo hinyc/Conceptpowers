@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:concept-code-mapping
 // tests/viewer/renderDisk.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';

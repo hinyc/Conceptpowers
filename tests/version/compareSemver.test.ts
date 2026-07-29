@@ -1,3 +1,4 @@
+// @concept:plugin-version-sync
 import { describe, it, expect } from 'vitest';
 import { isNewer } from '../../src/version/compareSemver.js';
 

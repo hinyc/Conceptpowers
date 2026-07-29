@@ -1,3 +1,4 @@
+// @concept:untrusted-text-sanitization
 import { describe, it, expect } from 'vitest';
 import { normalizeRel, sanitizeText } from '../../src/drift/safe.js';
 
