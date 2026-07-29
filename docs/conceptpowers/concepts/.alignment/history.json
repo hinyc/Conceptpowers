@@ -25,5 +25,14 @@
     "at": "2026-07-29T08:40:04.227Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "aa78295125a2",
+    "prevHash": "aa78295125a2",
+    "reason": "version-sync가 init.json의 누락 설정 항목을 기본값으로 보충하도록 확장 (사용자 명시 승인)",
+    "at": "2026-07-29T08:43:42.893Z",
+    "ignored": true,
+    "aligned": false
   }
 ]

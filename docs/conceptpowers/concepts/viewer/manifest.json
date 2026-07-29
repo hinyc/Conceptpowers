@@ -248,7 +248,7 @@
       "slug": "plugin-version-sync",
       "group": "platform",
       "title": "도구가 올라가면 껍데기만 맞춘다",
-      "status": "pending",
+      "status": "green",
       "category": [
         "behavior"
       ],
