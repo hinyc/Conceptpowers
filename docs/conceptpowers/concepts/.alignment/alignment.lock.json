@@ -10,5 +10,93 @@
   "settled-status": {
     "hash": "c38a55c04067",
     "at": "2026-07-22T05:42:47.777Z"
+  },
+  "audit-gap-detection": {
+    "hash": "e1198b5b7af4",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "concept-code-mapping": {
+    "hash": "af5c4caffdea",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "contract-hash": {
+    "hash": "f0a8a4768fb3",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "drift-reconcile": {
+    "hash": "cfe9b5e09b76",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "feature-spec-bridge": {
+    "hash": "cc5fa65432b2",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "globally-unique-slug": {
+    "hash": "ee9e098f1319",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "output-locale": {
+    "hash": "fc89cb832d28",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "pending-conflict-tracking": {
+    "hash": "1a1b4c653000",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "reference-first-duty": {
+    "hash": "7eb89c3befb6",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "atomic-baseline-write": {
+    "hash": "c83e2a8d9319",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "generated-not-hand-edited": {
+    "hash": "2e61b3de3730",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "init-gate": {
+    "hash": "210f0acba01b",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "plugin-version-sync": {
+    "hash": "1f7f05754a0a",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "reference-privacy": {
+    "hash": "65479e3bc867",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "untrusted-text-sanitization": {
+    "hash": "a91d91f83e53",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "viewer-local-write-guard": {
+    "hash": "6ef9cbc9644f",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "concept-inline-edit": {
+    "hash": "26279e1f3654",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "copy-code-path": {
+    "hash": "57f445f62020",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "home-search": {
+    "hash": "09c8085cfbbb",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "knowledge-graph-view": {
+    "hash": "694bd9e9900f",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "sidebar-search": {
+    "hash": "ddf61f099fea",
+    "at": "2026-07-29T04:43:45.179Z"
+  },
+  "sidebar-toggle": {
+    "hash": "3f79d43c9c88",
+    "at": "2026-07-29T04:43:45.179Z"
   }
 }
