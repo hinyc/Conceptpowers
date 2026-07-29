@@ -109,6 +109,25 @@ body {
   justify-content: space-between;
   margin-bottom: 10px;
 }
+.side__search {
+  margin: 0 0 12px;
+}
+.side-search {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.side-search:focus {
+  outline: none;
+  border-color: var(--link);
+}
 .side-close {
   border: none;
   background: transparent;
