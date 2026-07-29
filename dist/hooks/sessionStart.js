@@ -9,10 +9,10 @@ var __export = (target, all) => {
 
 // src/hooks/sessionStart.ts
 import { join as join12 } from "node:path";
-import { readFile as readFile11 } from "node:fs/promises";
+import { readFile as readFile12 } from "node:fs/promises";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir7, writeFile as writeFile8, access as access5 } from "node:fs/promises";
+import { mkdir as mkdir8, writeFile as writeFile9, access as access5 } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4180,12 +4180,12 @@ var seedTemplates = {
 var localeLabel = { ko: "Korean", en: "English" };
 
 // src/init/syncGenerated.ts
-import { readdir as readdir5, rm, rmdir } from "node:fs/promises";
+import { readdir as readdir5, rm as rm2, rmdir } from "node:fs/promises";
 import { join as join10 } from "node:path";
 
 // src/viewer/render.ts
-import { mkdir as mkdir2, writeFile as writeFile2, readFile as readFile5 } from "node:fs/promises";
-import { join as join4, dirname } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile5 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4272,6 +4272,22 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 // src/store/conceptStore.ts
 import { readFile, readdir } from "node:fs/promises";
 import { join as join2 } from "node:path";
+
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
@@ -4434,7 +4450,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir, writeFile } from "node:fs/promises";
+import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
@@ -4457,13 +4473,13 @@ async function readInitConfig(root) {
 
 // src/viewer/render.ts
 async function readAsset(name) {
-  const start = dirname(fileURLToPath(import.meta.url));
+  const start = dirname2(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
       return await readFile5(join4(dir, "assets", name));
     } catch {
-      const parent = dirname(dir);
+      const parent = dirname2(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4471,11 +4487,11 @@ async function readAsset(name) {
   throw new Error(`asset not found: ${name} (search start: ${start})`);
 }
 async function copyAsset(name, target) {
-  await mkdir2(dirname(target), { recursive: true });
-  await writeFile2(target, await readAsset(name));
+  await mkdir3(dirname2(target), { recursive: true });
+  await writeFile3(target, await readAsset(name));
 }
 async function readPluginVersion() {
-  const start = dirname(fileURLToPath(import.meta.url));
+  const start = dirname2(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
@@ -4484,7 +4500,7 @@ async function readPluginVersion() {
       )?.version;
       return typeof v === "string" ? v : null;
     } catch {
-      const parent = dirname(dir);
+      const parent = dirname2(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4497,12 +4513,12 @@ async function writeManifest(root) {
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir2(p.conceptsViewer, { recursive: true });
+  await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
     generatorVersion: await readPluginVersion()
   };
-  await writeFile2(
+  await writeFile3(
     join4(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
@@ -4519,7 +4535,7 @@ async function renderViewerToDisk(root) {
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile6, writeFile as writeFile3 } from "node:fs/promises";
+import { readFile as readFile6, writeFile as writeFile4 } from "node:fs/promises";
 import { join as join5 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
@@ -4549,17 +4565,17 @@ async function upsertViewerScript(root) {
     ...pkg,
     scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND }
   };
-  await writeFile3(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  await writeFile4(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
   return "set";
 }
 
 // src/init/reference.ts
-import { mkdir as mkdir3, writeFile as writeFile4, access, readdir as readdir3 } from "node:fs/promises";
+import { mkdir as mkdir4, writeFile as writeFile5, access, readdir as readdir3 } from "node:fs/promises";
 import { join as join6, relative } from "node:path";
 var SEED_README = "README.md";
 async function ensureReference(root) {
   const dir = cpPaths(root).reference;
-  await mkdir3(dir, { recursive: true });
+  await mkdir4(dir, { recursive: true });
   const readme = join6(dir, SEED_README);
   try {
     await access(readme);
@@ -4567,7 +4583,7 @@ async function ensureReference(root) {
   } catch {
   }
   const locale = (await readInitConfig(root))?.locale ?? "ko";
-  await writeFile4(readme, seedTemplates[locale].reference, "utf8");
+  await writeFile5(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
 var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore", "paths.md"]);
@@ -4592,7 +4608,7 @@ async function listReferenceFiles(root) {
 }
 
 // src/init/referencePaths.ts
-import { readFile as readFile7, readdir as readdir4, stat, access as access2, mkdir as mkdir4, writeFile as writeFile5 } from "node:fs/promises";
+import { readFile as readFile7, readdir as readdir4, stat, access as access2, mkdir as mkdir5, writeFile as writeFile6 } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join as join7 } from "node:path";
 var PATHS_FILE = "paths.md";
@@ -4624,8 +4640,8 @@ async function ensureReferencePaths(root) {
     return false;
   } catch {
   }
-  await mkdir4(dir, { recursive: true });
-  await writeFile5(target, PATHS_TEMPLATE, "utf8");
+  await mkdir5(dir, { recursive: true });
+  await writeFile6(target, PATHS_TEMPLATE, "utf8");
   return true;
 }
 function parseReferencePaths(content) {
@@ -4663,7 +4679,7 @@ async function checkReferencePaths(root) {
 }
 
 // src/init/alignmentGitignore.ts
-import { access as access3, mkdir as mkdir5, writeFile as writeFile6 } from "node:fs/promises";
+import { access as access3, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join8 } from "node:path";
 var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
 async function ensureAlignmentGitignore(root) {
@@ -4672,14 +4688,14 @@ async function ensureAlignmentGitignore(root) {
     await access3(target);
     return false;
   } catch {
-    await mkdir5(cpPaths(root).alignmentDir, { recursive: true });
-    await writeFile6(target, CONTENT, "utf8");
+    await mkdir6(cpPaths(root).alignmentDir, { recursive: true });
+    await writeFile7(target, CONTENT, "utf8");
     return true;
   }
 }
 
 // src/init/referenceGitignore.ts
-import { access as access4, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
+import { access as access4, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
 import { join as join9 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
@@ -4695,10 +4711,40 @@ async function ensureReferenceGitignore(root) {
     await access4(target);
     return false;
   } catch {
-    await mkdir6(cpPaths(root).reference, { recursive: true });
-    await writeFile7(target, CONTENT2, "utf8");
+    await mkdir7(cpPaths(root).reference, { recursive: true });
+    await writeFile8(target, CONTENT2, "utf8");
     return true;
   }
+}
+
+// src/init/ensureConfigDefaults.ts
+import { readFile as readFile8 } from "node:fs/promises";
+async function ensureInitConfigDefaults(root) {
+  const target = cpPaths(root).initFile;
+  let current;
+  try {
+    const parsed = JSON.parse(await readFile8(target, "utf8"));
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    current = parsed;
+  } catch {
+    return [];
+  }
+  let filled;
+  try {
+    filled = parseInitConfig(current);
+  } catch {
+    return [];
+  }
+  const missing = Object.keys(filled).filter((key) => !(key in current));
+  if (missing.length === 0) return [];
+  const next = { ...current };
+  for (const key of missing) next[key] = filled[key];
+  try {
+    await writeFileAtomic(target, JSON.stringify(next, null, 2) + "\n");
+  } catch (error) {
+    throw new Error(`init.json \uC124\uC815 \uBCF4\uCDA9\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4: ${error.message}`);
+  }
+  return missing;
 }
 
 // src/init/syncGenerated.ts
@@ -4721,7 +4767,7 @@ async function cleanLegacyViewerHtml(viewerDir) {
         } catch {
         }
       } else if (e.name.endsWith(".html") && full !== keep) {
-        await rm(full);
+        await rm2(full);
         removed++;
       }
     }
@@ -4737,13 +4783,15 @@ async function syncGenerated(root) {
   const referencePathsCreated = await ensureReferencePaths(root);
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
   const referenceGitignoreCreated = await ensureReferenceGitignore(root);
+  const configFieldsAdded = await ensureInitConfigDefaults(root);
   return {
     scriptStatus,
     orphansRemoved,
     referenceReadmeCreated,
     referencePathsCreated,
     alignmentGitignoreCreated,
-    referenceGitignoreCreated
+    referenceGitignoreCreated,
+    configFieldsAdded
   };
 }
 
@@ -4758,20 +4806,20 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile8 } from "node:fs/promises";
+import { readFile as readFile9 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile8(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile9(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile9 } from "node:fs/promises";
+import { readFile as readFile10 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile9(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile10(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4848,7 +4896,7 @@ function isNewer(remote, installed) {
 }
 
 // src/version/checkUpdate.ts
-import { readFile as readFile10, writeFile as writeFile9, mkdir as mkdir8 } from "node:fs/promises";
+import { readFile as readFile11, writeFile as writeFile10, mkdir as mkdir9 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import { join as join11 } from "node:path";
 var DEFAULT_URL = "https://raw.githubusercontent.com/hinyc/Conceptpowers/main/.claude-plugin/plugin.json";
@@ -4860,7 +4908,7 @@ function defaultCacheDir() {
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile10(join11(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile11(join11(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -4869,7 +4917,7 @@ async function readInstalledVersion(pluginRoot) {
 }
 async function readCache(cacheDir) {
   try {
-    const text = await readFile10(join11(cacheDir, CACHE_FILE), "utf8");
+    const text = await readFile11(join11(cacheDir, CACHE_FILE), "utf8");
     const data = JSON.parse(text);
     if (typeof data?.checkedAt === "number" && typeof data?.latest === "string") {
       return { checkedAt: data.checkedAt, latest: data.latest };
@@ -4881,8 +4929,8 @@ async function readCache(cacheDir) {
 }
 async function writeCache(cacheDir, cache) {
   try {
-    await mkdir8(cacheDir, { recursive: true });
-    await writeFile9(join11(cacheDir, CACHE_FILE), JSON.stringify(cache));
+    await mkdir9(cacheDir, { recursive: true });
+    await writeFile10(join11(cacheDir, CACHE_FILE), JSON.stringify(cache));
   } catch {
   }
 }
@@ -4933,7 +4981,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
       let generator = null;
       try {
         const m = JSON.parse(
-          await readFile11(join12(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
+          await readFile12(join12(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
         );
         generator = typeof m?.generatorVersion === "string" ? m.generatorVersion : null;
       } catch {

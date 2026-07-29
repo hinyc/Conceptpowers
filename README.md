@@ -167,6 +167,9 @@ Adopting Conceptpowers on an existing project? `init` **strict** mode runs a _fu
 
 `docs/conceptpowers/init.json` is both the activation marker and the per-project settings file.
 Missing fields fall back to their defaults, so files created by older versions keep working as-is.
+After a plugin update, `/conceptpowers:version-sync` (or the automatic session-start sync)
+**backfills settings introduced by newer versions into the file at their defaults** — values you
+already wrote are preserved, so a setting you turned off never flips back on.
 
 | Field                | Allowed values                                                                | Default (when missing)   | What it does                                                                                                                                                                                             |
 | -------------------- | ----------------------------------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -248,13 +248,14 @@
       "slug": "plugin-version-sync",
       "group": "platform",
       "title": "도구가 올라가면 껍데기만 맞춘다",
-      "status": "green",
+      "status": "pending",
       "category": [
         "behavior"
       ],
       "url": "../data/platform/plugin-version-sync.json",
       "codeLinks": [
         "src/init/syncGenerated.ts",
+        "src/init/ensureConfigDefaults.ts",
         "src/version/checkUpdate.ts",
         "src/version/compareSemver.ts",
         "src/hooks/sessionStart.ts"
@@ -880,6 +881,13 @@
         "title": "src/init/syncGenerated.ts"
       },
       {
+        "id": "p:src/init/ensureConfigDefaults.ts",
+        "label": "ensureConfigDefaults.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/ensureConfigDefaults.ts"
+      },
+      {
         "id": "p:src/version/checkUpdate.ts",
         "label": "checkUpdate.ts",
         "type": "file",
@@ -1365,6 +1373,11 @@
       },
       {
         "source": "c:plugin-version-sync",
+        "target": "p:src/init/ensureConfigDefaults.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
         "target": "p:src/version/checkUpdate.ts",
         "kind": "concept-file"
       },
@@ -1840,5 +1853,5 @@
       }
     ]
   },
-  "generatorVersion": "0.10.14"
+  "generatorVersion": "0.10.15"
 }

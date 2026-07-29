@@ -29,9 +29,13 @@ Refreshes only what the plugin generates:
 - Removes orphaned old-format files (per-concept `*.html`, `graph.html`).
 - Upserts `concepts:view` in `package.json` to the current command (`node …/serve.mjs`).
   A genuinely custom (user-authored) value is preserved; only plugin-generated values are replaced.
+- Backfills **settings added by newer plugin versions** into `init.json` at their defaults, so the
+  user can see and toggle them. Values already written stay exactly as they are — including fields
+  the tool does not recognize — and the file is not rewritten at all when nothing is missing.
 
-**Never** modifies the baseline — concepts, features, `architecture.md`, `infra.md`, or `init.json`
-settings are left untouched. Running `conceptpowers init` again does the same patch (init is idempotent).
+**Never** modifies the baseline — concepts, features, `architecture.md`, and `infra.md` are left
+untouched, and no existing setting value is ever changed or removed. Running `conceptpowers init`
+again does the same patch (init is idempotent).
 
 ## Steps
 
@@ -39,8 +43,10 @@ settings are left untouched. Running `conceptpowers init` again does the same pa
    `docs/conceptpowers/init.json` exists). If not, use `conceptpowers:init` instead.
 2. Run the deterministic CLI (path is in the session context or the plugin dist):
    `node "<cli>" version-sync --root .`
-3. Report the JSON result to the user: `scriptStatus` (no-package | unchanged | set | kept) and
-   `orphansRemoved` (count of old `*.html` files cleaned).
+3. Report the JSON result to the user: `scriptStatus` (no-package | unchanged | set | kept),
+   `orphansRemoved` (count of old `*.html` files cleaned), and `configFieldsAdded` (settings
+   backfilled into `init.json` at their defaults — name them so the user knows what is now
+   adjustable, and point them at the README settings table).
 4. Remind the user they can open the refreshed viewer with `npm run concepts:view`.
 
 ## Notes

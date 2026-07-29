@@ -29,6 +29,29 @@ describe('syncGenerated', () => {
     expect(r.referencePathsCreated).toBe(false); // scaffoldInit가 이미 생성
   });
 
+  // 규칙 검증: "설정 파일에 아직 없는 설정 항목만 기본값으로 추가하는 것" (plugin-version-sync allow)
+  it('구버전 init.json의 빠진 설정 항목을 기본값으로 보충한다', async () => {
+    await scaffoldInit(root, {});
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    // 구버전 프로젝트를 재현: 새 항목이 아직 없는 설정 파일
+    const old = JSON.parse(readFileSync(initPath, 'utf8'));
+    delete old.conceptDrivenTests;
+    old.versionCheck = false; // 사람이 꺼둔 값
+    writeFileSync(initPath, JSON.stringify(old, null, 2) + '\n');
+
+    const r = await syncGenerated(root);
+
+    expect(r.configFieldsAdded).toContain('conceptDrivenTests');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    expect(cfg.conceptDrivenTests).toBe(true); // 빠진 항목은 기본값으로 채워지고
+    expect(cfg.versionCheck).toBe(false); // 사람이 정한 값은 그대로 보존된다
+  });
+
+  it('보충할 설정 항목이 없으면 configFieldsAdded가 비어 있다', async () => {
+    await scaffoldInit(root, {}); // scaffold가 이미 전 항목을 기록
+    expect((await syncGenerated(root)).configFieldsAdded).toEqual([]);
+  });
+
   it('옛 포맷 고아 *.html을 정리하고 index.html은 보존한다', async () => {
     await scaffoldInit(root, {});
     // 옛 포맷 잔재를 인위적으로 만든다

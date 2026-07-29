@@ -39,6 +39,7 @@ async function syncSafely(root: string): Promise<SyncResult> {
       referencePathsCreated: false,
       alignmentGitignoreCreated: false,
       referenceGitignoreCreated: false,
+      configFieldsAdded: [],
     };
   }
 }

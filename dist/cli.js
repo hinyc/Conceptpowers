@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile12 } from "node:fs/promises";
+import { readFile as readFile13 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir8, writeFile as writeFile9, access as access5 } from "node:fs/promises";
@@ -7996,6 +7996,36 @@ async function ensureReferenceGitignore(root) {
   }
 }
 
+// src/init/ensureConfigDefaults.ts
+import { readFile as readFile10 } from "node:fs/promises";
+async function ensureInitConfigDefaults(root) {
+  const target = cpPaths(root).initFile;
+  let current;
+  try {
+    const parsed = JSON.parse(await readFile10(target, "utf8"));
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    current = parsed;
+  } catch {
+    return [];
+  }
+  let filled;
+  try {
+    filled = parseInitConfig(current);
+  } catch {
+    return [];
+  }
+  const missing = Object.keys(filled).filter((key) => !(key in current));
+  if (missing.length === 0) return [];
+  const next = { ...current };
+  for (const key of missing) next[key] = filled[key];
+  try {
+    await writeFileAtomic(target, JSON.stringify(next, null, 2) + "\n");
+  } catch (error) {
+    throw new Error(`init.json \uC124\uC815 \uBCF4\uCDA9\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4: ${error.message}`);
+  }
+  return missing;
+}
+
 // src/init/syncGenerated.ts
 async function cleanLegacyViewerHtml(viewerDir) {
   const keep = join11(viewerDir, "index.html");
@@ -8032,13 +8062,15 @@ async function syncGenerated(root) {
   const referencePathsCreated = await ensureReferencePaths(root);
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
   const referenceGitignoreCreated = await ensureReferenceGitignore(root);
+  const configFieldsAdded = await ensureInitConfigDefaults(root);
   return {
     scriptStatus,
     orphansRemoved,
     referenceReadmeCreated,
     referencePathsCreated,
     alignmentGitignoreCreated,
-    referenceGitignoreCreated
+    referenceGitignoreCreated,
+    configFieldsAdded
   };
 }
 
@@ -8061,7 +8093,8 @@ async function syncSafely(root) {
       referenceReadmeCreated: false,
       referencePathsCreated: false,
       alignmentGitignoreCreated: false,
-      referenceGitignoreCreated: false
+      referenceGitignoreCreated: false,
+      configFieldsAdded: []
     };
   }
 }
@@ -8136,20 +8169,20 @@ async function approveConcept(root, slug3) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile10(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile11(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile11 } from "node:fs/promises";
+import { readFile as readFile12 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile11(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile12(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -8275,7 +8308,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile12(o.file, "utf8"));
+    const patch = JSON.parse(await readFile13(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8289,7 +8322,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile12(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile13(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {

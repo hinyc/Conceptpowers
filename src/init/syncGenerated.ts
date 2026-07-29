@@ -11,6 +11,7 @@ import { ensureReference } from './reference.js';
 import { ensureReferencePaths } from './referencePaths.js';
 import { ensureAlignmentGitignore } from './alignmentGitignore.js';
 import { ensureReferenceGitignore } from './referenceGitignore.js';
+import { ensureInitConfigDefaults } from './ensureConfigDefaults.js';
 import { cpPaths } from '../paths.js';
 
 export interface SyncResult {
@@ -20,6 +21,8 @@ export interface SyncResult {
   referencePathsCreated: boolean;
   alignmentGitignoreCreated: boolean;
   referenceGitignoreCreated: boolean;
+  // 새 버전에서 생겨 이번에 기본값으로 채운 설정 항목 이름들.
+  configFieldsAdded: string[];
 }
 
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
@@ -62,6 +65,7 @@ export async function syncGenerated(root: string): Promise<SyncResult> {
   const referencePathsCreated = await ensureReferencePaths(root); // reference/paths.md 안내 템플릿 보장
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root); // last-commit 추적 제외 보장
   const referenceGitignoreCreated = await ensureReferenceGitignore(root); // 기밀 기본 로컬 전용 보장
+  const configFieldsAdded = await ensureInitConfigDefaults(root); // 새로 생긴 설정 항목만 기본값 보충
   return {
     scriptStatus,
     orphansRemoved,
@@ -69,5 +73,6 @@ export async function syncGenerated(root: string): Promise<SyncResult> {
     referencePathsCreated,
     alignmentGitignoreCreated,
     referenceGitignoreCreated,
+    configFieldsAdded,
   };
 }
