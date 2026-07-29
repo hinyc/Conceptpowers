@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync
+// @concept:plugin-version-sync @concept:concept-driven-tests
 // src/hooks/sessionStart.ts
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
@@ -70,6 +70,13 @@ export async function buildSessionStartOutput(
   }
   const config = await readInitConfig(root);
   const locale = config?.locale ?? 'ko';
+  // 테스트도 개념의 지배를 받는다(conceptDrivenTests) — false로 명시한 경우에만 끈다.
+  const conceptTestsLine =
+    config?.conceptDrivenTests !== false
+      ? [
+          '- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag → manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules — each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept).',
+        ]
+      : [];
   const all = await listConcepts(root);
   const reds = all.filter((c) => (c.status ?? 'red') === 'red').map((c) => c.slug);
   const pendings = all.filter((c) => c.status === 'pending').map((c) => c.slug);
@@ -92,6 +99,7 @@ export async function buildSessionStartOutput(
     `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red — the user does that directly. Never auto-approve a red (un-authored) concept.`,
+    ...conceptTestsLine,
     redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",

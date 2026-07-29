@@ -94,6 +94,32 @@ describe('buildSessionStartOutput', () => {
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPTPOWERS-REFERENCE>');
   });
+  // 규칙 검증: "스위치 값이 설정에 없으면 켜진 것으로 본다" (concept-driven-tests)
+  it('conceptDrivenTests 기본(필드 없음)이면 테스트 개념 규칙을 주입한다', async () => {
+    await scaffoldInit(root, {});
+    // scaffold는 필드를 기록하지만, 구버전 init.json(필드 없음)도 같아야 한다
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    delete cfg.conceptDrivenTests;
+    writeFileSync(initPath, JSON.stringify(cfg, null, 2));
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).toContain('Test code is governed too');
+  });
+  // 규칙 검증: "스위치가 켜진 프로젝트에서 작업 시작 안내에 이 규칙 한 줄을 넣는 것" (allow)
+  it('conceptDrivenTests: true면 테스트 개념 규칙을 주입한다', async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).toContain('Test code is governed too');
+  });
+  // 규칙 검증: "스위치를 껐는데도 작업 시작 안내에 이 규칙을 넣는 것" 금지 (restrict)
+  it('conceptDrivenTests: false면 테스트 개념 규칙이 없다', async () => {
+    await scaffoldInit(root, {});
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    writeFileSync(initPath, JSON.stringify({ ...cfg, conceptDrivenTests: false }, null, 2));
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain('Test code is governed too');
+  });
   it('ko면 Output language 디렉티브가 Korean이다 (기본)', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, '/plugin');
