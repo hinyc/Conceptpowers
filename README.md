@@ -131,7 +131,7 @@ contract so any edit invalidates it). The commit gate likewise asks when a stage
 change has no fresh attestation. The attestation is the agent's self-report — it can't
 prove the check was _thorough_, but it makes skipping the step impossible to hide.
 
-Editing a concept's content (`conceptpowers:update-baseline`) is the one path that touches a settled concept: it's allowed only with the user's explicit approval of the exact change, and it always demotes 🟢 green → 🟡 pending — the concept stops governing code until a fresh `check-consistency` passes and the user re-promotes it with the approve flow of `conceptpowers:update-baseline`. The agent never hand-edits a concept's JSON to keep it green.
+Editing a concept's content (`conceptpowers:update-baseline`) is the one path that touches a settled concept: it's allowed only with the user's explicit approval of the exact change, and it always demotes 🟢 green → 🟡 pending — the concept stops governing code until a fresh `check-consistency` passes (attested) and the user confirms settling it back to 🟢 green — the approve flow is red-only and does not apply here. The agent never hand-edits a concept's JSON to keep it green.
 
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 

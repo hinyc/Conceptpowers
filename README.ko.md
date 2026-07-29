@@ -124,7 +124,7 @@ flowchart LR
 증빙은 에이전트의 자기신고라 검사의 성실성까지 보증하지는 않지만, 단계를 건너뛴 사실은
 숨길 수 없게 만든다.
 
-개념의 내용을 수정하는 것(`conceptpowers:update-baseline`)은 정착된 개념을 건드리는 유일한 경로다: 사용자가 정확한 변경 내용을 명시적으로 승인할 때만 허용되며, 수정하면 항상 🟢 green → 🟡 pending으로 내려간다 — 개념은 새 `check-consistency`가 통과하고 사용자가 `conceptpowers:update-baseline`의 승인 플로우로 다시 승격시킬 때까지 코드 검증에 쓰이지 않는다. 에이전트는 green 상태를 유지하려고 개념 JSON을 직접 손대지 않는다.
+개념의 내용을 수정하는 것(`conceptpowers:update-baseline`)은 정착된 개념을 건드리는 유일한 경로다: 사용자가 정확한 변경 내용을 명시적으로 승인할 때만 허용되며, 수정하면 항상 🟢 green → 🟡 pending으로 내려간다 — 개념은 새 `check-consistency`가 통과(증빙 기록)하고 사용자 확인 아래 다시 🟢 green으로 정착할 때까지 코드 검증에 쓰이지 않는다 (승인 플로우는 🔴 red 전용이라 여기 해당하지 않는다). 에이전트는 green 상태를 유지하려고 개념 JSON을 직접 손대지 않는다.
 
 green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가 양보(수정/재플래그)하며, **green ↔ green** 충돌은 중단하고 사용자에게 올린다.
 

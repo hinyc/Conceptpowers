@@ -51,9 +51,9 @@ buys nothing the index does not already give you.
    - ② **Violation** → **do not modify the code on your own.** Report to the user and let them choose one:
      (a) **update the concept** — allowed, but only with the user's explicit approval of the exact
      change, via `conceptpowers:update-baseline` (`edit-concept`); this drops a green concept to
-     `pending`, so it no longer governs code until the user manually re-approves it
-     (`conceptpowers:update-baseline` approve flow), or (b) split it into a new feature/concept. Never edit the concept
-     silently to make the code pass.
+     `pending`, so it no longer governs code until a fresh consistency check passes and the user
+     confirms settling it back to green (the approve flow is red-only), or (b) split it into a new
+     feature/concept. Never edit the concept silently to make the code pass.
    - ③ **Undecidable (concept too vague)** — the concept's rules genuinely cannot answer
      "does this change violate it?" → do NOT guess and do NOT fall back to reference/. Tell the
      user: "개념 `<slug>`의 규칙만으로는 이 변경의 위반 여부를 판단할 수 없습니다" — name the

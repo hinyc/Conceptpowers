@@ -42,11 +42,14 @@ User-authored concepts do NOT come here — they go pending → green via `conce
      This forces `green → pending`, records the drift reason, and re-renders the viewer
      (`"downgradedToPending": true` in the JSON output).
    - **Do not hand-edit the concept JSON to keep it green.** The pending demotion is the point —
-     run `conceptpowers:check-consistency`, then the user re-approves via the approve flow above.
+     run `conceptpowers:check-consistency` and record the passing attestation; then, with the
+     user's confirmation, settle it back to `green` (set `status: green` in the JSON + `render`,
+     or the viewer's status control). The approve flow above is red-only — it does not apply to pending.
    - If the change affects existing code (@concept links), report the impact scope to the user.
 3. **When modifying architecture/infra/feature spec**: review with the user whether the change should
    also change a concept (the high-level basis constrains lower-level concepts, D9).
-4. Report a summary, and **remind the user an edited concept is now `pending`** until re-approved.
+4. Report a summary, and **remind the user an edited concept is now `pending`** until it settles
+   back to green via a passing consistency check (user-confirmed).
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
