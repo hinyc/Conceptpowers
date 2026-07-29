@@ -87,6 +87,13 @@ export async function runCli(
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (o) => {
       await renderViewerToDisk(o.root);
+      out(
+        JSON.stringify({
+          ok: true,
+          viewer: 'docs/conceptpowers/concepts/viewer/index.html',
+          serve: 'npm run concepts:view',
+        })
+      );
     });
 
   program

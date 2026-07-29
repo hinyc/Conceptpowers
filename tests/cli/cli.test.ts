@@ -217,4 +217,14 @@ describe('runCli', () => {
     const { readMappingCache } = await import('../../src/mapping/scan.js');
     expect(await readMappingCache(root)).toEqual({ beta: ['src/b.ts'] });
   });
+  it('render 서브커맨드가 뷰어 경로 안내를 JSON으로 출력한다', async () => {
+    await runCli(['init', '--root', root, '--mode', 'incremental']);
+    let captured = '';
+    const code = await runCli(['render', '--root', root], (s) => (captured += s));
+    expect(code).toBe(0);
+    const r = JSON.parse(captured);
+    expect(r.ok).toBe(true);
+    expect(r.viewer).toContain('concepts/viewer/index.html');
+    expect(r.serve).toContain('concepts:view');
+  });
 });

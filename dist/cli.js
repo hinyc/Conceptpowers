@@ -8308,6 +8308,13 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
   });
   program2.command("render").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     await renderViewerToDisk(o.root);
+    out(
+      JSON.stringify({
+        ok: true,
+        viewer: "docs/conceptpowers/concepts/viewer/index.html",
+        serve: "npm run concepts:view"
+      })
+    );
   });
   program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
     await approveConcept(o.root, slug3);
