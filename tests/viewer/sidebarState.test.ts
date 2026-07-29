@@ -34,7 +34,11 @@ function loadSidebar(width: number) {
   vm.createContext(ctx);
   vm.runInContext(viewerSrc, ctx);
   vm.runInContext(sidebarSrc, ctx);
-  return ctx.CPSidebar as { isOpen: () => boolean; setOpen: (open: boolean) => void };
+  return ctx.CPSidebar as {
+    isOpen: () => boolean;
+    setOpen: (open: boolean) => void;
+    matchesQuery: (text: string | null, q: string) => boolean;
+  };
 }
 
 describe('CPSidebar 열림 상태', () => {
@@ -67,5 +71,27 @@ describe('사이드바 검색 i18n', () => {
     const i18n = ctx.I18N as { ko: Record<string, string>; en: Record<string, string> };
     expect(i18n.ko.sidebarSearchPh).toBeTruthy();
     expect(i18n.en.sidebarSearchPh).toBeTruthy();
+  });
+});
+
+describe('CPSidebar.matchesQuery', () => {
+  it('빈 검색어는 항상 true', () => {
+    expect(loadSidebar(1280).matchesQuery('아무 텍스트', '')).toBe(true);
+    expect(loadSidebar(1280).matchesQuery('아무 텍스트', '   ')).toBe(true);
+  });
+
+  it('대소문자 무시 부분일치', () => {
+    const sidebar = loadSidebar(1280);
+    expect(sidebar.matchesQuery('Auth Flow', 'auth')).toBe(true);
+    expect(sidebar.matchesQuery('Auth Flow', 'FLOW')).toBe(true);
+    expect(sidebar.matchesQuery('Auth Flow', 'zzz')).toBe(false);
+  });
+
+  it('앞뒤 공백은 무시한다', () => {
+    expect(loadSidebar(1280).matchesQuery('Payment', '  pay  ')).toBe(true);
+  });
+
+  it('text가 없어도 예외 없이 false를 반환한다', () => {
+    expect(loadSidebar(1280).matchesQuery(null, 'x')).toBe(false);
   });
 });
