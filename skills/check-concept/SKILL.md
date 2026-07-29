@@ -17,12 +17,8 @@ Judge whether a new feature or behavior change (tests included) violates the rel
 
 ## Judgment basis: concepts ONLY (do not read reference/)
 
-**Defined concepts are the facts.** Code judgment uses only the concept's recorded rules —
-never read `docs/conceptpowers/reference/` here. Reference is raw source material consumed
-**once**, at concept authoring time (define-concept / check-consistency); re-reading it at every
-code check wastes tokens and lets unwritten rules influence verdicts untraceably. If a concept
-is too vague to decide with, that is a **concept defect** — surface it (verdict ③ below), don't
-paper over it with reference lookups.
+**Defined concepts are the facts** — never read `docs/conceptpowers/reference/` here (session
+doctrine). A concept too vague to decide with is a **concept defect** → verdict ③ below.
 
 **Read narrow, not wide.** This skill runs on nearly every code change, so its cost has to stay
 flat as the project grows: tag → index → 1–3 concept files (step 1). A tagged file costs one

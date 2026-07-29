@@ -12,12 +12,8 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
 
 ## Steps
 
-> **Judgment basis: concepts ONLY.** Defined concepts are the facts — every verification in this
-> audit judges code against **concept rules alone**. Do NOT read `docs/conceptpowers/reference/`
-> content during the audit (reference is consumed only when authoring/upgrading concepts; reading
-> it here wastes tokens and lets unwritten rules leak into verdicts untraceably). The only
-> reference interaction allowed is a cheap **existence check** (directory listing + whether
-> `paths.md` has entries) used in step 2's define-concept handoff below.
+> **Concepts ONLY** (session doctrine): never read `reference/` content during the audit. The only
+> allowed interaction is the cheap existence check (directory listing + `paths.md` entries) in step 2.
 
 1. **Integrity (deterministic)**: run the CLI audit over the full source:
    `node "<cli>" audit --root . <source files...>`

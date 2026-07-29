@@ -17,9 +17,7 @@ Write the feature content in the project's output language (the `locale` from `i
 
 ## Steps
 
-> **No reference reads here.** A feature spec is graph wiring (title + links), not contract
-> authoring — the domain material was already distilled into concepts at define-concept time.
-> Reference (`docs/conceptpowers/reference/`) is consumed only when authoring/upgrading concepts.
+> **No reference reads here** — a feature spec is graph wiring, not contract authoring (session doctrine).
 
 1. **Identify the feature** — a concrete user-facing surface: a button, form submit, menu action,
    route handler, or command. Give it a short `title` and one-line `description`.

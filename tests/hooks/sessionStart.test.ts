@@ -162,6 +162,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('pending');
     expect(ctx).not.toContain('approvalMode');
     expect(ctx).toContain('Never auto-approve');
+    expect(ctx).toContain('consumed ONLY when authoring/upgrading concepts');
   });
   it('drift가 있으면 <CONCEPT-DRIFT> 블록과 이유를 주입한다', async () => {
     await scaffoldInit(root, {});

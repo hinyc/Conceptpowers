@@ -58,11 +58,8 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 ## Notes
 
 - `docs/conceptpowers/` is a **read-only baseline** afterward. Modify it only via update-baseline.
-- **Reference doctrine**: `reference/` (and paths listed in `reference/paths.md`) is consumed
-  **only when authoring/upgrading concepts** (define-concept, check-consistency). Defined concepts
-  are the facts — code verification (check-concept, audit) judges against concept rules alone and
-  never re-reads reference. If a concept proves too vague to judge with, the fix is to **upgrade
-  the concept** (define-concept redefine flow), not to consult reference at check time.
+- **Reference doctrine**: `reference/` is read only when authoring/upgrading concepts
+  (define-concept / check-consistency); verification skills judge against concept rules alone.
 - The language can be changed later by editing `locale` in `init.json`.
 - If `init.json` already exists, it is not overwritten (user settings are preserved).
 - Concept `status` (3-state model):
