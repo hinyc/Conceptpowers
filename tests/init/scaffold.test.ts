@@ -31,6 +31,12 @@ describe('scaffoldInit', () => {
     expect(cfg.enabled).toBe(true);
     expect(cfg.backfillMode).toBe('strict');
   });
+  // 규칙 검증: 새 init.json에 스위치가 명시돼 사용자가 파일만 봐도 끌 수 있다 (concept-driven-tests)
+  it('새 init.json에 conceptDrivenTests: true를 기록한다', async () => {
+    await scaffoldInit(root, {});
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
+    expect(cfg.conceptDrivenTests).toBe(true);
+  });
   it('isInitialized가 마커 존재를 감지한다', async () => {
     expect(await isInitialized(root)).toBe(false);
     await scaffoldInit(root, {});

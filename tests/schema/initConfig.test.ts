@@ -61,3 +61,18 @@ describe('versionCheck', () => {
     expect(parseInitConfig({ ...base, versionCheck: false }).versionCheck).toBe(false);
   });
 });
+
+describe('conceptDrivenTests', () => {
+  const base = { version: '0.1.0', enabled: true } as const;
+  // 규칙 검증: "스위치 값이 설정에 없으면 켜진 것으로 본다" (concept-driven-tests)
+  it('누락 시 기본값 true', () => {
+    expect(parseInitConfig({ ...base }).conceptDrivenTests).toBe(true);
+  });
+  // 규칙 검증: "설정에서 스위치를 거짓으로 바꿔 이 동작을 끄는 것" (allow)
+  it('false로 명시하면 false', () => {
+    expect(parseInitConfig({ ...base, conceptDrivenTests: false }).conceptDrivenTests).toBe(false);
+  });
+  it('boolean이 아니면 거부한다', () => {
+    expect(() => parseInitConfig({ ...base, conceptDrivenTests: 'yes' })).toThrow();
+  });
+});
