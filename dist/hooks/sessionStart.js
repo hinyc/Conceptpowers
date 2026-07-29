@@ -4089,6 +4089,9 @@ var InitConfigSchema = external_exports.object({
   enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
   versionCheck: external_exports.boolean().default(true),
+  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
+  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
+  conceptDrivenTests: external_exports.boolean().default(true),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
@@ -4951,6 +4954,9 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   }
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
+  const conceptTestsLine = config?.conceptDrivenTests !== false ? [
+    "- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag \u2192 manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules \u2014 each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept)."
+  ] : [];
   const all = await listConcepts(root);
   const reds = all.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
   const pendings = all.filter((c) => c.status === "pending").map((c) => c.slug);
@@ -4967,6 +4973,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     `- Deterministic CLI: node "${cli}" <init|status|render|map|audit|approve>`,
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red \u2014 the user does that directly. Never auto-approve a red (un-authored) concept.`,
+    ...conceptTestsLine,
     redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",

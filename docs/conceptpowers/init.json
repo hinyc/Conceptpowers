@@ -5,6 +5,7 @@
   "enforceScope": "new-feature-behavior",
   "locale": "ko",
   "versionCheck": true,
+  "conceptDrivenTests": true,
   "ignoreGlobs": [
     "docs/conceptpowers/**",
     "dist/**",

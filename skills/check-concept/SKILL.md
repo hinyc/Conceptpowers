@@ -69,6 +69,18 @@ buys nothing the index does not already give you.
      proceed on their own judgment.
 5. If a test conflicts with a concept, do not pass it silently; tell the user (test bug vs. concept needs updating).
 
+## Test scenarios from concepts (conceptDrivenTests)
+
+When the purpose of the change is writing or modifying **tests** and `init.json` has
+`conceptDrivenTests` enabled (missing field = enabled; only an explicit `false` disables it):
+
+- Do not stop at the violation verdict — turn the located concept's rules into a scenario
+  checklist: each entry in `actions.allow` / `actions.restrict` / `principle.immutableRules`
+  maps to at least one test scenario where feasible, and each scenario names the rule it
+  verifies.
+- Concept lookup reuses step 1 as-is (tag → index → targeted read) — no extra scanning.
+- If `conceptDrivenTests` is explicitly `false`, skip this section entirely.
+
 ## Prohibited
 
 - The agent must not modify a concept on its **own judgment** to justify a change (rule 4).
