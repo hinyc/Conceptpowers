@@ -52,7 +52,7 @@ buys nothing the index does not already give you.
      (a) **update the concept** — allowed, but only with the user's explicit approval of the exact
      change, via `conceptpowers:update-baseline` (`edit-concept`); this drops a green concept to
      `pending`, so it no longer governs code until the user manually re-approves it
-     (`conceptpowers:approve`), or (b) split it into a new feature/concept. Never edit the concept
+     (`conceptpowers:update-baseline` approve flow), or (b) split it into a new feature/concept. Never edit the concept
      silently to make the code pass.
    - ③ **Undecidable (concept too vague)** — the concept's rules genuinely cannot answer
      "does this change violate it?" → do NOT guess and do NOT fall back to reference/. Tell the

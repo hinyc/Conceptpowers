@@ -1,7 +1,7 @@
 // @concept:settled-status
 // src/concept/approve.ts
 // 자동추론(red) 개념을 사용자 요청에 따라 green으로 승급한다.
-// 정책(사용자 명시 요청 시에만 호출)은 conceptpowers:approve 스킬이 강제한다.
+// 정책(사용자 명시 요청 시에만 호출)은 conceptpowers:update-baseline 스킬(approve flow)이 강제한다.
 import { readConcept, setConceptStatus } from '../store/conceptStore.js';
 import type { Concept } from '../schema/concept.js';
 

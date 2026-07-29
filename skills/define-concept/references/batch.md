@@ -38,7 +38,7 @@ interaction to two checkpoints, not zero.
      already done in drafting; run consistency check across the whole batch at once, attest each,
      save as `green`).
    - Drafts the user wants to **keep but not review now** → save as `red` (unapproved), to be
-     approved later via `conceptpowers:approve`.
+     approved later via the `conceptpowers:update-baseline` approve flow.
    - Dropped drafts → do not save.
 5. Wire each saved concept to a feature spec (single-flow step 1) and `@concept` tags, then
    regenerate the viewer once at the end: `node "<cli>" render --root .`

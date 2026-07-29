@@ -67,4 +67,4 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
   - `pending` — user-authored draft; auto-promotes to `green` after a passing consistency check,
     else stays pending until resolved. See `conceptpowers:define-concept`.
   - `red` — auto-inferred (full scan) proposal awaiting user review and approval.
-    See the `conceptpowers:approve` skill.
+    See the approve flow of `conceptpowers:update-baseline`.

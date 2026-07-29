@@ -59,4 +59,4 @@ When adding or modifying a concept, verify there is no conflict or violation aga
 - **Unapproved (red) concepts do not hard-block a commit**, but the commit gate surfaces them with an
   emphasized warning (`⚠️ UNAPPROVED CONCEPTS`). When you see it, show the warning prominently and ask
   the user "commit anyway?" — proceed only on explicit confirmation. Approving the concepts first
-  (manual edit, or `conceptpowers:approve` on explicit user request) is preferred.
+  (manual edit, or the `conceptpowers:update-baseline` approve flow on explicit user request) is preferred.

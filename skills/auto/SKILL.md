@@ -79,7 +79,7 @@ architecture.md / infra.md가 아직 템플릿이면:
    - **개념 없는 gap** → define으로 되돌아가 정의(Stage 2 루프백) / `@concept:none` 마킹 / 보류.
    - **판단 불가(개념 모호)** → 해당 개념의 어느 규칙이 모호한지 보여주고, define-concept의
      업그레이드 진입점으로 보강 권장(Stage 2 루프백 — 그때 reference를 읽는다) / 보류.
-   - **🔴 red(미승인)** → 사용자가 검토 후 승인 원하면 `conceptpowers:approve`(사용자
+   - **🔴 red(미승인)** → 사용자가 검토 후 승인 원하면 `conceptpowers:update-baseline` 승인 플로우(사용자
      게이트 — auto가 스스로 승인하지 않는다) / 보류.
    - **🟡 pending(미정착)** → `conceptpowers:check-consistency` 재실행으로 정착 시도 /
      수정·분리 논의 / 보류.
@@ -107,7 +107,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 사용자 확인 없이 단계를 연속 실행하는 것.
 - baseline·개념 내용을 **사용자 확인 없이** 저장하는 것 (human-owns-contract — 초안을
   만들어 보여주는 것은 허용, 확정은 언제나 사람).
-- 🔴 red 개념을 auto가 스스로 승인하는 것 (settled-status — 승인은 사용자 요청 + approve 스킬).
+- 🔴 red 개념을 auto가 스스로 승인하는 것 (settled-status — 승인은 사용자 요청 + update-baseline 승인 플로우).
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
 

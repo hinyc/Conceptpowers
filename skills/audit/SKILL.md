@@ -45,7 +45,7 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
    via define-concept (reference is read there; change recorded via `note-change`).
 4. **Unapproved concepts (status)**: the CLI audit also returns `unapproved` (all `red` concepts) and
    `unapprovedRefs` (red concepts referenced by the scanned files). List them and recommend the user
-   review and approve each (see `conceptpowers:approve`). Auto-inferred concepts start `red`.
+   review and approve each (see the `conceptpowers:update-baseline` approve flow). Auto-inferred concepts start `red`.
 5. **Lingering pending concepts (reminder, non-blocking)**: list any concepts with `status: pending`
    (user-authored, not yet settled). Pending concepts auto-promote to `green` once they pass a
    consistency check; until then they remain pending. Remind the user to run
