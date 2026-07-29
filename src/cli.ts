@@ -8,7 +8,7 @@ import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
 import { buildInitHint } from './i18n/messages.js';
 import type { Locale } from './schema/initConfig.js';
 import { renderViewerToDisk } from './viewer/render.js';
-import { buildMapping, writeMappingCache } from './mapping/scan.js';
+import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
 import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
@@ -143,9 +143,11 @@ export async function runCli(
   program
     .command('map')
     .option('--root <dir>', 'project root', process.cwd())
+    .option('--full', 'rebuild the cache from only the given files (discard existing entries)')
     .argument('<files...>')
     .action(async (files, o) => {
-      await writeMappingCache(o.root, await buildMapping(o.root, files));
+      if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
+      else await updateMappingCache(o.root, files);
     });
 
   program

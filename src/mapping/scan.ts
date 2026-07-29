@@ -47,6 +47,24 @@ export async function writeMappingCache(root: string, mapping: Mapping): Promise
   await writeFile(target, JSON.stringify(mapping, null, 2) + '\n', 'utf8');
 }
 
+// 증분 갱신: 전달된 파일의 항목만 새 스캔 결과로 교체하고, 나머지 캐시 항목은 보존한다.
+// 삭제된 파일도 files에 포함해 넘기면 그 항목이 캐시에서 빠진다.
+export async function updateMappingCache(root: string, files: string[]): Promise<Mapping> {
+  const existing = await readMappingCache(root);
+  const fresh = await buildMapping(root, files);
+  const targets = new Set(files);
+  const merged: Mapping = {};
+  for (const [slug, list] of Object.entries(existing)) {
+    const kept = list.filter((f) => !targets.has(f));
+    if (kept.length) merged[slug] = kept;
+  }
+  for (const [slug, list] of Object.entries(fresh)) {
+    merged[slug] = [...(merged[slug] ?? []), ...list];
+  }
+  await writeMappingCache(root, merged);
+  return merged;
+}
+
 export async function readMappingCache(root: string): Promise<Mapping> {
   try {
     return MappingSchema.parse(JSON.parse(await readFile(cpPaths(root).mappingCache, 'utf8')));

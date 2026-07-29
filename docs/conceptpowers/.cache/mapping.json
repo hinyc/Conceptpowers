@@ -31,8 +31,8 @@
     "src/util/glob.ts"
   ],
   "init-gate": [
-    "src/cli.ts",
-    "src/init/scaffold.ts"
+    "src/init/scaffold.ts",
+    "src/cli.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts"
@@ -73,9 +73,6 @@
     "src/init/referenceGitignore.ts",
     "src/init/referencePaths.ts"
   ],
-  "concept-code-mapping": [
-    "src/mapping/scan.ts"
-  ],
   "feature-spec-bridge": [
     "src/schema/feature.ts",
     "src/store/featureStore.ts"
@@ -94,5 +91,8 @@
   ],
   "viewer-local-write-guard": [
     "src/viewer/serve.ts"
+  ],
+  "concept-code-mapping": [
+    "src/mapping/scan.ts"
   ]
 }

@@ -1,6 +1,6 @@
 // tests/cli/cli.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '../../src/cli.js';
@@ -193,5 +193,28 @@ describe('runCli', () => {
     expect(await readPendingConflicts(root)).toEqual({ p: 'x' });
     await runCli(['resolve-conflict', 'p', '--root', root]);
     expect(await readPendingConflicts(root)).toEqual({});
+  });
+  it('map은 증분 실행 시 전달되지 않은 파일의 캐시 항목을 보존한다(병합)', async () => {
+    await runCli(['init', '--root', root]);
+    mkdirSync(join(root, 'src'), { recursive: true });
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:alpha\n');
+    writeFileSync(join(root, 'src/b.ts'), '// @concept:beta\n');
+    await runCli(['map', '--root', root, 'src/a.ts']);
+    await runCli(['map', '--root', root, 'src/b.ts']);
+    const { readMappingCache } = await import('../../src/mapping/scan.js');
+    expect(await readMappingCache(root)).toEqual({
+      alpha: ['src/a.ts'],
+      beta: ['src/b.ts'],
+    });
+  });
+  it('map --full은 전달된 파일만으로 캐시를 재생성한다', async () => {
+    await runCli(['init', '--root', root]);
+    mkdirSync(join(root, 'src'), { recursive: true });
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:alpha\n');
+    writeFileSync(join(root, 'src/b.ts'), '// @concept:beta\n');
+    await runCli(['map', '--root', root, 'src/a.ts']);
+    await runCli(['map', '--full', '--root', root, 'src/b.ts']);
+    const { readMappingCache } = await import('../../src/mapping/scan.js');
+    expect(await readMappingCache(root)).toEqual({ beta: ['src/b.ts'] });
   });
 });

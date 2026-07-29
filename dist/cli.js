@@ -7730,6 +7730,21 @@ async function writeMappingCache(root, mapping) {
   await mkdir2(dirname2(target), { recursive: true });
   await writeFile2(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
+async function updateMappingCache(root, files) {
+  const existing = await readMappingCache(root);
+  const fresh = await buildMapping(root, files);
+  const targets = new Set(files);
+  const merged = {};
+  for (const [slug3, list] of Object.entries(existing)) {
+    const kept = list.filter((f) => !targets.has(f));
+    if (kept.length) merged[slug3] = kept;
+  }
+  for (const [slug3, list] of Object.entries(fresh)) {
+    merged[slug3] = [...merged[slug3] ?? [], ...list];
+  }
+  await writeMappingCache(root, merged);
+  return merged;
+}
 async function readMappingCache(root) {
   try {
     return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
@@ -8325,8 +8340,9 @@ async function runCli(argv, out = (s) => process.stdout.write(s)) {
     const feature = await writeFeature(o.root, JSON.parse(await readFile13(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
-  program2.command("map").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
-    await writeMappingCache(o.root, await buildMapping(o.root, files));
+  program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
+    if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
+    else await updateMappingCache(o.root, files);
   });
   program2.command("audit").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
     const r = await auditIntegrity(o.root, files);

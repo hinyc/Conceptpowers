@@ -8,6 +8,7 @@ import {
   buildMapping,
   writeMappingCache,
   readMappingCache,
+  updateMappingCache,
 } from '../../src/mapping/scan.js';
 
 let root: string;
@@ -51,5 +52,30 @@ describe('mapping scan', () => {
     mkdirSync(cache, { recursive: true });
     writeFileSync(join(cache, 'mapping.json'), '{"admin-role": "not-an-array"}');
     expect(await readMappingCache(root)).toEqual({});
+  });
+});
+
+describe('updateMappingCache (증분 병합)', () => {
+  it('전달되지 않은 파일의 기존 캐시 항목을 보존한다', async () => {
+    await writeMappingCache(root, { 'other-concept': ['src/other.ts'] });
+    const merged = await updateMappingCache(root, ['src/a.ts']);
+    expect(merged).toEqual({
+      'other-concept': ['src/other.ts'],
+      'admin-role': ['src/a.ts'],
+    });
+    expect(await readMappingCache(root)).toEqual(merged);
+  });
+  it('전달된 파일의 낡은 항목을 새 스캔 결과로 교체한다', async () => {
+    await writeMappingCache(root, {
+      'admin-role': ['src/a.ts'],
+      'user-role': ['src/a.ts'],
+    });
+    const merged = await updateMappingCache(root, ['src/a.ts']);
+    expect(merged).toEqual({ 'admin-role': ['src/a.ts'] }); // user-role은 빈 목록 → 제거
+  });
+  it('전달된 파일이 삭제된 경우 그 파일 항목만 캐시에서 제거한다', async () => {
+    await writeMappingCache(root, { 'admin-role': ['src/gone.ts', 'src/a.ts'] });
+    const merged = await updateMappingCache(root, ['src/gone.ts']);
+    expect(merged).toEqual({ 'admin-role': ['src/a.ts'] });
   });
 });

@@ -27,7 +27,11 @@ Sync the `@concept` tags (the source-of-truth on the code side) with the `mappin
      marker (a real slug or `@concept:none`). Add a path to `ignoreGlobs` only for a genuine generated artifact.
 2. Regenerate the mapping cache:
    `node "<cli>" map --root . <changed files...>`
-   - Or pass the whole source as arguments if a full refresh is needed.
+   - Incremental by default: only the passed files' entries are replaced; the rest of the cache is
+     preserved (merge). Include **deleted** files in the argument list so their stale entries drop out.
+   - For a from-scratch rebuild (e.g. recovering a corrupted cache), pass the whole source with
+     `--full`: `node "<cli>" map --full --root . <all source files...>` — this discards every
+     existing entry and rebuilds from only the given files.
 3. If a tag points to an undefined concept (audit unknownTags), define the concept (define-concept) or fix the tag.
 
 ## Note
