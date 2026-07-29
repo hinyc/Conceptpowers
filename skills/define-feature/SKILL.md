@@ -47,16 +47,6 @@ Write the feature content in the project's output language (the `locale` from `i
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
-When this skill finishes with any concept/feature/baseline data changed and the viewer re-rendered
-(`render`), end by giving the user a **clickable link** to see the result:
-
-1. If a viewer server is already running in this session, print its URL again — deep-link what
-   changed: `http://localhost:<port>/concepts/viewer/index.html#/concept/<slug>` (feature:
-   `#/feature/<slug>`, 문서: `#/architecture`).
-2. Otherwise, offer to start it now: run the project's `concepts:view` script in the **background**
-   (`npm run concepts:view` — pnpm/yarn equivalent도 동일) and print the URL line it outputs so the
-   user can click straight through. No script in package.json → run
-   `node docs/conceptpowers/concepts/viewer/serve.mjs` in the background instead.
-
-Ending a concept update without this link forces the user to hunt for the viewer — always close
-the loop with the URL.
+After `render`, always end with a clickable viewer link (render prints the path + serve command).
+Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/feature/<slug>` —
+otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.
