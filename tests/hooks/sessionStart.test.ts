@@ -29,6 +29,16 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('/plugin/dist/cli.js');
     expect(ctx).toContain('check-concept');
   });
+  it('활성화 컨텍스트에 커밋 패키징 규칙(스테이징 단위 게이트)을 담는다', async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, '/plugin');
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain('Commit packaging');
+    expect(ctx).toContain('--diff-filter=ACMR');
+    expect(ctx).toContain('SAME commit');
+    expect(ctx).toContain('update-mapping');
+    expect(ctx).toContain('Drift Ignored');
+  });
   it('reference/에 사용자 자료가 있으면 <CONCEPTPOWERS-REFERENCE> 블록을 넣는다', async () => {
     await scaffoldInit(root, {});
     writeFileSync(join(root, 'docs/conceptpowers/reference/glossary.md'), '용어집');
