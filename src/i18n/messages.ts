@@ -21,7 +21,8 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 
 ## 파일 대신 경로로 연결하기 (paths.md)
 - 자료를 이 폴더에 복사하는 대신, **이미 만들어진 \`paths.md\`**(안내 주석 포함)에 **참고할 로컬 경로 목록**을 적으면 됩니다.
-- 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
+- 한 줄에 하나씩(또는 불릿), 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
+- **경로 형태**: 저장소 밖 자료는 **절대 경로**로 적되 홈 아래라면 \`~/…\`를 쓰세요(paths.md는 커밋되므로 \`/Users/이름/…\`은 본인 머신에서만 해석됩니다). 저장소 안 자료는 **저장소 루트 기준** 상대 경로입니다(현재 작업 디렉터리 기준이 아닙니다).
 - 직접 편집 대신 **\`/conceptpowers:add-reference\`** 로 경로를 불러주면 바로 등록되고, 등록된 경로에 실제로 읽을 자료가 있는지도 함께 확인해 줍니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
 - **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
@@ -49,7 +50,8 @@ Put materials here for the agent to consult during concept work.
 
 ## Linking paths instead of copying files (paths.md)
 - Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
-- One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- One per line (or bullets); files or folders; **multiple entries** allowed.
+- **Which form**: material outside the repo takes an **absolute** path — prefer \`~/…\` under your home, since paths.md is committed and \`/Users/<you>/…\` resolves only on your machine. Material inside the repo takes a path relative to the **repo root** (not to your current working directory).
 - Instead of editing by hand, just tell **\`/conceptpowers:add-reference\`** the path — it registers the entry and reports whether the location actually holds readable material.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md

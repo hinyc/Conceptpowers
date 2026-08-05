@@ -269,7 +269,17 @@ Concepts are only as good as what they are written from. `reference/` is where t
 **Two ways to supply it**, treated identically by the agent:
 
 - **Drop files** into `docs/conceptpowers/reference/`. They are **git-ignored by default**, so confidential documents stay on your machine.
-- **Register a path** to material that lives elsewhere, in `reference/paths.md` — one path per line, `~/`-relative, absolute, or repo-relative, files or folders. This file _is_ committed, so the team shares the locations rather than the documents.
+- **Register a path** to material that lives elsewhere, in `reference/paths.md` — one path per line, files or folders. This file _is_ committed, so the team shares the locations rather than the documents.
+
+**Which form of path to write** — the entry is stored verbatim, so the form you choose decides who can resolve it:
+
+| Where the material lives          | Write                                     | Why                                                                                               |
+| --------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Outside the repo, under your home | `~/Documents/domain-glossary/`            | Resolves per user, so it still works for a teammate who keeps the same folder under _their_ home. |
+| Outside the repo, elsewhere       | `/Volumes/team-share/specs` (absolute)    | The only form that can address it. Machine-specific by nature.                                    |
+| Inside the repo                   | `docs/legal/contract.pdf` (repo-relative) | Resolves identically for everyone — the most portable form.                                       |
+
+Two things to be precise about: a relative entry always resolves **from the repo root**, never from your current working directory. And because `paths.md` is committed, a raw absolute path under your home (`/Users/you/specs`) resolves only on your machine — teammates will see it reported as `missing`. Prefer `~/` there.
 
 `init` asks once whether you have such paths (skippable), and `/conceptpowers:add-reference` registers them anytime:
 

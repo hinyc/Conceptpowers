@@ -11,8 +11,13 @@ verifying a concept** (define-concept / check-consistency). Paths are recorded i
 
 ## Steps
 
-1. **Ask for the paths.** "참고할 문서 폴더나 파일의 경로를 알려주세요 (여러 개 가능,
-   `~/`·절대·저장소 상대 경로 모두 가능)." Accept several at once.
+1. **Ask for the paths.** "참고할 문서 폴더나 파일의 경로를 알려주세요 (여러 개 가능)."
+   Accept several at once. If the user gives an ambiguous relative path, resolve the form with them
+   before registering — the entry is stored verbatim:
+   - Material **outside the repo** → an **absolute** path; prefer `~/…` when it sits under the home
+     directory, since `paths.md` is committed and `/Users/<name>/…` resolves only on that machine.
+   - Material **inside the repo** → a path **relative to the repo root** (never to the current
+     working directory — that is how it will be resolved).
 2. **Register them** (the CLI path is in the `CONCEPTPOWERS-ACTIVE` session context or the plugin dist):
    `node "<cli>" reference-add "<path1>" "<path2>" --root .`
 3. **Report the result** from the JSON response:

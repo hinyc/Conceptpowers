@@ -25,7 +25,9 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
 4. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 5. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
 6. **Ask for reference material paths (skippable).** "개념을 작성할 때 참고할 문서 폴더나 파일이
-   있나요? 경로를 알려주시면 등록해 두겠습니다 (여러 개 가능 — 건너뛰어도 됩니다)."
+   있나요? 경로를 알려주시면 등록해 두겠습니다 (여러 개 가능 — 건너뛰어도 됩니다).
+   저장소 밖 자료는 절대 경로로(홈 아래면 `~/…`), 저장소 안 자료는 저장소 루트 기준
+   상대 경로로 알려주세요."
    - If the user gives paths: `node "<cli>" reference-add "<path1>" "<path2>" --root .`, then report
      `added`/`skipped` and **warn about any `external[].status` that is not `ok`** — `missing`
      (경로 없음) or `empty` (경로는 있으나 참고할 자료가 없음).
