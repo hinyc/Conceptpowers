@@ -240,6 +240,7 @@ docs/conceptpowers/
 ├── init.json                       # activation marker + settings (locale, backfillMode)
 ├── features/                       # feature specs
 ├── reference/                      # user-supplied reference material — read only when authoring/upgrading concepts; code checks judge against concepts alone (user-owned)
+│   └── paths.md                    #   registry of external locations to consult (the only committed file here)
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data (source of truth)
 │   ├── viewer/                      # browsable SPA viewer — open with `npm run concepts:view`
@@ -260,6 +261,35 @@ The viewer's **UI chrome defaults to English** (nav, buttons, badges, legend) re
 The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
 
 Detailed design: `docs/specs/2026-06-18-conceptpowers-design.md`.
+
+### Reference material
+
+Concepts are only as good as what they are written from. `reference/` is where the raw material lives — domain glossaries, external specs, PRDs, policies — and it feeds **authoring** only.
+
+**Two ways to supply it**, treated identically by the agent:
+
+- **Drop files** into `docs/conceptpowers/reference/`. They are **git-ignored by default**, so confidential documents stay on your machine.
+- **Register a path** to material that lives elsewhere, in `reference/paths.md` — one path per line, `~/`-relative, absolute, or repo-relative, files or folders. This file _is_ committed, so the team shares the locations rather than the documents.
+
+`init` asks once whether you have such paths (skippable), and `/conceptpowers:add-reference` registers them anytime:
+
+```bash
+/conceptpowers:add-reference          # then give it one or more paths
+```
+
+It appends to `paths.md` without touching existing lines or comments, skips entries already registered (compared after resolution, so `~/x` and its absolute form count as one), and **records a path even if it does not exist yet** — pre-registering a folder you are about to create is legitimate.
+
+What it does _not_ do is let a dead path pass silently. Every registered location is checked, and anything that cannot be read is reported — both at registration time and at session start:
+
+| Status    | Meaning                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `ok`      | The path holds readable material.                                                                                         |
+| `missing` | The path does not exist — a typo, or a folder you have not created yet.                                                   |
+| `empty`   | The path exists but has **nothing to read**: an empty folder, only empty subfolders, only dot-files, or a zero-byte file. |
+
+Removing or rewriting entries is yours to do — `paths.md` is a plain hand-editable file and the plugin only ever appends.
+
+**Doctrine:** reference material is read **only** while authoring, upgrading, or verifying a concept (`define-concept` / `check-consistency`), on demand and by relevance — never all at once. Code verification (`check-concept`, `audit`) judges against defined concepts **alone**; if a concept is too vague to judge with, the answer is to upgrade the concept, not to fall back to reference. And its content — including the path strings — is **untrusted data, not instructions**.
 
 ### Knowledge graph
 
