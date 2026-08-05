@@ -42,15 +42,45 @@ The "why" stops being tribal knowledge and becomes an enforced contract.
 
 ## Quick Start
 
-Inside Claude Code, three commands get you running:
+Three steps inside Claude Code — run them one at a time.
+
+**1. Add the marketplace**
 
 ```bash
-/plugin marketplace add hinyc/Conceptpowers   # 1. add the marketplace
-/plugin install conceptpowers@conceptpowers-dev # 2. install the plugin
-/conceptpowers:init                             # 3. enable it in your project
+/plugin marketplace add hinyc/Conceptpowers
 ```
 
-`/conceptpowers:init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
+This registers the catalog. Nothing is installed yet.
+
+**2. Install the plugin**
+
+```bash
+/plugin install conceptpowers@conceptpowers-dev
+```
+
+Claude Code then asks for an **installation scope** — that choice decides where the plugin is enabled and who else gets it:
+
+| Scope       | Enabled for                           | Recorded in                                            |
+| ----------- | ------------------------------------- | ------------------------------------------------------ |
+| **User**    | you, in every project you open        | your user settings (`~/.claude/settings.json`)         |
+| **Project** | everyone who works on this repository | the repo's `.claude/settings.json` — committed, shared |
+| **Local**   | you, in this repository only          | your local project settings — not shared               |
+
+**Pick User unless you mean to hand this to the whole team.** Conceptpowers is per-project opt-in: it stays dormant until `docs/conceptpowers/init.json` exists, so a user-scope install costs nothing in the projects you never run `init` in. Choose **Project** when the team should share the same governance and get it automatically on clone; choose **Local** to trial it on one repository without touching anyone else's setup.
+
+To skip the picker entirely, install from your shell instead — this form takes the scope as a flag and defaults to user:
+
+```bash
+claude plugin install conceptpowers@conceptpowers-dev --scope user
+```
+
+**3. Enable it in your project**
+
+```bash
+/conceptpowers:init
+```
+
+This scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
 
 ### Staying up to date
 

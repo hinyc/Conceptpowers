@@ -42,15 +42,45 @@ Conceptpowers는 **개념을 코드 위에 있는 1급의, 버전 관리되는 �
 
 ## 빠른 시작 (Quick Start)
 
-Claude Code 안에서 세 줄이면 시작된다:
+Claude Code 안에서 세 단계 — 하나씩 실행한다.
+
+**1. 마켓플레이스 추가**
 
 ```bash
-/plugin marketplace add hinyc/Conceptpowers   # 1. 마켓플레이스 추가
-/plugin install conceptpowers@conceptpowers-dev # 2. 플러그인 설치
-/conceptpowers:init                             # 3. 프로젝트에 활성화
+/plugin marketplace add hinyc/Conceptpowers
 ```
 
-`/conceptpowers:init`은 `docs/conceptpowers/`를 스캐폴딩하고 `init.json` 마커를 생성한다. 이 마커가 스위치다 — 존재하는 순간 거버넌스 훅이 해당 프로젝트에서 자동으로 활성화된다.
+카탈로그를 등록하는 단계다. 아직 아무것도 설치되지 않는다.
+
+**2. 플러그인 설치**
+
+```bash
+/plugin install conceptpowers@conceptpowers-dev
+```
+
+이때 Claude Code가 **설치 스코프(scope)**를 묻는다 — 플러그인을 어디에 켜고 누구까지 받을지 정하는 선택이다:
+
+| 스코프      | 적용 대상                      | 기록되는 곳                                      |
+| ----------- | ------------------------------ | ------------------------------------------------ |
+| **User**    | 나, 내가 여는 모든 프로젝트    | 사용자 설정 (`~/.claude/settings.json`)          |
+| **Project** | 이 저장소에서 일하는 모든 사람 | 저장소의 `.claude/settings.json` — 커밋되어 공유 |
+| **Local**   | 나, 이 저장소에서만            | 로컬 프로젝트 설정 — 공유되지 않음               |
+
+**팀 전체에 강제할 생각이 아니라면 User를 고르면 된다.** Conceptpowers는 프로젝트별 opt-in이라 `docs/conceptpowers/init.json`이 없으면 아무 일도 하지 않는다 — User로 깔아두어도 `init`을 돌리지 않은 프로젝트에서는 잠들어 있다. **Project**는 팀이 같은 거버넌스를 쓰고 clone만으로 딸려오게 하고 싶을 때, **Local**은 다른 사람 설정을 건드리지 않고 저장소 하나에서 시험해볼 때 고른다.
+
+선택 화면 없이 설치하려면 셸에서 실행한다 — 스코프를 플래그로 받고 기본값은 user다:
+
+```bash
+claude plugin install conceptpowers@conceptpowers-dev --scope user
+```
+
+**3. 프로젝트에 활성화**
+
+```bash
+/conceptpowers:init
+```
+
+`docs/conceptpowers/`를 스캐폴딩하고 `init.json` 마커를 생성한다. 이 마커가 스위치다 — 존재하는 순간 거버넌스 훅이 해당 프로젝트에서 자동으로 활성화된다.
 
 ### 최신 버전 유지
 
