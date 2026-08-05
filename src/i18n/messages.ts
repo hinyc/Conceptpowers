@@ -22,6 +22,7 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 ## 파일 대신 경로로 연결하기 (paths.md)
 - 자료를 이 폴더에 복사하는 대신, **이미 만들어진 \`paths.md\`**(안내 주석 포함)에 **참고할 로컬 경로 목록**을 적으면 됩니다.
 - 한 줄에 하나씩(또는 불릿), 절대 경로/저장소 상대 경로, 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
+- 직접 편집 대신 **\`/conceptpowers:add-reference\`** 로 경로를 불러주면 바로 등록되고, 등록된 경로에 실제로 읽을 자료가 있는지도 함께 확인해 줍니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
 - **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
   paths.md 하나뿐입니다. 기밀 문서를 넣어도 저장소에 올라가지 않고, 팀과 공유할
@@ -49,6 +50,7 @@ Put materials here for the agent to consult during concept work.
 ## Linking paths instead of copying files (paths.md)
 - Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
 - One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- Instead of editing by hand, just tell **\`/conceptpowers:add-reference\`** the path — it registers the entry and reports whether the location actually holds readable material.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md
   is shared. Confidential documents stay local; to share material with the team,
@@ -88,6 +90,7 @@ export interface InitHintStrings {
   next: string;
   fillDocs: string;
   reference: string; // reference/ 폴더 용도 안내
+  referencePaths: string; // 외부 참고자료 경로 등록 수단 안내(paths.md / add-reference)
   viewerScript: string; // 뒤에 실행 명령(npm run …)이 붙는다
   viewerFile: string; // package.json이 없어 스크립트를 못 넣은 경우: 파일 경로 직접 안내
   defineConcept: string; // 다음 단계인 define-concept 설명 + 바로 이어갈지 묻는 안내
@@ -102,6 +105,8 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     fillDocs: 'architecture.md / infra.md를 채워 개념의 상위 기준을 작성하세요',
     reference:
       '참고자료(용어집·외부 명세·기획 문서 등)는 reference/ 폴더에 넣으면 개념 작업 시 참고합니다',
+    referencePaths:
+      '폴더 밖의 자료는 경로만 등록하면 됩니다: /conceptpowers:add-reference 로 추가하거나 reference/paths.md에 한 줄씩 직접 적으세요 (건너뛰어도 나중에 언제든 가능)',
     viewerScript: '뷰어 열기:',
     viewerFile: '뷰어를 직접 여세요:',
     defineConcept:
@@ -115,6 +120,8 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     fillDocs: 'Fill in architecture.md / infra.md — the high-level basis for concepts',
     reference:
       'Drop reference material (glossary, external specs, PRDs) into reference/ — it is consulted during concept work',
+    referencePaths:
+      'Material outside that folder only needs its path: register it with /conceptpowers:add-reference, or list one path per line in reference/paths.md (skippable — you can add it anytime)',
     viewerScript: 'Open the viewer:',
     viewerFile: 'Open the viewer file directly:',
     defineConcept:
@@ -132,8 +139,8 @@ export interface InitHintOptions {
 export function buildInitHint(locale: Locale, opts: InitHintOptions): string {
   const t = initHintStrings[locale];
   const viewerLine = opts.viewerScriptAdded
-    ? `   3. ${t.viewerScript} ${opts.viewerCommand}`
-    : `   3. ${t.viewerFile} ${opts.viewerPath}`;
+    ? `   4. ${t.viewerScript} ${opts.viewerCommand}`
+    : `   4. ${t.viewerFile} ${opts.viewerPath}`;
   return [
     `✅ ${t.done}`,
     `   ${t.created}`,
@@ -141,8 +148,9 @@ export function buildInitHint(locale: Locale, opts: InitHintOptions): string {
     `${t.next}:`,
     `   1. ${t.fillDocs}`,
     `   2. ${t.reference}`,
+    `   3. ${t.referencePaths}`,
     viewerLine,
-    `   4. ${t.defineConcept}`,
+    `   5. ${t.defineConcept}`,
     '',
   ].join('\n');
 }

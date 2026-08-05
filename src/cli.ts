@@ -22,6 +22,7 @@ import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
 import { listReferenceFiles } from './init/reference.js';
 import { checkReferencePaths } from './init/referencePaths.js';
+import { addReferencePath } from './init/addReferencePath.js';
 
 type Out = (s: string) => void;
 
@@ -251,6 +252,26 @@ export async function runCli(
       const ok = external.every((p) => p.status === 'ok');
       out(JSON.stringify({ ok, files, external }));
       if (!ok) code = 1;
+    });
+
+  // 등록 결과와 전체 현황을 함께 돌려준다 — 스킬이 한 번의 호출로 "추가됨 + 자료 없는 경로 경고"를
+  // 모두 보고할 수 있게 하기 위해서다. missing/empty는 실패가 아니라 경고이므로 exit 0을 유지한다.
+  program
+    .command('reference-add')
+    .description('참고자료 경로 등록 — paths.md에 폴더/파일 경로를 추가하고 전체 현황을 반환')
+    .argument('<paths...>', '등록할 폴더 또는 파일 경로 (여러 개 가능)')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (paths: string[], o) => {
+      const { added, skipped } = await addReferencePath(o.root, paths);
+      out(
+        JSON.stringify({
+          ok: true,
+          added,
+          skipped,
+          files: await listReferenceFiles(o.root),
+          external: await checkReferencePaths(o.root),
+        })
+      );
     });
 
   program

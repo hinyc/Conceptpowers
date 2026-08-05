@@ -95,4 +95,32 @@ describe('checkReferencePaths', () => {
       ['no/such/path', 'missing'],
     ]);
   });
+
+  it('하위 폴더에 있는 자료도 찾아 ok로 판정한다', async () => {
+    await mkdir(join(root, 'nested', 'deep'), { recursive: true });
+    await writeFile(join(root, 'nested', 'deep', 'doc.md'), 'x', 'utf8');
+    await writePathsMd(['- nested']);
+    expect((await checkReferencePaths(root))[0].status).toBe('ok');
+  });
+
+  it('빈 하위 폴더만 있는 폴더는 empty', async () => {
+    await mkdir(join(root, 'shell', 'inner'), { recursive: true });
+    await writePathsMd(['- shell']);
+    expect((await checkReferencePaths(root))[0].status).toBe('empty');
+  });
+
+  it('점(.)으로 시작하는 파일만 있는 폴더는 empty', async () => {
+    await mkdir(join(root, 'dotonly'));
+    await writeFile(join(root, 'dotonly', '.DS_Store'), 'x', 'utf8');
+    await writePathsMd(['- dotonly']);
+    expect((await checkReferencePaths(root))[0].status).toBe('empty');
+  });
+
+  it('0바이트 파일만 있는 폴더와 0바이트 단일 파일은 empty', async () => {
+    await mkdir(join(root, 'zeros'));
+    await writeFile(join(root, 'zeros', 'blank.md'), '', 'utf8');
+    await writeFile(join(root, 'blank.md'), '', 'utf8');
+    await writePathsMd(['- zeros', '- blank.md']);
+    expect((await checkReferencePaths(root)).map((e) => e.status)).toEqual(['empty', 'empty']);
+  });
 });

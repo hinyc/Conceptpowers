@@ -24,13 +24,23 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
    `node "<cli>" init --root . --mode <incremental|strict> --lang <ko|en>`
 4. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 5. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
-6. **Offer define-concept as the immediate next step.** Explain it in one line — "define-concept는
+6. **Ask for reference material paths (skippable).** "개념을 작성할 때 참고할 문서 폴더나 파일이
+   있나요? 경로를 알려주시면 등록해 두겠습니다 (여러 개 가능 — 건너뛰어도 됩니다)."
+   - If the user gives paths: `node "<cli>" reference-add "<path1>" "<path2>" --root .`, then report
+     `added`/`skipped` and **warn about any `external[].status` that is not `ok`** — `missing`
+     (경로 없음) or `empty` (경로는 있으나 참고할 자료가 없음).
+   - If the user skips: tell them once that they can register paths anytime with
+     `/conceptpowers:add-reference`, or by writing one path per line in
+     `docs/conceptpowers/reference/paths.md`, and that material can also be dropped straight into
+     `docs/conceptpowers/reference/`. Do not ask again.
+   - See `/conceptpowers:add-reference` for the full flow.
+7. **Offer define-concept as the immediate next step.** Explain it in one line — "define-concept는
    프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
    작성하는 단계입니다. 참고자료를 reference/에 넣어두거나 `reference/paths.md`에 외부 로컬
    경로(여러 개 가능)를 등록해두면 그걸 근거로 함께 작성합니다." — then
    **ask the user whether to continue with `/conceptpowers:define-concept` right now.** Proceed only
    on yes; if they decline, remind them it is available anytime.
-7. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
+8. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
 
 ## Full-scan procedure (strict)
 

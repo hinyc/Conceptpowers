@@ -28,6 +28,15 @@ describe('buildInitHint', () => {
     expect(msg).toContain('Next steps');
   });
 
+  it('참고자료 경로 등록 수단(paths.md / add-reference)을 안내한다 (ko/en)', () => {
+    const ko = buildInitHint('ko', { ...base, viewerScriptAdded: true });
+    expect(ko).toContain('reference/paths.md');
+    expect(ko).toContain('/conceptpowers:add-reference');
+    const en = buildInitHint('en', { ...base, viewerScriptAdded: true });
+    expect(en).toContain('reference/paths.md');
+    expect(en).toContain('/conceptpowers:add-reference');
+  });
+
   it('define-concept 다음 단계 안내를 포함한다 (ko/en)', () => {
     const ko = buildInitHint('ko', { ...base, viewerScriptAdded: true });
     expect(ko).toContain('define-concept');
