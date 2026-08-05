@@ -10,6 +10,7 @@ import { listConcepts } from '../store/conceptStore.js';
 import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';
 import { readInitConfig } from '../init/readConfig.js';
+import { findPluginRoot, readInstalledVersion } from '../version/checkUpdate.js';
 import { cpPaths } from '../paths.js';
 
 // 번들 위치(dist/…, src/…)에 무관하게 상위 디렉터리를 탐색해 assets/<name>을 읽는다.
@@ -34,28 +35,16 @@ async function copyAsset(name: string, target: string): Promise<void> {
 }
 
 // 플러그인 자신의 버전(.claude-plugin/plugin.json)을 상위 탐색으로 읽는다. 실패 시 null.
-// manifest에 "이 산출물을 만든 버전"을 도장 찍어, 세션 시작 훅이 업데이트 후 자동 sync에 쓴다.
+// manifest에 "이 산출물을 만든 버전"을 도장 찍어, 자동 sync(세션 시작·CLI 진입)가 비교에 쓴다.
 async function readPluginVersion(): Promise<string | null> {
-  const start = dirname(fileURLToPath(import.meta.url));
-  let dir = start;
-  for (let i = 0; i < 6; i++) {
-    try {
-      const v = JSON.parse(
-        await readFile(join(dir, '.claude-plugin', 'plugin.json'), 'utf8')
-      )?.version;
-      return typeof v === 'string' ? v : null;
-    } catch {
-      const parent = dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  }
-  return null;
+  const pluginRoot = findPluginRoot(dirname(fileURLToPath(import.meta.url)));
+  return pluginRoot ? readInstalledVersion(pluginRoot) : null;
 }
 
 // 매니페스트(manifest.json)만 다시 쓴다. 정적 에셋 복사는 하지 않으므로
 // 실행 중인 뷰어 서버(serve.mjs)가 자신·에셋을 덮어쓰는 일 없이 데이터 변경을 반영할 수 있다.
-export async function writeManifest(root: string): Promise<void> {
+// stampVersion: 자동 sync가 "판단에 쓴 설치 버전"을 넘겨 도장과 비교 기준을 일치시킨다(수렴 보장).
+export async function writeManifest(root: string, stampVersion?: string): Promise<void> {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
@@ -65,7 +54,7 @@ export async function writeManifest(root: string): Promise<void> {
   await mkdir(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
-    generatorVersion: await readPluginVersion(),
+    generatorVersion: stampVersion ?? (await readPluginVersion()),
   };
   await writeFile(
     join(p.conceptsViewer, 'manifest.json'),
@@ -74,8 +63,8 @@ export async function writeManifest(root: string): Promise<void> {
   );
 }
 
-export async function renderViewerToDisk(root: string): Promise<void> {
-  await writeManifest(root);
+export async function renderViewerToDisk(root: string, stampVersion?: string): Promise<void> {
+  await writeManifest(root, stampVersion);
   const p = cpPaths(root);
 
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).

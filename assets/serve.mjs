@@ -6,7 +6,7 @@ var __export = (target, all) => {
 
 // src/viewer/serve.ts
 import { createServer } from "node:http";
-import { readFile as readFile8 } from "node:fs/promises";
+import { readFile as readFile9 } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve, sep } from "node:path";
@@ -4349,8 +4349,8 @@ async function editConceptContent(root, slug3, patch) {
 }
 
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
-import { join as join4, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile8 } from "node:fs/promises";
+import { join as join5, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4539,16 +4539,17 @@ async function readInitConfig(root) {
   }
 }
 
-// src/viewer/render.ts
-async function readPluginVersion() {
-  const start = dirname2(fileURLToPath(import.meta.url));
-  let dir = start;
-  for (let i = 0; i < 6; i++) {
+// src/version/checkUpdate.ts
+import { readFileSync } from "node:fs";
+import { readFile as readFile7, writeFile as writeFile3, mkdir as mkdir3 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
+var MAX_PLUGIN_ROOT_DEPTH = 6;
+function findPluginRoot(startDir) {
+  let dir = startDir;
+  for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
     try {
-      const v = JSON.parse(
-        await readFile7(join4(dir, ".claude-plugin", "plugin.json"), "utf8")
-      )?.version;
-      return typeof v === "string" ? v : null;
+      readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
+      return dir;
     } catch {
       const parent = dirname2(dir);
       if (parent === dir) break;
@@ -4557,19 +4558,34 @@ async function readPluginVersion() {
   }
   return null;
 }
-async function writeManifest(root) {
+async function readInstalledVersion(pluginRoot) {
+  try {
+    const text = await readFile7(join4(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const v = JSON.parse(text)?.version;
+    return typeof v === "string" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+// src/viewer/render.ts
+async function readPluginVersion() {
+  const pluginRoot = findPluginRoot(dirname3(fileURLToPath(import.meta.url)));
+  return pluginRoot ? readInstalledVersion(pluginRoot) : null;
+}
+async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir3(p.conceptsViewer, { recursive: true });
+  await mkdir4(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
-    generatorVersion: await readPluginVersion()
+    generatorVersion: stampVersion ?? await readPluginVersion()
   };
-  await writeFile3(
-    join4(p.conceptsViewer, "manifest.json"),
+  await writeFile4(
+    join5(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
@@ -4743,7 +4759,7 @@ async function handle(root, projectRoot, req, res) {
     return;
   }
   try {
-    const file = await readFile8(target);
+    const file = await readFile9(target);
     res.writeHead(200, { "Content-Type": contentType(target) });
     res.end(file);
   } catch {

@@ -1,7 +1,8 @@
 // @concept:plugin-version-sync
+import { readFileSync } from 'node:fs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { isNewer } from './compareSemver.js';
 
 export interface UpdateInfo {
@@ -26,6 +27,26 @@ const CACHE_FILE = 'update-check.json';
 
 function defaultCacheDir(): string {
   return process.env.CONCEPTPOWERS_CACHE_DIR ?? join(homedir(), '.cache', 'conceptpowers');
+}
+
+// 플러그인 루트 탐색 상한 — <plugin>/dist/hooks 같은 번들 중첩을 넉넉히 커버하는 여유분.
+const MAX_PLUGIN_ROOT_DEPTH = 6;
+
+// 시작 디렉터리에서 상위로 올라가며 .claude-plugin/plugin.json을 가진 플러그인 루트를 찾는다.
+// 번들 위치(dist/…, src/…)와 무관하게 동작한다. 못 찾으면 null.
+export function findPluginRoot(startDir: string): string | null {
+  let dir = startDir;
+  for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
+    try {
+      readFileSync(join(dir, '.claude-plugin', 'plugin.json'));
+      return dir;
+    } catch {
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return null;
 }
 
 // 설치된 plugin.json에서 version 읽기. 실패 시 null. (세션 시작 자동 sync도 사용)

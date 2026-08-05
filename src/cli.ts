@@ -1,7 +1,10 @@
-// @concept:init-gate
+// @concept:init-gate @concept:plugin-version-sync
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
+import { syncIfStale, findPluginRoot } from './version/autoSync.js';
 import { writeFeature } from './store/featureStore.js';
 import { syncGenerated } from './init/syncGenerated.js';
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
@@ -30,7 +33,8 @@ function viewerHint(): { viewer: string; serve: string } {
 
 export async function runCli(
   argv: string[],
-  out: Out = (s) => process.stdout.write(s)
+  out: Out = (s) => process.stdout.write(s),
+  err: Out = (s) => process.stderr.write(s)
 ): Promise<number> {
   const program = new Command();
   program.name('conceptpowers').exitOverride();
@@ -46,6 +50,24 @@ export async function runCli(
       throw new Error(
         'not initialized — run /conceptpowers:init first (docs/conceptpowers/init.json missing)'
       );
+    }
+    // 플러그인 업데이트 후 version sync가 아직 안 됐으면 여기서 자동으로 맞추고 계속 진행한다.
+    // version-sync 명령 자신은 제외(같은 패치 루틴을 스스로 실행) — alias `sync`도 name()은 정식 이름.
+    // stdout은 각 명령의 JSON 전용이므로 안내는 stderr 한 줄. 어떤 실패도 명령을 막지 않는다.
+    if (actionCommand.name() === 'version-sync') return;
+    try {
+      const pluginRoot =
+        process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname(fileURLToPath(import.meta.url)));
+      if (!pluginRoot) return;
+      const syncResult = await syncIfStale(root, pluginRoot);
+      if (syncResult.synced) {
+        err(
+          `[conceptpowers] auto version-sync: generated artifacts patched to v${syncResult.installed}` +
+            `${syncResult.generator ? ` (were v${syncResult.generator})` : ' (previously unstamped)'} — baseline untouched\n`
+        );
+      }
+    } catch {
+      // best-effort: 자동 sync 경로의 어떤 실패도 본 명령 실행을 막지 않는다
     }
   });
 

@@ -55,7 +55,6 @@
   ],
   "init-gate": [
     "src/init/scaffold.ts",
-    "src/cli.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
     "tests/cli/quality.test.ts",
@@ -68,7 +67,8 @@
     "tests/init/reference.test.ts",
     "tests/init/scaffold.test.ts",
     "tests/init/syncGenerated.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "src/cli.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -112,17 +112,20 @@
     "tests/integration/smoke.test.ts"
   ],
   "plugin-version-sync": [
-    "src/init/syncGenerated.ts",
-    "src/version/checkUpdate.ts",
     "src/version/compareSemver.ts",
-    "src/hooks/sessionStart.ts",
     "src/init/packageScript.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/ensureConfigDefaults.test.ts",
     "tests/init/packageScript.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/version/checkUpdate.test.ts",
-    "tests/version/compareSemver.test.ts"
+    "tests/version/compareSemver.test.ts",
+    "src/cli.ts",
+    "src/version/autoSync.ts",
+    "src/version/checkUpdate.ts",
+    "src/init/syncGenerated.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/version/autoSync.test.ts"
   ],
   "output-locale": [
     "src/i18n/messages.ts",
@@ -189,9 +192,9 @@
   ],
   "generated-not-hand-edited": [
     "src/viewer/manifest.ts",
-    "src/viewer/render.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts"
+    "tests/viewer/renderDisk.test.ts",
+    "src/viewer/render.ts"
   ],
   "viewer-local-write-guard": [
     "src/viewer/serve.ts",
@@ -203,9 +206,9 @@
     "tests/viewer/renderDisk.test.ts"
   ],
   "concept-driven-tests": [
-    "src/hooks/sessionStart.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/schema/initConfig.test.ts"
+    "tests/schema/initConfig.test.ts",
+    "src/hooks/sessionStart.ts"
   ],
   "admin-role": [
     "tests/audit/audit.test.ts",

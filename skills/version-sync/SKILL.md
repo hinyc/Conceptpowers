@@ -19,6 +19,12 @@ skill brings them current.
 - When the viewer looks outdated, opens as source in the IDE, or `concepts:view` fails.
 - Any time — it is idempotent and safe to re-run.
 
+> **Auto-sync usually beats you to it:** when the installed plugin is newer than the stamped
+> artifacts, the same patch runs automatically at session start **and before any Conceptpowers CLI
+> command** (every skill goes through the CLI), then the command proceeds — you'll see a one-line
+> `[conceptpowers] auto version-sync: …` notice on stderr. This skill remains for running it
+> explicitly or when diagnosing a stale viewer.
+
 ## What it does (and does NOT)
 
 Refreshes only what the plugin generates:

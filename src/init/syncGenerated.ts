@@ -57,8 +57,14 @@ async function cleanLegacyViewerHtml(viewerDir: string): Promise<number> {
   return removed;
 }
 
-export async function syncGenerated(root: string): Promise<SyncResult> {
-  await renderViewerToDisk(root); // 에셋 + manifest를 최신 플러그인 기준으로 재생성
+export interface SyncOpts {
+  // manifest에 찍을 생성 버전. 자동 sync가 "판단에 쓴 설치 버전"을 넘겨 수렴을 보장한다.
+  // 생략하면 render가 자기 모듈 위치에서 plugin.json을 찾아 도장 찍는다.
+  stampVersion?: string;
+}
+
+export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<SyncResult> {
+  await renderViewerToDisk(root, opts.stampVersion); // 에셋 + manifest를 최신 플러그인 기준으로 재생성
   const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
   const scriptStatus = await upsertViewerScript(root);
   const referenceReadmeCreated = await ensureReference(root); // reference/ 폴더 + 안내 README 보장

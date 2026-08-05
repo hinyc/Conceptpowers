@@ -361,7 +361,10 @@
         "tests/init/packageScript.test.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/version/checkUpdate.test.ts",
-        "tests/version/compareSemver.test.ts"
+        "tests/version/compareSemver.test.ts",
+        "src/cli.ts",
+        "src/version/autoSync.ts",
+        "tests/version/autoSync.test.ts"
       ]
     },
     {
@@ -1302,6 +1305,20 @@
         "type": "file",
         "href": "",
         "title": "tests/version/compareSemver.test.ts"
+      },
+      {
+        "id": "p:src/version/autoSync.ts",
+        "label": "autoSync.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/version/autoSync.ts"
+      },
+      {
+        "id": "p:tests/version/autoSync.test.ts",
+        "label": "autoSync.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/version/autoSync.test.ts"
       },
       {
         "id": "c:reference-privacy",
@@ -2316,6 +2333,21 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/version/autoSync.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:tests/version/autoSync.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:reference-privacy",
         "target": "p:src/init/reference.ts",
         "kind": "concept-file"
@@ -2802,5 +2834,5 @@
       }
     ]
   },
-  "generatorVersion": "1.0.0"
+  "generatorVersion": "1.1.0"
 }
