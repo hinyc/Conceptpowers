@@ -67,4 +67,25 @@ describe('attest', () => {
     const log = await readAttestLog(root);
     expect(Object.keys(log).sort()).toEqual(['attest-target', 'other-concept']);
   });
+
+  it('recordAttest는 evidence(compared/note)를 함께 기록한다', async () => {
+    const c = makeConcept(['결제 완료 후 price 변경 불가']);
+    const entry = await recordAttest(root, c, 'pass', {
+      compared: ['other-concept'],
+      note: '충돌 없음',
+    });
+    expect(entry.compared).toEqual(['other-concept']);
+    expect(entry.note).toBe('충돌 없음');
+    const log = await readAttestLog(root);
+    expect(log['attest-target']!.compared).toEqual(['other-concept']);
+    expect(log['attest-target']!.note).toBe('충돌 없음');
+  });
+
+  it('evidence 없는 recordAttest는 기존과 동일하게 동작한다', async () => {
+    const c = makeConcept(['결제 완료 후 price 변경 불가']);
+    const entry = await recordAttest(root, c, 'pass');
+    expect(entry.compared).toBeUndefined();
+    const log = await readAttestLog(root);
+    expect(freshPassAttest(log, c)).toBe(true);
+  });
 });

@@ -17,15 +17,23 @@ export async function readAttestLog(root: string): Promise<AttestLog> {
   }
 }
 
+export interface AttestEvidence {
+  compared?: string[];
+  note?: string;
+}
+
 export async function recordAttest(
   root: string,
   concept: Concept,
-  result: 'pass' | 'conflict'
+  result: 'pass' | 'conflict',
+  evidence: AttestEvidence = {}
 ): Promise<AttestEntry> {
   const entry: AttestEntry = {
     hash: contractHash(concept),
     result,
     at: new Date().toISOString(),
+    ...(evidence.compared && evidence.compared.length > 0 ? { compared: evidence.compared } : {}),
+    ...(evidence.note ? { note: evidence.note } : {}),
   };
   const next: AttestLog = { ...(await readAttestLog(root)), [concept.slug]: entry };
   await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + '\n');
