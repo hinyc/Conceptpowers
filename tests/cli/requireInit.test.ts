@@ -13,7 +13,7 @@ const GUARDED: string[][] = [
   ['map', 'src/a.ts'],
   ['approve', 'some-slug'],
   ['quality', 'some-slug'],
-  ['attest-consistency', 'some-slug', '--result', 'pass'],
+  ['attest-consistency', 'some-slug', '--result', 'pass', '--compared', 'some-slug'],
   ['note-change', 'some-slug', '--reason', 'r'],
   ['note-conflict', 'some-slug', '--reason', 'r'],
   ['resolve-conflict', 'some-slug'],

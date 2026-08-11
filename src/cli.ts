@@ -258,6 +258,8 @@ export async function runCli(
     .description('check-consistency 실행 결과를 계약 해시에 묶어 기록 (증빙)')
     .argument('<slug>')
     .requiredOption('--result <result>', 'pass|conflict')
+    .requiredOption('--compared <slugs>', '비교한 대상 개념 slug 목록 (쉼표 구분)')
+    .option('--note <text>', '판단 요약')
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (slug, o) => {
       if (o.result !== 'pass' && o.result !== 'conflict') {
@@ -265,7 +267,24 @@ export async function runCli(
       }
       const concept = await readConcept(o.root, slug);
       if (!concept) throw new Error(`Concept not found: ${slug}`);
-      const entry = await recordAttest(o.root, concept, o.result);
+      const compared = (o.compared as string)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (compared.length === 0) {
+        throw new Error('--compared must list at least one concept slug');
+      }
+      const missing: string[] = [];
+      for (const s of compared) {
+        if (s !== slug && !(await readConcept(o.root, s))) missing.push(s);
+      }
+      if (missing.length > 0) {
+        throw new Error(`--compared has unknown concept slug(s): ${missing.join(', ')}`);
+      }
+      const entry = await recordAttest(o.root, concept, o.result, {
+        compared,
+        note: o.note,
+      });
       out(JSON.stringify({ ok: true, slug, ...entry }));
     });
 

@@ -57,7 +57,7 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: pass 기록이 저장된다', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'pass', '--root', root],
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'cli-target', '--root', root],
       out
     );
     expect(code).toBe(0);
@@ -68,9 +68,42 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: result가 pass|conflict 외면 exit 1', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'yes', '--root', root],
+      ['attest-consistency', 'cli-target', '--result', 'yes', '--compared', 'cli-target', '--root', root],
       out
     );
     expect(code).toBe(1);
+  });
+
+  it('attest-consistency: --compared 누락 시 exit 1', async () => {
+    await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
+    const code = await runCli(
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--root', root],
+      out
+    );
+    expect(code).toBe(1);
+    expect(JSON.parse(output).error).toMatch(/compared/i);
+  });
+
+  it('attest-consistency: --compared에 미존재 slug가 있으면 exit 1', async () => {
+    await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
+    const code = await runCli(
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'ghost-x', '--root', root],
+      out
+    );
+    expect(code).toBe(1);
+    expect(JSON.parse(output).error).toContain('ghost-x');
+  });
+
+  it('attest-consistency: compared/note가 증빙 로그에 기록된다', async () => {
+    await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
+    const code = await runCli(
+      ['attest-consistency', 'cli-target', '--result', 'pass',
+       '--compared', 'cli-target', '--note', '충돌 없음', '--root', root],
+      out
+    );
+    expect(code).toBe(0);
+    const log = await readAttestLog(root);
+    expect(log['cli-target']!.compared).toEqual(['cli-target']);
+    expect(log['cli-target']!.note).toBe('충돌 없음');
   });
 });

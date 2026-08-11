@@ -45,7 +45,7 @@ When adding or modifying a concept, verify there is no conflict or violation aga
      promotes them to green; on a conflict, they stay pending and the reason is recorded via
      `note-conflict`. Settled green/red concepts are never auto-changed by this check.
 4. **Record the attestation (always, regardless of outcome):**
-   `node "<cli>" attest-consistency <slug> --result pass|conflict --root .`
+   `node "<cli>" attest-consistency <slug> --result pass|conflict --compared <slugs> --root .`
    The attestation is bound to the concept's contract hash — editing the concept invalidates
    it, so re-run this check (and re-attest) after any revision. On a conflict, also record
    the reason via `note-conflict` as before.
