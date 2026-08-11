@@ -14,7 +14,7 @@ A codebase's most valuable, least recoverable asset is **intent**: the reasons i
 
 None of the usual tools fix this, because none of them _enforce intent_:
 
-- 📄 **Docs & wikis** describe; they don't enforce. They're stale on the next commit.
+- 📄 **Docs, wikis & spec documents** describe; they don't enforce. They're stale on the next commit.
 - ✅ **Tests** encode behavior, not the _why_ behind it — a green test doesn't mean the rule was respected.
 - 💬 **Code review** only catches a violation if a human happens to remember an unwritten rule at the right moment.
 - 🤖 **AI agents** optimize for "make it work now," with no durable memory of why a constraint exists.
@@ -37,6 +37,14 @@ Conceptpowers treats a **concept as a first-class, versioned contract** that sit
 - 🔓 **Opt-in, no lock-in.** One marker file switches it on per project; no marker, no hooks. Just JSON + git, with zero runtime dependency added to your app.
 
 The "why" stops being tribal knowledge and becomes an enforced contract.
+
+### A concept is not a spec
+
+A well-known critique of spec-driven development goes: a spec document detailed enough to reliably _generate_ working code converges on the size and precision of the code itself — at which point the spec **is** code. That critique is correct, and Conceptpowers sits outside its category.
+
+A concept is not a blueprint that generates code; it is a **contract that judges code**. The difference rests on an asymmetry of verification: _"admins are never hard-deleted"_ — one line can never produce an implementation, but it can always judge whether a change **violates** the rule. So a concept is **incomplete by design**: the code remains the sole source of truth for _how_, while the concept owns only the _why_ and the invariants. There is no pressure for it to become "sufficiently detailed," and therefore no convergence into code.
+
+Where spec-driven development actually breaks — one-shot generation flakiness, document bloat, spec rot after the code moves on, AI-written slop becoming the source of truth — and what Conceptpowers does at each of those points: see [`docs/concepts-vs-specs.md`](docs/concepts-vs-specs.md).
 
 ---
 
