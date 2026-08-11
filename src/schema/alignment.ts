@@ -25,6 +25,8 @@ export const AttestEntry = z.object({
   hash: z.string(),
   result: z.enum(['pass', 'conflict']),
   at: z.string(),
+  compared: z.array(z.string()).optional(), // check-consistency에서 비교한 대상 slug 목록
+  note: z.string().max(1000).optional(), // 판단 요약
 });
 export type AttestEntry = z.infer<typeof AttestEntry>;
 
