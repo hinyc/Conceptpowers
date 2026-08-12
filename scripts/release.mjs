@@ -130,7 +130,9 @@ async function run() {
 
     git(['add', ...MANIFESTS, 'dist']);
     git(['commit', '-m', `chore(release): ${tag}`]);
-    git(['tag', tag]);
+    // annotated 태그로 만든다: `git push --follow-tags`는 annotated 태그만 밀기 때문에,
+    // lightweight 태그로 두면 안내대로 푸시해도 태그가 조용히 누락된다.
+    git(['tag', '-a', tag, '-m', `Release ${tag}`]);
 
     console.log(`\n완료: 커밋 + 태그 ${tag} 생성.`);
     console.log(`푸시하려면: git push --follow-tags`);

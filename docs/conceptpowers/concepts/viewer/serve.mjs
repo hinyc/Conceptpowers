@@ -4207,7 +4207,11 @@ var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
   hash: external_exports.string(),
   result: external_exports.enum(["pass", "conflict"]),
-  at: external_exports.string()
+  at: external_exports.string(),
+  compared: external_exports.array(external_exports.string()).optional(),
+  // check-consistency에서 비교한 대상 slug 목록
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
 
@@ -4309,7 +4313,7 @@ async function setConceptStatus(root, slug3, status) {
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }

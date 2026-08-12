@@ -34,7 +34,9 @@
         "src/util/glob.ts",
         "tests/audit/audit.test.ts",
         "tests/audit/gaps.test.ts",
-        "tests/util/glob.test.ts"
+        "tests/util/glob.test.ts",
+        "src/audit/tracked.ts",
+        "tests/cli/audit.test.ts"
       ]
     },
     {
@@ -337,7 +339,8 @@
         "tests/init/reference.test.ts",
         "tests/init/scaffold.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/integration/smoke.test.ts"
+        "tests/integration/smoke.test.ts",
+        "tests/cli/audit.test.ts"
       ]
     },
     {
@@ -579,7 +582,7 @@
       "slug": "reference-materials",
       "group": "platform",
       "title": "참고자료 폴더",
-      "codePathCount": 3,
+      "codePathCount": 4,
       "url": "../../features/platform/reference-materials.json"
     },
     {
@@ -717,6 +720,20 @@
         "type": "file",
         "href": "",
         "title": "tests/util/glob.test.ts"
+      },
+      {
+        "id": "p:src/audit/tracked.ts",
+        "label": "tracked.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/audit/tracked.ts"
+      },
+      {
+        "id": "p:tests/cli/audit.test.ts",
+        "label": "audit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/audit.test.ts"
       },
       {
         "id": "c:concept-code-mapping",
@@ -1517,6 +1534,13 @@
         "title": "reference-materials"
       },
       {
+        "id": "p:src/init/addReferencePath.ts",
+        "label": "addReferencePath.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/addReferencePath.ts"
+      },
+      {
         "id": "f:safe-storage",
         "label": "안전한 기록 저장",
         "type": "feature",
@@ -1620,6 +1644,16 @@
       {
         "source": "c:audit-gap-detection",
         "target": "p:tests/util/glob.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:audit-gap-detection",
+        "target": "p:src/audit/tracked.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:audit-gap-detection",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2273,6 +2307,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/audit.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:plugin-version-sync",
         "target": "p:src/init/syncGenerated.ts",
         "kind": "concept-file"
@@ -2730,6 +2769,11 @@
       {
         "source": "f:reference-materials",
         "target": "p:src/init/referenceGitignore.ts",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "p:src/init/addReferencePath.ts",
         "kind": "feature-file"
       },
       {

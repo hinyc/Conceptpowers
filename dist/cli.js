@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile16 } from "node:fs/promises";
+import { readFile as readFile17 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
@@ -7165,7 +7165,9 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 
 ## \uD30C\uC77C \uB300\uC2E0 \uACBD\uB85C\uB85C \uC5F0\uACB0\uD558\uAE30 (paths.md)
 - \uC790\uB8CC\uB97C \uC774 \uD3F4\uB354\uC5D0 \uBCF5\uC0AC\uD558\uB294 \uB300\uC2E0, **\uC774\uBBF8 \uB9CC\uB4E4\uC5B4\uC9C4 \`paths.md\`**(\uC548\uB0B4 \uC8FC\uC11D \uD3EC\uD568)\uC5D0 **\uCC38\uACE0\uD560 \uB85C\uCEEC \uACBD\uB85C \uBAA9\uB85D**\uC744 \uC801\uC73C\uBA74 \uB429\uB2C8\uB2E4.
-- \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uC808\uB300 \uACBD\uB85C/\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C, \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
+- **\uACBD\uB85C \uD615\uD0DC**: \uC800\uC7A5\uC18C \uBC16 \uC790\uB8CC\uB294 **\uC808\uB300 \uACBD\uB85C**\uB85C \uC801\uB418 \uD648 \uC544\uB798\uB77C\uBA74 \`~/\u2026\`\uB97C \uC4F0\uC138\uC694(paths.md\uB294 \uCEE4\uBC0B\uB418\uBBC0\uB85C \`/Users/\uC774\uB984/\u2026\`\uC740 \uBCF8\uC778 \uBA38\uC2E0\uC5D0\uC11C\uB9CC \uD574\uC11D\uB429\uB2C8\uB2E4). \uC800\uC7A5\uC18C \uC548 \uC790\uB8CC\uB294 **\uC800\uC7A5\uC18C \uB8E8\uD2B8 \uAE30\uC900** \uC0C1\uB300 \uACBD\uB85C\uC785\uB2C8\uB2E4(\uD604\uC7AC \uC791\uC5C5 \uB514\uB809\uD130\uB9AC \uAE30\uC900\uC774 \uC544\uB2D9\uB2C8\uB2E4).
+- \uC9C1\uC811 \uD3B8\uC9D1 \uB300\uC2E0 **\`/conceptpowers:add-reference\`** \uB85C \uACBD\uB85C\uB97C \uBD88\uB7EC\uC8FC\uBA74 \uBC14\uB85C \uB4F1\uB85D\uB418\uACE0, \uB4F1\uB85D\uB41C \uACBD\uB85C\uC5D0 \uC2E4\uC81C\uB85C \uC77D\uC744 \uC790\uB8CC\uAC00 \uC788\uB294\uC9C0\uB3C4 \uD568\uAED8 \uD655\uC778\uD574 \uC90D\uB2C8\uB2E4.
 - \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
 - **\uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uC740 \uAE30\uBCF8\uC801\uC73C\uB85C \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4** (\uD3F4\uB354 \uC804\uC6A9 .gitignore) \u2014 \uACF5\uC720\uB418\uB294 \uAC83\uC740
   paths.md \uD558\uB098\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
@@ -7191,7 +7193,9 @@ Put materials here for the agent to consult during concept work.
 
 ## Linking paths instead of copying files (paths.md)
 - Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
-- One per line (or bullets); absolute or repo-relative; files or folders; **multiple entries** allowed.
+- One per line (or bullets); files or folders; **multiple entries** allowed.
+- **Which form**: material outside the repo takes an **absolute** path \u2014 prefer \`~/\u2026\` under your home, since paths.md is committed and \`/Users/<you>/\u2026\` resolves only on your machine. Material inside the repo takes a path relative to the **repo root** (not to your current working directory).
+- Instead of editing by hand, just tell **\`/conceptpowers:add-reference\`** the path \u2014 it registers the entry and reports whether the location actually holds readable material.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) \u2014 only paths.md
   is shared. Confidential documents stay local; to share material with the team,
@@ -7226,6 +7230,7 @@ var initHintStrings = {
     next: "\uB2E4\uC74C \uB2E8\uACC4",
     fillDocs: "architecture.md / infra.md\uB97C \uCC44\uC6CC \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900\uC744 \uC791\uC131\uD558\uC138\uC694",
     reference: "\uCC38\uACE0\uC790\uB8CC(\uC6A9\uC5B4\uC9D1\xB7\uC678\uBD80 \uBA85\uC138\xB7\uAE30\uD68D \uBB38\uC11C \uB4F1)\uB294 reference/ \uD3F4\uB354\uC5D0 \uB123\uC73C\uBA74 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD569\uB2C8\uB2E4",
+    referencePaths: "\uD3F4\uB354 \uBC16\uC758 \uC790\uB8CC\uB294 \uACBD\uB85C\uB9CC \uB4F1\uB85D\uD558\uBA74 \uB429\uB2C8\uB2E4: /conceptpowers:add-reference \uB85C \uCD94\uAC00\uD558\uAC70\uB098 reference/paths.md\uC5D0 \uD55C \uC904\uC529 \uC9C1\uC811 \uC801\uC73C\uC138\uC694 (\uAC74\uB108\uB6F0\uC5B4\uB3C4 \uB098\uC911\uC5D0 \uC5B8\uC81C\uB4E0 \uAC00\uB2A5)",
     viewerScript: "\uBDF0\uC5B4 \uC5F4\uAE30:",
     viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:",
     defineConcept: "\uAC1C\uB150 \uC815\uC758 \uC2DC\uC791: /conceptpowers:define-concept \u2014 \uD504\uB85C\uC81D\uD2B8\uC758 \uADDC\uCE59\uACFC \uC758\uB3C4\uB97C \uAC80\uC0AC \uAC00\uB2A5\uD55C \uACC4\uC57D(\uAC1C\uB150)\uC73C\uB85C \uC791\uC131\uD569\uB2C8\uB2E4. \uBC14\uB85C \uC774\uC5B4\uC11C \uC9C4\uD589\uD560\uC9C0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694"
@@ -7236,6 +7241,7 @@ var initHintStrings = {
     next: "Next steps",
     fillDocs: "Fill in architecture.md / infra.md \u2014 the high-level basis for concepts",
     reference: "Drop reference material (glossary, external specs, PRDs) into reference/ \u2014 it is consulted during concept work",
+    referencePaths: "Material outside that folder only needs its path: register it with /conceptpowers:add-reference, or list one path per line in reference/paths.md (skippable \u2014 you can add it anytime)",
     viewerScript: "Open the viewer:",
     viewerFile: "Open the viewer file directly:",
     defineConcept: "Start defining concepts: /conceptpowers:define-concept \u2014 turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away"
@@ -7243,7 +7249,7 @@ var initHintStrings = {
 };
 function buildInitHint(locale, opts) {
   const t = initHintStrings[locale];
-  const viewerLine = opts.viewerScriptAdded ? `   3. ${t.viewerScript} ${opts.viewerCommand}` : `   3. ${t.viewerFile} ${opts.viewerPath}`;
+  const viewerLine = opts.viewerScriptAdded ? `   4. ${t.viewerScript} ${opts.viewerCommand}` : `   4. ${t.viewerFile} ${opts.viewerPath}`;
   return [
     `\u2705 ${t.done}`,
     `   ${t.created}`,
@@ -7251,8 +7257,9 @@ function buildInitHint(locale, opts) {
     `${t.next}:`,
     `   1. ${t.fillDocs}`,
     `   2. ${t.reference}`,
+    `   3. ${t.referencePaths}`,
     viewerLine,
-    `   4. ${t.defineConcept}`,
+    `   5. ${t.defineConcept}`,
     ""
   ].join("\n");
 }
@@ -7960,10 +7967,17 @@ var PATHS_TEMPLATE = [
   "# (define-concept / check-consistency) \u2014 never during ordinary code checks.",
   "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
   "#",
-  "# Accepted forms:",
-  "#   ~/Documents/domain-glossary/     home-relative folder (all files inside)",
-  "#   /Users/me/specs/auth.md          absolute file",
-  "#   docs/legal/contract.pdf          repo-relative path",
+  "# Which form to use:",
+  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
+  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
+  "#     (teammates would see it reported as missing).",
+  "#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)",
+  "#       /Volumes/team-share/specs      absolute path outside home",
+  "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
+  "#       docs/legal/contract.pdf",
+  "#",
+  "# Or skip the editing: run /conceptpowers:add-reference and give it the path \u2014 it appends the",
+  "# entry here and warns if the location holds no readable material.",
   "#",
   "# Uncomment and edit the examples below, or add your own:",
   "#   ~/work/product-specs/",
@@ -7990,6 +8004,38 @@ function resolveReferencePath(root, raw) {
   if (isAbsolute(raw)) return raw;
   return join9(root, raw);
 }
+var SCAN_LIMIT = 5e3;
+async function fileHasBytes(path) {
+  try {
+    return (await stat(path)).size > 0;
+  } catch {
+    return false;
+  }
+}
+async function dirHasUsableContent(dir) {
+  const queue = [dir];
+  let visited = 0;
+  while (queue.length > 0) {
+    const current = queue.shift();
+    let entries;
+    try {
+      entries = await readdir4(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (++visited > SCAN_LIMIT) return true;
+      if (entry.name.startsWith(".")) continue;
+      const full = join9(current, entry.name);
+      if (entry.isDirectory()) {
+        queue.push(full);
+      } else if (entry.isFile() && await fileHasBytes(full)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 async function checkReferencePaths(root) {
   let content;
   try {
@@ -8003,11 +8049,8 @@ async function checkReferencePaths(root) {
     let status;
     try {
       const s = await stat(resolved);
-      if (s.isDirectory()) {
-        status = (await readdir4(resolved)).length > 0 ? "ok" : "empty";
-      } else {
-        status = "ok";
-      }
+      const usable = s.isDirectory() ? await dirHasUsableContent(resolved) : s.size > 0;
+      status = usable ? "ok" : "empty";
     } catch {
       status = "missing";
     }
@@ -8432,6 +8475,59 @@ async function noteChange(root, slug3, reason, at) {
   return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
 }
 
+// src/init/addReferencePath.ts
+import { readFile as readFile16 } from "node:fs/promises";
+import { join as join16 } from "node:path";
+function normalizeEntry(raw) {
+  const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
+  const quoted = /^(['"])(.*)\1$/.exec(trimmed);
+  return (quoted ? quoted[2] : trimmed).trim();
+}
+async function addReferencePath(root, raws) {
+  await ensureReferencePaths(root);
+  const target = join16(cpPaths(root).reference, PATHS_FILE);
+  let existing;
+  try {
+    existing = await readFile16(target, "utf8");
+  } catch (error) {
+    throw new Error(
+      `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
+    );
+  }
+  const registered = new Set(
+    parseReferencePaths(existing).map((entry) => resolveReferencePath(root, entry))
+  );
+  const added = [];
+  const skipped = [];
+  for (const raw of raws) {
+    const entry = normalizeEntry(raw);
+    if (entry === "" || entry.startsWith("#")) {
+      skipped.push({ raw, reason: "invalid" });
+      continue;
+    }
+    const resolved = resolveReferencePath(root, entry);
+    if (registered.has(resolved)) {
+      skipped.push({ raw, reason: "duplicate" });
+      continue;
+    }
+    registered.add(resolved);
+    added.push(entry);
+  }
+  if (added.length > 0) {
+    const base = existing === "" || existing.endsWith("\n") ? existing : `${existing}
+`;
+    try {
+      await writeFileAtomic(target, `${base}${added.map((entry) => `- ${entry}`).join("\n")}
+`);
+    } catch (error) {
+      throw new Error(
+        `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C\uB97C \uAE30\uB85D\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
+      );
+    }
+  }
+  return { added, skipped };
+}
+
 // src/cli.ts
 function viewerHint() {
   return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
@@ -8505,7 +8601,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile16(o.file, "utf8"));
+    const patch = JSON.parse(await readFile17(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8520,7 +8616,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile16(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile17(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -8573,6 +8669,18 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const ok = external.every((p) => p.status === "ok");
     out(JSON.stringify({ ok, files, external }));
     if (!ok) code = 1;
+  });
+  program2.command("reference-add").description("\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uB4F1\uB85D \u2014 paths.md\uC5D0 \uD3F4\uB354/\uD30C\uC77C \uACBD\uB85C\uB97C \uCD94\uAC00\uD558\uACE0 \uC804\uCCB4 \uD604\uD669\uC744 \uBC18\uD658").argument("<paths...>", "\uB4F1\uB85D\uD560 \uD3F4\uB354 \uB610\uB294 \uD30C\uC77C \uACBD\uB85C (\uC5EC\uB7EC \uAC1C \uAC00\uB2A5)").option("--root <dir>", "project root", process.cwd()).action(async (paths, o) => {
+    const { added, skipped } = await addReferencePath(o.root, paths);
+    out(
+      JSON.stringify({
+        ok: true,
+        added,
+        skipped,
+        files: await listReferenceFiles(o.root),
+        external: await checkReferencePaths(o.root)
+      })
+    );
   });
   program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").requiredOption("--compared <slugs>", "\uBE44\uAD50\uD55C \uB300\uC0C1 \uAC1C\uB150 slug \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84)").option("--note <text>", "\uD310\uB2E8 \uC694\uC57D").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (o.result !== "pass" && o.result !== "conflict") {

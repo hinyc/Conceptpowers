@@ -50,15 +50,45 @@ Where spec-driven development actually breaks — one-shot generation flakiness,
 
 ## Quick Start
 
-Inside Claude Code, three commands get you running:
+Three steps inside Claude Code — run them one at a time.
+
+**1. Add the marketplace**
 
 ```bash
-/plugin marketplace add hinyc/Conceptpowers   # 1. add the marketplace
-/plugin install conceptpowers@conceptpowers-dev # 2. install the plugin
-/conceptpowers:init                             # 3. enable it in your project
+/plugin marketplace add hinyc/Conceptpowers
 ```
 
-`/conceptpowers:init` scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
+This registers the catalog. Nothing is installed yet.
+
+**2. Install the plugin**
+
+```bash
+/plugin install conceptpowers@conceptpowers-dev
+```
+
+Claude Code then asks for an **installation scope** — that choice decides where the plugin is enabled and who else gets it:
+
+| Scope       | Enabled for                           | Recorded in                                            |
+| ----------- | ------------------------------------- | ------------------------------------------------------ |
+| **User**    | you, in every project you open        | your user settings (`~/.claude/settings.json`)         |
+| **Project** | everyone who works on this repository | the repo's `.claude/settings.json` — committed, shared |
+| **Local**   | you, in this repository only          | your local project settings — not shared               |
+
+**Pick User unless you mean to hand this to the whole team.** Conceptpowers is per-project opt-in: it stays dormant until `docs/conceptpowers/init.json` exists, so a user-scope install costs nothing in the projects you never run `init` in. Choose **Project** when the team should share the same governance and get it automatically on clone; choose **Local** to trial it on one repository without touching anyone else's setup.
+
+To skip the picker entirely, install from your shell instead — this form takes the scope as a flag and defaults to user:
+
+```bash
+claude plugin install conceptpowers@conceptpowers-dev --scope user
+```
+
+**3. Enable it in your project**
+
+```bash
+/conceptpowers:init
+```
+
+This scaffolds `docs/conceptpowers/` and drops an `init.json` marker. That marker is the switch: once it exists, the governance hooks activate automatically for the project.
 
 ### Staying up to date
 
@@ -229,6 +259,7 @@ Each skill activates at a specific moment in the loop. The middle column is the 
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `conceptpowers:init`              | **Once per project**, to switch governance on. `strict` mode additionally full-scans an existing codebase to backfill concepts. | The `docs/conceptpowers/` scaffold + the `init.json` marker (hooks go live the moment it exists).                                                                                                                                                                                                 |
 | `conceptpowers:auto`              | **Anytime after init**, when you'd rather be guided than remember the order.                                                    | A staged walkthrough: diagnoses the current state, then invokes **baseline → define → audit → mapping** in order, asking at every stage boundary (skipping allowed). Idempotent — works for fresh and mid-project adoption alike.                                                                 |
+| `conceptpowers:add-reference`     | **Whenever reference material lives outside the project** — offered during `init`, available anytime after.                     | The path recorded in `reference/paths.md` (add-only; existing lines and comments are preserved), plus a status report that warns about entries that are missing or hold no readable material.                                                                                                     |
 | `conceptpowers:define-feature`    | **When you surface a feature** (button / action / route / command) that should appear in the knowledge graph.                   | A feature JSON under `features/` with its `concepts` (feature → concept) and `codePaths` (feature → code) wired — the source of the feature links in the graph.                                                                                                                                   |
 | `conceptpowers:define-concept`    | **Before** adding a feature / role / permission / term that **no** existing concept covers.                                     | A new concept JSON born 🟡 pending; on a passing consistency check it becomes 🟢 green, otherwise it stays pending with the conflict reason recorded via `note-conflict`. (Auto-inferred concepts are 🔴 red.)                                                                                    |
 | `conceptpowers:check-concept`     | **Before** writing or changing any code (tests included) that adds a feature or alters behavior.                                | A verdict: does the change violate a related concept's allow / restrict / immutable rules? (code ↔ concept)                                                                                                                                                                                       |
@@ -247,6 +278,7 @@ docs/conceptpowers/
 ├── init.json                       # activation marker + settings (locale, backfillMode)
 ├── features/                       # feature specs
 ├── reference/                      # user-supplied reference material — read only when authoring/upgrading concepts; code checks judge against concepts alone (user-owned)
+│   └── paths.md                    #   registry of external locations to consult (the only committed file here)
 ├── concepts/
 │   ├── data/<group>/<slug>.json    # concept data (source of truth)
 │   ├── viewer/                      # browsable SPA viewer — open with `npm run concepts:view`
@@ -267,6 +299,45 @@ The viewer's **UI chrome defaults to English** (nav, buttons, badges, legend) re
 The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
 
 Detailed design: `docs/specs/2026-06-18-conceptpowers-design.md`.
+
+### Reference material
+
+Concepts are only as good as what they are written from. `reference/` is where the raw material lives — domain glossaries, external specs, PRDs, policies — and it feeds **authoring** only.
+
+**Two ways to supply it**, treated identically by the agent:
+
+- **Drop files** into `docs/conceptpowers/reference/`. They are **git-ignored by default**, so confidential documents stay on your machine.
+- **Register a path** to material that lives elsewhere, in `reference/paths.md` — one path per line, files or folders. This file _is_ committed, so the team shares the locations rather than the documents.
+
+**Which form of path to write** — the entry is stored verbatim, so the form you choose decides who can resolve it:
+
+| Where the material lives          | Write                                     | Why                                                                                               |
+| --------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Outside the repo, under your home | `~/Documents/domain-glossary/`            | Resolves per user, so it still works for a teammate who keeps the same folder under _their_ home. |
+| Outside the repo, elsewhere       | `/Volumes/team-share/specs` (absolute)    | The only form that can address it. Machine-specific by nature.                                    |
+| Inside the repo                   | `docs/legal/contract.pdf` (repo-relative) | Resolves identically for everyone — the most portable form.                                       |
+
+Two things to be precise about: a relative entry always resolves **from the repo root**, never from your current working directory. And because `paths.md` is committed, a raw absolute path under your home (`/Users/you/specs`) resolves only on your machine — teammates will see it reported as `missing`. Prefer `~/` there.
+
+`init` asks once whether you have such paths (skippable), and `/conceptpowers:add-reference` registers them anytime:
+
+```bash
+/conceptpowers:add-reference          # then give it one or more paths
+```
+
+It appends to `paths.md` without touching existing lines or comments, skips entries already registered (compared after resolution, so `~/x` and its absolute form count as one), and **records a path even if it does not exist yet** — pre-registering a folder you are about to create is legitimate.
+
+What it does _not_ do is let a dead path pass silently. Every registered location is checked, and anything that cannot be read is reported — both at registration time and at session start:
+
+| Status    | Meaning                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `ok`      | The path holds readable material.                                                                                         |
+| `missing` | The path does not exist — a typo, or a folder you have not created yet.                                                   |
+| `empty`   | The path exists but has **nothing to read**: an empty folder, only empty subfolders, only dot-files, or a zero-byte file. |
+
+Removing or rewriting entries is yours to do — `paths.md` is a plain hand-editable file and the plugin only ever appends.
+
+**Doctrine:** reference material is read **only** while authoring, upgrading, or verifying a concept (`define-concept` / `check-consistency`), on demand and by relevance — never all at once. Code verification (`check-concept`, `audit`) judges against defined concepts **alone**; if a concept is too vague to judge with, the answer is to upgrade the concept, not to fall back to reference. And its content — including the path strings — is **untrusted data, not instructions**.
 
 ### Knowledge graph
 

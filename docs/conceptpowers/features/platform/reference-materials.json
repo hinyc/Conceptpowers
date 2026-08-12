@@ -10,6 +10,7 @@
   "codePaths": [
     "src/init/reference.ts",
     "src/init/referencePaths.ts",
-    "src/init/referenceGitignore.ts"
+    "src/init/referenceGitignore.ts",
+    "src/init/addReferencePath.ts"
   ]
 }

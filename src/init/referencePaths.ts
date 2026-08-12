@@ -4,6 +4,7 @@
 // 여기서는 그 목록을 파싱·검증만 한다(내용은 읽지 않는다 — 내용 읽기는 개념 정의 시점의
 // 에이전트 몫). 검증 결과는 세션 시작 알림과 `reference` CLI가 사용한다.
 import { readFile, readdir, stat, access, mkdir, writeFile } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { cpPaths } from '../paths.js';
@@ -30,10 +31,17 @@ export const PATHS_TEMPLATE = [
   '# (define-concept / check-consistency) — never during ordinary code checks.',
   '# Point them at domain glossaries, specs, contracts, planning docs, and so on.',
   '#',
-  '# Accepted forms:',
-  '#   ~/Documents/domain-glossary/     home-relative folder (all files inside)',
-  '#   /Users/me/specs/auth.md          absolute file',
-  '#   docs/legal/contract.pdf          repo-relative path',
+  '# Which form to use:',
+  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
+  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
+  '#     (teammates would see it reported as missing).',
+  '#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)',
+  '#       /Volumes/team-share/specs      absolute path outside home',
+  '#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).',
+  '#       docs/legal/contract.pdf',
+  '#',
+  '# Or skip the editing: run /conceptpowers:add-reference and give it the path — it appends the',
+  '# entry here and warns if the location holds no readable material.',
   '#',
   '# Uncomment and edit the examples below, or add your own:',
   '#   ~/work/product-specs/',
@@ -74,7 +82,49 @@ export function resolveReferencePath(root: string, raw: string): string {
   return join(root, raw);
 }
 
-// 등록된 각 경로의 상태: ok(파일 존재/자료 있는 폴더) · empty(빈 폴더) · missing(없음).
+// 한 폴더 트리를 훑는 상한. 이 수를 넘도록 자료를 못 찾으면 거짓 경고 대신 "있음"으로 본다.
+const SCAN_LIMIT = 5000;
+
+// 크기가 0인 파일은 자료로 치지 않는다(빈 placeholder가 "자료 있음" 오신호를 내지 않도록).
+async function fileHasBytes(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).size > 0;
+  } catch {
+    return false;
+  }
+}
+
+// 폴더 트리에 실제로 읽을 자료가 하나라도 있는지 확인한다(첫 자료를 찾는 즉시 중단).
+// 점(.)으로 시작하는 이름은 건너뛴다 — .DS_Store·.git 같은 잡음이 "자료 있음"이 되지 않도록.
+// 심볼릭 링크는 Dirent.isDirectory()가 false라 재귀 대상이 아니다(순환 안전).
+async function dirHasUsableContent(dir: string): Promise<boolean> {
+  const queue: string[] = [dir];
+  let visited = 0;
+  while (queue.length > 0) {
+    const current = queue.shift() as string;
+    let entries: Dirent[];
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch {
+      continue; // 읽을 수 없는 하위 폴더는 건너뛴다
+    }
+    for (const entry of entries) {
+      if (++visited > SCAN_LIMIT) return true; // 상한 초과 — 보수적으로 자료 있음
+      if (entry.name.startsWith('.')) continue;
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) {
+        queue.push(full);
+      } else if (entry.isFile() && (await fileHasBytes(full))) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// 등록된 각 경로의 상태: ok(내용 있는 파일/자료 있는 폴더) · empty(읽을 자료 없음) · missing(없음).
+// empty는 "폴더에 항목이 없음"이 아니라 "참고할 자료가 없음" 기준이다 — 빈 하위 폴더만 있거나
+// 점 파일·0바이트 파일뿐인 경로도 empty로 잡아 사용자에게 경고한다.
 export async function checkReferencePaths(root: string): Promise<ReferencePathCheck[]> {
   let content: string;
   try {
@@ -88,11 +138,8 @@ export async function checkReferencePaths(root: string): Promise<ReferencePathCh
     let status: ReferencePathStatus;
     try {
       const s = await stat(resolved);
-      if (s.isDirectory()) {
-        status = (await readdir(resolved)).length > 0 ? 'ok' : 'empty';
-      } else {
-        status = 'ok';
-      }
+      const usable = s.isDirectory() ? await dirHasUsableContent(resolved) : s.size > 0;
+      status = usable ? 'ok' : 'empty';
     } catch {
       status = 'missing';
     }
