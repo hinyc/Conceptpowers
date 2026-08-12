@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile15 } from "node:fs/promises";
+import { readFile as readFile16 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
@@ -7481,7 +7481,11 @@ var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
   hash: external_exports.string(),
   result: external_exports.enum(["pass", "conflict"]),
-  at: external_exports.string()
+  at: external_exports.string(),
+  compared: external_exports.array(external_exports.string()).optional(),
+  // check-consistency에서 비교한 대상 slug 목록
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
 
@@ -7509,11 +7513,13 @@ async function readAttestLog(root) {
     return {};
   }
 }
-async function recordAttest(root, concept, result) {
+async function recordAttest(root, concept, result, evidence = {}) {
   const entry = {
     hash: contractHash(concept),
     result,
-    at: (/* @__PURE__ */ new Date()).toISOString()
+    at: (/* @__PURE__ */ new Date()).toISOString(),
+    ...evidence.compared && evidence.compared.length > 0 ? { compared: evidence.compared } : {},
+    ...evidence.note ? { note: evidence.note } : {}
   };
   const next = { ...await readAttestLog(root), [concept.slug]: entry };
   await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + "\n");
@@ -8241,6 +8247,94 @@ async function auditIntegrity(root, files) {
   };
 }
 
+// src/audit/gaps.ts
+import { readFile as readFile13 } from "node:fs/promises";
+import { join as join15, extname } from "node:path";
+
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+
+// src/util/glob.ts
+var REGEX_SPECIAL = "\\^$.|?+()[]{}";
+function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++;
+        if (glob[i + 1] === "/") {
+          re += "(?:.*/)?";
+          i++;
+        } else {
+          re += ".*";
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (REGEX_SPECIAL.includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp("^" + re + "$");
+}
+function matchesAny(path, globs) {
+  const p = normalizeRel(path);
+  return globs.some((g) => globToRegExp(g).test(p));
+}
+
+// src/audit/gaps.ts
+var CODE_EXT = /* @__PURE__ */ new Set([
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".mts",
+  ".cts",
+  ".py",
+  ".go",
+  ".rs",
+  ".java",
+  ".rb",
+  ".php",
+  ".kt",
+  ".swift"
+]);
+var TAG_RE2 = /@concept:[a-z0-9]+(?:-[a-z0-9]+)*/;
+function isCodeFile(rel) {
+  return CODE_EXT.has(extname(rel).toLowerCase());
+}
+async function findConceptlessFiles(root, files, ignoreGlobs) {
+  const conceptless = [];
+  for (const rel of files) {
+    if (!isCodeFile(rel)) continue;
+    if (matchesAny(rel, ignoreGlobs)) continue;
+    let content;
+    try {
+      content = await readFile13(join15(root, rel), "utf8");
+    } catch {
+      continue;
+    }
+    if (!TAG_RE2.test(content)) conceptless.push(rel);
+  }
+  return conceptless;
+}
+
+// src/audit/tracked.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+var execFileAsync = promisify(execFile);
+async function listTrackedFiles(root) {
+  const { stdout } = await execFileAsync("git", ["ls-files"], { cwd: root });
+  return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+}
+
 // src/concept/approve.ts
 async function approveConcept(root, slug3) {
   const concept = await readConcept(root, slug3);
@@ -8254,20 +8348,20 @@ async function approveConcept(root, slug3) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile13 } from "node:fs/promises";
+import { readFile as readFile14 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile13(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile14(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile14 } from "node:fs/promises";
+import { readFile as readFile15 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile14(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile15(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -8298,11 +8392,6 @@ async function appendHistoryMany(root, inputs) {
 }
 async function appendHistory(root, input) {
   return (await appendHistoryMany(root, [input]))[0];
-}
-
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
 }
 
 // src/drift/detect.ts
@@ -8411,7 +8500,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile15(o.file, "utf8"));
+    const patch = JSON.parse(await readFile16(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8426,17 +8515,28 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile15(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile16(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
     if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
     else await updateMappingCache(o.root, files);
   });
-  program2.command("audit").option("--root <dir>", "project root", process.cwd()).argument("<files...>").action(async (files, o) => {
-    const r = await auditIntegrity(o.root, files);
-    out(JSON.stringify(r));
-    if (!r.ok) code = 1;
+  program2.command("audit").description("\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap) \uD0D0\uC9C0").option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
+    if (files.length > 0) {
+      const r2 = await auditIntegrity(o.root, files);
+      out(JSON.stringify(r2));
+      if (!r2.ok) code = 1;
+      return;
+    }
+    const all = await listTrackedFiles(o.root);
+    const cfg = await readInitConfig(o.root);
+    const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+    const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
+    const r = await auditIntegrity(o.root, scanned);
+    const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
+    out(JSON.stringify({ ...r, conceptless }));
+    if (!r.ok || conceptless.length > 0) code = 1;
   });
   program2.command("drift").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify(await computeDrift(o.root)));
@@ -8468,13 +8568,27 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(JSON.stringify({ ok, files, external }));
     if (!ok) code = 1;
   });
-  program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+  program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").requiredOption("--compared <slugs>", "\uBE44\uAD50\uD55C \uB300\uC0C1 \uAC1C\uB150 slug \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84)").option("--note <text>", "\uD310\uB2E8 \uC694\uC57D").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (o.result !== "pass" && o.result !== "conflict") {
       throw new Error(`--result must be pass|conflict, got: ${o.result}`);
     }
     const concept = await readConcept(o.root, slug3);
     if (!concept) throw new Error(`Concept not found: ${slug3}`);
-    const entry = await recordAttest(o.root, concept, o.result);
+    const compared = o.compared.split(",").map((s) => s.trim()).filter(Boolean);
+    if (compared.length === 0) {
+      throw new Error("--compared must list at least one concept slug");
+    }
+    const missing = [];
+    for (const s of compared) {
+      if (s !== slug3 && !await readConcept(o.root, s)) missing.push(s);
+    }
+    if (missing.length > 0) {
+      throw new Error(`--compared has unknown concept slug(s): ${missing.join(", ")}`);
+    }
+    const entry = await recordAttest(o.root, concept, o.result, {
+      compared,
+      note: o.note
+    });
     out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
   });
   try {

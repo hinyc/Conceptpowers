@@ -4192,7 +4192,11 @@ var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
   hash: external_exports.string(),
   result: external_exports.enum(["pass", "conflict"]),
-  at: external_exports.string()
+  at: external_exports.string(),
+  compared: external_exports.array(external_exports.string()).optional(),
+  // check-consistency에서 비교한 대상 slug 목록
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
 

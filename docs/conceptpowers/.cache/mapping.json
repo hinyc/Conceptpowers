@@ -23,14 +23,12 @@
   "settled-status": [
     "assets/viewer.js",
     "src/concept/approve.ts",
-    "src/concept/attest.ts",
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
     "tests/audit/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
-    "tests/concept/attest.test.ts",
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
     "tests/concept/quality.test.ts",
@@ -43,7 +41,9 @@
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
-    "tests/viewer/serve.test.ts"
+    "tests/viewer/serve.test.ts",
+    "src/concept/attest.ts",
+    "tests/concept/attest.test.ts"
   ],
   "audit-gap-detection": [
     "src/audit/audit.ts",
@@ -51,7 +51,9 @@
     "src/util/glob.ts",
     "tests/audit/audit.test.ts",
     "tests/audit/gaps.test.ts",
-    "tests/util/glob.test.ts"
+    "tests/util/glob.test.ts",
+    "src/audit/tracked.ts",
+    "tests/cli/audit.test.ts"
   ],
   "init-gate": [
     "src/init/scaffold.ts",
@@ -68,7 +70,8 @@
     "tests/init/scaffold.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/integration/smoke.test.ts",
-    "src/cli.ts"
+    "src/cli.ts",
+    "tests/cli/audit.test.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -91,13 +94,13 @@
   "drift-reconcile": [
     "src/drift/history.ts",
     "src/drift/reconcile.ts",
-    "src/schema/alignment.ts",
     "tests/cli/cli.test.ts",
     "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
+    "src/schema/alignment.ts",
     "tests/schema/alignment.test.ts"
   ],
   "untrusted-text-sanitization": [
@@ -224,7 +227,8 @@
     "tests/audit/audit.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "tests/cli/audit.test.ts"
   ],
   "red-one": [
     "tests/audit/audit.test.ts",
@@ -253,5 +257,8 @@
   ],
   "auth-session": [
     "tests/integration/smoke.test.ts"
+  ],
+  "known-one": [
+    "tests/cli/audit.test.ts"
   ]
 }
