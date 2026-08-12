@@ -107,13 +107,13 @@
         "src/drift/reconcile.ts",
         "src/drift/history.ts",
         "src/drift/detect.ts",
-        "src/schema/alignment.ts",
         "tests/cli/cli.test.ts",
         "tests/drift/detect.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
+        "src/schema/alignment.ts",
         "tests/schema/alignment.test.ts"
       ]
     },
@@ -243,7 +243,6 @@
         "tests/cli/cli.test.ts",
         "tests/cli/quality.test.ts",
         "tests/concept/approve.test.ts",
-        "tests/concept/attest.test.ts",
         "tests/concept/pendingConflicts.test.ts",
         "tests/concept/quality-gate.test.ts",
         "tests/concept/quality.test.ts",
@@ -256,7 +255,8 @@
         "tests/integration/smoke.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/concept/attest.test.ts"
       ]
     },
     {
@@ -873,18 +873,18 @@
         "title": "src/drift/history.ts"
       },
       {
-        "id": "p:src/schema/alignment.ts",
-        "label": "alignment.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/schema/alignment.ts"
-      },
-      {
         "id": "p:tests/cli/cli.test.ts",
         "label": "cli.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/cli/cli.test.ts"
+      },
+      {
+        "id": "p:src/schema/alignment.ts",
+        "label": "alignment.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/alignment.ts"
       },
       {
         "id": "p:tests/schema/alignment.test.ts",
@@ -1125,13 +1125,6 @@
         "title": "tests/concept/approve.test.ts"
       },
       {
-        "id": "p:tests/concept/attest.test.ts",
-        "label": "attest.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/attest.test.ts"
-      },
-      {
         "id": "p:tests/concept/quality-gate.test.ts",
         "label": "quality-gate.test.ts",
         "type": "file",
@@ -1158,6 +1151,13 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/serve.test.ts"
+      },
+      {
+        "id": "p:tests/concept/attest.test.ts",
+        "label": "attest.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/attest.test.ts"
       },
       {
         "id": "c:atomic-baseline-write",
@@ -1734,11 +1734,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:src/schema/alignment.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -1765,6 +1760,11 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/schema/alignment.ts",
         "kind": "concept-file"
       },
       {
@@ -1979,11 +1979,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/concept/attest.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/concept/pendingConflicts.test.ts",
         "kind": "concept-file"
       },
@@ -2045,6 +2040,11 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/concept/attest.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2834,5 +2834,5 @@
       }
     ]
   },
-  "generatorVersion": "1.1.0"
+  "generatorVersion": "1.2.0"
 }

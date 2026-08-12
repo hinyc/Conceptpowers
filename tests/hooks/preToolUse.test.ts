@@ -491,3 +491,53 @@ it('reference/.gitignore(플러그인 메타 파일)만 스테이징이면 기�
   });
   expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('gitignore');
 });
+
+it('viewer 생성 산출물이 unstaged dirty면 최종 allow 대신 ask한다', async () => {
+  await scaffoldInit(root, {});
+  execSync('git init', { cwd: root });
+  execSync('git config user.email "test@test.com"', { cwd: root });
+  execSync('git config user.name "Test"', { cwd: root });
+  execSync('git add -A && git commit -m init', { cwd: root });
+  // auto-sync가 산출물을 고쳐놓은 상황 재현: manifest.json을 unstaged로 수정
+  writeFileSync(
+    join(root, 'docs/conceptpowers/concepts/viewer/manifest.json'),
+    '{"generatorVersion":"9.9.9"}\n'
+  );
+  const r = await decidePreToolUse(root, {
+    tool: 'Bash',
+    input: { command: 'git commit -m x' },
+    changedFiles: [],
+  });
+  expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+  expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('미커밋 생성 산출물');
+  expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('manifest.json');
+});
+
+it('viewer 산출물 dirty여도 실질 위반(unknownTag)이 우선한다', async () => {
+  await scaffoldInit(root, {});
+  execSync('git init', { cwd: root });
+  execSync('git config user.email "test@test.com"', { cwd: root });
+  execSync('git config user.name "Test"', { cwd: root });
+  execSync('git add -A && git commit -m init', { cwd: root });
+  writeFileSync(
+    join(root, 'docs/conceptpowers/concepts/viewer/manifest.json'),
+    '{"generatorVersion":"9.9.9"}\n'
+  );
+  writeFileSync(join(root, 'src/a.ts'), '// @concept:ghost\n');
+  const r = await decidePreToolUse(root, {
+    tool: 'Bash',
+    input: { command: 'git commit -m x' },
+    changedFiles: ['src/a.ts'],
+  });
+  expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
+});
+
+it('git 저장소가 아니면 stale 산출물 검사는 조용히 통과한다 (best-effort)', async () => {
+  await scaffoldInit(root, {});
+  const r = await decidePreToolUse(root, {
+    tool: 'Bash',
+    input: { command: 'git commit -m x' },
+    changedFiles: [],
+  });
+  expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+});
