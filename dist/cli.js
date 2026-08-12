@@ -7514,13 +7514,13 @@ async function readAttestLog(root) {
   }
 }
 async function recordAttest(root, concept, result, evidence = {}) {
-  const entry = {
+  const entry = AttestEntry.parse({
     hash: contractHash(concept),
     result,
     at: (/* @__PURE__ */ new Date()).toISOString(),
     ...evidence.compared && evidence.compared.length > 0 ? { compared: evidence.compared } : {},
     ...evidence.note ? { note: evidence.note } : {}
-  };
+  });
   const next = { ...await readAttestLog(root), [concept.slug]: entry };
   await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + "\n");
   return entry;

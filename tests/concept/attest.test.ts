@@ -88,4 +88,37 @@ describe('attest', () => {
     const log = await readAttestLog(root);
     expect(freshPassAttest(log, c)).toBe(true);
   });
+
+  it('note가 1000자를 초과하면 recordAttest가 던지고 로그를 훼손하지 않는다', async () => {
+    const a = makeConcept(['결제 완료 후 price 변경 불가']);
+    await recordAttest(root, a, 'pass', { note: '기존 증빙' });
+
+    const b = parseConcept({
+      slug: 'other-concept',
+      category: ['behavior'],
+      title: 'B',
+      description: { definition: '정의' },
+      purpose: { reason: '이유' },
+      actions: {},
+      principle: { immutableRules: ['관리자는 하드삭제되지 않는다'] },
+    });
+    await expect(
+      recordAttest(root, b, 'pass', { note: 'x'.repeat(1001) })
+    ).rejects.toThrow();
+
+    // 실패한 기록 시도가 기존 로그를 훼손하지 않아야 한다 (덮어쓰기 금지).
+    const log = await readAttestLog(root);
+    expect(Object.keys(log)).toEqual(['attest-target']);
+    expect(log['attest-target']!.note).toBe('기존 증빙');
+    expect(log['other-concept']).toBeUndefined();
+  });
+
+  it('note가 정확히 1000자면 recordAttest가 성공한다', async () => {
+    const c = makeConcept(['결제 완료 후 price 변경 불가']);
+    const note = 'x'.repeat(1000);
+    const entry = await recordAttest(root, c, 'pass', { note });
+    expect(entry.note).toBe(note);
+    const log = await readAttestLog(root);
+    expect(log['attest-target']!.note).toBe(note);
+  });
 });

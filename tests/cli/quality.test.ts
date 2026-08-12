@@ -106,4 +106,37 @@ describe('cli: quality / attest-consistency', () => {
     expect(log['cli-target']!.compared).toEqual(['cli-target']);
     expect(log['cli-target']!.note).toBe('충돌 없음');
   });
+
+  it('attest-consistency: --note가 1000자를 초과하면 exit 1이고 로그가 훼손되지 않는다', async () => {
+    await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
+    // 기존 증빙을 먼저 남겨 "덮어쓰기로 과거 증빙이 사라지지 않는지" 검증한다.
+    const okCode = await runCli(
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'cli-target', '--root', root],
+      out
+    );
+    expect(okCode).toBe(0);
+    output = '';
+
+    const code = await runCli(
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'pass',
+        '--compared',
+        'cli-target',
+        '--note',
+        'x'.repeat(1001),
+        '--root',
+        root,
+      ],
+      out
+    );
+    expect(code).toBe(1);
+    expect(JSON.parse(output).error).toBeDefined();
+
+    const log = await readAttestLog(root);
+    expect(log['cli-target']?.result).toBe('pass');
+    expect(log['cli-target']?.note).toBeUndefined();
+  });
 });
