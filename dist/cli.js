@@ -7599,7 +7599,7 @@ async function setConceptStatus(root, slug3, status) {
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }
@@ -8330,9 +8330,14 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 var execFileAsync = promisify(execFile);
+var MAX_BUFFER = 64 * 1024 * 1024;
 async function listTrackedFiles(root) {
-  const { stdout } = await execFileAsync("git", ["ls-files"], { cwd: root });
-  return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+  const { stdout } = await execFileAsync(
+    "git",
+    ["-c", "core.quotePath=false", "ls-files", "-z"],
+    { cwd: root, maxBuffer: MAX_BUFFER }
+  );
+  return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
 }
 
 // src/concept/approve.ts
@@ -8533,7 +8538,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const cfg = await readInitConfig(o.root);
     const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
     const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
-    const r = await auditIntegrity(o.root, scanned);
+    const codeScanned = scanned.filter(isCodeFile);
+    const r = await auditIntegrity(o.root, codeScanned);
     const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
     out(JSON.stringify({ ...r, conceptless }));
     if (!r.ok || conceptless.length > 0) code = 1;

@@ -45,6 +45,15 @@ describe('cli: audit 전체 스캔 모드', () => {
     expect(r.conceptless).toContain('src/naked.ts');
   });
 
+  it('비-ASCII 파일명도 전체 스캔 대상에 포함되어 conceptless로 보고된다', async () => {
+    writeFileSync(join(root, 'src/한글.ts'), 'export const x = 1;\n');
+    execSync('git add -A && git commit -m init', { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    expect(code).toBe(1);
+    const r = JSON.parse(output);
+    expect(r.conceptless).toContain('src/한글.ts');
+  });
+
   it('전 파일이 태그되어 있으면 exit 0, conceptless 빈 배열', async () => {
     await writeConcept(root, conceptInput());
     writeFileSync(join(root, 'src/tagged.ts'), '// @concept:known-one\nexport const x = 1;\n');
@@ -63,5 +72,31 @@ describe('cli: audit 전체 스캔 모드', () => {
     const r = JSON.parse(output);
     expect(r.unknownTags.length).toBe(1);
     expect(r.conceptless).toBeUndefined();
+  });
+
+  it('전체 스캔 모드: .md 문서 안의 @concept 리터럴은 unknownTags 오탐으로 잡지 않는다', async () => {
+    await writeConcept(root, conceptInput());
+    writeFileSync(join(root, 'src/tagged.ts'), '// @concept:known-one\nexport const x = 1;\n');
+    writeFileSync(
+      join(root, 'README.md'),
+      '예시: 파일 상단에 `@concept:ghost-doc` 처럼 태그를 답니다.\n'
+    );
+    execSync('git add -A && git commit -m init', { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    expect(code).toBe(0);
+    const r = JSON.parse(output);
+    expect(r.ok).toBe(true);
+    expect(r.unknownTags).toEqual([]);
+  });
+
+  it('파일 지정 모드는 .md도 그대로 스캔한다 (계약 불변)', async () => {
+    writeFileSync(
+      join(root, 'README.md'),
+      '예시: 파일 상단에 `@concept:ghost-doc` 처럼 태그를 답니다.\n'
+    );
+    const code = await runCli(['audit', 'README.md', '--root', root], out);
+    expect(code).toBe(1);
+    const r = JSON.parse(output);
+    expect(r.unknownTags).toEqual([{ slug: 'ghost-doc', file: 'README.md' }]);
   });
 });

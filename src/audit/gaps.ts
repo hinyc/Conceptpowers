@@ -27,7 +27,10 @@ const CODE_EXT = new Set([
 
 const TAG_RE = /@concept:[a-z0-9]+(?:-[a-z0-9]+)*/;
 
-function isCodeFile(rel: string): boolean {
+// 거버넌스 대상 코드 파일인지 판단한다 (확장자 기준).
+// gap 탐지뿐 아니라 태그 정합성 전체 스캔에서도 비코드 파일(.md 등)을
+// 제외하는 데 재사용된다.
+export function isCodeFile(rel: string): boolean {
   return CODE_EXT.has(extname(rel).toLowerCase());
 }
 

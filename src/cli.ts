@@ -13,7 +13,7 @@ import type { Locale } from './schema/initConfig.js';
 import { renderViewerToDisk } from './viewer/render.js';
 import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
-import { findConceptlessFiles } from './audit/gaps.js';
+import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
 import { InitConfigSchema } from './schema/initConfig.js';
@@ -207,7 +207,10 @@ export async function runCli(
       const cfg = await readInitConfig(o.root);
       const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
       const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
-      const r = await auditIntegrity(o.root, scanned);
+      // 태그 정합성(unknownTags) 스캔은 코드 파일로 한정한다 — .md 문서의 예시
+      // 텍스트나 비코드 파일에 우연히 등장하는 @concept: 리터럴은 태그가 아니다.
+      const codeScanned = scanned.filter(isCodeFile);
+      const r = await auditIntegrity(o.root, codeScanned);
       const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
       out(JSON.stringify({ ...r, conceptless }));
       if (!r.ok || conceptless.length > 0) code = 1;
