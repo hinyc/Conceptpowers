@@ -13,6 +13,11 @@ import type { Locale } from './schema/initConfig.js';
 import { renderViewerToDisk } from './viewer/render.js';
 import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
+import { findConceptlessFiles } from './audit/gaps.js';
+import { listTrackedFiles } from './audit/tracked.js';
+import { readInitConfig } from './init/readConfig.js';
+import { InitConfigSchema } from './schema/initConfig.js';
+import { matchesAny } from './util/glob.js';
 import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
 import { noteChange } from './drift/note.js';
@@ -183,12 +188,29 @@ export async function runCli(
 
   program
     .command('audit')
+    .description('파일 지정: 태그 정합성 검사 / 인자 없음: 전체 스캔 + 개념 없는 코드(gap) 탐지')
     .option('--root <dir>', 'project root', process.cwd())
-    .argument('<files...>')
+    .argument('[files...]')
     .action(async (files, o) => {
-      const r = await auditIntegrity(o.root, files);
-      out(JSON.stringify(r));
-      if (!r.ok) code = 1;
+      if (files.length > 0) {
+        const r = await auditIntegrity(o.root, files);
+        out(JSON.stringify(r));
+        if (!r.ok) code = 1;
+        return;
+      }
+      // 전체 스캔: git 추적 파일 전체 + conceptless gap. ignoreGlobs 폴백은
+      // preToolUse 게이트와 동일 규칙(스키마 기본값)을 쓴다.
+      // 중요: 태그 정합성 검사(auditIntegrity)에도 ignoreGlobs를 적용한다 —
+      // 플러그인 생성물(viewer/serve.mjs 등)에는 번들된 @concept 주석이 남아 있어,
+      // 필터 없이 스캔하면 사용자 프로젝트에서 미존재 slug 오탐이 난다.
+      const all = await listTrackedFiles(o.root);
+      const cfg = await readInitConfig(o.root);
+      const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+      const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
+      const r = await auditIntegrity(o.root, scanned);
+      const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
+      out(JSON.stringify({ ...r, conceptless }));
+      if (!r.ok || conceptless.length > 0) code = 1;
     });
 
   program
