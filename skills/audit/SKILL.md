@@ -15,11 +15,19 @@ Manual run. Inspect the whole project for ① unlinked gaps and ② integrity of
 > **Concepts ONLY** (session doctrine): never read `reference/` content during the audit. The only
 > allowed interaction is the cheap existence check (directory listing + `paths.md` entries) in step 2.
 
-1. **Integrity (deterministic)**: run the CLI audit over the full source:
-   `node "<cli>" audit --root . <source files...>`
-   - Reports `unknownTags` (tags pointing to nonexistent concepts).
-2. **Unlinked gaps (semantic judgment)**: scan the source for features/behaviors/roles/permissions/terms
-   that need a concept but have no `@concept` tag. For each:
+1. **Integrity + gaps (deterministic)**: run the CLI audit with NO file args — full scan mode. It walks
+   `git ls-files` (ignoreGlobs applied to both scans) and prints `{...report, conceptless: [...]}`,
+   exiting 1 when `unknownTags` or `conceptless` is non-empty:
+   `node "<cli>" audit --root .`
+   - `unknownTags`: tags pointing to nonexistent concepts.
+   - `conceptless`: files with no `@concept` marker at all — this is the deterministic starting point
+     for step 2's gap detection, not something to re-derive by manual enumeration.
+   - (File-args mode — `audit --root . <files...>` — still exists for a narrower, non-full scan; use
+     the no-arg form for this whole-project audit.)
+2. **Unlinked gaps (semantic judgment)**: take the `conceptless` list from step 1 as the deterministic
+   starting point, then apply semantic judgment to each entry (and to any file the deterministic scan
+   couldn't classify) to look for features/behaviors/roles/permissions/terms that need a concept but
+   have no `@concept` tag. For each:
    - If a related concept already exists → suggest adding the tag (update-mapping).
    - If no concept exists → suggest define-concept. **When recommending define-concept, check
      whether reference is empty** (no files besides the scaffold `README.md`, and no usable
