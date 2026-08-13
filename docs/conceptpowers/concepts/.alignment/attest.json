@@ -1,9 +1,4 @@
 {
-  "ask-only-gate": {
-    "hash": "259ad1e7740b",
-    "result": "pass",
-    "at": "2026-07-22T05:18:42.187Z"
-  },
   "human-owns-contract": {
     "hash": "970f06874174",
     "result": "pass",
