@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests
+// @concept:concept-driven-tests @concept:governance-mode
 import { describe, it, expect } from 'vitest';
 import { parseInitConfig } from '../../src/schema/initConfig.js';
 
@@ -75,5 +75,19 @@ describe('conceptDrivenTests', () => {
   });
   it('boolean이 아니면 거부한다', () => {
     expect(() => parseInitConfig({ ...base, conceptDrivenTests: 'yes' })).toThrow();
+  });
+});
+
+describe('enforcement (거버넌스 강도)', () => {
+  const base = { version: '0.1.0', enabled: true };
+  it('기본값은 standard다 — 필드 없는 기존 프로젝트는 동작 불변 [규칙: 설정이 없으면 표준으로 동작]', () => {
+    expect(parseInitConfig(base).enforcement).toBe('standard');
+  });
+  it('strict/light를 허용한다', () => {
+    expect(parseInitConfig({ ...base, enforcement: 'strict' }).enforcement).toBe('strict');
+    expect(parseInitConfig({ ...base, enforcement: 'light' }).enforcement).toBe('light');
+  });
+  it('알 수 없는 값은 거부한다 (readInitConfig가 null→standard 폴백) [규칙: 깨졌으면 표준]', () => {
+    expect(() => parseInitConfig({ ...base, enforcement: 'hard' })).toThrow();
   });
 });

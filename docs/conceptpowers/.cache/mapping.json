@@ -203,8 +203,9 @@
   ],
   "concept-driven-tests": [
     "tests/hooks/sessionStart.test.ts",
-    "tests/schema/initConfig.test.ts",
-    "src/hooks/sessionStart.ts"
+    "src/hooks/sessionStart.ts",
+    "src/schema/initConfig.ts",
+    "tests/schema/initConfig.test.ts"
   ],
   "admin-role": [
     "tests/audit/audit.test.ts",
@@ -248,7 +249,9 @@
     "src/hooks/postToolUse.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "src/schema/initConfig.ts",
+    "tests/schema/initConfig.test.ts"
   ],
   "foo-feat": [
     "tests/hooks/preToolUse.test.ts"
