@@ -10,9 +10,9 @@
     "at": "2026-07-22T05:18:42.262Z"
   },
   "settled-status": {
-    "hash": "c38a55c04067",
+    "hash": "30acbf74704d",
     "result": "pass",
-    "at": "2026-07-22T05:18:42.337Z"
+    "at": "2026-08-13T07:49:01.527Z"
   },
   "home-search": {
     "hash": "09c8085cfbbb",
@@ -50,14 +50,14 @@
     "at": "2026-07-29T03:30:22.847Z"
   },
   "drift-reconcile": {
-    "hash": "cfe9b5e09b76",
+    "hash": "af25717c24b8",
     "result": "pass",
-    "at": "2026-07-29T03:30:22.888Z"
+    "at": "2026-08-13T07:49:06.864Z"
   },
   "audit-gap-detection": {
-    "hash": "e1198b5b7af4",
+    "hash": "628284733d71",
     "result": "pass",
-    "at": "2026-07-29T03:30:22.929Z"
+    "at": "2026-08-13T07:49:11.417Z"
   },
   "concept-code-mapping": {
     "hash": "af5c4caffdea",
@@ -115,9 +115,9 @@
     "at": "2026-07-29T08:43:17.130Z"
   },
   "init-gate": {
-    "hash": "210f0acba01b",
+    "hash": "c9f09a3cb887",
     "result": "pass",
-    "at": "2026-07-29T03:30:23.433Z"
+    "at": "2026-08-13T07:49:16.200Z"
   },
   "reference-privacy": {
     "hash": "65479e3bc867",
@@ -128,5 +128,10 @@
     "hash": "1ee68817409e",
     "result": "pass",
     "at": "2026-07-29T08:10:32.481Z"
+  },
+  "governance-mode": {
+    "hash": "7a833dc75f45",
+    "result": "pass",
+    "at": "2026-08-13T07:48:57.373Z"
   }
 }

@@ -1,4 +1,4 @@
-// @concept:ask-only-gate
+// @concept:governance-mode
 // src/hooks/preToolUse.ts
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';

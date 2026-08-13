@@ -37,7 +37,7 @@
       "표식이 없다는 이유로 커밋 자체를 막는 것",
       "진짜 생성물이 아닌 파일을 무시 목록에 넣어 감사에서 빼돌리는 것"
     ],
-    "interaction": "막지 않는 문지기(ask-only-gate)를 따른다 — 격차를 찾아 알리되 커밋은 막지 않는다. 표식을 실제 개념으로 채우는 일은 개념에서 코드로 가는 지도(concept-code-mapping)가 맡는다."
+    "interaction": "문지기 강도(governance-mode)가 다루는 건 개념이 바뀌었는데 코드가 안 따라온 '어긋남'이고, 이 개념이 다루는 '표식 없음'은 애초에 개념 연결이 없는 별개의 문제다 — 강도가 무엇이든 표식 없음만으로 커밋을 막지 않는다. 표식을 실제 개념으로 채우는 일은 개념에서 코드로 가는 지도(concept-code-mapping)가 맡는다."
   },
   "principle": {
     "immutableRules": [
@@ -53,7 +53,7 @@
     "next": "",
     "related": [
       "concept-code-mapping",
-      "ask-only-gate"
+      "governance-mode"
     ]
   },
   "codeLinks": [

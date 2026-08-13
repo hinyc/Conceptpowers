@@ -40,7 +40,7 @@
       "코드가 안 따라왔다는 이유로 커밋을 되돌리거나 막는 것",
       "무시하고 넘어간 결정을 기록 없이 흘려보내는 것"
     ],
-    "interaction": "막지 않는 문지기(ask-only-gate)와 짝을 이룬다. 커밋 전에는 물어보기만 하고, 커밋 후에 이 결산이 무엇이 따라왔고 무엇이 무시됐는지를 남긴다."
+    "interaction": "문지기 강도(governance-mode)와 짝을 이룬다. 커밋 전 대응이 차단이든 질문이든 경고든, 커밋이 성공한 뒤에는 이 결산이 무엇이 따라왔고 무엇이 무시됐는지를 남긴다."
   },
   "principle": {
     "immutableRules": [
@@ -60,7 +60,7 @@
     "next": "",
     "related": [
       "contract-hash",
-      "ask-only-gate"
+      "governance-mode"
     ]
   },
   "codeLinks": [
