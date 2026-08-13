@@ -138,7 +138,8 @@
     "src/init/reference.ts",
     "src/init/referenceGitignore.ts",
     "src/init/referencePaths.ts",
-    "tests/init/reference.test.ts"
+    "tests/init/reference.test.ts",
+    "src/hooks/gates/referenceGate.ts"
   ],
   "feature-spec-bridge": [
     "src/schema/feature.ts",
@@ -245,13 +246,24 @@
     "tests/cli/audit.test.ts"
   ],
   "governance-mode": [
-    "src/hooks/preToolUse.ts",
     "src/hooks/postToolUse.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/integration/smoke.test.ts",
     "src/schema/initConfig.ts",
-    "tests/schema/initConfig.test.ts"
+    "tests/schema/initConfig.test.ts",
+    "src/hooks/preToolUse.ts",
+    "src/hooks/gates/attestGate.ts",
+    "src/hooks/gates/conceptlessGate.ts",
+    "src/hooks/gates/conceptSlugs.ts",
+    "src/hooks/gates/conflictedPendingGate.ts",
+    "src/hooks/gates/driftGate.ts",
+    "src/hooks/gates/qualityGate.ts",
+    "src/hooks/gates/referenceGate.ts",
+    "src/hooks/gates/staleArtifactsGate.ts",
+    "src/hooks/gates/types.ts",
+    "src/hooks/gates/unapprovedRedGate.ts",
+    "src/hooks/gates/unknownTagsGate.ts"
   ],
   "foo-feat": [
     "tests/hooks/preToolUse.test.ts"
