@@ -80,13 +80,13 @@ light 모드에서 통과된 경고 중 **드리프트만** 기존 history 메�
 
 ## 구현 구조
 
-- `src/hooks/gates/` 신설: 커밋 게이트 8종 검사(기밀 1 + 거버넌스 7)를 각각
+- `src/hooks/gates/` 신설: 커밋 게이트 9종 검사(기밀 1 + 거버넌스 7 + stale 산출물 1)를 각각
   `(root, files, cfg) → GateFinding | null` 형태의 독립 함수로 추출한다
   (파일당 검사 1개 — 현재 preToolUse.ts의 277줄 단일 함수 해소).
 - `preToolUse.ts`는 조립만 담당한다. 조립기 3종:
-  - strict: 기밀 검사 먼저(ask), 이후 7종 전부 실행 → 걸린 것 전체를 deny 하나로 합성
-  - standard: 현행과 동일한 순서로 순차 실행 → 첫 finding을 ask로 반환
-  - light: 기밀 검사 먼저(ask), 이후 7종 전부 실행 → allow + 통합 경고(additionalContext)
+  - strict: 기밀 검사 먼저(ask), 이후 7종 전부 실행 → 걸린 것 전체를 deny 하나로 합성, 이후 stale 산출물 검사는 ask
+  - standard: 현행과 동일한 순서로 순차 실행 → 첫 finding을 ask로 반환(stale 산출물 검사 포함, 현행 순서)
+  - light: 기밀 검사 먼저(ask), 이후 7종 전부 실행 → allow + 통합 경고(stale 산출물 경고 포함)
 - `src/schema/initConfig.ts`: `enforcement: z.enum(['strict','standard','light']).default('standard')` 추가.
 - `skills/init`: 스캐폴드 시 3모드 선택 질문 추가 (수명·규모 기준 안내 포함).
 - `cli.ts` `status`: 현재 모드 표시.
@@ -110,11 +110,12 @@ light 모드에서 통과된 경고 중 **드리프트만** 기존 history 메�
 
 ## 테스트
 
-- 게이트 검사 함수별 단위 테스트 (추출된 8종 각각).
+- 게이트 검사 함수별 단위 테스트 (추출된 9종 각각).
 - 모드별 조립 테스트 3벌:
   - standard = 기존 동작과 완전 동일 (회귀 없음이 핵심 검증 목표)
   - strict = 7종 전부 수집 후 deny, 기밀은 ask
   - light = 7종 전부 수집 후 allow + 통합 경고, 기밀은 ask
+- stale 산출물: strict/standard=ask 유지, light=통합 경고 포함 검증.
 - 스키마 테스트: 기본값 standard, 파싱 실패 폴백.
 - concept-driven-tests 원칙대로 새 개념 `governance-mode`의 불변 규칙에서 시나리오를 도출하고,
   각 시나리오가 어느 규칙을 검증하는지 명시한다.
