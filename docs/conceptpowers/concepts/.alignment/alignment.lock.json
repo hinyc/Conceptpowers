@@ -1,19 +1,15 @@
 {
-  "ask-only-gate": {
-    "hash": "259ad1e7740b",
-    "at": "2026-07-22T05:42:47.777Z"
-  },
   "human-owns-contract": {
     "hash": "970f06874174",
     "at": "2026-07-22T05:42:47.777Z"
   },
   "settled-status": {
-    "hash": "c38a55c04067",
-    "at": "2026-07-22T05:42:47.777Z"
+    "hash": "30acbf74704d",
+    "at": "2026-08-13T07:54:10.763Z"
   },
   "audit-gap-detection": {
-    "hash": "e1198b5b7af4",
-    "at": "2026-07-29T04:43:45.179Z"
+    "hash": "628284733d71",
+    "at": "2026-08-13T07:54:10.763Z"
   },
   "concept-code-mapping": {
     "hash": "af5c4caffdea",
@@ -24,8 +20,8 @@
     "at": "2026-07-29T04:43:45.179Z"
   },
   "drift-reconcile": {
-    "hash": "cfe9b5e09b76",
-    "at": "2026-07-29T04:43:45.179Z"
+    "hash": "af25717c24b8",
+    "at": "2026-08-13T07:54:10.763Z"
   },
   "feature-spec-bridge": {
     "hash": "cc5fa65432b2",
@@ -56,8 +52,8 @@
     "at": "2026-07-29T04:43:45.179Z"
   },
   "init-gate": {
-    "hash": "210f0acba01b",
-    "at": "2026-07-29T04:43:45.179Z"
+    "hash": "c9f09a3cb887",
+    "at": "2026-08-13T07:54:10.763Z"
   },
   "plugin-version-sync": {
     "hash": "aa78295125a2",
@@ -102,5 +98,9 @@
   "concept-driven-tests": {
     "hash": "1ee68817409e",
     "at": "2026-07-29T08:10:58.010Z"
+  },
+  "governance-mode": {
+    "hash": "7a833dc75f45",
+    "at": "2026-08-13T07:54:10.763Z"
   }
 }
