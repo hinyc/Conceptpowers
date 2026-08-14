@@ -1,4 +1,4 @@
-// @concept:ask-only-gate @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:drift-reconcile
+// @concept:governance-mode @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:drift-reconcile
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';

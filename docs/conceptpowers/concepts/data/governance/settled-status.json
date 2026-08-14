@@ -1,7 +1,10 @@
 {
   "slug": "settled-status",
   "group": "governance",
-  "category": ["behavior", "term"],
+  "category": [
+    "behavior",
+    "term"
+  ],
   "status": "green",
   "title": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
   "eyebrow": "상태 관리 원칙",
@@ -22,7 +25,9 @@
       "AI 추측(빨강)과 사람의 결정(초록)이 절대 섞이지 않는다"
     ],
     "vision": "상태 표시가 곧 신뢰 등급이 되는 개념 체계.",
-    "painPoints": ["누가 승인했는지 모르는 문서가 기준 행세를 하는 문제"]
+    "painPoints": [
+      "누가 승인했는지 모르는 문서가 기준 행세를 하는 문제"
+    ]
   },
   "actions": {
     "allow": [
@@ -34,7 +39,7 @@
       "검사나 기록 없이 초록으로 올리는 것",
       "AI가 스스로 판단해서 승인하는 것"
     ],
-    "interaction": "막지 않는 문지기(ask-only-gate)의 유일한 예외가 바로 이 확정 절차다: 커밋은 물어서 통과시키지만, 초록 승격은 조건 미달이면 거부된다."
+    "interaction": "문지기 강도(governance-mode)와는 별개로 동작한다: 커밋 순간의 대응(차단·질문·경고)이 무엇이든, 초록 승격은 조건(품질 최소치·충돌 없음 검사 기록)을 못 채우면 강도와 무관하게 항상 거부된다."
   },
   "principle": {
     "immutableRules": [
@@ -43,8 +48,24 @@
       "한 번 확정된 초록·빨강은 시스템 경로로는 되돌리지 않는다"
     ],
     "tradeoffs": "확정을 되돌리려면 사람이 직접 문서를 고쳐야 해서 번거롭지만, 그 번거로움이 신뢰의 값이다.",
-    "lifecycle": ["빨강(AI 추측) 또는 노랑(사람 초안)으로 태어남", "검사·승인을 거쳐 초록으로 확정", "내용을 고치면 초록이라도 노랑으로 내려가 재검토"]
+    "lifecycle": [
+      "빨강(AI 추측) 또는 노랑(사람 초안)으로 태어남",
+      "검사·승인을 거쳐 초록으로 확정",
+      "내용을 고치면 초록이라도 노랑으로 내려가 재검토"
+    ]
   },
-  "relations": { "prev": "", "next": "", "related": ["ask-only-gate", "human-owns-contract"] },
-  "codeLinks": ["src/store/conceptStore.ts", "src/concept/approve.ts", "src/concept/quality.ts", "src/concept/attest.ts"]
+  "relations": {
+    "prev": "",
+    "next": "",
+    "related": [
+      "governance-mode",
+      "human-owns-contract"
+    ]
+  },
+  "codeLinks": [
+    "src/store/conceptStore.ts",
+    "src/concept/approve.ts",
+    "src/concept/quality.ts",
+    "src/concept/attest.ts"
+  ]
 }

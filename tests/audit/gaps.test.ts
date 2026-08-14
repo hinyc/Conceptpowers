@@ -56,4 +56,12 @@ describe('findConceptlessFiles', () => {
       'src/b.ts',
     ]);
   });
+  it('@concept:none이 선행 블록에 있으면 개념 없음 아님 (Task 5b 규칙: 선행 블록에서만 인정)', async () => {
+    writeFileSync(join(root, 'src/n1.ts'), '// @concept:none\nexport const n1 = 1\n');
+    expect(await findConceptlessFiles(root, ['src/n1.ts'], DEFAULT_IGNORE)).toEqual([]);
+  });
+  it('@concept:none이 본문(코드 줄 뒤)에만 있으면 개념 없는 코드로 검출된다 (Task 5b 규칙: 선행 블록 밖 마커는 인정 안 함)', async () => {
+    writeFileSync(join(root, 'src/n2.ts'), 'export const n2 = 1\n// @concept:none\n');
+    expect(await findConceptlessFiles(root, ['src/n2.ts'], DEFAULT_IGNORE)).toEqual(['src/n2.ts']);
+  });
 });

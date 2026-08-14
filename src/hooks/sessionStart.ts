@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:governance-mode
 // src/hooks/sessionStart.ts
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,6 +58,18 @@ export async function buildSessionStartOutput(
           '- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag → manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules — each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept).',
         ]
       : [];
+  // 커밋 게이트 강도(governance-mode): strict/light일 때만 행동 지침 한 줄을 주입한다.
+  const enforcement = config?.enforcement ?? 'standard';
+  const enforcementLine =
+    enforcement === 'strict'
+      ? [
+          '- Commit gate enforcement: strict — governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval, stage related code together, run check-consistency + attest) or report to the user. Only the user may change the enforcement level.',
+        ]
+      : enforcement === 'light'
+        ? [
+            '- Commit gate enforcement: light — governance issues do NOT stop commits; they pass with warnings in additionalContext. After each commit, summarize any passed warnings to the user in one concise line. Confidential-reference checks still ask. Only the user may change the enforcement level.',
+          ]
+        : [];
   const all = await listConcepts(root);
   const reds = all.filter((c) => (c.status ?? 'red') === 'red').map((c) => c.slug);
   const pendings = all.filter((c) => c.status === 'pending').map((c) => c.slug);
@@ -82,6 +94,7 @@ export async function buildSessionStartOutput(
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red — the user does that directly. Never auto-approve a red (un-authored) concept.`,
     ...conceptTestsLine,
+    ...enforcementLine,
     'Commit packaging (the commit gate inspects ONLY the currently staged list — `git diff --cached --diff-filter=ACMR`; code already landed in earlier commits does NOT count):',
     '- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the related code AND the alignment lock (docs/conceptpowers/concepts/.alignment/ lock·history·attest) in the SAME commit. Deferring the lock to a separate chore commit re-triggers [CONCEPT DRIFT] on that code-less commit.',
     "- A drifted concept requires ALL of its related paths (@concept-tagged files + feature codePaths) staged together, even when you actually changed only some of them. Don't split concept-touching refactors into small commits.",

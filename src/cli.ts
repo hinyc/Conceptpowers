@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:plugin-version-sync
+// @concept:init-gate @concept:plugin-version-sync @concept:governance-mode
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -82,8 +82,9 @@ export async function runCli(
     .option('--root <dir>', 'project root', process.cwd())
     .option('--mode <mode>', 'incremental|strict', 'incremental')
     .option('--lang <lang>', 'ko|en', 'ko')
+    .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
-      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
       out(
         buildInitHint(o.lang as Locale, {
           viewerScriptAdded: result.viewerScriptAdded,
@@ -112,6 +113,7 @@ export async function runCli(
         JSON.stringify({
           initialized: await isInitialized(o.root),
           drift: (await computeDrift(o.root)).length,
+          enforcement: (await readInitConfig(o.root))?.enforcement ?? 'standard',
         })
       );
     });
@@ -183,8 +185,12 @@ export async function runCli(
     .option('--full', 'rebuild the cache from only the given files (discard existing entries)')
     .argument('<files...>')
     .action(async (files, o) => {
-      if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
-      else await updateMappingCache(o.root, files);
+      // ignoreGlobs 폴백은 다른 전체 스캔 명령과 동일 규칙(스키마 기본값) —
+      // 플러그인 생성물(docs/conceptpowers/** 등)이 개념→코드 매핑에 섞이지 않게 한다.
+      const cfg = await readInitConfig(o.root);
+      const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+      if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
+      else await updateMappingCache(o.root, files, ignoreGlobs);
     });
 
   program

@@ -56,6 +56,179 @@ describe('mapping scan', () => {
   });
 });
 
+describe('ignoreGlobs 필터 (findConceptlessFiles와 동일 규칙을 매핑 스캔에도 적용)', () => {
+  beforeEach(() => {
+    mkdirSync(join(root, 'docs/conceptpowers/concepts/viewer/assets'), { recursive: true });
+    writeFileSync(
+      join(root, 'docs/conceptpowers/concepts/viewer/assets/viewer.js'),
+      '// @concept:knowledge-graph-view\n'
+    );
+  });
+  it('scanTags는 ignoreGlobs에 매칭되는 파일을 건너뛴다', async () => {
+    const tags = await scanTags(
+      root,
+      ['src/a.ts', 'docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(tags).toEqual({ 'src/a.ts': ['admin-role'] });
+  });
+  it('ignoreGlobs를 넘기지 않으면(기본 [])기존처럼 전부 스캔한다', async () => {
+    const tags = await scanTags(root, ['docs/conceptpowers/concepts/viewer/assets/viewer.js']);
+    expect(tags).toEqual({
+      'docs/conceptpowers/concepts/viewer/assets/viewer.js': ['knowledge-graph-view'],
+    });
+  });
+  it('buildMapping도 ignoreGlobs에 매칭되는 파일을 제외한다', async () => {
+    const m = await buildMapping(
+      root,
+      ['src/a.ts', 'docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(m).toEqual({ 'admin-role': ['src/a.ts'] });
+  });
+  it('updateMappingCache에 ignoreGlobs를 넘기면 매칭 파일의 기존 캐시 항목도 제거된다(재발 방지)', async () => {
+    await writeMappingCache(root, {
+      'knowledge-graph-view': [
+        'src/viewer/graph.ts',
+        'docs/conceptpowers/concepts/viewer/assets/viewer.js',
+      ],
+    });
+    const merged = await updateMappingCache(
+      root,
+      ['docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(merged).toEqual({ 'knowledge-graph-view': ['src/viewer/graph.ts'] });
+  });
+});
+
+describe('선행 주석 블록 스캔 (Task 5b)', () => {
+  it('1행 표식은 인식된다 [규칙: 첫머리 표식 인정]', async () => {
+    writeFileSync(join(root, 'src/p1.ts'), '// @concept:foo\nexport const p1 = 1\n');
+    expect(await scanTags(root, ['src/p1.ts'])).toEqual({ 'src/p1.ts': ['foo'] });
+  });
+  it('1행 일반 주석 뒤 2행 표식도 인식된다 (선행 블록 내 복수 줄)', async () => {
+    writeFileSync(
+      root + '/src/p2.ts',
+      '// src/p2.ts\n// @concept:foo\nexport const p2 = 1\n'
+    );
+    expect(await scanTags(root, ['src/p2.ts'])).toEqual({ 'src/p2.ts': ['foo'] });
+  });
+  it('코드 줄 뒤에 오는 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/p3.ts',
+      'export const p3 = 1\n// @concept:foo\n'
+    );
+    expect(await scanTags(root, ['src/p3.ts'])).toEqual({});
+  });
+  it('본문 문자열 리터럴 안의 표식 모양 글자는 인식되지 않는다 [규칙: 본문 속 표식은 표식 아님]', async () => {
+    writeFileSync(
+      root + '/src/p4.ts',
+      "// @concept:concept-code-mapping\nexport const s = '// @concept:ghost\\n'\n"
+    );
+    expect(await scanTags(root, ['src/p4.ts'])).toEqual({ 'src/p4.ts': ['concept-code-mapping'] });
+  });
+  it('shebang 뒤 2행 표식은 인식된다 (shebang 허용)', async () => {
+    writeFileSync(
+      root + '/src/p5.mjs',
+      '#!/usr/bin/env node\n// @concept:foo\nconsole.log(1)\n'
+    );
+    expect(await scanTags(root, ['src/p5.mjs'])).toEqual({ 'src/p5.mjs': ['foo'] });
+  });
+});
+
+describe('선행 블록 주석 상태 추적 (Task 5b-2, audit-gap-detection: 주석 블록도 첫머리다)', () => {
+  it('별표 접두 없는 여러 줄 /* … */ 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q1.ts',
+      '/*\n설명 문장 (별표 접두 없음)\n@concept:foo\n*/\nexport const q1 = 1\n'
+    );
+    expect(await scanTags(root, ['src/q1.ts'])).toEqual({ 'src/q1.ts': ['foo'] });
+  });
+  it('<!-- … --> 여러 줄 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q2.md',
+      '<!--\n설명 문장\n@concept:foo\n-->\n# heading\n'
+    );
+    expect(await scanTags(root, ['src/q2.md'])).toEqual({ 'src/q2.md': ['foo'] });
+  });
+  it('블록 주석이 닫힌 뒤에 오는 코드 줄 다음의 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/q3.ts',
+      '/*\n설명\n*/\nexport const q3 = 1\n// @concept:foo\n'
+    );
+    expect(await scanTags(root, ['src/q3.ts'])).toEqual({});
+  });
+  it('닫히지 않은 블록 주석은 파일 끝까지 선행 블록으로 본다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q4.ts',
+      '/*\n설명 문장\n@concept:foo\n계속 이어지는 설명, 닫히지 않음\n'
+    );
+    expect(await scanTags(root, ['src/q4.ts'])).toEqual({ 'src/q4.ts': ['foo'] });
+  });
+  it('회귀: 한 줄 // 표식은 여전히 인식된다 [규칙: 첫머리 표식 인정]', async () => {
+    writeFileSync(root + '/src/q5.ts', '// @concept:foo\nexport const q5 = 1\n');
+    expect(await scanTags(root, ['src/q5.ts'])).toEqual({ 'src/q5.ts': ['foo'] });
+  });
+  it('회귀: 본문 문자열 속 표식 모양 글자는 여전히 제외된다 [규칙: 본문 속 표식은 표식 아님]', async () => {
+    writeFileSync(
+      root + '/src/q6.ts',
+      "// @concept:concept-code-mapping\nexport const s = '// @concept:ghost\\n'\n"
+    );
+    expect(await scanTags(root, ['src/q6.ts'])).toEqual({ 'src/q6.ts': ['concept-code-mapping'] });
+  });
+  it('회귀: shebang 뒤 표식은 여전히 허용된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q7.mjs',
+      '#!/usr/bin/env node\n// @concept:foo\nconsole.log(1)\n'
+    );
+    expect(await scanTags(root, ['src/q7.mjs'])).toEqual({ 'src/q7.mjs': ['foo'] });
+  });
+});
+
+describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+  it('*/ 뒤 같은 줄에 이어지는 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/r1.ts',
+      '/*\ncomment\n*/ export const y = 1; // @concept:ghost-in-code\n'
+    );
+    expect(await scanTags(root, ['src/r1.ts'])).toEqual({});
+  });
+  it('*/ 단독 줄 뒤에 오는 별도 코드 줄의 표식도 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/r2.ts',
+      '/*\ncomment\n*/\nexport const y = 1;\n// @concept:x\n'
+    );
+    expect(await scanTags(root, ['src/r2.ts'])).toEqual({});
+  });
+  it('한 줄에서 열고 닫힌 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(root + '/src/r3.ts', '/* @concept:foo */\n');
+    expect(await scanTags(root, ['src/r3.ts'])).toEqual({ 'src/r3.ts': ['foo'] });
+  });
+  it('한 줄에서 닫힌 블록 뒤 코드 줄에는 표식이 없고, 그 코드 속 문자열 표식도 인식되지 않는다 [규칙: 첫머리에서만 · 본문 속 표식은 표식 아님]', async () => {
+    writeFileSync(root + '/src/r4a.ts', "/* note */ doSomething('@concept:ghost')\n");
+    expect(await scanTags(root, ['src/r4a.ts'])).toEqual({});
+  });
+});
+
+describe('잔여 종료 토큰이 주석 재시작으로 오인되지 않음 (Task 5b-2 2차 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+  it('닫힘 직후 잔여 */ 토큰 뒤 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(root + '/src/s1.ts', '/*\ncomment\n*/ */ code // @concept:x\n');
+    expect(await scanTags(root, ['src/s1.ts'])).toEqual({});
+  });
+  it('닫는 줄이 정확히 */ 뿐인 여러 줄 블록은 여전히 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(root + '/src/s2.ts', '/*\n@concept:foo\n*/\n');
+    expect(await scanTags(root, ['src/s2.ts'])).toEqual({ 'src/s2.ts': ['foo'] });
+  });
+  it('HTML 주석 닫힘 직후 잔여 --> 토큰 뒤 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/s3.md',
+      '<!--\ncomment\n--> --> code <!-- @concept:x -->\n'
+    );
+    expect(await scanTags(root, ['src/s3.md'])).toEqual({});
+  });
+});
+
 describe('updateMappingCache (증분 병합)', () => {
   it('전달되지 않은 파일의 기존 캐시 항목을 보존한다', async () => {
     await writeMappingCache(root, { 'other-concept': ['src/other.ts'] });

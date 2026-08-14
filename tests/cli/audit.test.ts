@@ -89,10 +89,13 @@ describe('cli: audit 전체 스캔 모드', () => {
     expect(r.unknownTags).toEqual([]);
   });
 
-  it('파일 지정 모드는 .md도 그대로 스캔한다 (계약 불변)', async () => {
+  it('파일 지정 모드는 .md도 그대로 스캔한다 (계약 불변, Task 5b: 선행 블록 표식 기준)', async () => {
+    // 확장자로 제외되지 않는다는 계약을 유지하면서, Task 5b 규칙(선행 주석 블록에서만 인식)에
+    // 맞춰 표식을 파일 첫머리 마크다운 주석으로 둔다 — 본문 프로즈 속 표식 모양 글자는
+    // 더 이상 태그로 인식되지 않는다(옛 전체 스캔 의미론 폐기).
     writeFileSync(
       join(root, 'README.md'),
-      '예시: 파일 상단에 `@concept:ghost-doc` 처럼 태그를 답니다.\n'
+      '<!-- @concept:ghost-doc -->\n예시: 파일 상단에 표식을 답니다.\n'
     );
     const code = await runCli(['audit', 'README.md', '--root', root], out);
     expect(code).toBe(1);

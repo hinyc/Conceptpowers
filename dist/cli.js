@@ -7124,6 +7124,7 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
@@ -7134,6 +7135,7 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
@@ -7712,12 +7714,107 @@ async function listFeatures(root) {
 // src/mapping/scan.ts
 import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 import { join as join4, dirname as dirname2 } from "node:path";
+
+// src/mapping/leadingComment.ts
+var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
+var BLOCK_OPENER_RE = /^\s*(\/\*|<!--)/;
+var CLOSER = { "/*": "*/", "<!--": "-->" };
+function leadingCommentBlock(content) {
+  const lines = content.split("\n");
+  const kept = [];
+  let openBlock = null;
+  outer: for (const line of lines) {
+    let pos = 0;
+    let lineBuf = "";
+    for (; ; ) {
+      if (openBlock) {
+        const closeAt = line.indexOf(CLOSER[openBlock], pos);
+        if (closeAt === -1) {
+          lineBuf += line.slice(pos);
+          break;
+        }
+        const closeEnd = closeAt + CLOSER[openBlock].length;
+        lineBuf += line.slice(pos, closeEnd);
+        pos = closeEnd;
+        openBlock = null;
+        continue;
+      }
+      const rest = line.slice(pos);
+      if (rest.trim() === "") {
+        lineBuf += rest;
+        break;
+      }
+      if (!LEADING_COMMENT_LINE_RE.test(rest)) {
+        if (lineBuf !== "") kept.push(lineBuf);
+        break outer;
+      }
+      const openMatch = rest.match(BLOCK_OPENER_RE);
+      if (openMatch) {
+        const opener = openMatch[1];
+        const openStart = pos + (openMatch[0].length - opener.length);
+        const closeAt = line.indexOf(CLOSER[opener], openStart + opener.length);
+        if (closeAt === -1) {
+          lineBuf += line.slice(pos);
+          openBlock = opener;
+          break;
+        }
+        const closeEnd = closeAt + CLOSER[opener].length;
+        lineBuf += line.slice(pos, closeEnd);
+        pos = closeEnd;
+        continue;
+      }
+      lineBuf += rest;
+      break;
+    }
+    kept.push(lineBuf);
+  }
+  return kept.join("\n");
+}
+
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+
+// src/util/glob.ts
+var REGEX_SPECIAL = "\\^$.|?+()[]{}";
+function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++;
+        if (glob[i + 1] === "/") {
+          re += "(?:.*/)?";
+          i++;
+        } else {
+          re += ".*";
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (REGEX_SPECIAL.includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp("^" + re + "$");
+}
+function matchesAny(path, globs) {
+  const p = normalizeRel(path);
+  return globs.some((g) => globToRegExp(g).test(p));
+}
+
+// src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
-async function scanTags(root, files) {
+async function scanTags(root, files, ignoreGlobs = []) {
   const result = {};
   for (const rel of files) {
+    if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
       content = await readFile5(join4(root, rel), "utf8");
@@ -7725,15 +7822,15 @@ async function scanTags(root, files) {
       continue;
     }
     const slugs = [];
-    for (const m of content.matchAll(TAG_RE)) {
+    for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]);
     }
     if (slugs.length) result[rel] = slugs;
   }
   return result;
 }
-async function buildMapping(root, files) {
-  const tags = await scanTags(root, files);
+async function buildMapping(root, files, ignoreGlobs = []) {
+  const tags = await scanTags(root, files, ignoreGlobs);
   const mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
     for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
@@ -7745,9 +7842,9 @@ async function writeMappingCache(root, mapping) {
   await mkdir2(dirname2(target), { recursive: true });
   await writeFile2(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
-async function updateMappingCache(root, files) {
+async function updateMappingCache(root, files, ignoreGlobs = []) {
   const existing = await readMappingCache(root);
-  const fresh = await buildMapping(root, files);
+  const fresh = await buildMapping(root, files, ignoreGlobs);
   const targets = new Set(files);
   const merged = {};
   for (const [slug3, list] of Object.entries(existing)) {
@@ -8221,6 +8318,7 @@ async function scaffoldInit(root, opts) {
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
     locale,
+    enforcement: opts.enforcement ?? "standard",
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
   await writeFile10(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
@@ -8293,44 +8391,6 @@ async function auditIntegrity(root, files) {
 // src/audit/gaps.ts
 import { readFile as readFile13 } from "node:fs/promises";
 import { join as join15, extname } from "node:path";
-
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
-}
-
-// src/util/glob.ts
-var REGEX_SPECIAL = "\\^$.|?+()[]{}";
-function globToRegExp(glob) {
-  let re = "";
-  for (let i = 0; i < glob.length; i++) {
-    const c = glob[i];
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
-        i++;
-        if (glob[i + 1] === "/") {
-          re += "(?:.*/)?";
-          i++;
-        } else {
-          re += ".*";
-        }
-      } else {
-        re += "[^/]*";
-      }
-    } else if (REGEX_SPECIAL.includes(c)) {
-      re += "\\" + c;
-    } else {
-      re += c;
-    }
-  }
-  return new RegExp("^" + re + "$");
-}
-function matchesAny(path, globs) {
-  const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
-}
-
-// src/audit/gaps.ts
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -8364,7 +8424,7 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
     } catch {
       continue;
     }
-    if (!TAG_RE2.test(content)) conceptless.push(rel);
+    if (!TAG_RE2.test(leadingCommentBlock(content))) conceptless.push(rel);
   }
   return conceptless;
 }
@@ -8559,8 +8619,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     } catch {
     }
   });
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
-    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--enforcement <level>", "strict|standard|light (\uCEE4\uBC0B \uAC8C\uC774\uD2B8 \uAC15\uB3C4)", "standard").action(async (o) => {
+    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
     out(
       buildInitHint(o.lang, {
         viewerScriptAdded: result.viewerScriptAdded,
@@ -8578,7 +8638,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(
       JSON.stringify({
         initialized: await isInitialized(o.root),
-        drift: (await computeDrift(o.root)).length
+        drift: (await computeDrift(o.root)).length,
+        enforcement: (await readInitConfig(o.root))?.enforcement ?? "standard"
       })
     );
   });
@@ -8620,8 +8681,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
-    if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
-    else await updateMappingCache(o.root, files);
+    const cfg = await readInitConfig(o.root);
+    const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+    if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
+    else await updateMappingCache(o.root, files, ignoreGlobs);
   });
   program2.command("audit").description("\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap) \uD0D0\uC9C0").option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
     if (files.length > 0) {

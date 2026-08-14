@@ -1,9 +1,9 @@
-// @concept:init-gate
+// @concept:init-gate @concept:governance-mode
 // src/init/scaffold.ts
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cpPaths } from '../paths.js';
-import { parseInitConfig, type Locale } from '../schema/initConfig.js';
+import { parseInitConfig, type Locale, type Enforcement } from '../schema/initConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
 import { syncGenerated, type SyncResult } from './syncGenerated.js';
 
@@ -12,6 +12,7 @@ export interface ScaffoldOptions {
   name?: string;
   description?: string;
   locale?: Locale;
+  enforcement?: Enforcement;
 }
 export interface ScaffoldResult {
   viewerScriptAdded: boolean;
@@ -69,6 +70,7 @@ export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise
     enabled: true,
     backfillMode: opts.backfillMode ?? 'incremental',
     locale,
+    enforcement: opts.enforcement ?? 'standard',
     project: { name: opts.name ?? '', description: opts.description ?? '' },
   });
   await writeFile(p.initFile, JSON.stringify(config, null, 2) + '\n', 'utf8');

@@ -23,12 +23,12 @@
   "settled-status": [
     "assets/viewer.js",
     "src/concept/approve.ts",
+    "src/concept/attest.ts",
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
-    "tests/audit/audit.test.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
+    "tests/concept/attest.test.ts",
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
     "tests/concept/quality.test.ts",
@@ -37,41 +37,49 @@
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
-    "src/concept/attest.ts",
-    "tests/concept/attest.test.ts"
-  ],
-  "audit-gap-detection": [
-    "src/audit/audit.ts",
-    "src/audit/gaps.ts",
-    "src/util/glob.ts",
+    "tests/hooks/sessionStart.test.ts",
+    "tests/cli/cli.test.ts",
     "tests/audit/audit.test.ts",
-    "tests/audit/gaps.test.ts",
-    "tests/util/glob.test.ts",
-    "src/audit/tracked.ts",
-    "tests/cli/audit.test.ts"
+    "tests/viewer/renderDisk.test.ts"
   ],
   "init-gate": [
-    "src/init/scaffold.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/pendingConflicts.test.ts",
+    "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts",
     "tests/init/readConfig.test.ts",
     "tests/init/reference.test.ts",
     "tests/init/scaffold.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/integration/smoke.test.ts",
+    "tests/hooks/sessionStart.test.ts",
     "src/cli.ts",
+    "src/init/scaffold.ts",
+    "tests/cli/cli.test.ts",
     "tests/cli/audit.test.ts"
+  ],
+  "plugin-version-sync": [
+    "src/init/ensureConfigDefaults.ts",
+    "src/init/packageScript.ts",
+    "src/init/syncGenerated.ts",
+    "src/version/autoSync.ts",
+    "src/version/checkUpdate.ts",
+    "src/version/compareSemver.ts",
+    "tests/init/ensureConfigDefaults.test.ts",
+    "tests/init/packageScript.test.ts",
+    "tests/init/syncGenerated.test.ts",
+    "tests/version/autoSync.test.ts",
+    "tests/version/checkUpdate.test.ts",
+    "tests/version/compareSemver.test.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -94,41 +102,58 @@
   "drift-reconcile": [
     "src/drift/history.ts",
     "src/drift/reconcile.ts",
-    "tests/cli/cli.test.ts",
+    "src/schema/alignment.ts",
     "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "src/schema/alignment.ts",
-    "tests/schema/alignment.test.ts"
+    "tests/schema/alignment.test.ts",
+    "tests/cli/cli.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
     "tests/drift/safe.test.ts"
   ],
-  "ask-only-gate": [
+  "governance-mode": [
+    "src/hooks/gates/attestGate.ts",
+    "src/hooks/gates/conceptSlugs.ts",
+    "src/hooks/gates/conceptlessGate.ts",
+    "src/hooks/gates/conflictedPendingGate.ts",
+    "src/hooks/gates/driftGate.ts",
+    "src/hooks/gates/qualityGate.ts",
+    "src/hooks/gates/referenceGate.ts",
+    "src/hooks/gates/staleArtifactsGate.ts",
+    "src/hooks/gates/types.ts",
+    "src/hooks/gates/unapprovedRedGate.ts",
+    "src/hooks/gates/unknownTagsGate.ts",
     "src/hooks/postToolUse.ts",
     "src/hooks/preToolUse.ts",
+    "src/schema/initConfig.ts",
+    "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/integration/smoke.test.ts"
-  ],
-  "plugin-version-sync": [
-    "src/version/compareSemver.ts",
-    "src/init/packageScript.ts",
-    "tests/hooks/sessionStart.test.ts",
-    "tests/init/ensureConfigDefaults.test.ts",
-    "tests/init/packageScript.test.ts",
-    "tests/init/syncGenerated.test.ts",
-    "tests/version/checkUpdate.test.ts",
-    "tests/version/compareSemver.test.ts",
-    "src/cli.ts",
-    "src/version/autoSync.ts",
-    "src/version/checkUpdate.ts",
-    "src/init/syncGenerated.ts",
+    "tests/integration/smoke.test.ts",
+    "tests/schema/initConfig.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/version/autoSync.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts",
+    "src/init/scaffold.ts",
+    "tests/cli/cli.test.ts"
+  ],
+  "reference-privacy": [
+    "src/hooks/gates/referenceGate.ts",
+    "src/init/addReferencePath.ts",
+    "src/init/reference.ts",
+    "src/init/referenceGitignore.ts",
+    "src/init/referencePaths.ts",
+    "tests/init/reference.test.ts"
+  ],
+  "concept-driven-tests": [
+    "src/schema/initConfig.ts",
+    "tests/schema/initConfig.test.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/sessionStart.test.ts"
   ],
   "output-locale": [
     "src/i18n/messages.ts",
@@ -137,45 +162,17 @@
     "tests/init/readConfig.test.ts"
   ],
   "reference-first-duty": [
+    "src/init/addReferencePath.ts",
     "src/init/reference.ts",
     "src/init/referencePaths.ts",
     "tests/init/reference.test.ts"
-  ],
-  "reference-privacy": [
-    "src/init/reference.ts",
-    "src/init/referenceGitignore.ts",
-    "src/init/referencePaths.ts",
-    "tests/init/reference.test.ts"
-  ],
-  "feature-spec-bridge": [
-    "src/schema/feature.ts",
-    "src/store/featureStore.ts",
-    "tests/drift/detect.test.ts",
-    "tests/drift/reconcile.test.ts",
-    "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts",
-    "tests/schema/feature.test.ts",
-    "tests/store/featureStore.test.ts",
-    "tests/viewer/graph.test.ts",
-    "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts",
-    "tests/viewer/subgraph.test.ts"
-  ],
-  "globally-unique-slug": [
-    "src/schema/feature.ts",
-    "src/schema/concept.ts",
-    "tests/schema/feature.test.ts",
-    "tests/viewer/graph.test.ts",
-    "tests/viewer/manifest.test.ts",
-    "tests/viewer/subgraph.test.ts"
   ],
   "atomic-baseline-write": [
+    "src/init/addReferencePath.ts",
+    "src/init/ensureConfigDefaults.ts",
     "src/store/conceptStore.ts",
     "src/store/featureStore.ts",
     "src/util/atomicWrite.ts",
-    "tests/audit/audit.test.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/pendingConflicts.test.ts",
@@ -185,80 +182,64 @@
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts",
     "tests/init/ensureConfigDefaults.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/store/featureStore.test.ts",
-    "tests/viewer/renderDisk.test.ts",
-    "tests/viewer/serve.test.ts"
+    "tests/viewer/serve.test.ts",
+    "tests/hooks/sessionStart.test.ts",
+    "tests/cli/cli.test.ts",
+    "tests/audit/audit.test.ts",
+    "tests/viewer/renderDisk.test.ts"
+  ],
+  "globally-unique-slug": [
+    "src/schema/concept.ts",
+    "src/schema/feature.ts",
+    "tests/schema/feature.test.ts",
+    "tests/viewer/graph.test.ts",
+    "tests/viewer/manifest.test.ts",
+    "tests/viewer/subgraph.test.ts"
+  ],
+  "feature-spec-bridge": [
+    "src/schema/feature.ts",
+    "src/store/featureStore.ts",
+    "tests/drift/detect.test.ts",
+    "tests/drift/reconcile.test.ts",
+    "tests/hooks/postToolUse.test.ts",
+    "tests/hooks/preToolUse.test.ts",
+    "tests/schema/feature.test.ts",
+    "tests/store/featureStore.test.ts",
+    "tests/viewer/graph.test.ts",
+    "tests/viewer/manifest.test.ts",
+    "tests/viewer/subgraph.test.ts",
+    "tests/hooks/sessionStart.test.ts",
+    "tests/viewer/renderDisk.test.ts"
   ],
   "generated-not-hand-edited": [
     "src/viewer/manifest.ts",
+    "src/viewer/render.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts",
-    "src/viewer/render.ts"
+    "tests/viewer/renderDisk.test.ts"
   ],
   "viewer-local-write-guard": [
     "src/viewer/serve.ts",
     "tests/viewer/serve.test.ts"
   ],
+  "audit-gap-detection": [
+    "src/audit/audit.ts",
+    "src/audit/gaps.ts",
+    "src/audit/tracked.ts",
+    "src/mapping/leadingComment.ts",
+    "src/util/glob.ts",
+    "tests/audit/audit.test.ts",
+    "tests/audit/gaps.test.ts",
+    "tests/cli/audit.test.ts",
+    "tests/util/glob.test.ts"
+  ],
   "concept-code-mapping": [
+    "src/mapping/leadingComment.ts",
     "src/mapping/scan.ts",
     "tests/mapping/scan.test.ts",
     "tests/viewer/renderDisk.test.ts"
-  ],
-  "concept-driven-tests": [
-    "tests/hooks/sessionStart.test.ts",
-    "tests/schema/initConfig.test.ts",
-    "src/hooks/sessionStart.ts"
-  ],
-  "admin-role": [
-    "tests/audit/audit.test.ts",
-    "tests/audit/gaps.test.ts",
-    "tests/audit/gaps.test.ts",
-    "tests/audit/gaps.test.ts",
-    "tests/integration/smoke.test.ts",
-    "tests/mapping/scan.test.ts",
-    "tests/mapping/scan.test.ts",
-    "tests/mapping/scan.test.ts"
-  ],
-  "ghost": [
-    "tests/audit/audit.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/integration/smoke.test.ts",
-    "tests/cli/audit.test.ts"
-  ],
-  "red-one": [
-    "tests/audit/audit.test.ts",
-    "tests/hooks/preToolUse.test.ts"
-  ],
-  "user-role": [
-    "tests/audit/gaps.test.ts",
-    "tests/mapping/scan.test.ts"
-  ],
-  "alpha": [
-    "tests/cli/cli.test.ts",
-    "tests/cli/cli.test.ts"
-  ],
-  "beta": [
-    "tests/cli/cli.test.ts",
-    "tests/cli/cli.test.ts"
-  ],
-  "foo-feat": [
-    "tests/hooks/preToolUse.test.ts"
-  ],
-  "pend-x": [
-    "tests/hooks/preToolUse.test.ts"
-  ],
-  "pend-y": [
-    "tests/hooks/preToolUse.test.ts"
-  ],
-  "auth-session": [
-    "tests/integration/smoke.test.ts"
-  ],
-  "known-one": [
-    "tests/cli/audit.test.ts"
   ]
 }
