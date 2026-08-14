@@ -7714,6 +7714,23 @@ async function listFeatures(root) {
 // src/mapping/scan.ts
 import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 import { join as join4, dirname as dirname2 } from "node:path";
+
+// src/mapping/leadingComment.ts
+var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|\*\/|\*|#|<!--|-->)/;
+function leadingCommentBlock(content) {
+  const lines = content.split("\n");
+  const kept = [];
+  for (const line of lines) {
+    if (line.trim() === "" || LEADING_COMMENT_LINE_RE.test(line)) {
+      kept.push(line);
+    } else {
+      break;
+    }
+  }
+  return kept.join("\n");
+}
+
+// src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
@@ -7727,7 +7744,7 @@ async function scanTags(root, files) {
       continue;
     }
     const slugs = [];
-    for (const m of content.matchAll(TAG_RE)) {
+    for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]);
     }
     if (slugs.length) result[rel] = slugs;
@@ -8366,7 +8383,7 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
     } catch {
       continue;
     }
-    if (!TAG_RE2.test(content)) conceptless.push(rel);
+    if (!TAG_RE2.test(leadingCommentBlock(content))) conceptless.push(rel);
   }
   return conceptless;
 }

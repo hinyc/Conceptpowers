@@ -4,6 +4,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { z } from 'zod';
 import { cpPaths } from '../paths.js';
+import { leadingCommentBlock } from './leadingComment.js';
 
 export type Mapping = Record<string, string[]>;
 const MappingSchema = z.record(z.string(), z.array(z.string()));
@@ -24,7 +25,7 @@ export async function scanTags(root: string, files: string[]): Promise<Record<st
       continue;
     }
     const slugs: string[] = [];
-    for (const m of content.matchAll(TAG_RE)) {
+    for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]); // 예약 마커는 개념 목록에서 제외
     }
     if (slugs.length) result[rel] = slugs;

@@ -56,6 +56,41 @@ describe('mapping scan', () => {
   });
 });
 
+describe('선행 주석 블록 스캔 (Task 5b)', () => {
+  it('1행 표식은 인식된다 [규칙: 첫머리 표식 인정]', async () => {
+    writeFileSync(join(root, 'src/p1.ts'), '// @concept:foo\nexport const p1 = 1\n');
+    expect(await scanTags(root, ['src/p1.ts'])).toEqual({ 'src/p1.ts': ['foo'] });
+  });
+  it('1행 일반 주석 뒤 2행 표식도 인식된다 (선행 블록 내 복수 줄)', async () => {
+    writeFileSync(
+      root + '/src/p2.ts',
+      '// src/p2.ts\n// @concept:foo\nexport const p2 = 1\n'
+    );
+    expect(await scanTags(root, ['src/p2.ts'])).toEqual({ 'src/p2.ts': ['foo'] });
+  });
+  it('코드 줄 뒤에 오는 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/p3.ts',
+      'export const p3 = 1\n// @concept:foo\n'
+    );
+    expect(await scanTags(root, ['src/p3.ts'])).toEqual({});
+  });
+  it('본문 문자열 리터럴 안의 표식 모양 글자는 인식되지 않는다 [규칙: 본문 속 표식은 표식 아님]', async () => {
+    writeFileSync(
+      root + '/src/p4.ts',
+      "// @concept:concept-code-mapping\nexport const s = '// @concept:ghost\\n'\n"
+    );
+    expect(await scanTags(root, ['src/p4.ts'])).toEqual({ 'src/p4.ts': ['concept-code-mapping'] });
+  });
+  it('shebang 뒤 2행 표식은 인식된다 (shebang 허용)', async () => {
+    writeFileSync(
+      root + '/src/p5.mjs',
+      '#!/usr/bin/env node\n// @concept:foo\nconsole.log(1)\n'
+    );
+    expect(await scanTags(root, ['src/p5.mjs'])).toEqual({ 'src/p5.mjs': ['foo'] });
+  });
+});
+
 describe('updateMappingCache (증분 병합)', () => {
   it('전달되지 않은 파일의 기존 캐시 항목을 보존한다', async () => {
     await writeMappingCache(root, { 'other-concept': ['src/other.ts'] });
