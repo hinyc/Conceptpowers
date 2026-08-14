@@ -165,6 +165,24 @@ describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰
   });
 });
 
+describe('잔여 종료 토큰이 주석 재시작으로 오인되지 않음 (Task 5b-2 2차 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+  it('닫힘 직후 잔여 */ 토큰 뒤 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(root + '/src/s1.ts', '/*\ncomment\n*/ */ code // @concept:x\n');
+    expect(await scanTags(root, ['src/s1.ts'])).toEqual({});
+  });
+  it('닫는 줄이 정확히 */ 뿐인 여러 줄 블록은 여전히 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(root + '/src/s2.ts', '/*\n@concept:foo\n*/\n');
+    expect(await scanTags(root, ['src/s2.ts'])).toEqual({ 'src/s2.ts': ['foo'] });
+  });
+  it('HTML 주석 닫힘 직후 잔여 --> 토큰 뒤 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/s3.md',
+      '<!--\ncomment\n--> --> code <!-- @concept:x -->\n'
+    );
+    expect(await scanTags(root, ['src/s3.md'])).toEqual({});
+  });
+});
+
 describe('updateMappingCache (증분 병합)', () => {
   it('전달되지 않은 파일의 기존 캐시 항목을 보존한다', async () => {
     await writeMappingCache(root, { 'other-concept': ['src/other.ts'] });

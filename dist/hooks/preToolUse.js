@@ -4340,7 +4340,7 @@ import { readFile as readFile5, mkdir, writeFile } from "node:fs/promises";
 import { join as join4, dirname } from "node:path";
 
 // src/mapping/leadingComment.ts
-var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|\*\/|\*|#|<!--|-->)/;
+var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
 var BLOCK_OPENER_RE = /^\s*(\/\*|<!--)/;
 var CLOSER = { "/*": "*/", "<!--": "-->" };
 function leadingCommentBlock(content) {

@@ -7716,7 +7716,7 @@ import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from 
 import { join as join4, dirname as dirname2 } from "node:path";
 
 // src/mapping/leadingComment.ts
-var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|\*\/|\*|#|<!--|-->)/;
+var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
 var BLOCK_OPENER_RE = /^\s*(\/\*|<!--)/;
 var CLOSER = { "/*": "*/", "<!--": "-->" };
 function leadingCommentBlock(content) {
