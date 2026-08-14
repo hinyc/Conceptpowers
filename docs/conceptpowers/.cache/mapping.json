@@ -71,7 +71,8 @@
     "tests/cli/audit.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -224,7 +225,8 @@
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "red-one": [
     "tests/audit/audit.test.ts",
@@ -252,7 +254,6 @@
     "tests/integration/smoke.test.ts",
     "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts",
-    "src/hooks/preToolUse.ts",
     "src/hooks/gates/attestGate.ts",
     "src/hooks/gates/conceptlessGate.ts",
     "src/hooks/gates/conceptSlugs.ts",
@@ -263,7 +264,9 @@
     "src/hooks/gates/staleArtifactsGate.ts",
     "src/hooks/gates/types.ts",
     "src/hooks/gates/unapprovedRedGate.ts",
-    "src/hooks/gates/unknownTagsGate.ts"
+    "src/hooks/gates/unknownTagsGate.ts",
+    "src/hooks/preToolUse.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "foo-feat": [
     "tests/hooks/preToolUse.test.ts"
