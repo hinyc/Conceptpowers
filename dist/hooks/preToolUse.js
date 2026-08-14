@@ -4950,7 +4950,7 @@ async function decidePreToolUse(root, ev) {
     if (enforcement === "strict") {
       const { findings: findings2, failedGates: failedGates2 } = await runAllGates(input);
       if (findings2.length > 0) return denyOutput(findings2, { ref, failedGates: failedGates2 });
-      if (ref) return askOutput(ref);
+      if (ref) return askOutput(ref, { warningsNote: failedGatesNote(failedGates2) });
       const stale2 = await checkStaleArtifacts(input);
       if (stale2) return askOutput(stale2);
       return appendFailedGatesNote(ALLOW_DEFAULT, failedGates2);

@@ -203,7 +203,9 @@ export async function decidePreToolUse(
       // 참조 문서가 스테이징돼 있어도, 위반이 있으면 ask로 내려가지 않고 deny에 함께
       // 담는다 — 어차피 커밋을 막으므로 기밀 유출 없이 위반과 함께 알린다(finding #1).
       if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
-      if (ref) return askOutput(ref); // 위반 없이 참조 문서만 있으면 현행대로 ask
+      // 위반 없이 참조 문서만 있으면 현행대로 ask — 다만 실행 실패한 게이트가 있었다면
+      // (findings가 비어 있어도!) 조용히 묻히지 않도록 light 분기와 동일하게 알린다(finding #2).
+      if (ref) return askOutput(ref, { warningsNote: failedGatesNote(failedGates) });
       const stale = await checkStaleArtifacts(input);
       if (stale) return askOutput(stale); // 정리용 게이트는 strict에서도 차단하지 않는다
       return appendFailedGatesNote(ALLOW_DEFAULT, failedGates);
