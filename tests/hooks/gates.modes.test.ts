@@ -52,3 +52,39 @@ describe('strict 모드 (차단)', () => {
     expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
   });
 });
+
+describe('light 모드 (경고만)', () => {
+  it('위반이 있어도 allow하고, 걸린 경고 전부를 additionalContext로 전달한다 [규칙: 가벼움은 전부 모아 보고]', async () => {
+    setEnforcement(root, 'light');
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:ghost\n');
+    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
+    const r = await decidePreToolUse(root, commitEvent(['src/a.ts', 'src/foo.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('GOVERNANCE WARNINGS');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('ghost');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('foo.ts');
+  });
+  it('기밀 reference 문서는 light여도 ask다 [규칙: 기밀 확인은 항상 묻는다]', async () => {
+    setEnforcement(root, 'light');
+    const r = await decidePreToolUse(
+      root,
+      commitEvent(['docs/conceptpowers/reference/계약서.md'])
+    );
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+  });
+  it('경고가 없으면 기본 allow 컨텍스트를 반환한다', async () => {
+    setEnforcement(root, 'light');
+    const r = await decidePreToolUse(root, commitEvent([]));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.additionalContext ?? '').not.toContain('GOVERNANCE WARNINGS');
+  });
+});
+
+describe('enforcement 폴백', () => {
+  it('init.json이 깨져도(standard 폴백) 첫 위반에서 ask한다 [규칙: 깨졌으면 표준으로 동작]', async () => {
+    writeFileSync(join(root, 'docs/conceptpowers/init.json'), '{ broken json');
+    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
+    const r = await decidePreToolUse(root, commitEvent(['src/foo.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+  });
+});
