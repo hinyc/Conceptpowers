@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:governance-mode
 // tests/hooks/sessionStart.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
@@ -211,6 +211,30 @@ describe('buildSessionStartOutput', () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, root);
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPT-DRIFT>');
+  });
+});
+
+describe('enforcement 세션 지침', () => {
+  it('strict면 우회 금지 지침을 주입한다 [규칙: 도구/에이전트가 강도를 바꾸지 않는다]', async () => {
+    await scaffoldInit(root, {});
+    const p = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(p, 'utf8'));
+    writeFileSync(p, JSON.stringify({ ...cfg, enforcement: 'strict' }, null, 2) + '\n');
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).toContain('enforcement: strict');
+  });
+  it('light면 경고 요약 보고 지침을 주입한다', async () => {
+    await scaffoldInit(root, {});
+    const p = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(p, 'utf8'));
+    writeFileSync(p, JSON.stringify({ ...cfg, enforcement: 'light' }, null, 2) + '\n');
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).toContain('enforcement: light');
+  });
+  it('standard(기본)면 enforcement 지침 줄이 없다 — 기존 컨텍스트 불변', async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, '/plugin');
+    expect(o!.hookSpecificOutput.additionalContext).not.toContain('enforcement:');
   });
 });
 

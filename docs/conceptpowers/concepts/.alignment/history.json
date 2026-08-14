@@ -34,5 +34,86 @@
     "at": "2026-07-29T08:43:42.893Z",
     "ignored": true,
     "aligned": false
+  },
+  {
+    "slug": "settled-status",
+    "hash": "30acbf74704d",
+    "prevHash": "",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:47:09.212Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "af25717c24b8",
+    "prevHash": "",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:47:21.171Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "628284733d71",
+    "prevHash": "",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:47:25.979Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "c9f09a3cb887",
+    "prevHash": "",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:47:30.520Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "628284733d71",
+    "prevHash": "628284733d71",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:54:10.763Z",
+    "ignored": true,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "af25717c24b8",
+    "prevHash": "af25717c24b8",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:54:10.763Z",
+    "ignored": true,
+    "aligned": false
+  },
+  {
+    "slug": "settled-status",
+    "hash": "30acbf74704d",
+    "prevHash": "30acbf74704d",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:54:10.763Z",
+    "ignored": true,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "c9f09a3cb887",
+    "prevHash": "c9f09a3cb887",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-13T07:54:10.763Z",
+    "ignored": true,
+    "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "01f4fb0c200f",
+    "prevHash": "628284733d71",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-14T01:36:07.741Z",
+    "ignored": true,
+    "aligned": false
   }
 ]

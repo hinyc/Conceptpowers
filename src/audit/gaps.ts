@@ -4,6 +4,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { matchesAny } from '../util/glob.js';
+import { leadingCommentBlock } from '../mapping/leadingComment.js';
 
 // 기본 거버넌스 대상 코드 확장자. 비코드(.md/.json/.css 등)는 대상이 아니다.
 const CODE_EXT = new Set([
@@ -52,7 +53,7 @@ export async function findConceptlessFiles(
     } catch {
       continue;
     }
-    if (!TAG_RE.test(content)) conceptless.push(rel);
+    if (!TAG_RE.test(leadingCommentBlock(content))) conceptless.push(rel);
   }
   return conceptless;
 }

@@ -4082,6 +4082,7 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
@@ -4092,6 +4093,7 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
@@ -4459,6 +4461,35 @@ async function listFeatures(root) {
 
 // src/mapping/scan.ts
 import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+function isControl(c) {
+  return c <= 31 || c >= 127 && c <= 159;
+}
+function isInvisible(c) {
+  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
+}
+function isBracket(ch) {
+  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
+}
+function sanitizeText(s, max = 200) {
+  let out = "";
+  for (const ch of s) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (isControl(c)) {
+      out += " ";
+      continue;
+    }
+    if (isInvisible(c) || isBracket(ch)) continue;
+    out += ch;
+  }
+  return out.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+// src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
@@ -4999,33 +5030,6 @@ async function readHistory(root) {
   }
 }
 
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
-}
-function isControl(c) {
-  return c <= 31 || c >= 127 && c <= 159;
-}
-function isInvisible(c) {
-  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
-}
-function isBracket(ch) {
-  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
-}
-function sanitizeText(s, max = 200) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.codePointAt(0) ?? 0;
-    if (isControl(c)) {
-      out += " ";
-      continue;
-    }
-    if (isInvisible(c) || isBracket(ch)) continue;
-    out += ch;
-  }
-  return out.replace(/\s+/g, " ").trim().slice(0, max);
-}
-
 // src/drift/detect.ts
 async function computeDrift(root) {
   const [concepts, features, mapping, lock, history] = await Promise.all([
@@ -5070,6 +5074,12 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   const conceptTestsLine = config?.conceptDrivenTests !== false ? [
     "- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag \u2192 manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules \u2014 each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept)."
   ] : [];
+  const enforcement = config?.enforcement ?? "standard";
+  const enforcementLine = enforcement === "strict" ? [
+    "- Commit gate enforcement: strict \u2014 governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval, stage related code together, run check-consistency + attest) or report to the user. Only the user may change the enforcement level."
+  ] : enforcement === "light" ? [
+    "- Commit gate enforcement: light \u2014 governance issues do NOT stop commits; they pass with warnings in additionalContext. After each commit, summarize any passed warnings to the user in one concise line. Confidential-reference checks still ask. Only the user may change the enforcement level."
+  ] : [];
   const all = await listConcepts(root);
   const reds = all.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug);
   const pendings = all.filter((c) => c.status === "pending").map((c) => c.slug);
@@ -5088,6 +5098,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(verified source of truth)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing consistency check; it must NEVER demote or change a settled green/red \u2014 the user does that directly. Never auto-approve a red (un-authored) concept.`,
     ...conceptTestsLine,
+    ...enforcementLine,
     "Commit packaging (the commit gate inspects ONLY the currently staged list \u2014 `git diff --cached --diff-filter=ACMR`; code already landed in earlier commits does NOT count):",
     "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the related code AND the alignment lock (docs/conceptpowers/concepts/.alignment/ lock\xB7history\xB7attest) in the SAME commit. Deferring the lock to a separate chore commit re-triggers [CONCEPT DRIFT] on that code-less commit.",
     "- A drifted concept requires ALL of its related paths (@concept-tagged files + feature codePaths) staged together, even when you actually changed only some of them. Don't split concept-touching refactors into small commits.",

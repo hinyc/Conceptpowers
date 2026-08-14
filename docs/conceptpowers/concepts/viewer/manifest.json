@@ -3,23 +3,6 @@
   "locale": "ko",
   "concepts": [
     {
-      "slug": "ask-only-gate",
-      "group": "governance",
-      "title": "막지 않는 문지기",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "url": "../data/governance/ask-only-gate.json",
-      "codeLinks": [
-        "src/hooks/preToolUse.ts",
-        "src/hooks/postToolUse.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "tests/integration/smoke.test.ts"
-      ]
-    },
-    {
       "slug": "audit-gap-detection",
       "group": "governance",
       "title": "표식 없는 코드 찾아내기",
@@ -91,9 +74,9 @@
         "tests/drift/history.test.ts",
         "tests/drift/lock.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/postToolUse.test.ts"
       ]
     },
     {
@@ -113,10 +96,10 @@
         "tests/drift/detect.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "src/schema/alignment.ts",
-        "tests/schema/alignment.test.ts"
+        "tests/schema/alignment.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts"
       ]
     },
     {
@@ -134,15 +117,15 @@
         "src/store/featureStore.ts",
         "tests/drift/detect.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/schema/feature.test.ts",
         "tests/store/featureStore.test.ts",
         "tests/viewer/graph.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/subgraph.test.ts"
+        "tests/viewer/subgraph.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts"
       ]
     },
     {
@@ -162,6 +145,24 @@
         "tests/viewer/graph.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/subgraph.test.ts"
+      ]
+    },
+    {
+      "slug": "governance-mode",
+      "group": "governance",
+      "title": "세 단계 문지기",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/governance/governance-mode.json",
+      "codeLinks": [
+        "src/hooks/preToolUse.ts",
+        "src/hooks/postToolUse.ts",
+        "src/schema/initConfig.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -251,14 +252,14 @@
         "tests/drift/detect.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/serve.test.ts",
-        "tests/concept/attest.test.ts"
+        "tests/concept/attest.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -288,15 +289,15 @@
         "tests/drift/detect.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/init/ensureConfigDefaults.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/store/featureStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -332,15 +333,15 @@
         "tests/cli/quality.test.ts",
         "tests/concept/approve.test.ts",
         "tests/concept/pendingConflicts.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/init/readConfig.test.ts",
         "tests/init/reference.test.ts",
         "tests/init/scaffold.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/cli/audit.test.ts"
+        "tests/cli/audit.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -631,48 +632,6 @@
   "graph": {
     "nodes": [
       {
-        "id": "c:ask-only-gate",
-        "label": "막지 않는 문지기",
-        "type": "concept",
-        "href": "#/concept/ask-only-gate",
-        "title": "ask-only-gate"
-      },
-      {
-        "id": "p:src/hooks/preToolUse.ts",
-        "label": "preToolUse.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/preToolUse.ts"
-      },
-      {
-        "id": "p:src/hooks/postToolUse.ts",
-        "label": "postToolUse.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/postToolUse.ts"
-      },
-      {
-        "id": "p:tests/hooks/postToolUse.test.ts",
-        "label": "postToolUse.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/postToolUse.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/preToolUse.test.ts",
-        "label": "preToolUse.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/preToolUse.test.ts"
-      },
-      {
-        "id": "p:tests/integration/smoke.test.ts",
-        "label": "smoke.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/integration/smoke.test.ts"
-      },
-      {
         "id": "c:audit-gap-detection",
         "label": "표식 없는 코드 찾아내기",
         "type": "concept",
@@ -869,6 +828,20 @@
         "title": "tests/drift/reconcile.test.ts"
       },
       {
+        "id": "p:tests/hooks/preToolUse.test.ts",
+        "label": "preToolUse.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/preToolUse.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/postToolUse.test.ts",
+        "label": "postToolUse.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/postToolUse.test.ts"
+      },
+      {
         "id": "c:drift-reconcile",
         "label": "커밋 뒤 따라왔는지 결산한다",
         "type": "concept",
@@ -986,6 +959,34 @@
         "type": "file",
         "href": "",
         "title": "src/store/conceptStore.ts"
+      },
+      {
+        "id": "c:governance-mode",
+        "label": "세 단계 문지기",
+        "type": "concept",
+        "href": "#/concept/governance-mode",
+        "title": "governance-mode"
+      },
+      {
+        "id": "p:src/hooks/preToolUse.ts",
+        "label": "preToolUse.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/preToolUse.ts"
+      },
+      {
+        "id": "p:src/hooks/postToolUse.ts",
+        "label": "postToolUse.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/postToolUse.ts"
+      },
+      {
+        "id": "p:tests/integration/smoke.test.ts",
+        "label": "smoke.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/integration/smoke.test.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -1592,31 +1593,6 @@
     ],
     "edges": [
       {
-        "source": "c:ask-only-gate",
-        "target": "p:src/hooks/preToolUse.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:ask-only-gate",
-        "target": "p:src/hooks/postToolUse.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:ask-only-gate",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:ask-only-gate",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:ask-only-gate",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
         "source": "c:audit-gap-detection",
         "target": "p:src/audit/gaps.ts",
         "kind": "concept-file"
@@ -1738,7 +1714,7 @@
       },
       {
         "source": "c:contract-hash",
-        "target": "p:tests/hooks/postToolUse.test.ts",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -1748,7 +1724,7 @@
       },
       {
         "source": "c:contract-hash",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -1788,7 +1764,12 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/postToolUse.test.ts",
+        "target": "p:src/schema/alignment.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/schema/alignment.test.ts",
         "kind": "concept-file"
       },
       {
@@ -1798,12 +1779,7 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:src/schema/alignment.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/schema/alignment.test.ts",
+        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -1824,16 +1800,6 @@
       {
         "source": "c:feature-spec-bridge",
         "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -1872,6 +1838,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:globally-unique-slug",
         "target": "p:src/schema/concept.ts",
         "kind": "concept-file"
@@ -1904,6 +1880,36 @@
       {
         "source": "c:globally-unique-slug",
         "target": "p:tests/viewer/subgraph.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/preToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/postToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2043,22 +2049,7 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2079,6 +2070,21 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/concept/attest.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2168,27 +2174,12 @@
       },
       {
         "source": "c:atomic-baseline-write",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
         "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:atomic-baseline-write",
         "target": "p:tests/init/ensureConfigDefaults.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2209,6 +2200,21 @@
       {
         "source": "c:atomic-baseline-write",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2268,16 +2274,6 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
         "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
@@ -2303,12 +2299,22 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/audit.test.ts",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2483,18 +2489,8 @@
       },
       {
         "source": "f:auto-guided-setup",
-        "target": "c:ask-only-gate",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:auto-guided-setup",
         "target": "p:skills/auto/SKILL.md",
         "kind": "feature-file"
-      },
-      {
-        "source": "f:commit-gate",
-        "target": "c:ask-only-gate",
-        "kind": "feature-concept"
       },
       {
         "source": "f:commit-gate",

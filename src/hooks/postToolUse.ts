@@ -1,4 +1,4 @@
-// @concept:ask-only-gate
+// @concept:governance-mode
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { readFile } from 'node:fs/promises';

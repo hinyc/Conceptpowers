@@ -5,7 +5,7 @@
   "description": "init 이후 현재 단계를 진단해 baseline → 개념 정의 → 감사 → 매핑 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사용자에게 진행 여부를 묻는 스킬",
   "concepts": [
     "human-owns-contract",
-    "ask-only-gate"
+    "governance-mode"
   ],
   "codePaths": [
     "skills/auto/SKILL.md"
