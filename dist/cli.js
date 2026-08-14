@@ -7771,13 +7771,50 @@ function leadingCommentBlock(content) {
   return kept.join("\n");
 }
 
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+
+// src/util/glob.ts
+var REGEX_SPECIAL = "\\^$.|?+()[]{}";
+function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++;
+        if (glob[i + 1] === "/") {
+          re += "(?:.*/)?";
+          i++;
+        } else {
+          re += ".*";
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (REGEX_SPECIAL.includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp("^" + re + "$");
+}
+function matchesAny(path, globs) {
+  const p = normalizeRel(path);
+  return globs.some((g) => globToRegExp(g).test(p));
+}
+
 // src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
-async function scanTags(root, files) {
+async function scanTags(root, files, ignoreGlobs = []) {
   const result = {};
   for (const rel of files) {
+    if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
       content = await readFile5(join4(root, rel), "utf8");
@@ -7792,8 +7829,8 @@ async function scanTags(root, files) {
   }
   return result;
 }
-async function buildMapping(root, files) {
-  const tags = await scanTags(root, files);
+async function buildMapping(root, files, ignoreGlobs = []) {
+  const tags = await scanTags(root, files, ignoreGlobs);
   const mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
     for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
@@ -7805,9 +7842,9 @@ async function writeMappingCache(root, mapping) {
   await mkdir2(dirname2(target), { recursive: true });
   await writeFile2(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
-async function updateMappingCache(root, files) {
+async function updateMappingCache(root, files, ignoreGlobs = []) {
   const existing = await readMappingCache(root);
-  const fresh = await buildMapping(root, files);
+  const fresh = await buildMapping(root, files, ignoreGlobs);
   const targets = new Set(files);
   const merged = {};
   for (const [slug3, list] of Object.entries(existing)) {
@@ -8354,44 +8391,6 @@ async function auditIntegrity(root, files) {
 // src/audit/gaps.ts
 import { readFile as readFile13 } from "node:fs/promises";
 import { join as join15, extname } from "node:path";
-
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
-}
-
-// src/util/glob.ts
-var REGEX_SPECIAL = "\\^$.|?+()[]{}";
-function globToRegExp(glob) {
-  let re = "";
-  for (let i = 0; i < glob.length; i++) {
-    const c = glob[i];
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
-        i++;
-        if (glob[i + 1] === "/") {
-          re += "(?:.*/)?";
-          i++;
-        } else {
-          re += ".*";
-        }
-      } else {
-        re += "[^/]*";
-      }
-    } else if (REGEX_SPECIAL.includes(c)) {
-      re += "\\" + c;
-    } else {
-      re += c;
-    }
-  }
-  return new RegExp("^" + re + "$");
-}
-function matchesAny(path, globs) {
-  const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
-}
-
-// src/audit/gaps.ts
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -8682,8 +8681,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
-    if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
-    else await updateMappingCache(o.root, files);
+    const cfg = await readInitConfig(o.root);
+    const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+    if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
+    else await updateMappingCache(o.root, files, ignoreGlobs);
   });
   program2.command("audit").description("\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap) \uD0D0\uC9C0").option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
     if (files.length > 0) {

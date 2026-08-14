@@ -4461,6 +4461,35 @@ async function listFeatures(root) {
 
 // src/mapping/scan.ts
 import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+function isControl(c) {
+  return c <= 31 || c >= 127 && c <= 159;
+}
+function isInvisible(c) {
+  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
+}
+function isBracket(ch) {
+  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
+}
+function sanitizeText(s, max = 200) {
+  let out = "";
+  for (const ch of s) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (isControl(c)) {
+      out += " ";
+      continue;
+    }
+    if (isInvisible(c) || isBracket(ch)) continue;
+    out += ch;
+  }
+  return out.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+// src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
@@ -4999,33 +5028,6 @@ async function readHistory(root) {
   } catch {
     return [];
   }
-}
-
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
-}
-function isControl(c) {
-  return c <= 31 || c >= 127 && c <= 159;
-}
-function isInvisible(c) {
-  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
-}
-function isBracket(ch) {
-  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
-}
-function sanitizeText(s, max = 200) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.codePointAt(0) ?? 0;
-    if (isControl(c)) {
-      out += " ";
-      continue;
-    }
-    if (isInvisible(c) || isBracket(ch)) continue;
-    out += ch;
-  }
-  return out.replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 // src/drift/detect.ts

@@ -56,6 +56,52 @@ describe('mapping scan', () => {
   });
 });
 
+describe('ignoreGlobs 필터 (findConceptlessFiles와 동일 규칙을 매핑 스캔에도 적용)', () => {
+  beforeEach(() => {
+    mkdirSync(join(root, 'docs/conceptpowers/concepts/viewer/assets'), { recursive: true });
+    writeFileSync(
+      join(root, 'docs/conceptpowers/concepts/viewer/assets/viewer.js'),
+      '// @concept:knowledge-graph-view\n'
+    );
+  });
+  it('scanTags는 ignoreGlobs에 매칭되는 파일을 건너뛴다', async () => {
+    const tags = await scanTags(
+      root,
+      ['src/a.ts', 'docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(tags).toEqual({ 'src/a.ts': ['admin-role'] });
+  });
+  it('ignoreGlobs를 넘기지 않으면(기본 [])기존처럼 전부 스캔한다', async () => {
+    const tags = await scanTags(root, ['docs/conceptpowers/concepts/viewer/assets/viewer.js']);
+    expect(tags).toEqual({
+      'docs/conceptpowers/concepts/viewer/assets/viewer.js': ['knowledge-graph-view'],
+    });
+  });
+  it('buildMapping도 ignoreGlobs에 매칭되는 파일을 제외한다', async () => {
+    const m = await buildMapping(
+      root,
+      ['src/a.ts', 'docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(m).toEqual({ 'admin-role': ['src/a.ts'] });
+  });
+  it('updateMappingCache에 ignoreGlobs를 넘기면 매칭 파일의 기존 캐시 항목도 제거된다(재발 방지)', async () => {
+    await writeMappingCache(root, {
+      'knowledge-graph-view': [
+        'src/viewer/graph.ts',
+        'docs/conceptpowers/concepts/viewer/assets/viewer.js',
+      ],
+    });
+    const merged = await updateMappingCache(
+      root,
+      ['docs/conceptpowers/concepts/viewer/assets/viewer.js'],
+      ['docs/conceptpowers/**']
+    );
+    expect(merged).toEqual({ 'knowledge-graph-view': ['src/viewer/graph.ts'] });
+  });
+});
+
 describe('선행 주석 블록 스캔 (Task 5b)', () => {
   it('1행 표식은 인식된다 [규칙: 첫머리 표식 인정]', async () => {
     writeFileSync(join(root, 'src/p1.ts'), '// @concept:foo\nexport const p1 = 1\n');

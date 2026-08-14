@@ -1,34 +1,27 @@
 {
   "sidebar-search": [
-    "assets/sidebar.js",
-    "docs/conceptpowers/concepts/viewer/assets/sidebar.js"
+    "assets/sidebar.js"
   ],
   "sidebar-toggle": [
-    "assets/sidebar.js",
-    "docs/conceptpowers/concepts/viewer/assets/sidebar.js"
+    "assets/sidebar.js"
   ],
   "home-search": [
-    "assets/viewer.js",
-    "docs/conceptpowers/concepts/viewer/assets/viewer.js"
+    "assets/viewer.js"
   ],
   "knowledge-graph-view": [
     "assets/viewer.js",
-    "docs/conceptpowers/concepts/viewer/assets/viewer.js",
     "src/viewer/graph.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/subgraph.test.ts"
   ],
   "concept-inline-edit": [
-    "assets/viewer.js",
-    "docs/conceptpowers/concepts/viewer/assets/viewer.js"
+    "assets/viewer.js"
   ],
   "copy-code-path": [
-    "assets/viewer.js",
-    "docs/conceptpowers/concepts/viewer/assets/viewer.js"
+    "assets/viewer.js"
   ],
   "settled-status": [
     "assets/viewer.js",
-    "docs/conceptpowers/concepts/viewer/assets/viewer.js",
     "src/concept/approve.ts",
     "src/concept/attest.ts",
     "src/concept/quality.ts",

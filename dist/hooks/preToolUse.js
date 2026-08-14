@@ -4395,13 +4395,72 @@ function leadingCommentBlock(content) {
   return kept.join("\n");
 }
 
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+function isControl(c) {
+  return c <= 31 || c >= 127 && c <= 159;
+}
+function isInvisible(c) {
+  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
+}
+function isBracket(ch) {
+  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
+}
+function sanitizeText(s, max = 200) {
+  let out = "";
+  for (const ch of s) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (isControl(c)) {
+      out += " ";
+      continue;
+    }
+    if (isInvisible(c) || isBracket(ch)) continue;
+    out += ch;
+  }
+  return out.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+// src/util/glob.ts
+var REGEX_SPECIAL = "\\^$.|?+()[]{}";
+function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++;
+        if (glob[i + 1] === "/") {
+          re += "(?:.*/)?";
+          i++;
+        } else {
+          re += ".*";
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (REGEX_SPECIAL.includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp("^" + re + "$");
+}
+function matchesAny(path, globs) {
+  const p = normalizeRel(path);
+  return globs.some((g) => globToRegExp(g).test(p));
+}
+
 // src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
-async function scanTags(root, files) {
+async function scanTags(root, files, ignoreGlobs = []) {
   const result = {};
   for (const rel of files) {
+    if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
       content = await readFile5(join4(root, rel), "utf8");
@@ -4515,33 +4574,6 @@ async function auditIntegrity(root, files) {
   };
 }
 
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
-}
-function isControl(c) {
-  return c <= 31 || c >= 127 && c <= 159;
-}
-function isInvisible(c) {
-  return c >= 8203 && c <= 8207 || c === 8232 || c === 8233 || c === 133 || c >= 8234 && c <= 8238 || c >= 8294 && c <= 8297 || c === 65279;
-}
-function isBracket(ch) {
-  return ch === "<" || ch === ">" || ch === "[" || ch === "]";
-}
-function sanitizeText(s, max = 200) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.codePointAt(0) ?? 0;
-    if (isControl(c)) {
-      out += " ";
-      continue;
-    }
-    if (isInvisible(c) || isBracket(ch)) continue;
-    out += ch;
-  }
-  return out.replace(/\s+/g, " ").trim().slice(0, max);
-}
-
 // src/hooks/gates/referenceGate.ts
 var REFERENCE_EXEMPT = /* @__PURE__ */ new Set(["README.md", "paths.md", ".gitignore"]);
 function checkReferenceGate(files) {
@@ -4571,39 +4603,6 @@ var checkUnknownTags = async ({ report }) => {
 // src/audit/gaps.ts
 import { readFile as readFile7 } from "node:fs/promises";
 import { join as join5, extname } from "node:path";
-
-// src/util/glob.ts
-var REGEX_SPECIAL = "\\^$.|?+()[]{}";
-function globToRegExp(glob) {
-  let re = "";
-  for (let i = 0; i < glob.length; i++) {
-    const c = glob[i];
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
-        i++;
-        if (glob[i + 1] === "/") {
-          re += "(?:.*/)?";
-          i++;
-        } else {
-          re += ".*";
-        }
-      } else {
-        re += "[^/]*";
-      }
-    } else if (REGEX_SPECIAL.includes(c)) {
-      re += "\\" + c;
-    } else {
-      re += c;
-    }
-  }
-  return new RegExp("^" + re + "$");
-}
-function matchesAny(path, globs) {
-  const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
-}
-
-// src/audit/gaps.ts
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",

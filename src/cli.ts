@@ -185,8 +185,12 @@ export async function runCli(
     .option('--full', 'rebuild the cache from only the given files (discard existing entries)')
     .argument('<files...>')
     .action(async (files, o) => {
-      if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files));
-      else await updateMappingCache(o.root, files);
+      // ignoreGlobs 폴백은 다른 전체 스캔 명령과 동일 규칙(스키마 기본값) —
+      // 플러그인 생성물(docs/conceptpowers/** 등)이 개념→코드 매핑에 섞이지 않게 한다.
+      const cfg = await readInitConfig(o.root);
+      const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+      if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
+      else await updateMappingCache(o.root, files, ignoreGlobs);
     });
 
   program

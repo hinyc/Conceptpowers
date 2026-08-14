@@ -4298,6 +4298,13 @@ async function listFeatures(root) {
 
 // src/mapping/scan.ts
 import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+
+// src/drift/safe.ts
+function normalizeRel(p) {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
+}
+
+// src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
@@ -4405,11 +4412,6 @@ async function appendHistoryMany(root, inputs) {
   }
   await writeFileAtomic(cpPaths(root).alignmentHistory, JSON.stringify(all, null, 2) + "\n");
   return added;
-}
-
-// src/drift/safe.ts
-function normalizeRel(p) {
-  return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
 }
 
 // src/drift/detect.ts
