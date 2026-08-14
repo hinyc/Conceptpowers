@@ -28,8 +28,10 @@ buys nothing the index does not already give you.
 ## Steps
 
 1. **Locate the related concept(s) — cheapest path first. Never read `concepts/data/` wholesale.**
-   - **a. Tag (free)** — read the `@concept:<slug>` marker(s) at the top of the target files
-     (or the `git diff` target). If present, that IS the answer → go to step 3.
+   - **a. Tag (free)** — read the `@concept:<slug>` marker(s) in the target files' leading comment
+     block (before any code line — a `'use client';` directive, a docstring, or a `<template>` block
+     placed first pushes the marker out of scope and the engine won't see it), or the `git diff`
+     target. If present, that IS the answer → go to step 3.
    - **b. Index (one small file)** — no tag: read
      `docs/conceptpowers/concepts/viewer/manifest.json` **once**. Its `concepts[]` entries carry
      `slug / title / group / category / codeLinks` at roughly 200 bytes each — the whole index for

@@ -2,7 +2,7 @@
   "slug": "commit-gate",
   "group": "governance",
   "title": "커밋 문지기",
-  "description": "git 커밋 직전에 스테이징된 변경을 검사해, 개념 없는 코드·미정의 태그·개념-코드 어긋남(드리프트)·검사 안 된 개념 변경을 발견하면 경고와 함께 사용자에게 묻는다.",
+  "description": "git 커밋 직전에 스테이징된 변경을 검사해, 개념 없는 코드·미정의 태그·개념-코드 어긋남(드리프트)·검사 안 된 개념 변경 등을 찾아낸다. 대응은 프로젝트가 고른 강도(enforcement: strict/standard/light, 기본 standard)에 따라 다르다 — strict는 걸린 것을 전부 모아 커밋을 막고(deny), standard는 첫 문제에서 진행 여부를 묻고(ask), light는 막지 않고 발견한 것 전부를 경고로 모아 전달한다(allow). 참고자료 기밀 확인은 강도와 무관하게 항상 사용자에게 묻는다.",
   "concepts": [
     "governance-mode"
   ],

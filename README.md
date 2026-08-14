@@ -25,7 +25,7 @@ Conceptpowers treats a **concept as a first-class, versioned contract** that sit
 
 1. **Concept before code.** Define purpose, allowed/restricted actions, and immutable rules as structured data _first_; code is downstream and must conform.
 2. **The human owns the contract by authoring it.** The agent may _draft_ concepts — a user-authored draft starts 🟡 pending and becomes 🟢 green once a consistency check passes; a concept the agent _infers_ without a human starts 🔴 red, and only a person promotes it. The agent never blesses a concept no human authored.
-3. **Guardrails that navigate, not walls that block.** Gates surface undefined concepts, unapproved concepts, and concept↔code drift at the exact moment of edit/commit, then ask you to decide — they neither silently reject nor silently wave changes through, and any override is recorded.
+3. **Guardrails whose strength you choose.** Gates surface undefined concepts, unapproved concepts, and concept↔code drift at the exact moment of edit/commit. The commit gate's `enforcement` setting decides what happens next — `standard` (default) asks on the first violation, `strict` collects every violation and blocks the commit, `light` lets the commit through with every violation reported as a warning — but the set of things the gates check never changes, and any override is recorded.
 
 ### What you gain
 
@@ -138,7 +138,7 @@ flowchart LR
 
 1. **Define** a concept as structured data (`/conceptpowers:define-concept`). It captures purpose, allowed/restricted actions, and immutable rules.
 2. **Check** before changing code (`/conceptpowers:check-concept`). The agent finds the related concept and judges whether the change violates it.
-3. **Enforce** automatically across three hook touchpoints. The **SessionStart** hook loads active concepts (and any drift) into context; the **PreToolUse** hook stops before a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and asks you to fix or confirm — overrides are recorded rather than silently lost; the **PostToolUse** hook, after a commit lands, re-aligns the concepts whose code shipped so the drift signal clears itself.
+3. **Enforce** automatically across three hook touchpoints. The **SessionStart** hook loads active concepts (and any drift) into context; the **PreToolUse** hook inspects a commit that references an undefined `@concept`, an unapproved (red) concept, or concept↔code drift, and — per the project's `enforcement` level (`strict` | `standard` | `light`, default `standard`, see the [decision table](#what-happens-at-commit-time) below) — denies it outright, asks you to fix or confirm, or lets it through with the violations reported as warnings; overrides are recorded rather than silently lost; the **PostToolUse** hook, after a commit lands, re-aligns the concepts whose code shipped so the drift signal clears itself.
 4. **Audit** anytime (`/conceptpowers:audit`) to find concept-less code and verify every `@concept` link still resolves.
 
 All enforcement is **opt-in per project**, gated entirely by the `docs/conceptpowers/init.json` marker — no marker, no hooks.
@@ -152,7 +152,7 @@ Every concept carries a **status** so you always know what the human has actuall
   once a consistency check passes, or stays pending while a conflict remains.
 - 🔴 **red** — auto-inferred (no human author) or rejected. Only a human promotes it (red→green).
 
-The viewer shows a badge for each concept, and the commit gate surfaces an **emphasized warning** when staged changes touch a red concept — it never silently hard-blocks, but asks "commit anyway?".
+The viewer shows a badge for each concept, and the commit gate surfaces an **emphasized warning** when staged changes touch a red concept. Under the default `standard` enforcement it asks "commit anyway?"; under `strict` it denies the commit alongside every other collected violation; under `light` it's folded into the reported warnings and the commit proceeds.
 
 The agent may only **promote a user-authored pending to green** after a passing consistency check;
 it never demotes or changes a settled green/red. The human's control point is **authoring** the
@@ -177,17 +177,32 @@ When a green concept conflicts with others: **green wins** over red (the red one
 
 A `git commit` is bracketed by two hooks, with the verification skills expected to have run in between. This is where the governance actually bites.
 
-**Before the commit — the `PreToolUse` gate** inspects the staged files and returns exactly one decision:
+**Before the commit — the `PreToolUse` gate** inspects the staged files. What it checks never changes;
+what it *does* about a finding depends on the project's `enforcement` level (`strict` | `standard` |
+`light`, default `standard`, see [init.json settings](#initjson-settings)):
 
-| Condition in the staged changes                                                                                | Decision  | What you see                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A hand-written code file carries **no `@concept` marker** at all                                               | **ask**   | `[WARNING] 개념 없는 코드 …` — add `@concept:<slug>`, or an explicit `@concept:none` when no concept applies, or commit anyway. Every governed code file must be marked; only regenerated/external code (`ignoreGlobs`: `dist/**`, `**/*.generated.*`, …) is exempt |
-| An `@concept:` tag points to a concept that **doesn't exist**                                                  | **ask**   | `[WARNING] undefined concept tag …` — define it or fix the tag, or commit anyway                                                                                                                                                                                    |
-| A concept **changed** since its code was last aligned, but that related code is **not in this commit** (drift) | **ask**   | `[CONCEPT DRIFT] …` with the recorded _reason it changed_ — stage the code too, or override (recorded as `[Drift Ignored]`)                                                                                                                                         |
-| The staged changes touch a still-🔴 **unapproved** concept                                                     | **ask**   | `[WARNING] UNAPPROVED CONCEPTS …` — review/approve, or commit anyway                                                                                                                                                                                                |
-| None of the above                                                                                              | **allow** | proceeds; the gate still reminds the agent it should have run check-concept / check-consistency                                                                                                                                                                     |
+| Condition in the staged changes                                                                                                                                                                       | `standard` (default)              | `strict`                                       | `light`                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------- | -------------------------------------------- |
+| A governance violation — a hand-written file with **no `@concept` marker**, an `@concept:` tag that **doesn't exist**, concept↔code **drift**, a staged concept touching a still-🔴 **unapproved** concept, a green concept below the **quality floor**, a changed concept missing a fresh **consistency attestation**, or a pending concept **blocked by an unresolved conflict** | **ask** on the first one found     | **deny** — every violation is collected and shown together, and the commit does not proceed | **allow** — every violation is collected and reported as a warning in the response context |
+| A staged file under `docs/conceptpowers/reference/` (may hold confidential material)                                                                                                                | **ask**                            | **ask** — same question; if governance violations are *also* present they deny the commit and the reference question is folded into that denial (no separate ask, no confidentiality leaked either way) | **ask** — never downgraded to a warning; any other collected warnings still ride along in the same response |
+| A plugin-generated viewer artifact was auto-synced but left **unstaged** (housekeeping only, not a governance violation)                                                                            | **ask**                            | **ask** — this gate never denies, in any mode  | **allow** — folded into the warning set                                                     |
+| None of the above                                                                                                                                                                                    | **allow**                          | **allow**                                       | **allow**                                    |
 
-The gate **never hard-blocks** — every problem is an _ask_ (block **with** override). It's a steering wheel forced one way, not a wall: if you say "no, commit anyway," it yields, and the override is recorded rather than silently lost.
+Sample messages: `[WARNING] 개념 없는 코드 …` (no marker — add `@concept:<slug>` or `@concept:none`),
+`[WARNING] undefined concept tag …` (unknown slug), `[CONCEPT DRIFT] …` (with the recorded _reason it
+changed_ — overriding it in standard/strict is recorded as `[Drift Ignored]`), and
+`[WARNING] 미승인 개념 참조 (status=red) …` (still-red concept). Every governed code file must carry a
+marker; only regenerated/external code (`ignoreGlobs`: `dist/**`, `**/*.generated.*`, …) is exempt.
+
+`standard` and `strict` both stop and wait for you on the *first* thing they surface (an ask or a
+deny); `light` never blocks the terminal — it always returns `allow` and relies on the warnings in
+the response context to get read. **Only `drift` warnings are persisted** — the post-commit reconcile
+still records a drift pass to `history.json` whether it was surfaced by `standard`/`strict` or waved
+through by `light`. Every other `light` warning (no-marker, undefined tag, unapproved-red, quality
+floor, missing attestation, conflicted-pending, stale artifact) is **advisory only** and is not written
+anywhere — nothing is lost from the governance data itself, since `/conceptpowers:audit` can always
+reconstruct the current state by re-scanning; it simply won't have a record of *this commit* having
+surfaced them.
 
 **In between — the skills the agent runs to clear the gate:**
 
@@ -218,6 +233,7 @@ already wrote are preserved, so a setting you turned off never flips back on.
 | `locale`             | `"ko"` \| `"en"` (anything else fails validation)                                                                                                                   | `"ko"`                                       | Language for generated artifacts (concept definitions, architecture docs) and user-facing messages.                                                                                                                                                                                                                                       |
 | `versionCheck`       | `true` \| `false` (boolean only — the string `"false"` fails validation)                                                                                            | `true`                                       | Checks GitHub for a newer plugin version at session start and notifies in one line. Disable with `false` or the `CONCEPTPOWERS_NO_VERSION_CHECK` env var.                                                                                                                                                                                 |
 | `conceptDrivenTests` | `true` \| `false` (boolean only — strings fail validation)                                                                                                          | `true`                                       | Tests are governed too — when enabled, the session-start rules instruct the agent to locate the concept(s) for the code under test before writing or modifying tests and derive scenarios from their allow/restrict/immutableRules. Only an explicit `false` disables it.                                                                 |
+| `enforcement`        | `"strict"` \| `"standard"` \| `"light"` (anything else fails validation)                                                                                             | `"standard"`                                 | Commit-gate strength (see [What happens at commit time](#what-happens-at-commit-time)). `strict` collects every governance violation and denies the commit; `standard` asks on the first violation; `light` allows the commit and reports every violation as a warning. A missing or unparsable `init.json` also falls back to `standard` — the safe middle ground. Only the user changes this field; the agent never edits it on its own. |
 | `ignoreGlobs`        | array of strings. Glob syntax supports only `**` (any directories) and `*` (one segment) — no `?`, braces, or negation (`!`). Paths match relative to the repo root | generated/external globs (see example below) | Path globs the commit gate exempts from the `@concept` marker requirement. Defaults cover only generated artifacts, build output, and external code. **Setting it replaces the default list (it does not append)** — include the defaults yourself. Hand-written code always needs a marker; use `@concept:none` when no concept applies. |
 | `project`            | `{ "name": string, "description": string }`                                                                                                                         | `{ "name": "", "description": "" }`          | Project name and description metadata.                                                                                                                                                                                                                                                                                                    |
 
@@ -237,6 +253,7 @@ into `docs/conceptpowers/init.json`, and change only what you need:
   "locale": "ko",
   "versionCheck": true,
   "conceptDrivenTests": true,
+  "enforcement": "standard",
   "ignoreGlobs": [
     "docs/conceptpowers/**",
     "dist/**",
@@ -250,6 +267,24 @@ into `docs/conceptpowers/init.json`, and change only what you need:
   }
 }
 ```
+
+### Upgrade notes
+
+Two things changed in this release that existing projects should know about:
+
+- **`@concept` marker scanning narrowed to the leading comment block.** The scanner used to accept a
+  marker anywhere "near the top" of a file; it now only recognizes markers inside the file's leading
+  comment block (the run of comment lines/blocks before the first line of actual code — shebang lines
+  are skipped first). A file that starts with `'use client';`, a docstring, a `<template>` block, or
+  any other code before its `@concept` comment will silently lose that tag on upgrade. **After
+  upgrading, re-run `/conceptpowers:update-mapping` (or `/conceptpowers:audit` for a full-project
+  check) and look for new concept-less-code gaps** — those are markers the narrower scan no longer
+  sees, not code that actually lost its concept.
+- **New `enforcement` field** (`"strict"` | `"standard"` | `"light"`, default `"standard"`). Existing
+  `init.json` files are backfilled with `"enforcement": "standard"` automatically (by
+  `/conceptpowers:version-sync` or the automatic stale-artifact sync), which matches the commit gate's
+  pre-existing ask-on-first-violation behavior — so upgrading changes nothing until you explicitly set
+  the field to `strict` or `light`.
 
 ### Skills
 
