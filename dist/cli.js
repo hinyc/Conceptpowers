@@ -8240,6 +8240,7 @@ async function scaffoldInit(root, opts) {
     enabled: true,
     backfillMode: opts.backfillMode ?? "incremental",
     locale,
+    enforcement: opts.enforcement ?? "standard",
     project: { name: opts.name ?? "", description: opts.description ?? "" }
   });
   await writeFile10(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
@@ -8578,8 +8579,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     } catch {
     }
   });
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").action(async (o) => {
-    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--enforcement <level>", "strict|standard|light (\uCEE4\uBC0B \uAC8C\uC774\uD2B8 \uAC15\uB3C4)", "standard").action(async (o) => {
+    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
     out(
       buildInitHint(o.lang, {
         viewerScriptAdded: result.viewerScriptAdded,
@@ -8597,7 +8598,8 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(
       JSON.stringify({
         initialized: await isInitialized(o.root),
-        drift: (await computeDrift(o.root)).length
+        drift: (await computeDrift(o.root)).length,
+        enforcement: (await readInitConfig(o.root))?.enforcement ?? "standard"
       })
     );
   });

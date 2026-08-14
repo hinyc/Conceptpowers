@@ -1,7 +1,7 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile @concept:governance-mode
 // tests/cli/cli.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '../../src/cli.js';
@@ -236,5 +236,26 @@ describe('runCli', () => {
     expect(r.ok).toBe(true);
     expect(r.viewer).toContain('concepts/viewer/index.html');
     expect(r.serve).toContain('concepts:view');
+  });
+  it('init --enforcement light가 init.json에 기록된다', async () => {
+    const code = await runCli(['init', '--root', root, '--enforcement', 'light']);
+    expect(code).toBe(0);
+    const cfg = JSON.parse(
+      readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8')
+    );
+    expect(cfg.enforcement).toBe('light');
+  });
+  it('init 기본값은 standard다 [규칙: 설정이 없으면 표준]', async () => {
+    await runCli(['init', '--root', root]);
+    const cfg = JSON.parse(
+      readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8')
+    );
+    expect(cfg.enforcement).toBe('standard');
+  });
+  it('status가 enforcement를 보여준다', async () => {
+    await runCli(['init', '--root', root, '--enforcement', 'strict']);
+    let captured = '';
+    await runCli(['status', '--root', root], (s) => (captured += s));
+    expect(JSON.parse(captured).enforcement).toBe('strict');
   });
 });

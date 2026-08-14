@@ -34,7 +34,6 @@
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
     "tests/audit/audit.test.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/attest.test.ts",
@@ -50,7 +49,8 @@
     "tests/store/conceptStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/cli/cli.test.ts"
   ],
   "audit-gap-detection": [
     "src/audit/audit.ts",
@@ -63,10 +63,7 @@
     "tests/util/glob.test.ts"
   ],
   "init-gate": [
-    "src/cli.ts",
-    "src/init/scaffold.ts",
     "tests/cli/audit.test.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
@@ -79,10 +76,12 @@
     "tests/init/scaffold.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/integration/smoke.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts",
+    "src/init/scaffold.ts",
+    "tests/cli/cli.test.ts"
   ],
   "plugin-version-sync": [
-    "src/cli.ts",
     "src/init/ensureConfigDefaults.ts",
     "src/init/packageScript.ts",
     "src/init/syncGenerated.ts",
@@ -96,7 +95,8 @@
     "tests/version/checkUpdate.test.ts",
     "tests/version/compareSemver.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -120,13 +120,13 @@
     "src/drift/history.ts",
     "src/drift/reconcile.ts",
     "src/schema/alignment.ts",
-    "tests/cli/cli.test.ts",
     "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/schema/alignment.test.ts"
+    "tests/schema/alignment.test.ts",
+    "tests/cli/cli.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
@@ -153,7 +153,10 @@
     "tests/integration/smoke.test.ts",
     "tests/schema/initConfig.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts",
+    "src/init/scaffold.ts",
+    "tests/cli/cli.test.ts"
   ],
   "reference-privacy": [
     "src/hooks/gates/referenceGate.ts",
@@ -188,7 +191,6 @@
     "src/store/featureStore.ts",
     "src/util/atomicWrite.ts",
     "tests/audit/audit.test.ts",
-    "tests/cli/cli.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/pendingConflicts.test.ts",
@@ -204,7 +206,8 @@
     "tests/store/featureStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/cli/cli.test.ts"
   ],
   "concept-code-mapping": [
     "src/mapping/scan.ts",

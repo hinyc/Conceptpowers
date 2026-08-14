@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:plugin-version-sync
+// @concept:init-gate @concept:plugin-version-sync @concept:governance-mode
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -82,8 +82,9 @@ export async function runCli(
     .option('--root <dir>', 'project root', process.cwd())
     .option('--mode <mode>', 'incremental|strict', 'incremental')
     .option('--lang <lang>', 'ko|en', 'ko')
+    .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
-      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang });
+      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
       out(
         buildInitHint(o.lang as Locale, {
           viewerScriptAdded: result.viewerScriptAdded,
@@ -112,6 +113,7 @@ export async function runCli(
         JSON.stringify({
           initialized: await isInitialized(o.root),
           drift: (await computeDrift(o.root)).length,
+          enforcement: (await readInitConfig(o.root))?.enforcement ?? 'standard',
         })
       );
     });
