@@ -106,5 +106,14 @@
     "at": "2026-08-13T07:54:10.763Z",
     "ignored": true,
     "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "01f4fb0c200f",
+    "prevHash": "628284733d71",
+    "reason": "ask-only-gate 은퇴에 따라 governance-mode 참조로 교체",
+    "at": "2026-08-14T01:36:07.741Z",
+    "ignored": true,
+    "aligned": false
   }
 ]
