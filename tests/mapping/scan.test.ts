@@ -120,19 +120,48 @@ describe('선행 블록 주석 상태 추적 (Task 5b-2, audit-gap-detection: �
     );
     expect(await scanTags(root, ['src/q4.ts'])).toEqual({ 'src/q4.ts': ['foo'] });
   });
-  it('회귀: 한 줄 // 표식·문자열 속 표식 제외·shebang 허용은 여전히 통과한다', async () => {
+  it('회귀: 한 줄 // 표식은 여전히 인식된다 [규칙: 첫머리 표식 인정]', async () => {
     writeFileSync(root + '/src/q5.ts', '// @concept:foo\nexport const q5 = 1\n');
     expect(await scanTags(root, ['src/q5.ts'])).toEqual({ 'src/q5.ts': ['foo'] });
+  });
+  it('회귀: 본문 문자열 속 표식 모양 글자는 여전히 제외된다 [규칙: 본문 속 표식은 표식 아님]', async () => {
     writeFileSync(
       root + '/src/q6.ts',
       "// @concept:concept-code-mapping\nexport const s = '// @concept:ghost\\n'\n"
     );
     expect(await scanTags(root, ['src/q6.ts'])).toEqual({ 'src/q6.ts': ['concept-code-mapping'] });
+  });
+  it('회귀: shebang 뒤 표식은 여전히 허용된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
     writeFileSync(
       root + '/src/q7.mjs',
       '#!/usr/bin/env node\n// @concept:foo\nconsole.log(1)\n'
     );
     expect(await scanTags(root, ['src/q7.mjs'])).toEqual({ 'src/q7.mjs': ['foo'] });
+  });
+});
+
+describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+  it('*/ 뒤 같은 줄에 이어지는 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/r1.ts',
+      '/*\ncomment\n*/ export const y = 1; // @concept:ghost-in-code\n'
+    );
+    expect(await scanTags(root, ['src/r1.ts'])).toEqual({});
+  });
+  it('*/ 단독 줄 뒤에 오는 별도 코드 줄의 표식도 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/r2.ts',
+      '/*\ncomment\n*/\nexport const y = 1;\n// @concept:x\n'
+    );
+    expect(await scanTags(root, ['src/r2.ts'])).toEqual({});
+  });
+  it('한 줄에서 열고 닫힌 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(root + '/src/r3.ts', '/* @concept:foo */\n');
+    expect(await scanTags(root, ['src/r3.ts'])).toEqual({ 'src/r3.ts': ['foo'] });
+  });
+  it('한 줄에서 닫힌 블록 뒤 코드 줄에는 표식이 없고, 그 코드 속 문자열 표식도 인식되지 않는다 [규칙: 첫머리에서만 · 본문 속 표식은 표식 아님]', async () => {
+    writeFileSync(root + '/src/r4a.ts', "/* note */ doSomething('@concept:ghost')\n");
+    expect(await scanTags(root, ['src/r4a.ts'])).toEqual({});
   });
 });
 
