@@ -33,7 +33,6 @@
     "src/concept/attest.ts",
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
-    "tests/audit/audit.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/attest.test.ts",
@@ -47,23 +46,13 @@
     "tests/hooks/preToolUse.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/cli/cli.test.ts"
-  ],
-  "audit-gap-detection": [
-    "src/audit/audit.ts",
-    "src/audit/gaps.ts",
-    "src/audit/tracked.ts",
-    "src/util/glob.ts",
+    "tests/cli/cli.test.ts",
     "tests/audit/audit.test.ts",
-    "tests/audit/gaps.test.ts",
-    "tests/cli/audit.test.ts",
-    "tests/util/glob.test.ts"
+    "tests/viewer/renderDisk.test.ts"
   ],
   "init-gate": [
-    "tests/cli/audit.test.ts",
     "tests/cli/feature.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
@@ -79,7 +68,8 @@
     "tests/hooks/sessionStart.test.ts",
     "src/cli.ts",
     "src/init/scaffold.ts",
-    "tests/cli/cli.test.ts"
+    "tests/cli/cli.test.ts",
+    "tests/cli/audit.test.ts"
   ],
   "plugin-version-sync": [
     "src/init/ensureConfigDefaults.ts",
@@ -190,7 +180,6 @@
     "src/store/conceptStore.ts",
     "src/store/featureStore.ts",
     "src/util/atomicWrite.ts",
-    "tests/audit/audit.test.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/pendingConflicts.test.ts",
@@ -204,14 +193,10 @@
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/store/featureStore.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/cli/cli.test.ts"
-  ],
-  "concept-code-mapping": [
-    "src/mapping/scan.ts",
-    "tests/mapping/scan.test.ts",
+    "tests/cli/cli.test.ts",
+    "tests/audit/audit.test.ts",
     "tests/viewer/renderDisk.test.ts"
   ],
   "globally-unique-slug": [
@@ -233,9 +218,9 @@
     "tests/store/featureStore.test.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/viewer/subgraph.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/viewer/renderDisk.test.ts"
   ],
   "generated-not-hand-edited": [
     "src/viewer/manifest.ts",
@@ -246,5 +231,22 @@
   "viewer-local-write-guard": [
     "src/viewer/serve.ts",
     "tests/viewer/serve.test.ts"
+  ],
+  "audit-gap-detection": [
+    "src/audit/audit.ts",
+    "src/audit/gaps.ts",
+    "src/audit/tracked.ts",
+    "src/mapping/leadingComment.ts",
+    "src/util/glob.ts",
+    "tests/audit/audit.test.ts",
+    "tests/audit/gaps.test.ts",
+    "tests/cli/audit.test.ts",
+    "tests/util/glob.test.ts"
+  ],
+  "concept-code-mapping": [
+    "src/mapping/leadingComment.ts",
+    "src/mapping/scan.ts",
+    "tests/mapping/scan.test.ts",
+    "tests/viewer/renderDisk.test.ts"
   ]
 }

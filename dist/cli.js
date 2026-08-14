@@ -7717,12 +7717,31 @@ import { join as join4, dirname as dirname2 } from "node:path";
 
 // src/mapping/leadingComment.ts
 var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|\*\/|\*|#|<!--|-->)/;
+var BLOCK_OPEN_RE = /\/\*|<!--/;
+function blockCloseIndex(line, opener) {
+  const closer = opener === "/*" ? "*/" : "-->";
+  return line.indexOf(closer);
+}
 function leadingCommentBlock(content) {
   const lines = content.split("\n");
   const kept = [];
+  let openBlock = null;
   for (const line of lines) {
+    if (openBlock) {
+      kept.push(line);
+      const closeAt = blockCloseIndex(line, openBlock);
+      if (closeAt !== -1) openBlock = null;
+      continue;
+    }
     if (line.trim() === "" || LEADING_COMMENT_LINE_RE.test(line)) {
       kept.push(line);
+      const openMatch = line.match(BLOCK_OPEN_RE);
+      if (openMatch) {
+        const opener = openMatch[0];
+        const openAt = openMatch.index ?? 0;
+        const closeAt = blockCloseIndex(line.slice(openAt), opener);
+        if (closeAt === -1) openBlock = opener;
+      }
     } else {
       break;
     }

@@ -91,6 +91,51 @@ describe('선행 주석 블록 스캔 (Task 5b)', () => {
   });
 });
 
+describe('선행 블록 주석 상태 추적 (Task 5b-2, audit-gap-detection: 주석 블록도 첫머리다)', () => {
+  it('별표 접두 없는 여러 줄 /* … */ 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q1.ts',
+      '/*\n설명 문장 (별표 접두 없음)\n@concept:foo\n*/\nexport const q1 = 1\n'
+    );
+    expect(await scanTags(root, ['src/q1.ts'])).toEqual({ 'src/q1.ts': ['foo'] });
+  });
+  it('<!-- … --> 여러 줄 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q2.md',
+      '<!--\n설명 문장\n@concept:foo\n-->\n# heading\n'
+    );
+    expect(await scanTags(root, ['src/q2.md'])).toEqual({ 'src/q2.md': ['foo'] });
+  });
+  it('블록 주석이 닫힌 뒤에 오는 코드 줄 다음의 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
+    writeFileSync(
+      root + '/src/q3.ts',
+      '/*\n설명\n*/\nexport const q3 = 1\n// @concept:foo\n'
+    );
+    expect(await scanTags(root, ['src/q3.ts'])).toEqual({});
+  });
+  it('닫히지 않은 블록 주석은 파일 끝까지 선행 블록으로 본다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
+    writeFileSync(
+      root + '/src/q4.ts',
+      '/*\n설명 문장\n@concept:foo\n계속 이어지는 설명, 닫히지 않음\n'
+    );
+    expect(await scanTags(root, ['src/q4.ts'])).toEqual({ 'src/q4.ts': ['foo'] });
+  });
+  it('회귀: 한 줄 // 표식·문자열 속 표식 제외·shebang 허용은 여전히 통과한다', async () => {
+    writeFileSync(root + '/src/q5.ts', '// @concept:foo\nexport const q5 = 1\n');
+    expect(await scanTags(root, ['src/q5.ts'])).toEqual({ 'src/q5.ts': ['foo'] });
+    writeFileSync(
+      root + '/src/q6.ts',
+      "// @concept:concept-code-mapping\nexport const s = '// @concept:ghost\\n'\n"
+    );
+    expect(await scanTags(root, ['src/q6.ts'])).toEqual({ 'src/q6.ts': ['concept-code-mapping'] });
+    writeFileSync(
+      root + '/src/q7.mjs',
+      '#!/usr/bin/env node\n// @concept:foo\nconsole.log(1)\n'
+    );
+    expect(await scanTags(root, ['src/q7.mjs'])).toEqual({ 'src/q7.mjs': ['foo'] });
+  });
+});
+
 describe('updateMappingCache (증분 병합)', () => {
   it('전달되지 않은 파일의 기존 캐시 항목을 보존한다', async () => {
     await writeMappingCache(root, { 'other-concept': ['src/other.ts'] });
