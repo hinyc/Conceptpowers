@@ -4207,7 +4207,11 @@ var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
   hash: external_exports.string(),
   result: external_exports.enum(["pass", "conflict"]),
-  at: external_exports.string()
+  at: external_exports.string(),
+  compared: external_exports.array(external_exports.string()).optional(),
+  // check-consistency에서 비교한 대상 slug 목록
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
 
@@ -4309,7 +4313,7 @@ async function setConceptStatus(root, slug3, status) {
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }
@@ -4499,6 +4503,7 @@ import { readFile as readFile6 } from "node:fs/promises";
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
@@ -4509,6 +4514,7 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).

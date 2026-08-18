@@ -13,6 +13,7 @@
   --allow-bg: #eaf6ec;
   --restrict: #cf222e;
   --restrict-bg: #fbeaea;
+  --pending: #9a6b00;
   --maxw: 1280px; /* 본문 최대폭 */
 }
 
@@ -29,6 +30,7 @@
     --allow-bg: #12261a;
     --restrict: #f85149;
     --restrict-bg: #2b1416;
+    --pending: #d29922;
   }
 }
 
@@ -151,23 +153,41 @@ body {
 .side .group li {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  /* 항목이 코드·제목 2줄이라 가운데 정렬이면 상태 표시자가 두 줄 사이에 뜬다 — 첫 줄에 맞춘다. */
+  align-items: flex-start;
   gap: 0 6px;
   padding: 0.4rem 0.3rem;
 }
-.side .group a {
-  display: inline-block;
+.side .group .side-item {
   /* flex-basis:auto는 잘리기 전 전체 텍스트 너비를 기준으로 줄바꿈을 계산해,
      앞의 상태 표시자가 아무리 작아도 다음 줄로 밀려난다 — 0%로 둬야 grow가
      남은 공간을 채우고 그 안에서 ellipsis가 잘라낸다. */
   flex: 1 1 0%;
   min-width: 0;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+/* 코드 줄·제목 줄 각각이 독립적으로 잘린다(둘을 한 줄에 이어 붙이지 않는다). */
+.side .group .side-item > span {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  vertical-align: middle;
-  font-size: 0.92rem;
+}
+.side-item__code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.side-item__title {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.side .group li.active .side-item__code {
+  color: var(--link);
 }
 .side .group small {
   flex: 1 0 100%;
@@ -529,6 +549,120 @@ li::marker {
   margin-left: 0.4rem;
 }
 
+/* 목록·검색 결과 표: 코드 열과 제목 열을 세로선으로 갈라 세로로 훑기 쉽게 한다.
+   좁은 화면에서는 표가 본문을 밀어내지 않도록 표 자체만 좌우로 스크롤된다. */
+.ctable-wrap {
+  overflow-x: auto;
+}
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.2rem;
+}
+.ctable th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.3rem 0.7rem 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.ctable td {
+  padding: 0.5rem 0.7rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: baseline;
+}
+.ctable tbody tr:last-child td {
+  border-bottom: none;
+}
+.ctable th.ctable__status,
+.ctable td.ctable__status {
+  width: 1%;
+  white-space: nowrap;
+  /* 내용이 동그라미 하나뿐이라 왼쪽 정렬하면 머리글 폭만큼 빈 공간이 생긴다. */
+  text-align: center;
+  padding-right: 0.9rem;
+}
+/* 코드 열은 폭을 내용에 맞춰 최소화하고 오른쪽 경계선으로 제목과 나눈다. */
+.ctable__code {
+  width: 1%;
+  white-space: nowrap;
+  border-right: 1px solid var(--border);
+}
+.ctable td.ctable__title,
+.ctable th.ctable__title {
+  padding-left: 0.8rem;
+  width: auto;
+}
+.ctable__code a {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--fg-soft);
+}
+.ctable__title a {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.ctable__meta {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+/* 좁은 화면: 열을 유지하면 제목이 한 글자씩 끊겨 읽을 수 없다 —
+   표를 항목별 세로 스택(상태·코드·제목·부가정보)으로 바꾼다. */
+@media (max-width: 640px) {
+  .ctable,
+  .ctable tbody,
+  .ctable tr,
+  .ctable td {
+    display: block;
+    width: auto;
+  }
+  .ctable thead {
+    display: none;
+  }
+  .ctable tr {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ctable tbody tr:last-child {
+    border-bottom: none;
+  }
+  .ctable td {
+    padding: 0;
+    border-bottom: none;
+    white-space: normal;
+  }
+  .ctable__code {
+    border-right: none;
+  }
+  /* 상태 동그라미는 코드와 같은 줄에 둔다(혼자 한 줄을 차지하면 목록이 늘어진다). */
+  .ctable td.ctable__status,
+  .ctable td.ctable__code {
+    display: inline-block;
+    vertical-align: middle;
+    /* 데스크톱의 width:1%(내용 폭에 맞춰 좁히기)가 남아 있으면 동그라미가 칸을 넘쳐
+       옆 여백을 잡아먹는다 — 스택에서는 내용 폭 그대로 둔다. */
+    width: auto;
+  }
+  .ctable td.ctable__status {
+    text-align: left;
+    padding-right: 0.45rem;
+  }
+  .ctable td.ctable__title {
+    padding-left: 0;
+  }
+  .ctable td.ctable__meta {
+    display: inline-block;
+    margin: 0.15rem 0.6rem 0 0;
+  }
+}
+
 /* 승인 상태 배지 */
 .badge {
   display: inline-block;
@@ -564,19 +698,50 @@ li::marker {
 /* 사이드바 축약 상태 표시(알약형 배지 대신 색상 "|" 한 글자) */
 .status-dot {
   display: inline-block;
-  font-weight: 900;
-  font-size: 0.95rem;
-  line-height: 1;
-  vertical-align: middle;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  /* 글자가 아니라 도형이라 baseline 정렬이 안 먹는다 — 첫 줄 글자 높이에 맞춰 살짝 내린다. */
+  vertical-align: 0.05em;
+  margin-top: 0.42em;
 }
 .status-dot--green {
-  color: #1a7f37;
+  color: var(--allow);
 }
 .status-dot--pending {
-  color: #9a6b00;
+  color: var(--pending);
 }
 .status-dot--red {
-  color: #b42318;
+  color: var(--restrict);
+}
+
+/* 색-상태 범례: 아이콘만 쓰는 목록 화면 우측 상단 */
+.hero__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 20px;
+  flex-wrap: wrap;
+}
+.status-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding-top: 0.85rem;
+}
+.status-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.status-legend .status-dot {
+  margin-top: 0;
 }
 
 /* 관련 링크 목록 (관련 기능 / 관련 개념) */

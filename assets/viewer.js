@@ -13,6 +13,10 @@ var I18N = {
     restrict: '제한 행동',
     principle: '운영 원칙',
     conceptList: '개념 목록',
+    colStatus: '상태',
+    colCode: '코드',
+    colTitle: '제목',
+    colGroup: '묶음',
     statusApproved: '승인됨',
     statusUnapproved: '미승인',
     statusPending: '보류',
@@ -52,7 +56,7 @@ var I18N = {
     saved: '저장됨',
     saveFailed: '저장 실패',
     statusGreen: '승인(green)',
-    statusPending: '보류(pending)',
+    statusYellow: '보류(pending)',
     statusRed: '미승인(red)',
     greenSettled: 'green은 정착 상태라 강등할 수 없습니다(사람이 직접 JSON 편집 시에만).',
     downgradedNotice:
@@ -88,6 +92,10 @@ var I18N = {
     restrict: 'Restricted',
     principle: 'Operating Principles',
     conceptList: 'Concepts',
+    colStatus: 'Status',
+    colCode: 'Code',
+    colTitle: 'Title',
+    colGroup: 'Group',
     statusApproved: 'Approved',
     statusUnapproved: 'Unapproved',
     statusPending: 'Pending',
@@ -127,7 +135,7 @@ var I18N = {
     saved: 'Saved',
     saveFailed: 'Save failed',
     statusGreen: 'Approve (green)',
-    statusPending: 'Pending',
+    statusYellow: 'Pending',
     statusRed: 'Unapprove (red)',
     greenSettled: 'green is settled and cannot be demoted (only by editing the JSON directly).',
     downgradedNotice:
@@ -203,33 +211,38 @@ function ul(items, cls) {
     })
   );
 }
-function statusBadge(status) {
+function statusLabel(status) {
   var t = state.t;
-  var label =
-    status === 'green'
-      ? t.statusApproved
-      : status === 'pending'
-        ? t.statusPending
-        : t.statusUnapproved;
-  return h('span', { class: 'badge badge--' + (status || 'red') }, label);
+  return status === 'green'
+    ? t.statusApproved
+    : status === 'pending'
+      ? t.statusPending
+      : t.statusUnapproved;
 }
-// 사이드바용 축약 표시: 알약형 배지 대신 상태색 "|" 한 글자만 붙인다(레이블은 title/aria-label로 유지).
+// 상세 화면(hero)용 알약형 배지. 목록은 글자 없이 동그라미(statusDot)만 쓴다.
+function statusBadge(status) {
+  return h('span', { class: 'badge badge--' + (status || 'red') }, statusLabel(status));
+}
+// 목록·사이드바용 축약 표시: 글자 없이 상태색 동그라미 하나만 둔다.
+// 색만으로는 뜻이 전달되지 않으므로 (a) 각 아이콘에 title/aria-label을 달고
+// (b) 목록 화면 우측 상단에 색-상태 범례(statusLegend)를 함께 띄운다.
 function statusDot(status) {
-  var t = state.t;
-  var label =
-    status === 'green'
-      ? t.statusApproved
-      : status === 'pending'
-        ? t.statusPending
-        : t.statusUnapproved;
+  var label = statusLabel(status);
+  return h('span', {
+    class: 'status-dot status-dot--' + (status || 'red'),
+    role: 'img',
+    'aria-label': label,
+    title: label,
+  });
+}
+// 색-상태 범례. 아이콘만 쓰는 목록 화면에서 색의 뜻을 한 번 알려준다.
+function statusLegend() {
   return h(
-    'span',
-    {
-      class: 'status-dot status-dot--' + (status || 'red'),
-      'aria-label': label,
-      title: label,
-    },
-    '|'
+    'div',
+    { class: 'status-legend' },
+    ['green', 'pending', 'red'].map(function (s) {
+      return h('span', { class: 'status-legend__item' }, [statusDot(s), statusLabel(s)]);
+    })
   );
 }
 // 클립보드 복사. localhost는 보안 컨텍스트라 navigator.clipboard가 동작하지만,
@@ -338,11 +351,13 @@ function conceptTitle(slug) {
   var e = conceptEntry(slug);
   return e ? e.title : slug;
 }
-// 표시명: 제목이 slug(파일명)와 다르면 "제목 (slug)"로 병기한다.
-// 예: 한국어 제목 "영점 절차"에 slug "rezero-procedure" → "영점 절차 (rezero-procedure)"
+// 표시명: 제목이 slug(개념 코드)와 다르면 "코드 | 제목"으로 병기한다.
+// 예: 한국어 제목 "영점 절차"에 slug "rezero-procedure" → "rezero-procedure | 영점 절차"
+// 코드를 앞에 두는 이유: 여러 항목을 세로로 훑을 때 왼쪽 끝이 코드로 정렬돼 눈이 덜 흔들린다.
+// (목록·사이드바처럼 세로로 나열되는 자리는 이 인라인 병기 대신 열/줄로 분리해 그린다.)
 function displayName(title, slug) {
   if (!title || title === slug) return slug;
-  return title + ' (' + slug + ')';
+  return slug + ' | ' + title;
 }
 // 개념을 참조하는 기능들(그래프 엣지에서 역추적)
 function relatedFeatures(slug) {
@@ -614,43 +629,13 @@ function renderSearchResults(q, box) {
     box.appendChild(
       h('section', { class: 'group' }, [
         h('h2', null, t.conceptList),
-        h(
-          'ul',
-          null,
-          r.concepts.map(function (c) {
-            return h('li', null, [
-              statusBadge(c.status),
-              ' ',
-              h('a', { href: '#/concept/' + c.slug }, displayName(c.title, c.slug)),
-              ' ',
-              h(
-                'small',
-                null,
-                (c.group || '') +
-                  (c.category && c.category.length ? ' · ' + c.category.join(', ') : '')
-              ),
-            ]);
-          })
-        ),
+        conceptTable(r.concepts, true),
       ])
     );
   }
   if (r.features.length) {
     box.appendChild(
-      h('section', { class: 'group' }, [
-        h('h2', null, t.featureList),
-        h(
-          'ul',
-          null,
-          r.features.map(function (f) {
-            return h(
-              'li',
-              null,
-              h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug))
-            );
-          })
-        ),
-      ])
+      h('section', { class: 'group' }, [h('h2', null, t.featureList), featureTable(r.features)])
     );
   }
   if (r.files.length) {
@@ -683,8 +668,108 @@ function renderSearchResults(q, box) {
 }
 
 // ---- 뷰: 목록 ----
+// 목록 페이지는 표(코드 열 · 제목 열 분리), 사이드바는 좁으니 코드·제목 2줄 스택으로 그린다.
+// 두 자리 모두 "코드"와 "제목"이 각각 독립한 요소라, 인라인 병기(displayName)는 쓰지 않는다.
+
+// 표 한 줄: 코드 칸과 제목 칸 모두 같은 대상으로 가는 링크(어느 쪽을 눌러도 이동).
+function tableRowCells(href, slug, title) {
+  return [
+    h('td', { class: 'ctable__code' }, h('a', { href: href }, slug)),
+    h('td', { class: 'ctable__title' }, h('a', { href: href }, title || slug)),
+  ];
+}
+// showGroup: 검색 결과처럼 여러 묶음이 섞여 나오는 자리에서만 묶음 열을 덧붙인다
+// (목록 페이지는 이미 묶음별 섹션으로 나뉘어 있어 중복이다).
+function conceptTable(items, showGroup) {
+  var t = state.t;
+  return h(
+    'div',
+    { class: 'ctable-wrap' },
+    h('table', { class: 'ctable' }, [
+      h(
+        'thead',
+        null,
+        h('tr', null, [
+          h('th', { class: 'ctable__status', scope: 'col' }, t.colStatus),
+          h('th', { class: 'ctable__code', scope: 'col' }, t.colCode),
+          h('th', { class: 'ctable__title', scope: 'col' }, t.colTitle),
+          showGroup ? h('th', { class: 'ctable__meta', scope: 'col' }, t.colGroup) : null,
+          h('th', { class: 'ctable__meta', scope: 'col' }, t.category),
+        ])
+      ),
+      h(
+        'tbody',
+        null,
+        items.map(function (c) {
+          return h(
+            'tr',
+            null,
+            [h('td', { class: 'ctable__status' }, statusDot(c.status))]
+              .concat(tableRowCells('#/concept/' + c.slug, c.slug, c.title))
+              .concat([
+                showGroup ? h('td', { class: 'ctable__meta' }, c.group || '') : null,
+                h('td', { class: 'ctable__meta' }, (c.category || []).join(', ')),
+              ])
+          );
+        })
+      ),
+    ])
+  );
+}
+function featureTable(items) {
+  var t = state.t;
+  return h(
+    'div',
+    { class: 'ctable-wrap' },
+    h('table', { class: 'ctable ctable--feature' }, [
+      h(
+        'thead',
+        null,
+        h('tr', null, [
+          h('th', { class: 'ctable__code', scope: 'col' }, t.colCode),
+          h('th', { class: 'ctable__title', scope: 'col' }, t.colTitle),
+          h('th', { class: 'ctable__meta', scope: 'col' }, t.codeLinksLabel),
+        ])
+      ),
+      h(
+        'tbody',
+        null,
+        items.map(function (f) {
+          return h(
+            'tr',
+            null,
+            tableRowCells('#/feature/' + f.slug, f.slug, f.title).concat([
+              h(
+                'td',
+                { class: 'ctable__meta' },
+                String(f.codePathCount == null ? '' : f.codePathCount)
+              ),
+            ])
+          );
+        })
+      ),
+    ])
+  );
+}
+// 사이드바 항목: 코드 줄 위, 제목 줄 아래. 제목이 코드와 같으면 제목 줄은 만들지 않는다.
+// li의 textContent에 코드와 제목이 모두 남아야 sidebar-search의 걸러내기가 둘 다로 동작한다.
+function sideItem(href, slug, title, isActive) {
+  return h(
+    'a',
+    {
+      class: 'side-item',
+      href: href,
+      'aria-current': isActive ? 'page' : null,
+      title: displayName(title, slug),
+    },
+    [
+      h('span', { class: 'side-item__code' }, slug),
+      title && title !== slug ? h('span', { class: 'side-item__title' }, title) : null,
+    ]
+  );
+}
 // active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
-// compact: true면 사이드바용 축약 상태 표시(statusDot)를 쓰고, 기본(목록 페이지)은 알약형 배지 그대로.
+// compact: true면 사이드바용(2줄 스택 + 축약 상태 표시), 기본(목록 페이지)은 표.
 function conceptListSections(active, compact) {
   var m = state.manifest;
   var groups = {};
@@ -695,67 +780,50 @@ function conceptListSections(active, compact) {
   return Object.keys(groups).map(function (g) {
     return h('section', { class: 'group', id: 'g-' + g }, [
       h('h2', null, g),
-      h(
-        'ul',
-        null,
-        groups[g].map(function (c) {
-          var isActive = !!(active && active.kind === 'concept' && active.slug === c.slug);
-          var label = displayName(c.title, c.slug);
-          return h('li', { class: isActive ? 'active' : null }, [
-            compact ? statusDot(c.status) : statusBadge(c.status),
-            ' ',
-            h(
-              'a',
-              {
-                href: '#/concept/' + c.slug,
-                'aria-current': isActive ? 'page' : null,
-                title: label,
-              },
-              label
-            ),
-            ' ',
-            h('small', null, (c.category || []).join(', ')),
-          ]);
-        })
-      ),
+      compact
+        ? h(
+            'ul',
+            null,
+            groups[g].map(function (c) {
+              var isActive = !!(active && active.kind === 'concept' && active.slug === c.slug);
+              return h('li', { class: isActive ? 'active' : null }, [
+                statusDot(c.status),
+                sideItem('#/concept/' + c.slug, c.slug, c.title, isActive),
+                h('small', null, (c.category || []).join(', ')),
+              ]);
+            })
+          )
+        : conceptTable(groups[g]),
     ]);
   });
 }
-function featureListSection(active) {
+function featureListSection(active, compact) {
   var t = state.t;
   var m = state.manifest;
   if (!(m.features || []).length) return null;
   return h('section', { class: 'group', id: 'g-__features' }, [
     h('h2', null, t.featureList),
-    h(
-      'ul',
-      null,
-      m.features.map(function (f) {
-        var isActive = !!(active && active.kind === 'feature' && active.slug === f.slug);
-        var label = displayName(f.title, f.slug);
-        return h('li', { class: isActive ? 'active' : null }, [
-          h(
-            'a',
-            {
-              href: '#/feature/' + f.slug,
-              'aria-current': isActive ? 'page' : null,
-              title: label,
-            },
-            label
-          ),
-          ' ',
-          h('small', null, String(f.codePathCount)),
-        ]);
-      })
-    ),
+    compact
+      ? h(
+          'ul',
+          null,
+          m.features.map(function (f) {
+            var isActive = !!(active && active.kind === 'feature' && active.slug === f.slug);
+            return h('li', { class: isActive ? 'active' : null }, [
+              sideItem('#/feature/' + f.slug, f.slug, f.title, isActive),
+              h('small', null, String(f.codePathCount)),
+            ]);
+          })
+        )
+      : featureTable(m.features),
   ]);
 }
 // scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
 function viewIndex(scrollTo) {
   var t = state.t;
   var m = state.manifest;
-  var sections = conceptListSections(null);
-  var featureSection = featureListSection(null);
+  var sections = conceptListSections(null, false);
+  var featureSection = featureListSection(null, false);
   var body = (m.concepts || []).length ? sections : [h('p', { class: 'muted' }, t.empty)];
   // 검색: 입력이 있으면 목록 대신 결과를 보여주고, 지우면 목록으로 복귀한다.
   var bodyBox = h('div', null, [body, featureSection]);
@@ -778,7 +846,7 @@ function viewIndex(scrollTo) {
     h('div', { class: 'wrap' }, [
       breadcrumbs([{ label: t.home }]),
       h('header', { class: 'hero' }, [
-        h('h1', null, t.appTitle),
+        h('div', { class: 'hero__top' }, [h('h1', null, t.appTitle), statusLegend()]),
         h('nav', { class: 'pagenav' }, [
           h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'),
           ' · ',
@@ -834,7 +902,7 @@ function statusControl(slug, c) {
   var allowed = ALLOWED_TRANSITIONS[c.status] || [];
   var defs = [
     ['green', t.statusGreen],
-    ['pending', t.statusPending],
+    ['pending', t.statusYellow],
     ['red', t.statusRed],
   ];
   var btns = defs.map(function (d) {
