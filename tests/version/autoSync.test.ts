@@ -224,3 +224,73 @@ describe('CLI 사용 시 자동 version sync', () => {
     expect(JSON.parse(captured)).toEqual([]);
   });
 });
+
+// 명시 실행(version-sync 명령)도 같은 개념의 지배를 받는다.
+// - restrict: "버전이 같은데도 생성물을 다시 만드는 것"
+// - immutableRule: "생성물의 버전과 깔린 도구의 버전이 같으면 아무것도 하지 않는다"
+// 실제 사고: 도장·설치 버전이 모두 같은데도 재생성이 돌아, 원본 assets/가 릴리스보다
+// 앞서 있던 자기호스팅 저장소에서 뷰어 수정본이 통째로 덮어써졌다.
+describe('version-sync 명령의 버전 가드', () => {
+  let prevEnv: string | undefined;
+  beforeEach(() => {
+    prevEnv = process.env.CLAUDE_PLUGIN_ROOT;
+  });
+  afterEach(() => {
+    if (prevEnv === undefined) delete process.env.CLAUDE_PLUGIN_ROOT;
+    else process.env.CLAUDE_PLUGIN_ROOT = prevEnv;
+  });
+
+  function viewerAsset(root: string): string {
+    return join(cpPaths(root).conceptsViewer, 'assets', 'viewer.js');
+  }
+
+  it('도장과 설치 버전이 같으면 생성물을 다시 만들지 않는다', async () => {
+    process.env.CLAUDE_PLUGIN_ROOT = makePluginRoot('9.9.9');
+    stampGenerator(root, '9.9.9');
+    writeFileSync(viewerAsset(root), '// SENTINEL');
+    let captured = '';
+    const code = await runCli(['version-sync', '--root', root], (s) => (captured += s));
+    expect(code).toBe(0);
+    expect(JSON.parse(captured)).toMatchObject({
+      ok: true,
+      skipped: true,
+      installed: '9.9.9',
+      generator: '9.9.9',
+    });
+    // 재생성이 돌았다면 이 파일은 플러그인 번들본으로 덮어써졌을 것이다.
+    expect(readFileSync(viewerAsset(root), 'utf8')).toBe('// SENTINEL');
+  });
+
+  it('도장이 설치 버전보다 옛것이면 재생성하고 결과를 보고한다', async () => {
+    process.env.CLAUDE_PLUGIN_ROOT = makePluginRoot('9.9.9');
+    stampGenerator(root, '0.0.1');
+    writeFileSync(viewerAsset(root), '// SENTINEL');
+    let captured = '';
+    await runCli(['version-sync', '--root', root], (s) => (captured += s));
+    const result = JSON.parse(captured);
+    expect(result.skipped).toBeUndefined();
+    expect(result.scriptStatus).toBeDefined();
+    expect(readFileSync(viewerAsset(root), 'utf8')).not.toBe('// SENTINEL');
+    expect(JSON.parse(readFileSync(manifestPath(root), 'utf8')).generatorVersion).toBe('9.9.9');
+  });
+
+  it('--force면 버전이 같아도 사람이 시킨 대로 다시 만든다', async () => {
+    process.env.CLAUDE_PLUGIN_ROOT = makePluginRoot('9.9.9');
+    stampGenerator(root, '9.9.9');
+    writeFileSync(viewerAsset(root), '// SENTINEL');
+    let captured = '';
+    await runCli(['version-sync', '--root', root, '--force'], (s) => (captured += s));
+    expect(JSON.parse(captured).skipped).toBeUndefined();
+    expect(readFileSync(viewerAsset(root), 'utf8')).not.toBe('// SENTINEL');
+  });
+
+  it('설치 버전을 알 수 없으면(플러그인 루트 없음) 건너뛰지 않는다 — 같다고 단정할 수 없다', async () => {
+    process.env.CLAUDE_PLUGIN_ROOT = makeTempDir('cp-broken-');
+    stampGenerator(root, '9.9.9');
+    writeFileSync(viewerAsset(root), '// SENTINEL');
+    let captured = '';
+    await runCli(['version-sync', '--root', root], (s) => (captured += s));
+    expect(JSON.parse(captured).skipped).toBeUndefined();
+    expect(readFileSync(viewerAsset(root), 'utf8')).not.toBe('// SENTINEL');
+  });
+});

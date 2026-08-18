@@ -4991,12 +4991,17 @@ async function readGeneratorVersion(root) {
     return null;
   }
 }
+async function checkStale(root, pluginRoot) {
+  const installed = await readInstalledVersion(pluginRoot);
+  const generator = await readGeneratorVersion(root);
+  if (!installed || !generator) return { installed, generator, stale: true };
+  return { installed, generator, stale: isNewer(installed, generator) };
+}
 async function syncIfStale(root, pluginRoot) {
   try {
-    const installed = await readInstalledVersion(pluginRoot);
+    const { installed, generator, stale } = await checkStale(root, pluginRoot);
     if (!installed) return { synced: false, installed: null, generator: null };
-    const generator = await readGeneratorVersion(root);
-    if (generator && !isNewer(installed, generator)) return { synced: false, installed, generator };
+    if (!stale) return { synced: false, installed, generator };
     await syncGenerated(root, { stampVersion: installed });
     return { synced: true, installed, generator };
   } catch (error) {

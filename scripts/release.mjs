@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited @concept:plugin-version-sync
 // 릴리스 절차를 한 번에 강제한다: 버전 3곳 동기화 → dist 재빌드 → 커밋 + 태그.
 // Claude Code 자동 업데이트는 plugin.json의 version 문자열이 바뀔 때만 사용자에게 반영되므로,
 // "버전만 올리고 dist를 안 빌드"하거나 "커밋만 하고 버전을 안 올리는" 실수를 구조적으로 막는다.

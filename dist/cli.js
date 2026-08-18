@@ -8342,12 +8342,17 @@ async function readGeneratorVersion(root) {
     return null;
   }
 }
+async function checkStale(root, pluginRoot) {
+  const installed = await readInstalledVersion(pluginRoot);
+  const generator = await readGeneratorVersion(root);
+  if (!installed || !generator) return { installed, generator, stale: true };
+  return { installed, generator, stale: isNewer(installed, generator) };
+}
 async function syncIfStale(root, pluginRoot) {
   try {
-    const installed = await readInstalledVersion(pluginRoot);
+    const { installed, generator, stale } = await checkStale(root, pluginRoot);
     if (!installed) return { synced: false, installed: null, generator: null };
-    const generator = await readGeneratorVersion(root);
-    if (generator && !isNewer(installed, generator)) return { synced: false, installed, generator };
+    if (!stale) return { synced: false, installed, generator };
     await syncGenerated(root, { stampVersion: installed });
     return { synced: true, installed, generator };
   } catch (error) {
@@ -8620,7 +8625,11 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     }
   });
   program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--mode <mode>", "incremental|strict", "incremental").option("--lang <lang>", "ko|en", "ko").option("--enforcement <level>", "strict|standard|light (\uCEE4\uBC0B \uAC8C\uC774\uD2B8 \uAC15\uB3C4)", "standard").action(async (o) => {
-    const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
+    const result = await scaffoldInit(o.root, {
+      backfillMode: o.mode,
+      locale: o.lang,
+      enforcement: o.enforcement
+    });
     out(
       buildInitHint(o.lang, {
         viewerScriptAdded: result.viewerScriptAdded,
@@ -8631,8 +8640,23 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   });
   program2.command("version-sync").alias("sync").description(
     "\uD50C\uB7EC\uADF8\uC778 \uBC84\uC804 \uB3D9\uAE30\uD654 \u2014 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uC124\uCE58 \uBC84\uC804\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)"
-  ).option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    out(JSON.stringify({ ok: true, ...await syncGenerated(o.root) }));
+  ).option("--root <dir>", "project root", process.cwd()).option("--force", "\uBC84\uC804\uC774 \uAC19\uC544\uB3C4 \uC0DD\uC131\uBB3C\uC744 \uB2E4\uC2DC \uB9CC\uB4E0\uB2E4").action(async (o) => {
+    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath2(import.meta.url)));
+    const state = pluginRoot ? await checkStale(o.root, pluginRoot) : { installed: null, generator: null, stale: true };
+    if (!o.force && !state.stale) {
+      out(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          reason: "up-to-date",
+          installed: state.installed,
+          generator: state.generator
+        })
+      );
+      return;
+    }
+    const result = await syncGenerated(o.root, { stampVersion: state.installed ?? void 0 });
+    out(JSON.stringify({ ok: true, installed: state.installed, ...result }));
   });
   program2.command("status").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(

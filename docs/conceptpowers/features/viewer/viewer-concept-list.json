@@ -1,0 +1,15 @@
+{
+  "slug": "viewer-concept-list",
+  "group": "viewer",
+  "title": "개념·기능 목록 화면",
+  "description": "첫 화면에서 개념을 묶음별로, 기능을 한데 모아 나열한다. 항목마다 이름표와 제목을 나뉜 영역에 보여주고 승인 상태를 색 동그라미로 표시하며, 화면 위쪽에 색의 뜻을 알려주는 설명을 둔다.",
+  "concepts": [
+    "list-item-readout",
+    "settled-status"
+  ],
+  "codePaths": [
+    "assets/viewer.js",
+    "assets/sidebar.js",
+    "assets/concept.css"
+  ]
+}

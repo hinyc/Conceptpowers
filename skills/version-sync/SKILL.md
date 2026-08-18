@@ -17,7 +17,14 @@ skill brings them current.
 
 - Right after `/plugin marketplace update conceptpowers-dev` (the SessionStart notice suggests it).
 - When the viewer looks outdated, opens as source in the IDE, or `concepts:view` fails.
-- Any time — it is idempotent and safe to re-run.
+- Any time — it is safe to re-run: when the stamped artifacts already match the installed plugin,
+  the command **does nothing** and reports `{"skipped": true, "reason": "up-to-date"}`.
+
+> **Same version → no-op (concept `plugin-version-sync`).** Re-generating at an equal version is a
+> `restrict`. It matters in projects whose generation _source_ is ahead of the installed release —
+> notably the Conceptpowers repository itself, where a same-version re-render silently reverts local
+> `assets/` edits. Pass `--force` only when you deliberately want to overwrite the artifacts from
+> the installed release.
 
 > **Auto-sync usually beats you to it:** when the installed plugin is newer than the stamped
 > artifacts, the same patch runs automatically at session start **and before any Conceptpowers CLI
@@ -47,6 +54,8 @@ again does the same patch (init is idempotent).
    `docs/conceptpowers/init.json` exists). If not, use `conceptpowers:init` instead.
 2. Run the deterministic CLI (path is in the session context or the plugin dist):
    `node "<cli>" version-sync --root .`
+   - If it returns `skipped: true`, artifacts are already current — report that and stop; do NOT
+     re-run with `--force` on your own judgment.
 3. Report the JSON result to the user: `scriptStatus` (no-package | unchanged | set | kept),
    `orphansRemoved` (count of old `*.html` files cleaned), and `configFieldsAdded` (settings
    backfilled into `init.json` at their defaults — name them so the user knows what is now

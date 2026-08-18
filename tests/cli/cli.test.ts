@@ -21,7 +21,10 @@ describe('runCli', () => {
     expect(code).toBe(0);
     expect(existsSync(join(root, 'docs/conceptpowers/init.json'))).toBe(true);
   });
-  it('sync 서브커맨드가 생성물을 패치한다 (초기화된 프로젝트)', async () => {
+  // init 직후는 도장 == 설치 버전이라, 개념 plugin-version-sync에 따라 그냥 실행하면
+  // 건너뛴다("버전이 같은데도 생성물을 다시 만드는 것"은 restrict). 패치 결과 보고는
+  // 사람이 명시적으로 우회했을 때(--force)만 나온다. 가드 자체는 tests/version/autoSync.test.ts.
+  it('sync 서브커맨드가 --force로 생성물을 패치한다 (초기화된 프로젝트)', async () => {
     writeFileSync(
       join(root, 'package.json'),
       JSON.stringify({
@@ -31,7 +34,7 @@ describe('runCli', () => {
     );
     await runCli(['init', '--root', root]);
     let captured = '';
-    const code = await runCli(['version-sync', '--root', root], (s) => (captured += s));
+    const code = await runCli(['version-sync', '--root', root, '--force'], (s) => (captured += s));
     expect(code).toBe(0);
     const r = JSON.parse(captured);
     expect(r.ok).toBe(true);
@@ -240,16 +243,12 @@ describe('runCli', () => {
   it('init --enforcement light가 init.json에 기록된다', async () => {
     const code = await runCli(['init', '--root', root, '--enforcement', 'light']);
     expect(code).toBe(0);
-    const cfg = JSON.parse(
-      readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8')
-    );
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
     expect(cfg.enforcement).toBe('light');
   });
   it('init 기본값은 standard다 [규칙: 설정이 없으면 표준]', async () => {
     await runCli(['init', '--root', root]);
-    const cfg = JSON.parse(
-      readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8')
-    );
+    const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
     expect(cfg.enforcement).toBe('standard');
   });
   it('status가 enforcement를 보여준다', async () => {

@@ -1,3 +1,4 @@
+// @concept:generated-not-hand-edited
 // 배포 빌드: 런타임 진입점을 의존성까지 인라인한 자족(self-contained) 번들로 생성한다.
 // 플러그인 설치 환경에는 node_modules가 없으므로 zod/commander 등을 번들에 포함해야 한다.
 import { build } from 'esbuild';

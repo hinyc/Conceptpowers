@@ -115,5 +115,14 @@
     "at": "2026-08-14T01:36:07.741Z",
     "ignored": true,
     "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "ddf61f099fea",
+    "prevHash": "",
+    "reason": "사이드바 항목에 이름표·분류가 그려지므로 그것으로도 걸러진다는 사실에 맞게 tradeoffs 정정, 개념이 늘어나 낡은 example 갱신 (설명 필드만, 계약 필드 불변)",
+    "at": "2026-08-18T08:44:00.843Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

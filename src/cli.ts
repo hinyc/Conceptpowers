@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
-import { syncIfStale, findPluginRoot } from './version/autoSync.js';
+import { syncIfStale, checkStale, findPluginRoot } from './version/autoSync.js';
 import { writeFeature } from './store/featureStore.js';
 import { syncGenerated } from './init/syncGenerated.js';
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
@@ -84,7 +84,11 @@ export async function runCli(
     .option('--lang <lang>', 'ko|en', 'ko')
     .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
-      const result = await scaffoldInit(o.root, { backfillMode: o.mode, locale: o.lang, enforcement: o.enforcement });
+      const result = await scaffoldInit(o.root, {
+        backfillMode: o.mode,
+        locale: o.lang,
+        enforcement: o.enforcement,
+      });
       out(
         buildInitHint(o.lang as Locale, {
           viewerScriptAdded: result.viewerScriptAdded,
@@ -101,8 +105,30 @@ export async function runCli(
       '플러그인 버전 동기화 — 생성물(뷰어 에셋·스크립트)을 설치 버전으로 패치 (baseline 불변)'
     )
     .option('--root <dir>', 'project root', process.cwd())
+    .option('--force', '버전이 같아도 생성물을 다시 만든다')
     .action(async (o) => {
-      out(JSON.stringify({ ok: true, ...(await syncGenerated(o.root)) }));
+      // 개념 plugin-version-sync: "버전이 같으면 아무것도 하지 않는다".
+      // 명시 실행도 예외가 아니다 — 같은 버전에서 재생성하면 산출물의 원본(assets/)이
+      // 설치본보다 앞선 환경에서 앞선 내용을 통째로 되돌려 버린다.
+      const pluginRoot =
+        process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname(fileURLToPath(import.meta.url)));
+      const state = pluginRoot
+        ? await checkStale(o.root, pluginRoot)
+        : { installed: null, generator: null, stale: true };
+      if (!o.force && !state.stale) {
+        out(
+          JSON.stringify({
+            ok: true,
+            skipped: true,
+            reason: 'up-to-date',
+            installed: state.installed,
+            generator: state.generator,
+          })
+        );
+        return;
+      }
+      const result = await syncGenerated(o.root, { stampVersion: state.installed ?? undefined });
+      out(JSON.stringify({ ok: true, installed: state.installed, ...result }));
     });
 
   program
