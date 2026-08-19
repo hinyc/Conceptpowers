@@ -1,8 +1,8 @@
 // @concept:drift-reconcile @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { reconcileAfterCommit } from '../../src/drift/reconcile.js';
 import { writeConcept, readConcept } from '../../src/store/conceptStore.js';
 import { writeFeature } from '../../src/store/featureStore.js';
@@ -26,8 +26,15 @@ const concept = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-// v1을 lock에 등록한 뒤 v2로 바꿔 drift를 만든다.
-async function makeDrift() {
+function touch(rel: string) {
+  const p = join(root, rel);
+  mkdirSync(dirname(p), { recursive: true });
+  writeFileSync(p, '');
+}
+
+// v1을 lock에 등록한 뒤 v2로 바꿔 drift를 만든다. 연결 코드는 디스크에 실제로 둔다.
+async function makeDrift(codePaths: string[] = ['src/login.ts']) {
+  codePaths.forEach(touch);
   await writeConcept(root, concept());
   const c1 = await readConcept(root, 'auth-token');
   await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -35,7 +42,7 @@ async function makeDrift() {
     slug: 'login',
     title: 'L',
     concepts: ['auth-token'],
-    codePaths: ['src/login.ts'],
+    codePaths,
   });
   await writeConcept(root, concept({ description: { definition: 'v2' } }));
 }
@@ -59,7 +66,41 @@ describe('reconcileAfterCommit', () => {
     expect(e?.ignored).toBe(false);
     expect(e?.hash).toBe(contractHash(c2!));
   });
-  it('관련 코드가 빠지면 ignored로 분류하고 history에 ignored 기록 + lock 갱신', async () => {
+  it('연결 코드가 여럿일 때 하나만 들어와도 aligned다 (규칙: 따라옴 = 하나라도 함께 들어온 경우)', async () => {
+    await makeDrift(['src/login.ts', 'src/session.ts', 'tests/login.test.ts']);
+    const r = await reconcileAfterCommit(root, ['src/session.ts'], 't2');
+    expect(r.aligned).toContain('auth-token');
+    expect(r.ignored).toEqual([]);
+    const e = (await readHistory(root)).find((x) => x.slug === 'auth-token');
+    expect(e?.aligned).toBe(true);
+  });
+  it('디스크에서 사라진 연결 경로는 판정에서 빼고, 남은 경로만 견준다 (규칙: 사라진 경로 제외)', async () => {
+    await makeDrift(['src/login.ts']);
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts', 'src/removed.ts'],
+    });
+    const r = await reconcileAfterCommit(root, ['README.md'], 't2');
+    expect(r.ignored).toContain('auth-token');
+    const r2 = await reconcileAfterCommit(root, ['src/login.ts'], 't3');
+    // 이미 결산돼 drift가 아니므로 aligned/ignored 어디에도 없어야 정상(기준선 재조정 확인)
+    expect(r2.aligned).toEqual([]);
+    expect(r2.ignored).toEqual([]);
+  });
+  it('연결 경로가 전부 사라졌으면 따라올 것이 없으므로 aligned로 결산한다', async () => {
+    await makeDrift([]);
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/gone.ts'],
+    });
+    const r = await reconcileAfterCommit(root, ['README.md'], 't2');
+    expect(r.aligned).toContain('auth-token');
+  });
+  it('관련 코드가 하나도 안 들어오면 ignored로 분류하고 history에 ignored 기록 + lock 갱신', async () => {
     await makeDrift();
     const r = await reconcileAfterCommit(root, ['README.md'], 't2');
     expect(r.ignored).toContain('auth-token');

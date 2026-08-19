@@ -52,9 +52,17 @@
     "at": "2026-07-29T03:30:22.847Z"
   },
   "drift-reconcile": {
-    "hash": "af25717c24b8",
+    "hash": "0e27e352fe02",
     "result": "pass",
-    "at": "2026-08-13T07:49:06.864Z"
+    "at": "2026-08-18T09:05:17.545Z",
+    "compared": [
+      "governance-mode",
+      "contract-hash",
+      "concept-code-mapping",
+      "feature-spec-bridge",
+      "audit-gap-detection",
+      "atomic-baseline-write"
+    ]
   },
   "audit-gap-detection": {
     "hash": "01f4fb0c200f",

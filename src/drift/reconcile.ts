@@ -5,6 +5,7 @@ import { appendHistoryMany, type HistoryInput } from './history.js';
 import { computeDrift } from './detect.js';
 import { contractHash } from './hash.js';
 import { normalizeRel } from './safe.js';
+import { isFollowed } from './follow.js';
 import type { AlignmentLock } from '../schema/alignment.js';
 
 export interface ReconcileResult {
@@ -35,10 +36,8 @@ export async function reconcileAfterCommit(
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
-      const followed =
-        d.relatedPaths.length === 0 ||
-        d.relatedPaths.map(normalizeRel).every((p) => committed.has(p));
-      if (followed) {
+      // 문지기(driftGate)와 같은 잣대: 연결 코드 가운데 하나라도 커밋에 들어왔으면 따라옴.
+      if (isFollowed(d.relatedPaths, committed)) {
         aligned.push(c.slug);
         entries.push({
           slug: c.slug,

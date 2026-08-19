@@ -38,6 +38,9 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('SAME commit');
     expect(ctx).toContain('update-mapping');
     expect(ctx).toContain('Drift Ignored');
+    // 따라옴 판정은 '연결 코드 전부'가 아니라 '하나라도'다 — 안내문도 같은 잣대를 말해야 한다.
+    expect(ctx).toContain('at least one');
+    expect(ctx).not.toContain('requires ALL of its related paths');
   });
   it('reference/에 사용자 자료가 있으면 <CONCEPTPOWERS-REFERENCE> 블록을 넣는다', async () => {
     await scaffoldInit(root, {});

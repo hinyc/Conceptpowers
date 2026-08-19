@@ -8507,7 +8507,45 @@ async function appendHistory(root, input) {
   return (await appendHistoryMany(root, [input]))[0];
 }
 
+// src/drift/follow.ts
+import { stat as stat2 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, join as join16, relative as relative2, resolve } from "node:path";
+function isInsideRoot(root, rel) {
+  const r = relative2(resolve(root), resolve(root, rel));
+  return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
+}
+async function isRelatedFile(root, rel) {
+  if (!isInsideRoot(root, rel)) return false;
+  try {
+    return (await stat2(join16(root, rel))).isFile();
+  } catch (error) {
+    const code = error.code;
+    return !(code === "ENOENT" || code === "ENOTDIR");
+  }
+}
+async function pruneMissingPaths(root, relatedPaths) {
+  const paths = relatedPaths.map(normalizeRel);
+  const checks = await Promise.all(paths.map((p) => isRelatedFile(root, p)));
+  return paths.filter((_, i) => checks[i]);
+}
+
 // src/drift/detect.ts
+var hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+function collectRelatedPaths(slug3, features, mapping) {
+  const fromFeatures = features.filter((f) => f.concepts.includes(slug3)).flatMap((f) => f.codePaths);
+  const fromTags = hasOwn(mapping, slug3) ? mapping[slug3] : [];
+  return [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
+}
+function isAfter(a, b) {
+  const [x, y] = [Date.parse(a), Date.parse(b)];
+  return Number.isNaN(x) || Number.isNaN(y) ? a > b : x > y;
+}
+function pickReason(history, slug3, currentHash, locked) {
+  const changes = [...history].reverse().filter((e) => e.slug === slug3 && !e.ignored && !e.aligned && isAfter(e.at, locked.at));
+  const exact = changes.find((e) => e.hash === currentHash);
+  const later = changes.find((e) => e.hash !== locked.hash);
+  return (exact ?? later)?.reason ?? "";
+}
 async function computeDrift(root) {
   const [concepts, features, mapping, lock, history] = await Promise.all([
     listConcepts(root),
@@ -8516,20 +8554,18 @@ async function computeDrift(root) {
     readLock(root),
     readHistory(root)
   ]);
-  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-  const items = [];
-  for (const c of concepts) {
-    const locked = hasOwn(lock, c.slug) ? lock[c.slug].hash : void 0;
-    if (locked === void 0) continue;
-    const current = contractHash(c);
-    if (locked === current) continue;
-    const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
-    const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
-    const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
-    items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
-  }
-  return items;
+  const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
+    (x) => x.locked !== void 0
+  ).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
+  const unique = [...new Set(drifted.flatMap((x) => x.related))];
+  const alive = new Set(await pruneMissingPaths(root, unique));
+  return drifted.map((x) => ({
+    slug: x.c.slug,
+    currentHash: x.current,
+    lockedHash: x.locked.hash,
+    reason: pickReason(history, x.c.slug, x.current, x.locked),
+    relatedPaths: x.related.filter((p) => alive.has(p))
+  }));
 }
 
 // src/drift/note.ts
@@ -8542,7 +8578,7 @@ async function noteChange(root, slug3, reason, at) {
 
 // src/init/addReferencePath.ts
 import { readFile as readFile16 } from "node:fs/promises";
-import { join as join16 } from "node:path";
+import { join as join17 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -8550,7 +8586,7 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target = join16(cpPaths(root).reference, PATHS_FILE);
+  const target = join17(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
     existing = await readFile16(target, "utf8");

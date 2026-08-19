@@ -124,5 +124,14 @@
     "at": "2026-08-18T08:44:00.843Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "0e27e352fe02",
+    "prevHash": "af25717c24b8",
+    "reason": "따라옴 판정을 '연결된 코드 전부'에서 '하나라도'로 완화하고, 사라진 경로 제외·문지기와 결산의 동일 잣대 규칙 추가 (사용자 승인)",
+    "at": "2026-08-18T08:58:20.954Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

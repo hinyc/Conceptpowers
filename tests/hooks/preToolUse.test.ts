@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 import { writeConcept, readConcept } from '../../src/store/conceptStore.js';
@@ -20,6 +20,14 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cp-'));
   mkdirSync(join(root, 'src'), { recursive: true });
 });
+
+// 연결 코드 경로는 디스크에 실제로 있어야 판정 대상이 된다(사라진 경로는 제외되므로).
+// 개념 없는 코드 경고에 걸리지 않도록 표식을 붙인 파일로 만든다.
+function touch(rel: string, slug = 'auth-token') {
+  const p = join(root, rel);
+  mkdirSync(dirname(p), { recursive: true });
+  writeFileSync(p, `// @concept:${slug}\n`);
+}
 
 describe('decidePreToolUse', () => {
   it('init 안 된 프로젝트는 무동작(null)', async () => {
@@ -164,6 +172,7 @@ describe('decidePreToolUse', () => {
 
   it('개념 drift인데 관련 코드가 스테이지에 없으면 ask로 경고한다', async () => {
     await scaffoldInit(root, {});
+    touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],
@@ -203,6 +212,7 @@ describe('decidePreToolUse', () => {
 
   it('drift여도 관련 코드가 스테이지에 함께 있으면 막지 않는다(allow)', async () => {
     await scaffoldInit(root, {});
+    touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],
@@ -235,6 +245,45 @@ describe('decidePreToolUse', () => {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
       changedFiles: ['src/login.ts'],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+  });
+
+  it('drift여도 연결 코드 가운데 하나라도 스테이지에 있으면 막지 않는다 (규칙: 문지기·결산 동일 잣대, 따라옴 = 하나라도)', async () => {
+    await scaffoldInit(root, {});
+    ['src/login.ts', 'src/session.ts', 'tests/login.test.ts'].forEach((p) => touch(p));
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v1' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts', 'src/session.ts', 'tests/login.test.ts'],
+    } as any);
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v2' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    } as any);
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['src/session.ts'],
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
   });
@@ -289,6 +338,7 @@ describe('decidePreToolUse', () => {
 
   it('drift reason의 인젝션 시도(각괄호/개행)를 새니타이즈해 컨텍스트에 넣는다 (보안 H1)', async () => {
     await scaffoldInit(root, {});
+    touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],

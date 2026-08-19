@@ -1,9 +1,9 @@
 // @concept:governance-mode @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:drift-reconcile
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { runPostToolUse } from '../../src/hooks/postToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 import { writeConcept, readConcept } from '../../src/store/conceptStore.js';
@@ -17,6 +17,12 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cp-'));
 });
 
+function touch(rel: string) {
+  const p = join(root, rel);
+  mkdirSync(dirname(p), { recursive: true });
+  writeFileSync(p, '');
+}
+
 describe('runPostToolUse', () => {
   it('init 안 됐으면 null', async () => {
     const r = await runPostToolUse(root, { tool: 'Bash', input: { command: 'git commit -m x' } });
@@ -29,6 +35,7 @@ describe('runPostToolUse', () => {
   });
   it('커밋 후 drift를 재조정한다(관련 코드 포함→aligned, lock 갱신)', async () => {
     await scaffoldInit(root, {});
+    touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],
@@ -70,6 +77,7 @@ describe('runPostToolUse', () => {
     execSync('git config user.email "t@t.com"', { cwd: root });
     execSync('git config user.name "T"', { cwd: root });
     await scaffoldInit(root, {});
+    touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],
@@ -96,8 +104,8 @@ describe('runPostToolUse', () => {
       actions: {},
       principle: {},
     } as any);
-    // 실제 커밋: 개념 파일만 커밋(관련 코드 미반영) → override 시나리오
-    execSync('git add -A', { cwd: root });
+    // 실제 커밋: 개념 파일만 커밋(관련 코드 src/login.ts는 미반영) → override 시나리오
+    execSync("git add -A -- . ':(exclude)src/login.ts'", { cwd: root });
     execSync('git commit -q -m "change concept"', { cwd: root });
     const first = await runPostToolUse(root, {
       tool: 'Bash',

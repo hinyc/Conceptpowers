@@ -8,7 +8,7 @@ var __export = (target, all) => {
 };
 
 // src/hooks/sessionStart.ts
-import { join as join13, dirname as dirname4 } from "node:path";
+import { join as join14, dirname as dirname4 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // src/init/scaffold.ts
@@ -5035,7 +5035,45 @@ async function readHistory(root) {
   }
 }
 
+// src/drift/follow.ts
+import { stat as stat2 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, join as join13, relative as relative2, resolve } from "node:path";
+function isInsideRoot(root, rel) {
+  const r = relative2(resolve(root), resolve(root, rel));
+  return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
+}
+async function isRelatedFile(root, rel) {
+  if (!isInsideRoot(root, rel)) return false;
+  try {
+    return (await stat2(join13(root, rel))).isFile();
+  } catch (error) {
+    const code = error.code;
+    return !(code === "ENOENT" || code === "ENOTDIR");
+  }
+}
+async function pruneMissingPaths(root, relatedPaths) {
+  const paths = relatedPaths.map(normalizeRel);
+  const checks = await Promise.all(paths.map((p) => isRelatedFile(root, p)));
+  return paths.filter((_, i) => checks[i]);
+}
+
 // src/drift/detect.ts
+var hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+function collectRelatedPaths(slug3, features, mapping) {
+  const fromFeatures = features.filter((f) => f.concepts.includes(slug3)).flatMap((f) => f.codePaths);
+  const fromTags = hasOwn(mapping, slug3) ? mapping[slug3] : [];
+  return [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
+}
+function isAfter(a, b) {
+  const [x, y] = [Date.parse(a), Date.parse(b)];
+  return Number.isNaN(x) || Number.isNaN(y) ? a > b : x > y;
+}
+function pickReason(history, slug3, currentHash, locked) {
+  const changes = [...history].reverse().filter((e) => e.slug === slug3 && !e.ignored && !e.aligned && isAfter(e.at, locked.at));
+  const exact = changes.find((e) => e.hash === currentHash);
+  const later = changes.find((e) => e.hash !== locked.hash);
+  return (exact ?? later)?.reason ?? "";
+}
 async function computeDrift(root) {
   const [concepts, features, mapping, lock, history] = await Promise.all([
     listConcepts(root),
@@ -5044,26 +5082,24 @@ async function computeDrift(root) {
     readLock(root),
     readHistory(root)
   ]);
-  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-  const items = [];
-  for (const c of concepts) {
-    const locked = hasOwn(lock, c.slug) ? lock[c.slug].hash : void 0;
-    if (locked === void 0) continue;
-    const current = contractHash(c);
-    if (locked === current) continue;
-    const fromFeatures = features.filter((f) => f.concepts.includes(c.slug)).flatMap((f) => f.codePaths);
-    const fromTags = hasOwn(mapping, c.slug) ? mapping[c.slug] : [];
-    const relatedPaths = [...new Set([...fromTags, ...fromFeatures].map(normalizeRel))];
-    const reason = [...history].reverse().find((e) => e.slug === c.slug && !e.ignored && !e.aligned)?.reason ?? "";
-    items.push({ slug: c.slug, currentHash: current, lockedHash: locked, reason, relatedPaths });
-  }
-  return items;
+  const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
+    (x) => x.locked !== void 0
+  ).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
+  const unique = [...new Set(drifted.flatMap((x) => x.related))];
+  const alive = new Set(await pruneMissingPaths(root, unique));
+  return drifted.map((x) => ({
+    slug: x.c.slug,
+    currentHash: x.current,
+    lockedHash: x.locked.hash,
+    reason: pickReason(history, x.c.slug, x.current, x.locked),
+    relatedPaths: x.related.filter((p) => alive.has(p))
+  }));
 }
 
 // src/hooks/sessionStart.ts
 async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   if (!await isInitialized(root)) return null;
-  const cli = join13(pluginRoot, "dist", "cli.js");
+  const cli = join14(pluginRoot, "dist", "cli.js");
   let autoSyncBlock = "";
   const sync = await syncIfStale(root, pluginRoot);
   if (sync.synced) {
@@ -5105,11 +5141,11 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     ...conceptTestsLine,
     ...enforcementLine,
     "Commit packaging (the commit gate inspects ONLY the currently staged list \u2014 `git diff --cached --diff-filter=ACMR`; code already landed in earlier commits does NOT count):",
-    "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the related code AND the alignment lock (docs/conceptpowers/concepts/.alignment/ lock\xB7history\xB7attest) in the SAME commit. Deferring the lock to a separate chore commit re-triggers [CONCEPT DRIFT] on that code-less commit.",
-    "- A drifted concept requires ALL of its related paths (@concept-tagged files + feature codePaths) staged together, even when you actually changed only some of them. Don't split concept-touching refactors into small commits.",
-    "- When moving or deleting files, migrate the @concept tags and refresh the mapping (conceptpowers:update-mapping) in the SAME commit \u2014 a deleted path left in related paths can never be staged again (deletions are outside ACMR) and blocks the gate permanently.",
+    "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the code you changed for them AND the fresh consistency attestation (docs/conceptpowers/concepts/.alignment/attest.json) in the SAME commit. The alignment lock/history are rewritten by the post-commit reconcile \u2014 include those files in your next commit; a lock-only follow-up commit is expected, not drift.",
+    "- A drifted concept counts as followed when at least one of its related paths (@concept-tagged files + feature codePaths) is staged \u2014 stage the files you actually changed for the concept; you do not need every related file. If NONE is staged the gate asks (standard) / blocks (strict) / warns (light).",
+    "- When moving or deleting files, migrate the @concept tags and refresh the mapping (conceptpowers:update-mapping) in the SAME commit. Paths that no longer exist on disk are excluded from the follow judgment, so a stale deleted path cannot block the gate \u2014 but it does leave the mapping inaccurate until refreshed.",
     "- Editing only a path string inside a concept body still changes its hash and counts as drift; update path wording in the same commit that moves the path.",
-    "- Never routinely force past the gate (Drift Ignored). If forced, remove the cause (stale lock / stale paths) and re-align within the same session \u2014 accumulated `ignored: true` entries in history.json void the concept\u2013code alignment guarantee.",
+    "- Never routinely force past the gate (Drift Ignored). Force only when the concept change genuinely needs no code change (say so to the user); otherwise fix the code and stage it. Each `ignored: true` entry in history.json is a recorded exception \u2014 accumulated unexplained ones void the concept\u2013code alignment guarantee.",
     redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
