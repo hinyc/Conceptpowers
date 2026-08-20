@@ -1,13 +1,13 @@
 // @concept:sidebar-search @concept:sidebar-toggle @concept:list-item-readout
-// assets/sidebar.js — 개념/기능 상세 화면 좌측 사이드바(목록) 열고/닫기.
-// viewer.js가 정의하는 h()/state/displayName/conceptListSections/featureListSection에 의존한다.
-// 로드 순서: index.html에서 sidebar.js를 viewer.js보다 먼저 로드한다(전역 의존은
-// 호출 시점에만 필요하므로 순서 자체는 안전하지만, 스펙이 지정한 순서를 따른다).
+// assets/sidebar.js — 개념/기능 상세 화면 좌측 곁 목록(넓은 화면 전용) 열고/닫기.
+// 좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(topnav.js, group-navbar)가 목록 역할을 한다.
+// viewer.js가 정의하는 h()/state/displayName/conceptListSections/featureListSection과
+// topnav.js의 CPTopnav에 의존한다. 로드 순서: index.html에서 sidebar.js를 viewer.js보다
+// 먼저 로드한다(전역 의존은 호출 시점에만 필요하므로 순서 자체는 안전하다).
 'use strict';
 
 var CPSidebar = (function () {
   var STORAGE_KEY = 'cp.sidebar.open';
-  var BREAKPOINT = 1280;
   var currentShell = null;
   var escBound = false;
 
@@ -27,11 +27,12 @@ var CPSidebar = (function () {
     }
   }
 
+  // 기본값은 열림 — 곁 목록은 넓은 화면에서만 보이므로 너비는 더 보지 않는다.
+  // 사람이 직접 닫은 적이 있으면 그 선택을 우선한다(sidebar-toggle).
   function isOpen() {
     var stored = readStored();
-    if (stored === '1') return true;
     if (stored === '0') return false;
-    return window.innerWidth >= BREAKPOINT;
+    return true;
   }
 
   function applyOpenState(open) {
@@ -56,6 +57,8 @@ var CPSidebar = (function () {
     escBound = true;
     document.addEventListener('keydown', function (ev) {
       if (ev.key !== 'Escape') return;
+      // 상단 묶음 메뉴가 펼쳐져 있으면 그쪽이 먼저 닫힌다(group-navbar와의 층 순서).
+      if (typeof CPTopnav !== 'undefined' && CPTopnav.isMenuOpen()) return;
       // 상세 화면을 떠나면 currentShell은 분리된 노드가 된다 — 그때의 Esc는 무시해야
       // 사용자가 명시적으로 닫지 않은 상태를 localStorage에 쓰지 않는다.
       if (currentShell && !currentShell.isConnected) currentShell = null;
@@ -63,13 +66,20 @@ var CPSidebar = (function () {
     });
   }
 
+  // 곁 목록에는 지금 보고 있는 항목이 속한 묶음만 담는다 — 다른 묶음은 상단 묶음 메뉴로 간다.
   function sidebarListNode(activeKind, activeSlug) {
     var t = state.t;
     var active = { kind: activeKind, slug: activeSlug };
-    var sections = conceptListSections(active, true);
-    var featureSection = featureListSection(active, true);
+    if (activeKind === 'feature') {
+      var featureOnly = featureListSection(active, true);
+      return h('div', { class: 'side__list' }, [
+        featureOnly || h('p', { class: 'muted' }, t.empty),
+      ]);
+    }
+    var activeGroup = CPTopnav.activeGroupKey(state.manifest, active);
+    var sections = conceptListSections(active, true, activeGroup);
     var body = sections.length ? sections : [h('p', { class: 'muted' }, t.empty)];
-    return h('div', { class: 'side__list' }, [body, featureSection]);
+    return h('div', { class: 'side__list' }, body);
   }
 
   function matchesQuery(text, q) {
@@ -132,10 +142,6 @@ var CPSidebar = (function () {
     closeBtn.addEventListener('click', function () {
       setOpen(false);
     });
-    var backdrop = h('div', { class: 'side-backdrop' });
-    backdrop.addEventListener('click', function () {
-      setOpen(false);
-    });
     var listNode = sidebarListNode(activeKind, activeSlug);
     var noResultsNode = h(
       'p',
@@ -164,8 +170,11 @@ var CPSidebar = (function () {
       listNode,
       noResultsNode,
     ]);
-    var body = h('div', { class: 'shell__body' }, [aside, backdrop, wrapNode]);
-    var topbar = h('div', { class: 'shell__topbar' }, [toggleBtn]);
+    var body = h('div', { class: 'shell__body' }, [aside, wrapNode]);
+    var topbar = h('div', { class: 'shell__topbar' }, [
+      toggleBtn,
+      CPTopnav.bar({ kind: activeKind, slug: activeSlug }),
+    ]);
     var shellEl = h('div', { class: 'shell' + (open ? ' shell--open' : '') }, [topbar, body]);
     currentShell = shellEl;
     return shellEl;

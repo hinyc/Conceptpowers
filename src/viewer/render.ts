@@ -71,6 +71,7 @@ export async function renderViewerToDisk(root: string, stampVersion?: string): P
   await copyAsset('index.html', join(p.conceptsViewer, 'index.html'));
   await copyAsset('viewer.js', join(p.conceptsViewer, 'assets', 'viewer.js'));
   await copyAsset('sidebar.js', join(p.conceptsViewer, 'assets', 'sidebar.js'));
+  await copyAsset('topnav.js', join(p.conceptsViewer, 'assets', 'topnav.js'));
   await copyAsset('serve.mjs', join(p.conceptsViewer, 'serve.mjs'));
   await copyAsset('concept.css', p.cssTarget);
 }

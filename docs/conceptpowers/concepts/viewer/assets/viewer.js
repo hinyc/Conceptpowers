@@ -83,6 +83,7 @@ var I18N = {
     sidebarCloseLabel: '개념 목록 닫기',
     closeSidebar: '닫기',
     sidebarSearchPh: '개념 · 기능 검색',
+    topnavLabel: '묶음 메뉴',
   },
   en: {
     appTitle: 'Concepts',
@@ -162,6 +163,7 @@ var I18N = {
     sidebarCloseLabel: 'Close concept list',
     closeSidebar: 'Close',
     sidebarSearchPh: 'Search concepts · features',
+    topnavLabel: 'Group menu',
   },
 };
 
@@ -555,6 +557,7 @@ function viewDoc(kind) {
         .trim();
       setApp(
         h('div', { class: 'wrap' }, [
+          CPTopnav.bar(null),
           breadcrumbs([{ label: t.home, href: '#/' }, { label: label }]),
           renderMarkdown(md),
           stripped ? null : h('p', { class: 'muted' }, t.docEmpty),
@@ -770,11 +773,13 @@ function sideItem(href, slug, title, isActive) {
 }
 // active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
 // compact: true면 사이드바용(2줄 스택 + 축약 상태 표시), 기본(목록 페이지)은 표.
-function conceptListSections(active, compact) {
+// onlyGroup: 지정하면 그 묶음 섹션만 만든다(곁 목록은 활성 묶음만 담는다 — group-navbar와 역할 분담).
+function conceptListSections(active, compact, onlyGroup) {
   var m = state.manifest;
   var groups = {};
   (m.concepts || []).forEach(function (c) {
     var g = c.group || '(ungrouped)';
+    if (onlyGroup && g !== onlyGroup) return;
     (groups[g] = groups[g] || []).push(c);
   });
   return Object.keys(groups).map(function (g) {
@@ -844,6 +849,7 @@ function viewIndex(scrollTo) {
   });
   setApp(
     h('div', { class: 'wrap' }, [
+      CPTopnav.bar(null),
       breadcrumbs([{ label: t.home }]),
       h('header', { class: 'hero' }, [
         h('div', { class: 'hero__top' }, [h('h1', null, t.appTitle), statusLegend()]),

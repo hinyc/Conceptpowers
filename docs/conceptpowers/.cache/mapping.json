@@ -65,7 +65,8 @@
   "list-item-readout": [
     "assets/concept.css",
     "assets/sidebar.js",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "assets/topnav.js"
   ],
   "sidebar-search": [
     "assets/sidebar.js",
@@ -253,5 +254,9 @@
   "viewer-local-write-guard": [
     "src/viewer/serve.ts",
     "tests/viewer/serve.test.ts"
+  ],
+  "group-navbar": [
+    "assets/topnav.js",
+    "tests/viewer/topnav.test.ts"
   ]
 }

@@ -142,5 +142,23 @@
     "at": "2026-08-19T01:19:56.365Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "sidebar-toggle",
+    "hash": "1f1c33e3b006",
+    "prevHash": "",
+    "reason": "좁은 화면 서랍을 상단 묶음 메뉴(group-navbar)로 대체 — 곁 목록을 넓은 화면 전용으로 좁힘 (사용자 승인)",
+    "at": "2026-08-20T00:56:27.999Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "d1337de0fe37",
+    "prevHash": "ddf61f099fea",
+    "reason": "곁 목록이 넓은 화면 전용이 되면서 서랍 문구를 곁 목록으로 수정 (사용자 승인)",
+    "at": "2026-08-20T00:56:28.076Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

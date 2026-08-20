@@ -42,23 +42,21 @@ function loadSidebar(width: number) {
   };
 }
 
-describe('CPSidebar 열림 상태', () => {
-  it('localStorage가 비어있고 폭이 1280 이상이면 기본 열림', () => {
+describe('CPSidebar 열림 상태 (sidebar-toggle: 기본 열림, 저장된 선택 우선)', () => {
+  it('아무 선택도 한 적 없으면 기본 열림이다 — 곁 목록은 넓은 화면 전용이라 너비는 보지 않는다', () => {
     expect(loadSidebar(1280).isOpen()).toBe(true);
+    expect(loadSidebar(320).isOpen()).toBe(true);
   });
 
-  it('localStorage가 비어있고 폭이 1280 미만이면 기본 닫힘', () => {
-    expect(loadSidebar(1279).isOpen()).toBe(false);
-  });
-
-  it('사용자가 닫으면 넓은 화면에서도 닫힘 상태를 유지한다', () => {
+  it('사용자가 닫으면 닫힘 상태를 기억해 유지한다 (규칙: 저장된 선택이 기본값보다 우선)', () => {
     const sidebar = loadSidebar(1920);
     sidebar.setOpen(false);
     expect(sidebar.isOpen()).toBe(false);
   });
 
-  it('사용자가 열면 좁은 화면에서도 열림 상태를 유지한다', () => {
-    const sidebar = loadSidebar(320);
+  it('닫았다가 다시 열면 열림 상태를 기억해 유지한다', () => {
+    const sidebar = loadSidebar(1920);
+    sidebar.setOpen(false);
     sidebar.setOpen(true);
     expect(sidebar.isOpen()).toBe(true);
   });

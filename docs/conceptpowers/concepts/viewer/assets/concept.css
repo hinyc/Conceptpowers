@@ -57,14 +57,18 @@ body {
   padding: 48px 10px 96px;
 }
 
-/* 상세 화면 좌측 사이드바(개념·기능 목록) 열기/닫기 */
+/* 상세 화면 좌측 곁 목록(넓은 화면 전용) 열기/닫기.
+   좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(.topnav)가 목록 진입로가 된다. */
 .shell__topbar {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: 14px 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .side-toggle {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 36px;
@@ -84,28 +88,7 @@ body {
   position: relative;
 }
 .side {
-  visibility: hidden;
-  pointer-events: none;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(320px, 86vw);
-  background: var(--bg);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 16px;
-  z-index: 40;
-  transform: translateX(-100%);
-  transition:
-    transform 0.2s ease,
-    visibility 0.2s;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-.shell--open .side {
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateX(0);
+  display: none;
 }
 .side__head {
   display: flex;
@@ -199,17 +182,10 @@ body {
   background: color-mix(in srgb, var(--link) 14%, transparent);
   border-radius: 6px;
 }
-.side-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 35;
-}
-.shell--open .side-backdrop {
-  display: block;
-}
-
 @media (min-width: 1280px) {
+  .side-toggle {
+    display: inline-flex;
+  }
   .shell__topbar {
     max-width: calc(var(--maxw) + 300px);
   }
@@ -222,38 +198,122 @@ body {
     padding: 0 10px;
   }
   .side {
-    /* 데스크톱 도킹 패널은 transition:none이라 애니메이션이 필요 없다 — display:none으로
-       닫힘 시 flex 트랙(260px+gap)을 완전히 접어야 .wrap의 margin:0 auto가 다시 살아난다. */
-    display: none;
-    visibility: visible;
-    pointer-events: auto;
+    /* 도킹 패널은 애니메이션이 필요 없다 — display:none으로 닫힘 시
+       flex 트랙(260px+gap)을 완전히 접어야 .wrap의 margin:0 auto가 다시 살아난다. */
     position: sticky;
     top: 24px;
-    left: auto;
-    bottom: auto;
     flex: 0 0 260px;
     width: 260px;
     max-height: calc(100vh - 48px);
-    border-right: none;
+    overflow-y: auto;
+    padding: 16px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface);
-    transform: none;
-    transition: none;
-    box-shadow: none;
     z-index: 1;
   }
   .shell--open .side {
     display: block;
-  }
-  .side-backdrop {
-    display: none !important;
   }
   .shell__body > .wrap {
     flex: 1 1 auto;
     min-width: 0;
     margin: 0 auto;
   }
+}
+
+/* 상단 묶음 메뉴(group-navbar) — 묶음 이름 한 줄 + 본문 위에 뜨는 펼침 목록 */
+.topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 18px;
+}
+.shell__topbar .topnav {
+  margin: 0;
+}
+.topnav__item {
+  position: relative;
+}
+.topnav__btn {
+  border: 1px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.topnav__item--active > .topnav__btn {
+  color: var(--link);
+  font-weight: 600;
+}
+.topnav__btn:hover,
+.topnav__item--open > .topnav__btn {
+  color: var(--fg);
+  background: var(--surface);
+  border-color: var(--border);
+}
+/* 펼침 목록: 본문을 밀어내지 않고 위에 뜬다(group-navbar 불변 규칙). 길면 안에서 스크롤. */
+.topnav__panel {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 60;
+  min-width: 280px;
+  max-width: min(340px, calc(100vw - 24px));
+  max-height: min(60vh, 480px);
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  padding: 8px;
+}
+.topnav__item--open > .topnav__panel {
+  display: block;
+}
+.topnav__menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.topnav__menu li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0 6px;
+  padding: 0.4rem 0.3rem;
+  border-radius: 6px;
+}
+.topnav__menu li:hover {
+  background: color-mix(in srgb, var(--link) 10%, transparent);
+}
+/* 항목 표기는 곁 목록과 같은 규칙(list-item-readout): 이름표·제목이 각자 한 줄씩 잘린다. */
+.topnav__menu .side-item {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topnav__menu .side-item > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 동그라미 색 뜻은 같은 화면(펼침 목록 안 범례)에서 알려준다. */
+.topnav__legend {
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  padding: 8px 6px 2px;
+}
+.topnav__legend .status-legend {
+  gap: 10px;
+  font-size: 0.75rem;
 }
 
 /* 경로 내비게이션 (breadcrumbs) */

@@ -15,21 +15,26 @@
     "at": "2026-07-29T03:30:22.599Z"
   },
   "sidebar-search": {
-    "hash": "ddf61f099fea",
+    "hash": "d1337de0fe37",
     "result": "pass",
-    "at": "2026-08-18T08:44:34.391Z",
+    "at": "2026-08-20T00:57:08.306Z",
     "compared": [
-      "home-search",
+      "group-navbar",
       "sidebar-toggle",
       "list-item-readout",
-      "settled-status"
-    ],
-    "note": "tradeoffs·example 서술 정정 재검사. 계약 해시 불변(ddf61f099fea). home-search interaction·list-item-readout과 정합, 규칙 충돌 없음."
+      "home-search"
+    ]
   },
   "sidebar-toggle": {
-    "hash": "3f79d43c9c88",
+    "hash": "1f1c33e3b006",
     "result": "pass",
-    "at": "2026-07-29T03:30:22.683Z"
+    "at": "2026-08-20T00:57:08.244Z",
+    "compared": [
+      "group-navbar",
+      "sidebar-search",
+      "list-item-readout",
+      "home-search"
+    ]
   },
   "concept-inline-edit": {
     "hash": "26279e1f3654",
@@ -162,5 +167,21 @@
       "human-owns-contract"
     ],
     "note": "충돌 0건. 상태의 의미는 settled-status, 표시 방법은 이 개념으로 역할 분리. 상세·편집 화면은 대상 제외(concept-inline-edit와 무충돌). slug 유일성 확인."
+  },
+  "group-navbar": {
+    "hash": "2c0e00cd75bb",
+    "result": "pass",
+    "at": "2026-08-20T00:57:08.183Z",
+    "compared": [
+      "list-item-readout",
+      "sidebar-toggle",
+      "sidebar-search",
+      "home-search",
+      "concept-inline-edit",
+      "copy-code-path",
+      "knowledge-graph-view",
+      "globally-unique-slug",
+      "output-locale"
+    ]
   }
 }

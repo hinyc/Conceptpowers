@@ -477,6 +477,20 @@
       ]
     },
     {
+      "slug": "group-navbar",
+      "group": "viewer",
+      "title": "위에서 묶음을 고르면 목록이 내려온다",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "url": "../data/viewer/group-navbar.json",
+      "codeLinks": [
+        "assets/topnav.js",
+        "tests/viewer/topnav.test.ts"
+      ]
+    },
+    {
       "slug": "home-search",
       "group": "viewer",
       "title": "한 곳에서 다 찾기",
@@ -518,7 +532,8 @@
       "codeLinks": [
         "assets/viewer.js",
         "assets/sidebar.js",
-        "assets/concept.css"
+        "assets/concept.css",
+        "assets/topnav.js"
       ]
     },
     {
@@ -1581,6 +1596,27 @@
         "type": "concept",
         "href": "#/concept/copy-code-path",
         "title": "copy-code-path"
+      },
+      {
+        "id": "c:group-navbar",
+        "label": "위에서 묶음을 고르면 목록이 내려온다",
+        "type": "concept",
+        "href": "#/concept/group-navbar",
+        "title": "group-navbar"
+      },
+      {
+        "id": "p:assets/topnav.js",
+        "label": "topnav.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/topnav.js"
+      },
+      {
+        "id": "p:tests/viewer/topnav.test.ts",
+        "label": "topnav.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/topnav.test.ts"
       },
       {
         "id": "c:home-search",
@@ -2798,6 +2834,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:group-navbar",
+        "target": "p:assets/topnav.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:group-navbar",
+        "target": "p:tests/viewer/topnav.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:home-search",
         "target": "p:assets/viewer.js",
         "kind": "concept-file"
@@ -2840,6 +2886,11 @@
       {
         "source": "c:list-item-readout",
         "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:list-item-readout",
+        "target": "p:assets/topnav.js",
         "kind": "concept-file"
       },
       {
