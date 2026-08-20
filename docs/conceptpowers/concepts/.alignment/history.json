@@ -160,5 +160,23 @@
     "at": "2026-08-20T00:56:28.076Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "d1337de0fe37",
+    "prevHash": "d1337de0fe37",
+    "reason": "곁 목록이 넓은 화면 전용이 되면서 서랍 문구를 곁 목록으로 수정 (사용자 승인) — [정정] 구세션 고정 1.4.0 훅이 ignored로 기록했으나, 1.5.1 규칙(연결 코드 하나라도 포함=따라옴)으로 assets/sidebar.js가 커밋 c634e2b에 포함되어 따라옴이 맞음",
+    "at": "2026-08-20T01:52:57.618Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "sidebar-toggle",
+    "hash": "1f1c33e3b006",
+    "prevHash": "1f1c33e3b006",
+    "reason": "좁은 화면 서랍을 상단 묶음 메뉴(group-navbar)로 대체 — 곁 목록을 넓은 화면 전용으로 좁힘 (사용자 승인)",
+    "at": "2026-08-20T01:52:57.618Z",
+    "ignored": false,
+    "aligned": true
   }
 ]

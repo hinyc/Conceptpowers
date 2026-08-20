@@ -88,12 +88,12 @@
     "at": "2026-07-29T04:43:45.179Z"
   },
   "sidebar-search": {
-    "hash": "ddf61f099fea",
-    "at": "2026-07-29T04:43:45.179Z"
+    "hash": "d1337de0fe37",
+    "at": "2026-08-20T01:52:57.618Z"
   },
   "sidebar-toggle": {
-    "hash": "3f79d43c9c88",
-    "at": "2026-07-29T04:43:45.179Z"
+    "hash": "1f1c33e3b006",
+    "at": "2026-08-20T01:52:57.618Z"
   },
   "concept-driven-tests": {
     "hash": "1ee68817409e",
@@ -106,5 +106,9 @@
   "list-item-readout": {
     "hash": "ec51705aed5c",
     "at": "2026-08-18T08:46:18.515Z"
+  },
+  "group-navbar": {
+    "hash": "2c0e00cd75bb",
+    "at": "2026-08-20T01:52:57.618Z"
   }
 }
