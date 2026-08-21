@@ -1,4 +1,11 @@
 // @concept:settled-status
+// 충돌 검사 증빙(attest) 기록과 신선도 판정을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - settled-status 불변 "초록이 되려면 … 다른 개념과 충돌하지 않는지 검사한 기록이 있을 것(검사 증빙)"
+//    → recordAttest 후 freshPassAttest가 true / result=conflict 증빙은 pass로 인정 안 함
+//    → 개념 계약이 바뀌면 증빙이 실효(해시 불일치) — 증빙은 검사한 그 계약에만 붙는다
+//  - 저장 세부(기록 없는 root면 빈 객체, 다른 slug 기록 보존, evidence 필드, note 1000자 상한)는
+//    개념 규칙이 아니라 증빙 로그가 훼손되지 않게 하는 구현 세부다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

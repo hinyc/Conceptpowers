@@ -1,4 +1,14 @@
 // @concept:init-gate @concept:settled-status @concept:atomic-baseline-write
+// quality / attest-consistency 명령을 검증한다 — 초록 승격의 두 조건을 만드는 명령들이다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - settled-status 불변 "초록이 되려면 … 지킬 수 있는 규칙이 실제로 적혀 있을 것(품질 최소치)"
+//    → quality: 결격 개념은 exit 1 + deficiencies / 통과 개념은 exit 0
+//  - settled-status 불변 "… 다른 개념과 충돌하지 않는지 검사한 기록이 있을 것(검사 증빙)"
+//    → attest-consistency: pass 기록이 저장된다 / compared·note가 증빙 로그에 기록된다
+//    → result가 pass|conflict 외면 exit 1 / --compared 누락·미존재 slug면 exit 1 (증빙이 헐거워지지 않게)
+//  - atomic-baseline-write 불변 "저장 도중 실패하면 남은 임시 파일을 정리하고 실패를 감추지 않는다"
+//    → --note가 1000자를 초과하면 exit 1이고 증빙 로그가 훼손되지 않는다
+//  - "없는 slug는 exit 1"은 대응하는 개념 규칙이 없다 — 존재하지 않는 대상에 대한 방어다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

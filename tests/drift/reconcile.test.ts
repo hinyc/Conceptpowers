@@ -1,4 +1,15 @@
 // @concept:drift-reconcile @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
+// 커밋 뒤 결산(reconcileAfterCommit)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - drift-reconcile 구성요소 "따라옴 / 무시함" → aligned·ignored 분류, 하나만 들어와도 aligned
+//  - drift-reconcile 불변 "따라옴이든 무시함이든, 결산한 개념의 기준선은 반드시 현재 지문으로 다시
+//    맞춘다" → aligned·ignored 양쪽에서 lock을 현재 해시로 갱신
+//  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
+//    → history에 ignored 기록
+//  - drift-reconcile 허용 "새로 생긴 개념을 기준선에 등록하고, 사라진 개념의 낡은 기록을 지우는 것"
+//    → 신규 개념을 현재 해시로 등록 / 삭제된 개념의 stale lock 정리
+//  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
+//    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 aligned
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

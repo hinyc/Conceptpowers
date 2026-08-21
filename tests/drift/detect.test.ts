@@ -1,4 +1,17 @@
 // @concept:contract-hash @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:drift-reconcile
+// 개념이 바뀌었는지(어긋남) 판정하는 computeDrift를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - contract-hash 불변 "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다"
+//    → 개념이 바뀌면 drift로 보고한다 / lock 해시와 현재 해시가 같으면 drift가 아니다
+//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//    → lock에 없는 개념은 drift가 아니다 (견줄 기준선이 아직 없다)
+//  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
+//    파생시킨다" → feature codePaths를 relatedPaths로 모은다
+//  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
+//    → 디스크에 없는 연결 경로는 relatedPaths에서 뺀다
+//  - drift-reconcile 구성요소 "기준선: 결산 시점의 지문을 적어 두는 자리 — 여기를 옮겨야 같은 경고가
+//    반복되지 않는다" → 사유 선택 4개(aligned 기록 제외 / 기준선 지문과 같은 사유 제외 / 두 세대 전
+//    사유 제외 / 되돌리기로 옛 지문이 재등장해도 옛 사유 제외): 기준선 이후의 실제 변경 사유만 붙는다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

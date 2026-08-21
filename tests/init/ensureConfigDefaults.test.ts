@@ -1,5 +1,15 @@
 // @concept:plugin-version-sync @concept:atomic-baseline-write
 // tests/init/ensureConfigDefaults.test.ts
+// 설정 보충(ensureInitConfigDefaults)을 검증한다 — 자동 갱신이 어디까지 손대는지를 가르는 자리다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - plugin-version-sync 불변 "이미 존재하는 파일의 내용은 지우거나 바꾸지 않는다 — … 설정 파일은 빠진
+//    항목만 기본값으로 채워 넣는다" → 빠진 항목을 채우고 채운 이름을 돌려준다
+//  - plugin-version-sync 불변 "설정 파일에 이미 적힌 값은 무엇이든 그대로 보존한다 — 도구가 모르는
+//    항목도 지우지 않는다" → 사람이 꺼둔 값을 되돌리지 않는다 / 모르는 항목을 지우지 않는다
+//  - plugin-version-sync 불변 "채울 항목이 하나도 없으면 설정 파일을 다시 쓰지 않는다"
+//    → 채울 항목이 없으면 파일을 한 글자도 건드리지 않는다
+//    → init.json이 없으면 아무것도 만들지 않는다 / JSON이 깨졌거나 검증을 통과 못 하면 손대지 않는다
+//  - atomic-baseline-write 불변 "저장 도중 실패하면 남은 임시 파일을 정리한다" → 임시파일 잔여물을 남기지 않는다
 // 시나리오는 plugin-version-sync 개념의 규칙에서 도출했다(conceptDrivenTests).
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';

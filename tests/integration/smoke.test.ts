@@ -1,5 +1,15 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:governance-mode
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:governance-mode @concept:audit-gap-detection @concept:feature-spec-bridge @concept:concept-code-mapping @concept:generated-not-hand-edited
 // tests/integration/smoke.test.ts
+// init부터 커밋 게이트까지 한 줄로 훑는 통합 시나리오다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → 두 시나리오 모두 init으로 시작한다
+//  - audit-gap-detection 정의 "사람이 손으로 쓴 코드 파일은 예외 없이 자기가 따르는 개념을 첫머리에
+//    밝혀야 한다" → 태그를 붙인 코드가 커밋 게이트를 통과한다
+//  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
+//    파생시킨다" + concept-code-mapping 허용 "코드의 표식을 훑어 지도를 만들고 보관본으로 저장하는 것"
+//    + generated-not-hand-edited 허용 "다시 만들었을 때 결과가 달라지는지 확인하는 것"
+//    → feature 작성 → concept 정의 → map → render 뒤 그래프에 3종 엣지가 모두 생긴다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

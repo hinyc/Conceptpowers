@@ -1,4 +1,4 @@
-/* @concept:list-item-readout */
+/* @concept:list-item-readout @concept:detail-summary-outline */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -390,6 +390,21 @@ p:last-child {
 .hero p {
   font-size: 1.05rem;
   color: var(--fg-soft);
+}
+/* 제목 아래 요약: 이야기 단위로 끊어 항목마다 한 줄씩(detail-summary-outline) */
+.hero__points {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 1.05rem;
+  color: var(--fg-soft);
+}
+.hero__points li {
+  margin: 0.3rem 0;
+  color: inherit;
+  line-height: 1.65;
+}
+.hero__points li::marker {
+  color: var(--link);
 }
 .cats {
   color: var(--muted);

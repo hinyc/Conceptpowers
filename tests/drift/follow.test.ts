@@ -1,4 +1,14 @@
 // @concept:drift-reconcile
+// 따라옴 판정의 단일 잣대(isFollowed·missingRelatedPaths·pruneMissingPaths)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - drift-reconcile 구성요소 "따라옴: 개념과 연결된 코드 가운데 하나라도 커밋에 함께 들어온 경우 —
+//    어느 파일을 고쳐야 하는지는 사람만 알 수 있으므로 전부를 요구하지 않는다"
+//    → 하나라도 들어오면 따라옴 / 하나도 안 들어오면 무시함 / 연결 코드가 없으면 따라옴
+//  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
+//    → pruneMissingPaths 6개: 없는 경로·디렉터리·루트 밖·절대 경로를 빼고, 전부 사라지면 빈 목록
+//  - drift-reconcile 불변 "커밋 전 문지기(governance-mode)의 어긋남 경고와 커밋 뒤 결산은 같은
+//    잣대로 따라옴을 판정한다" → 문지기·결산 동일 잣대
+//  - 경로 표기 정규화(./ 접두·역슬래시)는 개념 규칙이 아니라 같은 파일을 다르게 세지 않기 위한 구현 세부다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

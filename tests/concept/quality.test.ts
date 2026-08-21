@@ -1,4 +1,10 @@
 // @concept:settled-status
+// 품질 최소치(checkConceptQuality)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - settled-status 불변 "초록이 되려면 … 지킬 수 있는 규칙이 실제로 적혀 있을 것(품질 최소치)"
+//    → 규칙 0개면 결격 / 10자 이상 규칙이 하나라도 있으면 통과 / trim 후 10자 미만이면 결격
+//    → term 단독 카테고리는 규칙 대신 example을 요구 / term+behavior 복합은 규칙을 요구
+//  - "입력 개념 객체를 변경하지 않는다"는 개념 규칙이 아니라 이 함수가 순수 함수라는 계약이다.
 import { describe, it, expect } from 'vitest';
 import { checkConceptQuality } from '../../src/concept/quality.js';
 import { parseConcept } from '../../src/schema/concept.js';

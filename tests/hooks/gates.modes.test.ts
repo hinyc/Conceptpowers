@@ -1,5 +1,20 @@
 // @concept:governance-mode @concept:init-gate
 // tests/hooks/gates.modes.test.ts
+// 문지기 강도(strict·light·폴백)에 따른 대응을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - governance-mode 구성요소 "엄격(strict): 발견한 문제 전부를 한 번에 보여주며 커밋을 막는다"
+//    → 위반이 있으면 deny하고 위반 전부를 한 메시지에 모은다
+//  - governance-mode 구성요소 "가벼움(light): 멈추지 않고 발견한 문제 전부를 한 번에 경고로 모아 알린다"
+//    → 위반이 있어도 allow하고 경고 전부를 additionalContext로 전달한다 / stale 산출물도 경고 집합에 포함
+//  - governance-mode 불변 "강도가 무엇이든 지키는 대상(검사 항목)은 같다 — 바뀌는 것은 대응뿐이다"
+//    → 위반이 없으면 allow / 참조 문서와 위반이 함께 있어도 위반이 가려지지 않는다(strict·light 양쪽)
+//    → stale 산출물만 있으면 strict에서도 deny가 아니라 ask (대응만 다르다)
+//  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
+//    → 기밀 reference 문서는 strict여도, light여도 ask다
+//  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
+//    → init.json이 깨져도 첫 위반에서 ask한다
+//  - "게이트 실행 실패는 findings가 비어 있어도 알린다"는 atomic-baseline-write 불변 "실패를 감추지
+//    않는다"와 같은 태도를 문지기에 적용한 것이다.
 // governance-mode 개념의 불변 규칙에서 도출한 시나리오들. 각 테스트 이름 끝에 검증 규칙을 명시한다.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';

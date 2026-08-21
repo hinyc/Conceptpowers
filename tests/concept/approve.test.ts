@@ -1,5 +1,14 @@
 // @concept:init-gate @concept:settled-status @concept:atomic-baseline-write
 // tests/concept/approve.test.ts
+// 빨강 → 초록 승인(approveConcept)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - settled-status 불변 "빨강을 초록으로 올리는 것은 사람이 명시적으로 요청했을 때만 한다"
+//    → red 개념을 green으로 승인한다
+//  - settled-status 불변 "한 번 확정된 초록·빨강은 시스템 경로로는 되돌리지 않는다"
+//    → 이미 green인 개념은 승인을 거부한다
+//  - settled-status 허용 "검사 증빙을 갖춘 노랑을 초록으로 올리는 것"
+//    → pending 개념은 승인을 거부한다 (노랑은 증빙 경로로 올라가고, approve는 빨강 전용이다)
+//  - "없는 개념은 에러를 던진다"는 대응하는 개념 규칙이 없다 — 존재하지 않는 대상에 대한 방어다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

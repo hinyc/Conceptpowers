@@ -1,5 +1,33 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile @concept:governance-mode
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile @concept:governance-mode @concept:human-owns-contract @concept:pending-conflict-tracking @concept:concept-code-mapping @concept:plugin-version-sync @concept:output-locale
 // tests/cli/cli.test.ts
+// CLI 서브커맨드 전반을 검증한다. 명령마다 다스리는 개념이 달라 아래에 갈라 적는다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → version-sync는 초기화되지 않은 프로젝트에서 에러를 반환한다
+//  - init-gate 불변 "초기화되지 않았으면 실행하지 않고, 무엇을 먼저 해야 하는지 알린다"
+//    → init 스캐폴드 생성 / init 완료 후 안내 문구 (package.json 유무에 따라 다른 안내)
+//  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
+//    → --lang en이면 영어 안내를 출력한다
+//  - settled-status 불변 "빨강을 초록으로 올리는 것은 사람이 명시적으로 요청했을 때만 한다"
+//    → approve가 red 개념을 green으로 승인한다
+//  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
+//    → edit-concept는 green 개념을 수정하면 pending으로 내린다 / red·pending의 상태는 유지한다
+//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//    → status가 drift 개수를 포함한다 / drift가 JSON 배열을 출력한다
+//  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
+//    → note-change는 history에 이유를 기록한다
+//  - pending-conflict-tracking 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다" /
+//    "확정되는 순간 남아 있던 충돌 사유 기록을 지운다" → note-conflict/resolve-conflict
+//  - concept-code-mapping 불변 "코드의 표식을 고쳤으면 같은 작업에서 보관본도 함께 갱신한다"
+//    → map은 증분 실행 시 전달되지 않은 파일의 캐시를 보존한다 / map --full은 전달된 파일만으로 재생성
+//  - plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
+//    → sync 서브커맨드가 --force로 생성물을 패치한다
+//  - generated-not-hand-edited 허용 "다시 만들었을 때 결과가 달라지는지 확인하는 것"
+//    → render 서브커맨드가 뷰어 경로 안내를 JSON으로 출력한다
+//  - governance-mode 구성요소 "엄격 / 표준(기본값) / 가벼움" + 불변 "강도 설정이 없거나 깨졌으면
+//    표준(standard)으로 동작한다"
+//    → init --enforcement light가 기록된다 / init 기본값은 standard / status가 enforcement를 보여준다
+//  - "edit-concept는 없는 개념에 에러+exit 1"은 대응하는 개념 규칙이 없다 — 방어적 처리다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, existsSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

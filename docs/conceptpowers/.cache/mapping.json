@@ -63,10 +63,10 @@
     "tests/hooks/sessionStart.test.ts"
   ],
   "list-item-readout": [
-    "assets/concept.css",
     "assets/sidebar.js",
+    "assets/topnav.js",
     "assets/viewer.js",
-    "assets/topnav.js"
+    "assets/concept.css"
   ],
   "sidebar-search": [
     "assets/sidebar.js",
@@ -76,23 +76,16 @@
     "assets/sidebar.js"
   ],
   "home-search": [
-    "assets/viewer.js",
-    "tests/viewer/listLayout.test.ts"
-  ],
-  "knowledge-graph-view": [
-    "assets/viewer.js",
-    "src/viewer/graph.ts",
-    "tests/viewer/graph.test.ts",
-    "tests/viewer/subgraph.test.ts"
-  ],
-  "concept-inline-edit": [
+    "tests/viewer/listLayout.test.ts",
     "assets/viewer.js"
   ],
-  "copy-code-path": [
+  "knowledge-graph-view": [
+    "src/viewer/graph.ts",
+    "tests/viewer/graph.test.ts",
+    "tests/viewer/subgraph.test.ts",
     "assets/viewer.js"
   ],
   "settled-status": [
-    "assets/viewer.js",
     "src/concept/approve.ts",
     "src/concept/attest.ts",
     "src/concept/quality.ts",
@@ -114,7 +107,8 @@
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "assets/viewer.js"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
@@ -258,5 +252,16 @@
   "group-navbar": [
     "assets/topnav.js",
     "tests/viewer/topnav.test.ts"
+  ],
+  "concept-inline-edit": [
+    "assets/viewer.js"
+  ],
+  "copy-code-path": [
+    "assets/viewer.js"
+  ],
+  "detail-summary-outline": [
+    "assets/viewer.js",
+    "assets/concept.css",
+    "tests/viewer/heroSummary.test.ts"
   ]
 }

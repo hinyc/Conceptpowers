@@ -264,7 +264,6 @@
         "src/concept/approve.ts",
         "src/concept/quality.ts",
         "src/concept/attest.ts",
-        "assets/viewer.js",
         "tests/audit/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/quality.test.ts",
@@ -282,7 +281,8 @@
         "tests/drift/reconcile.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "assets/viewer.js"
       ]
     },
     {
@@ -477,6 +477,21 @@
       ]
     },
     {
+      "slug": "detail-summary-outline",
+      "group": "viewer",
+      "title": "펼쳐 본 화면의 요약은 한 덩어리로 쏟지 않는다",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/viewer/detail-summary-outline.json",
+      "codeLinks": [
+        "assets/viewer.js",
+        "assets/concept.css",
+        "tests/viewer/heroSummary.test.ts"
+      ]
+    },
+    {
       "slug": "group-navbar",
       "group": "viewer",
       "title": "위에서 묶음을 고르면 목록이 내려온다",
@@ -662,6 +677,13 @@
       "title": "코드 경로 복사",
       "codePathCount": 1,
       "url": "../../features/viewer/viewer-code-path-copy.json"
+    },
+    {
+      "slug": "viewer-concept-detail",
+      "group": "viewer",
+      "title": "개념·기능 상세 화면",
+      "codePathCount": 2,
+      "url": "../../features/viewer/viewer-concept-detail.json"
     },
     {
       "slug": "viewer-concept-editing",
@@ -1318,13 +1340,6 @@
         "title": "src/concept/attest.ts"
       },
       {
-        "id": "p:assets/viewer.js",
-        "label": "viewer.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/viewer.js"
-      },
-      {
         "id": "p:tests/cli/quality.test.ts",
         "label": "quality.test.ts",
         "type": "file",
@@ -1372,6 +1387,13 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/serve.test.ts"
+      },
+      {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
       },
       {
         "id": "c:atomic-baseline-write",
@@ -1598,6 +1620,27 @@
         "title": "copy-code-path"
       },
       {
+        "id": "c:detail-summary-outline",
+        "label": "펼쳐 본 화면의 요약은 한 덩어리로 쏟지 않는다",
+        "type": "concept",
+        "href": "#/concept/detail-summary-outline",
+        "title": "detail-summary-outline"
+      },
+      {
+        "id": "p:assets/concept.css",
+        "label": "concept.css",
+        "type": "file",
+        "href": "",
+        "title": "assets/concept.css"
+      },
+      {
+        "id": "p:tests/viewer/heroSummary.test.ts",
+        "label": "heroSummary.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/heroSummary.test.ts"
+      },
+      {
         "id": "c:group-navbar",
         "label": "위에서 묶음을 고르면 목록이 내려온다",
         "type": "concept",
@@ -1659,13 +1702,6 @@
         "type": "file",
         "href": "",
         "title": "assets/sidebar.js"
-      },
-      {
-        "id": "p:assets/concept.css",
-        "label": "concept.css",
-        "type": "file",
-        "href": "",
-        "title": "assets/concept.css"
       },
       {
         "id": "c:sidebar-search",
@@ -1785,6 +1821,13 @@
         "type": "feature",
         "href": "#/feature/viewer-code-path-copy",
         "title": "viewer-code-path-copy"
+      },
+      {
+        "id": "f:viewer-concept-detail",
+        "label": "개념·기능 상세 화면",
+        "type": "feature",
+        "href": "#/feature/viewer-concept-detail",
+        "title": "viewer-concept-detail"
       },
       {
         "id": "f:viewer-concept-editing",
@@ -2340,11 +2383,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/audit/audit.test.ts",
         "kind": "concept-file"
       },
@@ -2431,6 +2469,11 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
@@ -2834,6 +2877,21 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:detail-summary-outline",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-summary-outline",
+        "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-summary-outline",
+        "target": "p:tests/viewer/heroSummary.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:group-navbar",
         "target": "p:assets/topnav.js",
         "kind": "concept-file"
@@ -3226,6 +3284,21 @@
       {
         "source": "f:viewer-code-path-copy",
         "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-concept-detail",
+        "target": "c:detail-summary-outline",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-detail",
+        "target": "p:assets/viewer.js",
+        "kind": "feature-file"
+      },
+      {
+        "source": "f:viewer-concept-detail",
+        "target": "p:assets/concept.css",
         "kind": "feature-file"
       },
       {

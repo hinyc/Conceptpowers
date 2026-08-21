@@ -1,4 +1,11 @@
 // @concept:init-gate @concept:pending-conflict-tracking @concept:settled-status @concept:atomic-baseline-write
+// 충돌 사유 기록(pendingConflicts)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - pending-conflict-tracking 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다"
+//    → 사유를 기록하고 읽는다
+//  - pending-conflict-tracking 불변 "확정되는 순간 남아 있던 충돌 사유 기록을 지운다"
+//    → 해소하면 항목이 사라진다 / setConceptStatus → green 전환 시 자동 정리된다
+//  - atomic-baseline-write 구성요소 "대상: … 충돌 기록 …" → 기록이 없으면 빈 객체(깨진 값 대신 안전한 기본값)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

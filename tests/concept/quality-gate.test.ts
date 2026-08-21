@@ -1,4 +1,10 @@
 // @concept:settled-status @concept:atomic-baseline-write
+// 초록 승격 가드(setConceptStatus)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - settled-status 불변 "초록이 되려면 두 가지가 갖춰져야 한다 — 지킬 수 있는 규칙이 실제로 적혀
+//    있을 것(품질 최소치), 다른 개념과 충돌하지 않는지 검사한 기록이 있을 것(검사 증빙)"
+//    → 품질 결격이면 거부 / 증빙 없으면 거부 / 증빙이 stale이면 거부 / 둘 다 갖추면 승격 성공
+//  - settled-status 구성요소 "노랑(pending) / 빨강(red)" → green이 아닌 전이는 이 가드와 무관하게 동작
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

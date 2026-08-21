@@ -1,4 +1,15 @@
 // @concept:audit-gap-detection @concept:init-gate
+// audit 명령의 전체 스캔·파일 지정 두 모드를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - audit-gap-detection 허용 "격차로 잡힌 파일을 모아 사용자에게 알리는 것"
+//    → 전체 스캔이 conceptless를 보고한다 / 비-ASCII 파일명도 포함 / 전 파일이 태그되면 빈 배열
+//  - audit-gap-detection 구성요소 "대상: … 문서·설정처럼 코드가 아닌 파일과 무시 목록에 등록된
+//    생성물·외부 코드는 대상이 아니다" → .md 문서 안의 @concept 리터럴을 unknownTags로 잡지 않는다
+//  - audit-gap-detection 불변 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다"
+//    → 파일 지정 모드는 .md도 선행 블록 기준으로 스캔한다
+//  - audit-gap-detection 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 격차는 exit 1로 알릴 뿐
+//    커밋 경로가 아니다 (이 명령은 보고 수단이다)
+//  - "파일 지정 모드는 기존 동작 그대로"는 개념 규칙이 아니라 호출 형태의 하위 호환 계약이다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';

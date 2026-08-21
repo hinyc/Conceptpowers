@@ -1,5 +1,18 @@
 // @concept:audit-gap-detection
 // tests/audit/gaps.test.ts
+// 표식 없는 코드 찾아내기(audit-gap-detection)의 격차 판정을 임시 디렉터리 위에서 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - 구성요소 "표식: 파일 첫머리에 적는 개념 이름표 — 따를 개념이 없다는 뜻의 \"없음\"도 표식으로 친다"
+//    → 태그 있는 파일 통과 / @concept:none도 통과 / 다중 태그도 통과
+//  - 구성요소 "격차: 대상 파일 가운데 표식이 하나도 없는 것" + 허용 "격차로 잡힌 파일을 모아 사용자에게 알리는 것"
+//    → 태그 없는 코드 파일만 검출 / 섞여 있으면 없는 것만 반환
+//  - 구성요소 "대상: … 코드가 아닌 파일과 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//    → 비코드 확장자(.md/.json/.css) 제외 / ignoreGlobs 매칭 파일 제외
+//  - 불변규칙 "읽을 수 없거나 이미 사라진 파일은 격차로 판정하지 않고 건너뛴다"
+//    → 삭제/부재 파일은 격차로 세지 않는다
+//  - 불변규칙 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 — 본문 속 문자열이나
+//    예시에 등장하는 표식 모양 글자는 표식이 아니다"
+//    → 선행 블록의 @concept:none은 인정 / 코드 줄 뒤 본문의 @concept:none은 인정 안 함
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -56,11 +69,11 @@ describe('findConceptlessFiles', () => {
       'src/b.ts',
     ]);
   });
-  it('@concept:none이 선행 블록에 있으면 개념 없음 아님 (Task 5b 규칙: 선행 블록에서만 인정)', async () => {
+  it('@concept:none이 선행 블록에 있으면 개념 없음 아님 (불변규칙: 표식은 첫 코드 줄 전 주석에서만 읽는다)', async () => {
     writeFileSync(join(root, 'src/n1.ts'), '// @concept:none\nexport const n1 = 1\n');
     expect(await findConceptlessFiles(root, ['src/n1.ts'], DEFAULT_IGNORE)).toEqual([]);
   });
-  it('@concept:none이 본문(코드 줄 뒤)에만 있으면 개념 없는 코드로 검출된다 (Task 5b 규칙: 선행 블록 밖 마커는 인정 안 함)', async () => {
+  it('@concept:none이 본문(코드 줄 뒤)에만 있으면 개념 없는 코드로 검출된다 (불변규칙: 본문에 등장하는 표식 모양 글자는 표식이 아니다)', async () => {
     writeFileSync(join(root, 'src/n2.ts'), 'export const n2 = 1\n// @concept:none\n');
     expect(await findConceptlessFiles(root, ['src/n2.ts'], DEFAULT_IGNORE)).toEqual(['src/n2.ts']);
   });

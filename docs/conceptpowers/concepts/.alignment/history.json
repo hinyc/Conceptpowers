@@ -178,5 +178,455 @@
     "at": "2026-08-20T01:52:57.618Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "7ab39029bb56",
+    "prevHash": "01f4fb0c200f",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 정의·구성요소·허용·불변규칙 재배치",
+    "at": "2026-08-21T03:03:32.687Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "98df6e993653",
+    "prevHash": "7ab39029bb56",
+    "reason": "허용 규칙이 구성요소의 '격차' 정의를 되풀이해 용어로 줄임",
+    "at": "2026-08-21T03:04:17.645Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "98df6e993653",
+    "prevHash": "98df6e993653",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 정의·구성요소·허용·불변규칙 재배치",
+    "at": "2026-08-21T03:06:03.788Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "70cb356bed10",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:11:52.637Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "254891bc8b40",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:11:52.720Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "contract-hash",
+    "hash": "2c4b395438b3",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:11:52.791Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "536ce7b7e677",
+    "prevHash": "70cb356bed10",
+    "reason": "정의가 구성요소의 표식 정의를 되풀이해 한 줄로 줄임",
+    "at": "2026-08-21T03:12:30.918Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "463c65a266b4",
+    "prevHash": "254891bc8b40",
+    "reason": "제한이 불변규칙의 부정형 재진술이라 삭제",
+    "at": "2026-08-21T03:12:31.016Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "a778bc2af607",
+    "prevHash": "0e27e352fe02",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:14:26.803Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "306815d6997e",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:14:26.884Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "globally-unique-slug",
+    "hash": "a74530aeb70f",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:14:26.963Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "9c59d035f3a6",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:14:27.025Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "9d8e1b91e744",
+    "prevHash": "a778bc2af607",
+    "reason": "허용이 구성요소의 따라옴 정의를 되풀이해 용어로 줄임",
+    "at": "2026-08-21T03:15:17.302Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "5a18d6b74907",
+    "prevHash": "306815d6997e",
+    "reason": "허용이 정의의 재진술이라 삭제, 구성요소 이름 조정",
+    "at": "2026-08-21T03:15:17.370Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "b7d8eda1884a",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:16:41.222Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "output-locale",
+    "hash": "db41c0ae1970",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:16:41.302Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "pending-conflict-tracking",
+    "hash": "bf1404011a90",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:16:41.367Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-first-duty",
+    "hash": "9673a3dbd422",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:16:41.435Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "settled-status",
+    "hash": "85e5ca1e24b2",
+    "prevHash": "30acbf74704d",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:16:41.497Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "24eca08d0a21",
+    "prevHash": "b7d8eda1884a",
+    "reason": "정의·구성요소가 불변규칙과 허용을 되풀이해 재배치",
+    "at": "2026-08-21T03:17:14.615Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "output-locale",
+    "hash": "582e42ab52d1",
+    "prevHash": "db41c0ae1970",
+    "reason": "정의가 불변규칙을 되풀이해 줄임",
+    "at": "2026-08-21T03:17:14.690Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "atomic-baseline-write",
+    "hash": "22a34858d094",
+    "prevHash": "6ed7e08bd8df",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:19:34.368Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "generated-not-hand-edited",
+    "hash": "04d074c7c7c0",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:19:34.441Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "867a371bbdca",
+    "prevHash": "c9f09a3cb887",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:19:34.514Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "fa42094fc83a",
+    "prevHash": "aa78295125a2",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:19:34.603Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "atomic-baseline-write",
+    "hash": "9f8c6ae2b554",
+    "prevHash": "22a34858d094",
+    "reason": "용어를 도입해 놓고 규칙에서 다시 풀어 쓴 중복 제거",
+    "at": "2026-08-21T03:20:38.783Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "generated-not-hand-edited",
+    "hash": "b6cded99db4c",
+    "prevHash": "04d074c7c7c0",
+    "reason": "용어를 도입해 놓고 규칙에서 다시 풀어 쓴 중복 제거",
+    "at": "2026-08-21T03:20:38.854Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "99ea56612c8d",
+    "prevHash": "867a371bbdca",
+    "reason": "용어를 도입해 놓고 규칙에서 다시 풀어 쓴 중복 제거",
+    "at": "2026-08-21T03:20:38.918Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "001e7cfbac9c",
+    "prevHash": "fa42094fc83a",
+    "reason": "용어를 도입해 놓고 규칙에서 다시 풀어 쓴 중복 제거",
+    "at": "2026-08-21T03:20:38.978Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-privacy",
+    "hash": "842610b39e5c",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:21:33.848Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "2dbd2431add0",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:21:33.924Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-local-write-guard",
+    "hash": "c04711502fdb",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:21:34.000Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "6edf6d4c3f51",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:22:42.906Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "copy-code-path",
+    "hash": "7fe96cb97576",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:22:43.003Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "detail-summary-outline",
+    "hash": "1a487ca7019c",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:22:43.072Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "group-navbar",
+    "hash": "e8e0fd6752f5",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:22:43.135Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "detail-summary-outline",
+    "hash": "4df06921425d",
+    "prevHash": "1a487ca7019c",
+    "reason": "정의가 불변규칙을 되풀이해 줄임",
+    "at": "2026-08-21T03:23:05.282Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "home-search",
+    "hash": "8092dbaba7d9",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:23:59.261Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "354db5017612",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:23:59.348Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "list-item-readout",
+    "hash": "f5776b2ee4cd",
+    "prevHash": "",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:23:59.427Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "512b250b66b0",
+    "prevHash": "d1337de0fe37",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:23:59.520Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-toggle",
+    "hash": "bc23a4f7755d",
+    "prevHash": "1f1c33e3b006",
+    "reason": "중복 제거: 각 사실을 한 자리에만 남기도록 재배치",
+    "at": "2026-08-21T03:23:59.595Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "68ba61c7b2fe",
+    "prevHash": "354db5017612",
+    "reason": "정의가 구성요소의 점 종류를 되풀이해 갈랐다",
+    "at": "2026-08-21T03:24:26.217Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-local-write-guard",
+    "hash": "58ca1cb549d6",
+    "prevHash": "c04711502fdb",
+    "reason": "중복 정리 중 함께 사라진 사실 복구",
+    "at": "2026-08-21T03:26:43.983Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "026fadf4878b",
+    "prevHash": "9c59d035f3a6",
+    "reason": "중복 정리 중 함께 사라진 사실 복구",
+    "at": "2026-08-21T03:26:44.087Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "dbb458bc5169",
+    "prevHash": "001e7cfbac9c",
+    "reason": "중복 정리 중 함께 사라진 사실 복구",
+    "at": "2026-08-21T03:26:44.164Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "5a18d6b74907",
+    "prevHash": "5a18d6b74907",
+    "reason": "중복 정리 중 함께 사라진 사실 복구",
+    "at": "2026-08-21T03:26:44.244Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "generated-not-hand-edited",
+    "hash": "34e7fa7b82a9",
+    "prevHash": "b6cded99db4c",
+    "reason": "중복 정리 중 함께 사라진 사실 복구",
+    "at": "2026-08-21T03:26:44.313Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "6edf6d4c3f51",
+    "prevHash": "6edf6d4c3f51",
+    "reason": "화면에 나오는 예시·맞바꿈이 다른 자리를 되풀이해 정리 (계약 해시 밖)",
+    "at": "2026-08-21T03:32:12.310Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "atomic-baseline-write",
+    "hash": "9f8c6ae2b554",
+    "prevHash": "9f8c6ae2b554",
+    "reason": "화면에 나오는 예시·맞바꿈이 다른 자리를 되풀이해 정리 (계약 해시 밖)",
+    "at": "2026-08-21T03:32:12.401Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

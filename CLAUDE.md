@@ -7,3 +7,8 @@
 - baseline(docs/conceptpowers)은 임의(에이전트 판단) 수정 금지. 단 **사용자가 변경을 명시 승인하면** 개념 수정 가능 —
   `edit-concept`로 적용하면 green→pending으로 내려가고, `check-consistency` 재통과(증빙 기록) 후
   사용자 확인 아래 green으로 재정착해야 개념으로 재활성화된다 (CLI `approve`는 red 전용).
+
+# git 관련 동작 (commit, push 등)
+
+- hinyc 계정으로 전환 후 진행
+- 동작완료후 이전 계정으로 복구

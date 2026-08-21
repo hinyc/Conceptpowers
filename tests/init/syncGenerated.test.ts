@@ -1,5 +1,15 @@
-// @concept:plugin-version-sync @concept:init-gate
+// @concept:plugin-version-sync @concept:init-gate @concept:generated-not-hand-edited
 // tests/init/syncGenerated.test.ts
+// 생성물 동기화(syncGenerated)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - plugin-version-sync 구성요소 "맞추는 대상: 뷰어 화면 파일, 실행 스크립트 같은 생성물"
+//    → 뷰어 에셋과 manifest를 (재)생성한다 / 옛 concepts:view 스크립트를 표준 명령으로 교체한다
+//  - plugin-version-sync 불변 "이미 존재하는 파일의 내용은 지우거나 바꾸지 않는다 — … 설정 파일은
+//    빠진 항목만 기본값으로 채워 넣는다" → 구버전 init.json의 빠진 설정 항목만 보충한다
+//  - plugin-version-sync 불변 "채울 항목이 하나도 없으면 설정 파일을 다시 쓰지 않는다"
+//    → 보충할 항목이 없으면 configFieldsAdded가 비어 있다
+//  - generated-not-hand-edited 불변 "생성물은 직접 고치지 않고 원본을 고쳐 다시 만드는 방식으로만
+//    바꾼다" → 옛 포맷 고아 *.html은 정리하고 index.html은 보존한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';

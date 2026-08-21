@@ -1,4 +1,11 @@
 // @concept:plugin-version-sync
+// 새 버전 확인(checkForUpdate)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것"
+//    → 최신이 더 높으면 {installed, latest}를 돌려준다 / 같거나 낮으면 null
+//  - plugin-version-sync 불변 "이미 존재하는 파일의 내용은 지우거나 바꾸지 않는다"
+//    → 확인이 실패해도(fetch 실패·비200·깨진 JSON·설치 정보 없음) throw 없이 null로 조용히 물러난다
+//  - 캐시 유효·만료 시나리오는 개념 규칙이 아니라 확인 횟수를 줄이기 위한 구현 세부다.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

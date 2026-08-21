@@ -1,5 +1,16 @@
-// @concept:plugin-version-sync
+// @concept:plugin-version-sync @concept:generated-not-hand-edited
 // tests/init/packageScript.test.ts
+// 뷰어 실행 스크립트 등록(upsertViewerScript)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - plugin-version-sync 구성요소 "맞추는 대상: … 실행 스크립트 같은 생성물"
+//    → 스크립트가 없으면 표준 명령을 추가한다 / 이미 표준이면 unchanged
+//  - generated-not-hand-edited 불변 "생성물은 직접 고치지 않고 원본을 고쳐 다시 만드는 방식으로만 바꾼다"
+//    → 플러그인이 만든 옛 명령(open …index.html)은 표준으로 교체한다
+//  - plugin-version-sync 불변 "설정 파일에 이미 적힌 값은 무엇이든 그대로 보존한다"
+//    → 사용자 커스텀 값은 보존하고 kept를 반환한다 / 기존 스크립트를 건드리지 않는다
+//  - plugin-version-sync 불변 "이미 존재하는 파일의 내용은 지우거나 바꾸지 않는다"
+//    → package.json이 없으면 no-package를 반환하고 파일을 만들지 않는다
+//  - "잘못된 JSON이면 에러를 던진다"는 atomic-baseline-write 불변 "실패를 감추지 않는다"와 같은 태도다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';

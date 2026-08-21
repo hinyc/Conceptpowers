@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g (목록의 그룹 위치) · #/concept/:slug · #/feature/:slug · #/graph(/:focusSlug)
@@ -212,6 +212,48 @@ function ul(items, cls) {
       return h('li', null, i);
     })
   );
+}
+
+// ---- 상세 화면 제목 아래 요약(detail-summary-outline) ----
+// 뜻이 마무리되는 자리에서 요약을 끊어 이야기 단위 항목으로 나눈다. 끊을 때 글자를
+// 더하거나 빼지 않고 나눌 자리만 정한다. 마침표 바로 앞이 영문자·숫자면(assets/viewer.js,
+// v1.5.1처럼 붙어 있어야 뜻이 통하는 표기) 끊는 자리로 보지 않는다.
+function summaryPoints(text) {
+  var s = String(text == null ? '' : text).trim();
+  var points = [];
+  var cur = '';
+  for (var i = 0; i < s.length; i++) {
+    cur += s.charAt(i);
+    if ('.!?'.indexOf(s.charAt(i)) === -1) continue;
+    var next = s.charAt(i + 1);
+    if (next !== '' && next !== ' ' && next !== '\n' && next !== '\t') continue;
+    if (/[A-Za-z0-9]/.test(s.charAt(i - 1))) continue;
+    points.push(cur.trim());
+    cur = '';
+  }
+  if (cur.trim()) points.push(cur.trim());
+  return points;
+}
+
+// 이야기가 둘 이상이면 항목마다 줄을 나눈 목록으로, 하나뿐이면 문단 그대로 그린다.
+function heroSummary(text) {
+  var points = summaryPoints(text);
+  if (!points.length) return null;
+  if (points.length === 1) return h('p', null, points[0]);
+  return ul(points, 'hero__points');
+}
+
+// 허용·제한 카드 — 항목이 있는 쪽만 그리고, 둘 다 비면 절 자체를 두지 않는다.
+// (내용 없는 자리를 화면이 만들지 않는다: 관련 기능·구현 경로 절과 같은 처리)
+function actionCard(kind, title, items) {
+  if (!items || !items.length) return null;
+  return h('div', { class: 'col-card col-card--' + kind }, [h('h3', null, title), ul(items)]);
+}
+function actionsSection(t, actions) {
+  var a = actions || {};
+  var cards = [actionCard('allow', t.allow, a.allow), actionCard('restrict', t.restrict, a.restrict)];
+  var shown = cards.filter(Boolean);
+  return shown.length ? h('section', { class: 'section cols' }, shown) : null;
 }
 function statusLabel(status) {
   var t = state.t;
@@ -973,7 +1015,7 @@ function renderConceptRead(slug) {
       c.eyebrow ? h('span', { class: 'hero__eyebrow' }, c.eyebrow) : null,
       statusBadge(c.status),
       h('h1', null, displayName(c.title, slug)),
-      h('p', null, c.description.definition),
+      heroSummary(c.description.definition),
       h('p', { class: 'cats' }, (c.category || []).join(' · ')),
     ]),
     editBar,
@@ -991,16 +1033,7 @@ function renderConceptRead(slug) {
       h('p', null, c.purpose.reason),
       ul(c.purpose.benefits),
     ]),
-    h('section', { class: 'section cols' }, [
-      h('div', { class: 'col-card col-card--allow' }, [
-        h('h3', null, t.allow),
-        ul(c.actions.allow),
-      ]),
-      h('div', { class: 'col-card col-card--restrict' }, [
-        h('h3', null, t.restrict),
-        ul(c.actions.restrict),
-      ]),
-    ]),
+    actionsSection(t, c.actions),
     h('section', { class: 'section' }, [
       h('h2', null, t.principle),
       ul(c.principle.immutableRules),
@@ -1271,7 +1304,7 @@ function viewFeature(slug) {
             h('header', { class: 'hero' }, [
               h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
               h('h1', null, displayName(f.title, slug)),
-              f.description ? h('p', null, f.description) : null,
+              heroSummary(f.description),
             ]),
             h('section', { class: 'section' }, [
               h('h2', null, t.relatedConcepts),

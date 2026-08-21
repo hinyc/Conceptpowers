@@ -1,4 +1,11 @@
 // @concept:untrusted-text-sanitization
+// 남이 쓴 글을 AI에 넘기기 전 무장해제하는 sanitizeText를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - untrusted-text-sanitization 구성요소 "걷어내는 것: 눈에 보이지 않는 문자, 글자 방향을 뒤집는
+//    문자, 구역을 나누는 꺾쇠와 대괄호"
+//    → 각괄호·대괄호 제거 / zero-width·bidi 제거 / 개행·제어문자 접기 / raw 제어문자 잔존 없음
+//  - untrusted-text-sanitization 구성요소 "길이 제한: 지나치게 긴 문장은 잘라낸다" → 길이를 제한한다
+//  - normalizeRel 3개는 경로 표기 정규화로, 이 개념의 규칙 검증이 아니라 같은 파일에 든 구현 세부다.
 import { describe, it, expect } from 'vitest';
 import { normalizeRel, sanitizeText } from '../../src/drift/safe.js';
 
