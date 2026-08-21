@@ -1,5 +1,16 @@
 // @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/graph.test.ts
+// 지식 그래프 데이터(buildGraphData)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - knowledge-graph-view 구성요소 "점 세 종류: 개념, 기능, 코드 파일 / 선: 점과 점 사이의 연결"
+//    → 개념·기능·파일 노드와 기능↔개념, 기능↔파일 엣지를 만든다
+//  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
+//    파생시킨다" → 기능 기록의 concepts·codePaths에서 엣지가 나온다 / 없는 개념을 참조하는 엣지는 만들지 않는다
+//  - concept-code-mapping 정의 "개념 하나가 어느 파일들에 구현돼 있는지는, 코드에 붙은 표식을 거꾸로
+//    모아 알아낸다" → mapping(@concept→파일)도 개념→파일로 연결한다 / 개념의 codeLinks도 같은 엣지가 된다
+//  - globally-unique-slug 허용 "묶음 구조와 무관하게 이름표만으로 개념이나 기능을 찾아가는 것"
+//    → 노드 href는 이름표를 쓴 SPA 해시 라우트를 가리킨다
+//    → 개념과 기능이 같은 파일을 공유하면 파일 노드는 하나로 합쳐진다 (같은 경로는 같은 점이다)
 import { describe, it, expect } from 'vitest';
 import { buildGraphData } from '../../src/viewer/graph.js';
 import type { Concept } from '../../src/schema/concept.js';

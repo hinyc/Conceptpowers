@@ -1,5 +1,13 @@
 // @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/subgraph.test.ts
+// 초점 보기(subgraphFor)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - knowledge-graph-view 불변 "초점을 맞추면 그 개념과 이어지지 않은 점과 선은 화면에서 감춘다"
+//    → 포커스 개념의 이웃(개념·실현 기능·코드·형제 개념)만 남긴다
+//    → 남은 노드 양끝을 모두 가진 엣지만 보존한다 (한쪽이 감춰진 선은 남기지 않는다)
+//    → 연결이 전혀 없는 개념은 자기 노드 하나만 남는다
+//  - feature-spec-bridge 구성요소 "따르는 개념 / 구현 코드" + globally-unique-slug 불변(이름표 유일)
+//    → 이웃을 추릴 때 3종 엣지가 모두 표현된다
 // 브라우저 SPA(assets/viewer.js)의 순수 함수 subgraphFor를 node:vm으로 로드해 검증한다.
 // 최상위는 함수/변수 선언만 하므로(boot()는 index.html이 호출) DOM 없이 안전히 평가된다.
 import { describe, it, expect } from 'vitest';

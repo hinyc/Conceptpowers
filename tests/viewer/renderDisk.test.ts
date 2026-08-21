@@ -1,5 +1,16 @@
 // @concept:generated-not-hand-edited @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:concept-code-mapping
 // tests/viewer/renderDisk.test.ts
+// 뷰어 생성물을 디스크에 쓰는 render를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - generated-not-hand-edited 구성요소 "생성물: 원본에서 자동으로 만들어지는 결과 — 뷰어 화면 파일,
+//    배포용 실행 파일 같은 것" → 단일 SPA 에셋(index.html, viewer.js, serve.mjs, css)을 쓴다
+//    → 개념마다 HTML 파일을 만들지 않는다 (본문은 원본 JSON에 두고 화면만 생성물이다)
+//    → viewer.js와 index.html이 서로를 참조한다 / 렌더링된 CSS에 badge--pending 규칙이 들어간다
+//  - concept-code-mapping 정의 "개념 하나가 어느 파일들에 구현돼 있는지는, 코드에 붙은 표식을 거꾸로
+//    모아 알아낸다" → mapping.json이 개념→파일 엣지와 codeLinks로 반영된다
+//  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
+//    파생시킨다" → manifest.json에 개념·기능의 원본 JSON URL과 그래프가 담긴다
+//  - settled-status 구성요소 "노랑(pending)" → 상태별 표시가 생성물 CSS에 함께 나간다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
