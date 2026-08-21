@@ -1,4 +1,7 @@
-// @concept:none
+// @concept:init-gate
+// 검증 대상 규칙 ↔ 시나리오:
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → status는 init 없이도 진단용으로 동작한다 (관문 밖 명령 두 가지 중 하나)
 // init 안 된 프로젝트에서는 init 외의 CLI 명령이 거부되는지 검증한다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';

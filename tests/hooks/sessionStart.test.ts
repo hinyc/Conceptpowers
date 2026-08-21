@@ -1,5 +1,30 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:governance-mode
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:governance-mode @concept:output-locale @concept:reference-privacy @concept:reference-first-duty @concept:generated-not-hand-edited
 // tests/hooks/sessionStart.test.ts
+// 세션 시작 컨텍스트(buildSessionStartOutput)를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → init 안 된 프로젝트면 빈 출력 / init 되면 활성화 컨텍스트와 CLI 경로를 담는다
+//  - drift-reconcile 구성요소 "따라옴: … 하나라도 커밋에 함께 들어온 경우"
+//    → 활성화 컨텍스트에 커밋 패키징 규칙(스테이징 단위 게이트)을 담는다
+//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//    → drift가 있으면 <CONCEPT-DRIFT> 블록과 이유를 주입한다 / 없으면 블록이 없다
+//  - reference-first-duty 구성요소 "읽는 곳: 참고자료 폴더 안의 파일과, 경로 목록에 등록된 바깥 위치"
+//    → 사용자 자료가 있으면 참고자료 블록 / seed README만이면 블록 없음 / 등록 0이면 블록 없음
+//    → 폴더가 비어도 유효한 바깥 경로가 등록되면 블록으로 알린다
+//  - reference-privacy 허용 "사용자가 직접 알려준 바깥 경로만 경로 목록에 추가하는 것"
+//    → paths.md의 경로가 없거나 비면 경고 블록으로 알린다 / 전부 유효하면 경고 없음
+//  - plugin-version-sync 정의 "도구를 새 버전으로 올리면, 작업을 시작할 때 프로젝트에 깔린 껍데기만
+//    따라 올린다" + generated-not-hand-edited
+//    → 설치>생성 버전이면 자동 sync하고 블록으로 알린다 / 같으면 블록이 없다
+//  - concept-driven-tests 구성요소 "스위치: … 값이 없으면 켜진 것으로 보고, 거짓으로 적었을 때만 꺼진다"
+//    + 허용 "스위치가 켜져 있을 때만 작업 시작 안내에 이 규칙 한 줄을 넣는 것"
+//    → 기본(필드 없음)·true면 테스트 개념 규칙을 주입 / false면 주입하지 않는다
+//  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
+//    → ko면 Output language가 Korean(기본) / en이면 English
+//  - settled-status 제한 "AI가 스스로 판단해서 승인하는 것"
+//    → 보류(pending) 잔존과 자동승인 금지 규칙을 컨텍스트에 담는다
+//  - governance-mode 제한 "도구나 에이전트가 스스로 강도를 바꾸는 것"
+//    → strict면 우회 금지 지침을 주입한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

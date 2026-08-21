@@ -1,4 +1,16 @@
-// @concept:none
+// @concept:reference-privacy @concept:reference-first-duty
+// 바깥 참고자료 경로 목록(paths.md)의 파싱·해석·현황 판정을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - reference-first-duty 구성요소 "읽는 곳: 참고자료 폴더 안의 파일과, 경로 목록에 등록된 바깥 위치"
+//    → 불릿·일반 줄을 경로로 파싱하고 주석·빈 줄·제목은 건너뛴다 / 절대·상대·~ 경로를 해석한다
+//    → 존재하는 파일·자료 있는 폴더는 ok, 없는 경로는 missing, 빈 폴더는 empty
+//    → 하위 폴더의 자료도 찾아 ok / 빈 하위 폴더·숨김 파일만·0바이트만 있는 폴더는 empty
+//      (읽을 자료가 실제로 있는지를 가른다)
+//  - reference-privacy 불변 "참고자료 폴더의 파일은 기본적으로 저장소 추적에서 제외하고, 경로 목록만
+//    공유한다" → paths.md가 없으면 빈 배열 (자료가 아니라 목록만이 공유 대상이다)
+//  - reference-privacy 불변 "도구가 폴더에 쓸 수 있는 것은 안내용 파일뿐이며, 그것도 아직 없을 때만
+//    만든다" → 없으면 안내 템플릿을 만들고 있으면 보존한다(멱등)
+//    → 템플릿은 전부 주석·빈 줄이라 등록된 경로가 0개다(오경고 방지)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir, homedir } from 'node:os';

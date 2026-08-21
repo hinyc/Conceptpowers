@@ -1,4 +1,14 @@
-// @concept:none
+// @concept:reference-privacy @concept:reference-first-duty @concept:init-gate
+// reference / reference-add 명령을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - reference-first-duty 구성요소 "읽는 곳: 참고자료 폴더 안의 파일과, 경로 목록에 등록된 바깥 위치"
+//    → 등록 경로가 전부 유효하면 ok=true exit 0 / 없는 경로가 있으면 ok=false exit 1
+//    → paths.md가 없으면 external은 빈 배열, exit 0
+//  - reference-privacy 허용 "사용자가 직접 알려준 바깥 경로만 경로 목록에 추가하는 것"
+//    → 경로를 등록하고 전체 현황을 함께 돌려준다 / 여러 경로를 한 번에 받되 없는 경로는 경고만 남긴다
+//    → 이미 등록된 경로는 duplicate로 건너뛴다
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → 모든 시나리오가 초기화된 프로젝트를 전제로 한다(픽스처)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

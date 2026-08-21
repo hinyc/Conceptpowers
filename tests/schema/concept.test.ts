@@ -1,4 +1,17 @@
-// @concept:none
+// @concept:globally-unique-slug @concept:settled-status
+// 개념 본문의 스키마를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - globally-unique-slug 불변 "이름표는 소문자·숫자·붙임표만으로 이루어진다"
+//    → 잘못된 slug를 거부한다
+//  - globally-unique-slug 불변 "예약어는 어떤 경우에도 실제 개념이나 기능의 이름표가 될 수 없다"
+//    → 예약어 slug(constructor/__proto__/none)를 거부한다
+//  - globally-unique-slug 허용 "묶음 구조와 무관하게 이름표만으로 개념이나 기능을 찾아가는 것"
+//    → 유효한 group 값을 허용하고 group 경로 traversal은 거부한다 (묶음은 주소일 뿐 탈출구가 아니다)
+//  - settled-status 구성요소 "초록(green) / 노랑(pending) / 빨강(red): AI 추측 또는 미승인"
+//    → status 기본값은 red / green·pending을 허용 / 알 수 없는 status 값을 거부한다
+//  - "유효한 개념을 파싱하고 기본값을 채운다", "category가 비면·알 수 없는 값이면 거부한다"는
+//    개념 본문이 갖춰야 할 형식으로, settled-status 불변 "지킬 수 있는 규칙이 실제로 적혀 있을 것"의
+//    형식 쪽 최소치에 해당한다.
 import { describe, it, expect } from 'vitest';
 import { ConceptSchema, parseConcept } from '../../src/schema/concept.js';
 

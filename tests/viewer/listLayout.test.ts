@@ -1,10 +1,22 @@
-// @concept:home-search @concept:sidebar-search
+// @concept:home-search @concept:sidebar-search @concept:list-item-readout
 // tests/viewer/listLayout.test.ts
 // 목록 표시(assets/viewer.js)의 표시명 형식과 레이아웃을 node:vm + 최소 DOM 스텁으로 검증한다.
-// 검증 대상 규칙:
-//  - sidebar-search "화면에 그려진 글자만 보고 걸러낸다" → 사이드바 li의 textContent에
-//    코드(slug)와 제목이 모두 남아 있어야 필터가 기존대로 동작한다.
-//  - home-search "개념·기능을 한 번의 입력으로 함께 찾는다" → 검색 결과도 목록과 같은 표 구조.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - list-item-readout 불변 "세로로 나열되는 자리에서는 이름표와 제목이 각각 독립된 영역을 차지한다 —
+//    한 줄 글자로 합치지 않는다" → 목록을 표로 그리고 코드·제목을 각각 다른 칸에 넣는다
+//    → 사이드바는 표 대신 .group > li 구조로, 코드와 제목을 별도 줄로 나눈다
+//  - list-item-readout 허용 "이름표와 제목 어느 쪽을 눌러도 같은 항목으로 이동하게 하는 것"
+//    → 코드 칸·제목 칸의 href가 같은 개념을 가리킨다
+//  - list-item-readout 제한 "목록의 각 항목에서 상태 동그라미 옆에 상태 이름을 글자로 덧붙이는 것"
+//    → 상태 칸은 글자 없이 색 동그라미만 둔다(textContent가 빈 문자열)
+//  - list-item-readout 불변 "상태 동그라미를 쓰는 화면에는 그 색이 무슨 뜻인지 알려주는 설명이 같은
+//    화면 안에 있다" → 범례가 세 상태의 색과 뜻을 모두 설명한다
+//  - list-item-readout 불변 "색을 못 보는 사람도 알 수 있도록, 상태 동그라미에는 상태 이름이 읽어줄 수
+//    있는 형태로 붙어 있다" → 동그라미에 role=img와 aria-label을 단다
+//  - sidebar-search 정의 "상세 화면 곁 목록의 검색창은 새로 찾아오지 않고, 이미 떠 있는 것 중에서
+//    안 맞는 것을 숨긴다" → li의 textContent에 코드와 제목이 모두 남아 걸러내기가 둘 다로 동작한다
+//  - home-search 정의 "첫 화면 검색창에 몇 글자만 넣으면 개념·기능·코드 파일을 한꺼번에 찾아준다"
+//    → 검색 결과도 목록과 같은 표 구조로 그린다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

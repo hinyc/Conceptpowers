@@ -1,5 +1,24 @@
-// @concept:settled-status @concept:atomic-baseline-write
+// @concept:settled-status @concept:atomic-baseline-write @concept:globally-unique-slug @concept:human-owns-contract @concept:concept-inline-edit
 // tests/store/conceptStore.test.ts
+// 개념 본문의 저장·읽기와 상태 전이 가드를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - globally-unique-slug 불변 "개념 이름표는 개념들 사이에서 유일하다 — 묶음이 달라도 같은 벌 안에서는
+//    두 번 쓸 수 없다" → slug 존재 여부를 전역으로 판단 / 다른 그룹에 동일 slug 쓰기 거부 / 동일 경로 덮어쓰기 허용
+//  - settled-status 불변 "한 번 확정된 초록·빨강은 시스템 경로로는 되돌리지 않는다"
+//    → settled green은 다른 상태로 전이할 수 없다 / settled red는 pending으로 되돌릴 수 없다
+//  - settled-status 구성요소 "노랑(pending): 사람이 쓴 초안 — 검토가 끝나면 초록이 된다"
+//    → pending은 green/red로 정착할 수 있다 / 동일 상태 전이는 idempotent
+//  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다" +
+//    concept-inline-edit 불변 "확정된 개념을 고치면 예외 없이 검토 중 상태로 내려간다"
+//    → editConceptContent: green을 편집하면 pending으로 내려간다 / pending·red는 상태를 유지한다
+//  - concept-inline-edit 구성요소 "고칠 수 없는 것: 이름표와 묶음(주소가 되는 값), 승인 상태" +
+//    제한 "고칠 수 없는 것으로 정해진 값을 저장에 끼워 넣는 것"
+//    → slug/group/status 변경 시도는 무시한다 / 런타임 임의 키는 무시한다
+//  - concept-inline-edit 불변 "분류·정의·존재 이유 중 하나라도 비어 있으면 저장하지 않는다"
+//    → 스키마 위반(빈 definition)은 거부한다
+//  - atomic-baseline-write 불변 "대상 기록은 갈아 끼우기 방식으로만 저장한다" + "임시 파일 이름이 이미
+//    있으면 그것을 따라가지 않고 실패시킨다" → 임시파일+rename 경로를 쓰고 심볼릭 링크를 따라가지 않는다
+//  - "없는 개념은 에러를 던진다"는 대응하는 개념 규칙이 없다 — 방어적 처리다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, lstatSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
 import { writeFileSync } from 'node:fs';

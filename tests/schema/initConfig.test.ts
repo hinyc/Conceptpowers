@@ -1,4 +1,17 @@
-// @concept:concept-driven-tests @concept:governance-mode
+// @concept:concept-driven-tests @concept:governance-mode @concept:output-locale @concept:audit-gap-detection @concept:plugin-version-sync
+// 시작 설정(InitConfig)의 스키마와 기본값을 검증한다 — 여러 개념의 스위치가 여기 모여 있다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
+//    → enforcement 기본값은 standard / strict·light 허용 / 알 수 없는 값은 거부(readInitConfig가 표준 폴백)
+//  - concept-driven-tests 구성요소 "스위치: … 값이 없으면 켜진 것으로 보고, 거짓으로 적었을 때만 꺼진다"
+//    → conceptDrivenTests 누락 시 true / false로 명시하면 false / boolean이 아니면 거부
+//  - output-locale 정의 "프로젝트마다 산출물의 언어를 하나로 정해 둔다"
+//    → 기본 locale은 ko / en 허용 / 알 수 없는 locale 거부
+//  - audit-gap-detection 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//    → ignoreGlobs 누락 시 합리적 기본값 / 스캐폴드 산출물 경로를 제외 / 사용자 지정 목록으로 덮어쓴다
+//  - plugin-version-sync 허용 "버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
+//    → versionCheck 누락 시 true / false로 명시하면 false
+//  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / backfillMode 기본 incremental
 import { describe, it, expect } from 'vitest';
 import { parseInitConfig } from '../../src/schema/initConfig.js';
 

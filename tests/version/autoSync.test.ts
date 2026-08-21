@@ -1,5 +1,23 @@
-// @concept:plugin-version-sync
+// @concept:plugin-version-sync @concept:generated-not-hand-edited @concept:init-gate
 // tests/version/autoSync.test.ts
+// 작업 시작 시 자동 버전 동기화(syncIfStale)와 그 가드를 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - plugin-version-sync 정의 "도구를 새 버전으로 올리면, 작업을 시작할 때 프로젝트에 깔린 껍데기만
+//    따라 올린다" → CLI 실행 시 stale이면 명령 전에 자동 sync한다
+//  - plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
+//    → 도장이 옛것이면 sync하고 재도장 / 도장이 없으면 sync / 버전이 같으면 아무것도 하지 않는다
+//    → 다운그레이드면 sync하지 않는다 / 한 번 sync하면 수렴한다
+//    → version-sync 명령의 가드: 같으면 재생성 안 함 / 옛것이면 재생성 / 설치 버전을 모르면 건너뛰지 않는다
+//  - plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것"
+//    → stdout은 순수 JSON으로 두고 알림은 stderr 한 줄로 낸다
+//  - plugin-version-sync 불변 "이 과정은 어떤 경우에도 개념 문서와 상위 기준 문서를 바꾸지 않는다"
+//    → sync는 baseline(개념·기준 문서·참고자료)을 절대 건드리지 않는다
+//  - generated-not-hand-edited 불변 "생성물은 직접 고치지 않고 원본을 고쳐 다시 만드는 방식으로만 바꾼다"
+//    → --force면 버전이 같아도 사람이 시킨 대로 다시 만든다 (사람이 부른 재생성은 허용된 경로다)
+//  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
+//    → version-sync·status 명령은 자동 sync 경로를 타지 않는다
+//  - 실패해도 명령을 계속 진행하는 시나리오들(plugin.json 없음·root 엉망·알림 콜백 throw)은 자동 갱신이
+//    본 작업을 막지 않는다는 best-effort 계약이다 — 개념 규칙이 아니라 이 기능의 실패 처리 방침이다.
 // 개념 규칙 검증 대상: plugin-version-sync
 // - "생성물에 찍힌 버전과 깔린 도구의 버전이 다를 때 생성물만 다시 만드는 것" (allow)
 // - "버전이 같은데도 생성물을 다시 만드는 것" (restrict)

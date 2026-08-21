@@ -1,4 +1,13 @@
-// @concept:none
+// @concept:reference-privacy
+// 바깥 참고자료 경로 등록(addReferencePath)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - reference-privacy 허용 "사용자가 직접 알려준 바깥 경로만 경로 목록에 추가하는 것"
+//    → 감싼 따옴표·불릿·공백을 정규화해 기록한다 / 빈 값·주석만 있는 입력은 invalid로 건너뛴다
+//    → resolve 결과가 같으면 중복으로 건너뛴다 / 같은 호출 안의 중복도 한 번만 기록한다
+//    → 존재하지 않는 경로도 거부하지 않고 기록한다 (있고 없고는 사람이 판단할 몫이라 상태로만 전달한다)
+//  - reference-privacy 불변 "도구가 폴더에 쓸 수 있는 것은 안내용 파일뿐이며, 그것도 아직 없을 때만
+//    만든다" → paths.md가 없으면 템플릿을 만들고 그 뒤에 덧붙인다
+//    → 기존 내용과 주석을 보존한 채 끝에 덧붙인다 / 개행으로 끝나지 않는 파일에도 줄이 섞이지 않게 한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir, homedir } from 'node:os';

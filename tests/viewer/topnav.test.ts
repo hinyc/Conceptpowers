@@ -1,12 +1,17 @@
 // @concept:group-navbar
 // tests/viewer/topnav.test.ts
 // 상단 묶음 메뉴(assets/topnav.js)를 node:vm + 최소 DOM 스텁으로 검증한다.
-// 검증 대상 규칙(group-navbar):
-//  - "묶음 줄: 화면 위쪽에 묶음 이름들이 한 줄로 나열된다" → 묶음마다 버튼 하나, 기능은 맨 뒤.
-//  - "현재 위치 표시" → 보고 있는 항목의 묶음에 active 표시.
-//  - "펼침 목록 항목은 목록 항목 규칙(list-item-readout)을 따른다" → 상태 동그라미 + 나뉜 이름표·제목.
-//  - "상태 동그라미 색 설명은 같은 화면 안에" (list-item-readout) → 펼침 목록 안에 범례.
-//  - "마우스·터치·키보드 어느 입력으로도 열고 닫을 수 있다" → 버튼(button 요소) + click/mouseenter 바인딩.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - group-navbar 구성요소 "묶음 줄: 화면 위쪽에 항상 있는, 묶음 이름들이 나열된 한 줄"
+//    → 묶음마다 버튼 하나, 기능은 맨 뒤
+//  - group-navbar 구성요소 "현재 위치 표시: 지금 보고 있는 항목이 속한 묶음을 눈에 띄게 표시한다"
+//    → 보고 있는 항목의 묶음에 active 표시
+//  - group-navbar 불변 "마우스·터치·키보드 어느 입력으로도 펼침 목록을 열고 닫을 수 있다"
+//    → button 요소 + click/mouseenter 바인딩
+//  - group-navbar 제한 "펼침 목록 항목을 목록 항목 규칙(list-item-readout)과 다르게 그리는 것"
+//    → 펼침 목록 항목은 상태 동그라미 + 나뉜 이름표·제목으로 그린다
+//  - list-item-readout 불변 "상태 동그라미를 쓰는 화면에는 그 색이 무슨 뜻인지 알려주는 설명이 같은
+//    화면 안에 있다" → 펼침 목록 안에 범례를 둔다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

@@ -1,5 +1,21 @@
-// @concept:concept-code-mapping
+// @concept:concept-code-mapping @concept:audit-gap-detection
 // tests/mapping/scan.test.ts
+// 표식 스캔과 지도 보관본(mapping)을 검증한다.
+// 검증 대상 규칙 ↔ 시나리오:
+//  - concept-code-mapping 허용 "코드의 표식을 훑어 지도를 만들고 보관본으로 저장하는 것"
+//    → @concept 태그를 추출한다 / slug → 파일 매핑을 만든다 / 쓰고 다시 읽으면 동일하다
+//  - audit-gap-detection 구성요소 "표식: … 따를 개념이 없다는 뜻의 \"없음\"도 표식으로 친다"
+//    → @concept:none은 표식으로 치되 개념으로는 취급하지 않는다 / 실제 개념과 함께면 none만 뺀다
+//  - audit-gap-detection 불변 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 —
+//    본문 속 문자열이나 예시에 등장하는 표식 모양 글자는 표식이 아니다"
+//    → 선행 블록 스캔 전부: 1행·복수 줄·shebang 뒤·/* */ 블록·<!-- --> 블록·닫히지 않은 블록은 인정,
+//      코드 줄 뒤·본문 문자열 속·*/ 뒤 같은 줄 코드·잔여 종료 토큰 뒤 코드의 표식은 인정하지 않는다
+//  - audit-gap-detection 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//    → ignoreGlobs 매칭 파일은 스캔·매핑에서 빠지고, 캐시에 남아 있던 항목도 제거된다
+//  - concept-code-mapping 불변 "코드의 표식을 고쳤으면 같은 작업에서 보관본도 함께 갱신한다"
+//    → updateMappingCache 증분 병합: 전달 안 된 파일은 보존 / 전달된 파일은 교체 / 삭제된 파일은 제거
+//  - concept-code-mapping 제한 "보관본이 낡았는지 확인하지 않고 최신 상태라고 단정하는 것"
+//    → 형식이 깨진 캐시는 빈 객체로 폴백한다 (낡거나 깨진 값을 최신으로 믿지 않는다)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
