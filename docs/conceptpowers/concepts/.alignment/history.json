@@ -1321,5 +1321,14 @@
     "at": "2026-08-24T09:04:25.083Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "contract-hash",
+    "hash": "36a437268a3e",
+    "prevHash": "36a437268a3e",
+    "reason": "부제(eyebrow) 필드 폐기로 '윗단 문구'가 가리키는 항목이 사라져 약속 밖 열거에서 제거",
+    "at": "2026-08-24T09:06:38.848Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
