@@ -67,9 +67,10 @@ var CPSidebar = (function () {
   }
 
   // 곁 목록에는 지금 보고 있는 항목이 속한 묶음만 담는다 — 다른 묶음은 상단 묶음 메뉴로 간다.
-  function sidebarListNode(activeKind, activeSlug) {
+  function sidebarListNode(activeSlug) {
     var t = state.t;
-    var active = { kind: activeKind, slug: activeSlug };
+    // 곁 목록에 서는 것은 개념뿐이다(feature-index-row) — 종류는 여기서 정한다.
+    var active = { kind: 'concept', slug: activeSlug };
     var activeGroup = CPTopnav.activeGroupKey(state.manifest, active);
     var sections = conceptListSections(active, true, activeGroup);
     var body = sections.length ? sections : [h('p', { class: 'muted' }, t.empty)];
@@ -108,7 +109,7 @@ var CPSidebar = (function () {
     noResultsNode.style.display = !hasQuery || anyGroupVisible ? 'none' : '';
   }
 
-  function shell(activeKind, activeSlug, wrapNode) {
+  function shell(activeSlug, wrapNode) {
     var t = state.t;
     ensureEscHandler();
     var open = isOpen();
@@ -136,7 +137,7 @@ var CPSidebar = (function () {
     closeBtn.addEventListener('click', function () {
       setOpen(false);
     });
-    var listNode = sidebarListNode(activeKind, activeSlug);
+    var listNode = sidebarListNode(activeSlug);
     var noResultsNode = h(
       'p',
       { class: 'muted side-noresults', style: 'display:none' },
@@ -167,7 +168,7 @@ var CPSidebar = (function () {
     var body = h('div', { class: 'shell__body' }, [aside, wrapNode]);
     var topbar = h('div', { class: 'shell__topbar' }, [
       toggleBtn,
-      CPTopnav.bar({ kind: activeKind, slug: activeSlug }),
+      CPTopnav.bar({ kind: 'concept', slug: activeSlug }),
     ]);
     var shellEl = h('div', { class: 'shell' + (open ? ' shell--open' : '') }, [topbar, body]);
     currentShell = shellEl;

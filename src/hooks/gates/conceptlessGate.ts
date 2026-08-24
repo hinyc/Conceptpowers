@@ -1,6 +1,6 @@
 // @concept:governance-mode
 // src/hooks/gates/conceptlessGate.ts
-import { InitConfigSchema } from '../../schema/initConfig.js';
+import { defaultIgnoreGlobs } from '../../schema/initConfig.js';
 import { findConceptlessFiles } from '../../audit/gaps.js';
 import { sanitizeText } from '../../drift/safe.js';
 import type { GateCheck } from './types.js';
@@ -9,7 +9,7 @@ import type { GateCheck } from './types.js';
 // (한 파일이 여러 개념을 가질 수 있으므로 '존재 여부'만 본다. `@concept:none`도 존재로 인정.)
 // init.json이 없거나 깨졌으면(cfg=null) 스키마 기본 ignoreGlobs로 폴백한다.
 export const checkConceptless: GateCheck = async ({ root, files, cfg }) => {
-  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+  const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const conceptless = await findConceptlessFiles(root, files, ignoreGlobs);
   if (conceptless.length === 0) return null;
   const list = conceptless.map((f) => sanitizeText(f)).join(', ');

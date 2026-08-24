@@ -19,6 +19,8 @@ import { checkStaleArtifacts } from './gates/staleArtifactsGate.js';
 import type { GateCheck, GateFinding, GateInput } from './gates/types.js';
 
 const execFileAsync = promisify(execFile);
+// 대형 커밋(수천 파일)에서도 잘리지 않도록 execFile 기본 1MB를 넉넉히 늘린다.
+const MAX_BUFFER = 64 * 1024 * 1024;
 
 export interface PreToolEvent {
   tool: string;
@@ -36,15 +38,26 @@ export interface PreToolOutput {
 
 const isGitCommit = (cmd?: string) => !!cmd && /\bgit\s+commit\b/.test(cmd);
 
+// core.quotePath=false + -z: 비-ASCII 경로(예: src/認証.ts)를 git이 따옴표로 감싸지 않고
+// NUL로 구분된 원본 그대로 내보내게 한다 — 그래야 파일을 실제로 열어 태그를 읽을 수 있다.
 async function stagedFiles(root: string): Promise<string[]> {
   try {
     const { stdout } = await execFileAsync(
       'git',
-      ['--no-pager', 'diff', '--cached', '--name-only', '--diff-filter=ACMR'],
-      { cwd: root }
+      [
+        '-c',
+        'core.quotePath=false',
+        '--no-pager',
+        'diff',
+        '--cached',
+        '--name-only',
+        '-z',
+        '--diff-filter=ACMR',
+      ],
+      { cwd: root, maxBuffer: MAX_BUFFER }
     );
     return stdout
-      .split('\n')
+      .split('\0')
       .map((l) => l.trim())
       .filter(Boolean);
   } catch {

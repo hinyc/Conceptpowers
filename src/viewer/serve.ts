@@ -247,8 +247,8 @@ export interface StartServerOptions {
 }
 
 // 사용 가능한 포트를 찾을 때까지 순차 시도하며 서버를 띄운다.
-// entry: 브라우저로 열 진입 경로(서버 root 기준). 데이터(../data, ../../features)가
-// 뷰어 디렉터리 밖에 있으므로 root는 그 상위(docs/conceptpowers)를 가리켜야 한다.
+// entry: 브라우저로 열 진입 경로(서버 root 기준). 개념 데이터(../data)가 뷰어 디렉터리
+// 밖에 있으므로 root는 그 상위(docs/conceptpowers)를 가리켜야 한다.
 export function startServer({
   root,
   projectRoot,

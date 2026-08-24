@@ -133,6 +133,22 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
   });
 
+  it('비-ASCII 파일명도 원본 그대로 조회해 태그를 읽는다 (git이 따옴표로 감싸도)', async () => {
+    await scaffoldInit(root, {});
+    execSync('git init', { cwd: root });
+    execSync('git config user.email "test@test.com"', { cwd: root });
+    execSync('git config user.name "Test"', { cwd: root });
+    // 한자는 macOS의 유니코드 정규화(NFD 분해) 영향을 받지 않아 파일명 검증에 안전하다.
+    writeFileSync(join(root, 'src/日本語.ts'), '// @concept:ghost\n');
+    execSync('git add "src/日本語.ts"', { cwd: root });
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
+  });
+
   it('태그 없는 신규 코드 파일을 커밋하려 하면 개념 없는 코드로 경고(ask)한다', async () => {
     await scaffoldInit(root, {});
     writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');

@@ -4124,6 +4124,9 @@ var InitConfigSchema = external_exports.object({
   ]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
+function defaultIgnoreGlobs() {
+  return InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+}
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
 }
@@ -4675,7 +4678,7 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
 
 // src/hooks/gates/conceptlessGate.ts
 var checkConceptless = async ({ root, files, cfg }) => {
-  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+  const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const conceptless = await findConceptlessFiles(root, files, ignoreGlobs);
   if (conceptless.length === 0) return null;
   const list = conceptless.map((f) => sanitizeText(f)).join(", ");
@@ -4797,7 +4800,7 @@ var checkDrift = async ({ root, files, cfg }) => {
   }
   if (drift.length === 0) return null;
   const staged = new Set(files.map(normalizeRel));
-  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+  const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = await presentTagSlugs(root, staged, ignoreGlobs);
   const lagging = drift.filter((d) => !isFollowedWithTags(d, staged, tagged));
   if (lagging.length === 0) return null;
@@ -5005,15 +5008,25 @@ var checkStaleArtifacts = async ({ root }) => {
 
 // src/hooks/preToolUse.ts
 var execFileAsync2 = promisify2(execFile2);
+var MAX_BUFFER = 64 * 1024 * 1024;
 var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
 async function stagedFiles(root) {
   try {
     const { stdout } = await execFileAsync2(
       "git",
-      ["--no-pager", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
-      { cwd: root }
+      [
+        "-c",
+        "core.quotePath=false",
+        "--no-pager",
+        "diff",
+        "--cached",
+        "--name-only",
+        "-z",
+        "--diff-filter=ACMR"
+      ],
+      { cwd: root, maxBuffer: MAX_BUFFER }
     );
-    return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+    return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
   } catch {
     return [];
   }

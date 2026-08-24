@@ -9,6 +9,8 @@ import { writeFileAtomic } from '../util/atomicWrite.js';
 
 const execFileAsync = promisify(execFile);
 const isGitCommit = (cmd?: string) => !!cmd && /\bgit\s+commit\b/.test(cmd);
+// 대형 커밋(수천 파일)에서도 잘리지 않도록 execFile 기본 1MB를 넉넉히 늘린다.
+const MAX_BUFFER = 64 * 1024 * 1024;
 
 export interface PostToolEvent {
   tool: string;
@@ -16,9 +18,15 @@ export interface PostToolEvent {
   committedFiles?: string[];
 }
 
+// core.quotePath=false: 비-ASCII 경로(예: src/認証.ts)를 git이 따옴표로 감싸 사람이 읽기 좋게
+// 바꾸지 않고 원본 그대로 내보내게 한다 — 그래야 파일을 실제로 열어 태그를 읽을 수 있다.
 async function git(root: string, args: string[]): Promise<string | null> {
   try {
-    const { stdout } = await execFileAsync('git', ['--no-pager', ...args], { cwd: root });
+    const { stdout } = await execFileAsync(
+      'git',
+      ['-c', 'core.quotePath=false', '--no-pager', ...args],
+      { cwd: root, maxBuffer: MAX_BUFFER }
+    );
     return stdout;
   } catch {
     return null;
@@ -39,17 +47,19 @@ async function isMergeCommit(root: string): Promise<boolean> {
 
 async function committedFiles(root: string): Promise<string[]> {
   // --root: 최초(부모 없는) 커밋도 파일 목록을 내도록 한다.
+  // -z: 경로를 NUL로 구분해 원본 그대로 받는다(따옴표 인코딩 방지).
   const out = await git(root, [
     'diff-tree',
     '--root',
     '--no-commit-id',
     '--name-only',
+    '-z',
     '-r',
     'HEAD',
   ]);
   if (!out) return [];
   return out
-    .split('\n')
+    .split('\0')
     .map((l) => l.trim())
     .filter(Boolean);
 }

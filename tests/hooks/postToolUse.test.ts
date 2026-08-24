@@ -129,4 +129,39 @@ describe('runPostToolUse', () => {
     expect(second).toBeNull();
     expect((await readHistory(root)).length).toBe(histLen); // 중복 ignored 기록 없음
   });
+
+  it('비-ASCII 파일명도 원본 그대로 조회해 따라옴으로 결산한다 (문지기와 같은 잣대)', async () => {
+    execSync('git init -q', { cwd: root });
+    execSync('git config user.email "t@t.com"', { cwd: root });
+    execSync('git config user.name "T"', { cwd: root });
+    await scaffoldInit(root, {});
+    // 한자는 macOS의 유니코드 정규화(NFD 분해) 영향을 받지 않아 파일명 검증에 안전하다.
+    touch('src/認証.ts');
+    const base = {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    };
+    await writeConcept(root, { ...base, description: { definition: 'v1' } } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/認証.ts'],
+    } as any);
+    await writeConcept(root, { ...base, description: { definition: 'v2' } } as any);
+    execSync('git add -A', { cwd: root });
+    execSync('git commit -q -m "change concept with non-ascii code"', { cwd: root });
+    const r = await runPostToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+    });
+    expect(r!.aligned).toContain('auth-token');
+    expect(r!.ignored).toEqual([]);
+  });
 });

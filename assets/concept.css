@@ -690,7 +690,7 @@ li::marker {
 }
 /* 기능 색인 줄(feature-index-row): 제목 아래 한 줄 설명, 오른쪽에 따르는 개념 딱지.
    줄 자체는 갈 곳이 없어 링크가 아니고, 눌러 나가는 곳은 딱지뿐이다. */
-.ctable--feature .ctable__code {
+.ctable--feature td.ctable__code {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.86rem;
   color: var(--fg-soft);

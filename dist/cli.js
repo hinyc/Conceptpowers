@@ -7166,6 +7166,9 @@ var InitConfigSchema = external_exports.object({
   ]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
+function defaultIgnoreGlobs() {
+  return InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+}
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
 }
@@ -8770,7 +8773,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
     const cfg = await readInitConfig(o.root);
-    const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+    const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
     if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
     else await updateMappingCache(o.root, files, ignoreGlobs);
   });
@@ -8783,7 +8786,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     }
     const all = await listTrackedFiles(o.root);
     const cfg = await readInitConfig(o.root);
-    const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+    const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
     const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
     const codeScanned = scanned.filter(isCodeFile);
     const r = await auditIntegrity(o.root, codeScanned);

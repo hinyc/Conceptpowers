@@ -16,7 +16,7 @@ import { auditIntegrity } from './audit/audit.js';
 import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
-import { InitConfigSchema } from './schema/initConfig.js';
+import { defaultIgnoreGlobs } from './schema/initConfig.js';
 import { matchesAny } from './util/glob.js';
 import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
@@ -215,7 +215,7 @@ export async function runCli(
       // ignoreGlobs 폴백은 다른 전체 스캔 명령과 동일 규칙(스키마 기본값) —
       // 플러그인 생성물(docs/conceptpowers/** 등)이 개념→코드 매핑에 섞이지 않게 한다.
       const cfg = await readInitConfig(o.root);
-      const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+      const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
       if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
       else await updateMappingCache(o.root, files, ignoreGlobs);
     });
@@ -239,7 +239,7 @@ export async function runCli(
       // 필터 없이 스캔하면 사용자 프로젝트에서 미존재 slug 오탐이 난다.
       const all = await listTrackedFiles(o.root);
       const cfg = await readInitConfig(o.root);
-      const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+      const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
       const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
       // 태그 정합성(unknownTags) 스캔은 코드 파일로 한정한다 — .md 문서의 예시
       // 텍스트나 비코드 파일에 우연히 등장하는 @concept: 리터럴은 태그가 아니다.

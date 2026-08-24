@@ -4125,6 +4125,9 @@ var InitConfigSchema = external_exports.object({
   ]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
+function defaultIgnoreGlobs() {
+  return InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+}
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
 }
@@ -4681,7 +4684,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
     computeDrift(root),
     readInitConfig(root)
   ]);
-  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+  const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = drift.length === 0 ? /* @__PURE__ */ new Set() : await presentTagSlugs(root, committed, ignoreGlobs);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
@@ -4727,9 +4730,14 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
 // src/hooks/postToolUse.ts
 var execFileAsync = promisify(execFile);
 var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
+var MAX_BUFFER = 64 * 1024 * 1024;
 async function git(root, args) {
   try {
-    const { stdout } = await execFileAsync("git", ["--no-pager", ...args], { cwd: root });
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-c", "core.quotePath=false", "--no-pager", ...args],
+      { cwd: root, maxBuffer: MAX_BUFFER }
+    );
     return stdout;
   } catch {
     return null;
@@ -4750,11 +4758,12 @@ async function committedFiles(root) {
     "--root",
     "--no-commit-id",
     "--name-only",
+    "-z",
     "-r",
     "HEAD"
   ]);
   if (!out) return [];
-  return out.split("\n").map((l) => l.trim()).filter(Boolean);
+  return out.split("\0").map((l) => l.trim()).filter(Boolean);
 }
 async function readLastCommit(root) {
   try {

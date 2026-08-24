@@ -50,6 +50,12 @@ export const InitConfigSchema = z.object({
     .default({}),
 });
 export type InitConfig = z.infer<typeof InitConfigSchema>;
+
+// 설정이 없거나 깨졌을 때 쓰는 기본 제외 글롭. 문지기·결산·감사가 같은 잣대를 쓰도록
+// 폴백을 한 곳에 모은다(호출마다 새 배열이므로 공유 참조가 변형될 일은 없다).
+export function defaultIgnoreGlobs(): string[] {
+  return InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+}
 export function parseInitConfig(input: unknown): InitConfig {
   return InitConfigSchema.parse(input);
 }

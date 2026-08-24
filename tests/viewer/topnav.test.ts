@@ -92,7 +92,9 @@ const MANIFEST = {
     { slug: 'a-two', title: '둘째', group: 'alpha', category: [], status: 'pending' },
     { slug: 'b-one', title: 'b-one', group: 'beta', category: [], status: 'red' },
   ],
-  features: [{ slug: 'feat-x', title: '기능 엑스', codePathCount: 1 }],
+  features: [
+    { slug: 'feat-x', title: '기능 엑스', description: '설명', concepts: ['a-one'] },
+  ],
   graph: { edges: [] },
 };
 

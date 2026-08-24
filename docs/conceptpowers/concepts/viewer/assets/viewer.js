@@ -632,7 +632,8 @@ function searchData(q) {
         path: n.title || n.label,
         concepts: edges
           .filter(function (e) {
-            return e.target === n.id;
+            // 개념→파일 선만 센다. 선 종류가 늘어도 source에서 개념 이름표를 잘못 뽑지 않는다.
+            return e.kind === 'concept-file' && e.target === n.id;
           })
           .map(function (e) {
             return e.source.slice(2);
@@ -747,7 +748,8 @@ function conceptChips(slugs) {
     var e = conceptEntry(cs);
     return h('a', { class: 'chip', href: '#/concept/' + cs }, e ? e.title || cs : cs);
   });
-  return chips.length ? chips : h('span', { class: 'muted' }, '—');
+  // 빈 자리 표시는 눈으로만 읽는 기호다 — 읽어주는 도구에는 "대시"로 새어 나가지 않게 감춘다.
+  return chips.length ? chips : h('span', { class: 'muted', 'aria-hidden': 'true' }, '—');
 }
 // withRowId: 앵커 id(frow-*)를 붙일지 — 색인 구역의 표에서만 켠다. 검색 결과는 본문을
 // 숨긴 채 같은 표를 한 번 더 그리므로, 여기도 id를 붙이면 문서에 같은 id가 두 번 생긴다.
@@ -1076,7 +1078,7 @@ function renderConceptRead(slug) {
       h('a', { class: 'graph-link', href: '#/graph/' + slug }, t.openGraph + ' →'),
     ]),
   ];
-  setApp(CPSidebar.shell('concept', slug, h('div', { class: 'wrap' }, sections)));
+  setApp(CPSidebar.shell(slug, h('div', { class: 'wrap' }, sections)));
 }
 
 // ---- 편집 폼 헬퍼 ----
@@ -1225,7 +1227,6 @@ function renderConceptEdit(slug) {
   var editGroup = (editEntry && editEntry.group) || '(ungrouped)';
   setApp(
     CPSidebar.shell(
-      'concept',
       slug,
       h('div', { class: 'wrap' }, [
         breadcrumbs([
@@ -1278,7 +1279,7 @@ function subgraphFor(data, slug) {
   var keep = {};
   keep[focusId] = true;
   data.edges.forEach(function (e) {
-    if (e.source === focusId) keep[e.target] = true;
+    if (e.kind === 'concept-file' && e.source === focusId) keep[e.target] = true;
   });
   return {
     nodes: data.nodes.filter(function (n) {
