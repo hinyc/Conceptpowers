@@ -4715,7 +4715,8 @@ function isFollowed(relatedPaths, present) {
 }
 async function presentTagSlugs(root, present, ignoreGlobs) {
   try {
-    const mapping = await buildMapping(root, [...present].map(normalizeRel), ignoreGlobs);
+    const files = [...present].map(normalizeRel).filter(isCodeFile);
+    const mapping = await buildMapping(root, files, ignoreGlobs);
     return new Set(Object.keys(mapping));
   } catch {
     return /* @__PURE__ */ new Set();
@@ -4794,6 +4795,7 @@ var checkDrift = async ({ root, files, cfg }) => {
   } catch {
     drift = [];
   }
+  if (drift.length === 0) return null;
   const staged = new Set(files.map(normalizeRel));
   const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
   const tagged = await presentTagSlugs(root, staged, ignoreGlobs);

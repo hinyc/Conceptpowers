@@ -32,8 +32,12 @@ export async function reconcileAfterCommit(
     readInitConfig(root),
   ]);
   // 문지기(driftGate)와 같은 확장 잣대의 재료: 커밋된 파일의 첫머리 태그(생성물 제외).
+  // 드리프트가 없으면 판정할 것이 없으므로 스캔을 건너뛴다.
   const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
-  const tagged = await presentTagSlugs(root, committed, ignoreGlobs);
+  const tagged =
+    drift.length === 0
+      ? new Set<string>()
+      : await presentTagSlugs(root, committed, ignoreGlobs);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock: AlignmentLock = { ...lock };
   const aligned: string[] = [];

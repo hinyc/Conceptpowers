@@ -175,4 +175,21 @@ describe('문지기·결산 동일 잣대', () => {
     const r = await reconcileAfterCommit(root, ['src/late.ts'], 't2');
     expect(r.ignored).toContain('auth-token');
   });
+  it('비코드 파일(.md)의 첫머리 텍스트는 태그로 세지 않는다 — 문서만 고친 커밋은 따라옴이 아니다', async () => {
+    await makeDrift(['src/a.ts']);
+    // 마크다운 헤딩(#)은 leadingCommentBlock에서 주석으로 오인될 수 있는 형태다.
+    writeTagged('docs/note.md', '# 개념 노트: @concept:auth-token\n## 배경\n');
+    const gate = await checkDrift({ root, files: ['docs/note.md'] } as never);
+    expect(gate).not.toBeNull();
+    const r = await reconcileAfterCommit(root, ['docs/note.md'], 't2');
+    expect(r.ignored).toContain('auth-token');
+  });
+  it('@concept:none 예약 마커는 어떤 개념의 따라옴도 아니다', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/unrelated.ts', '// @concept:none\nexport const u = 1;\n');
+    const gate = await checkDrift({ root, files: ['src/unrelated.ts'] } as never);
+    expect(gate).not.toBeNull();
+    const r = await reconcileAfterCommit(root, ['src/unrelated.ts'], 't2');
+    expect(r.ignored).toContain('auth-token');
+  });
 });

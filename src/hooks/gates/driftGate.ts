@@ -16,6 +16,7 @@ export const checkDrift: GateCheck = async ({ root, files, cfg }) => {
   } catch {
     drift = [];
   }
+  if (drift.length === 0) return null; // 드리프트가 없으면 태그 스캔 비용도 들이지 않는다
   const staged = new Set(files.map(normalizeRel));
   // 커밋 뒤 결산(reconcile)과 같은 잣대: 연결 코드 가운데 하나라도 스테이징돼 있거나,
   // 스테이징된 파일의 첫머리 태그가 그 개념을 가리키면 따라옴(mapping 캐시가 낡아도 인정).

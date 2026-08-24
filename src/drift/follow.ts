@@ -1,6 +1,7 @@
 // @concept:drift-reconcile
 import { stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { isCodeFile } from '../audit/gaps.js';
 import { buildMapping } from '../mapping/scan.js';
 import { normalizeRel } from './safe.js';
 
@@ -16,15 +17,18 @@ export function isFollowed(relatedPaths: readonly string[], present: ReadonlySet
 // 태그는 진실의 원천이고 mapping은 캐시다(concept-code-mapping). 캐시가 낡아 개념의 연결
 // 목록에 아직 없는 파일이라도, 첫머리 주석에 @concept:<slug>를 단 채 목록(present)에
 // 들어왔다면 그 개념을 따라온 것이다 — 파일에서 직접 스캔해 slug 집합을 만든다.
-// ignoreGlobs로 생성물(dist/** 등)의 태그 사본은 세지 않는다. 스캔이 실패하면 빈 집합을
-// 돌려준다 — 판정이 조용히 열리는 쪽(fail-open)이 아니라 물어보는 쪽으로 기운다.
+// 코드 파일만 센다(.md 문서의 헤딩 텍스트가 주석으로 오인되는 것을 막는다 — 태그 정합성
+// 스캔 전반과 같은 잣대). ignoreGlobs로 생성물(dist/** 등)의 태그 사본도 세지 않는다.
+// 스캔은 커밋될 blob이 아니라 워킹트리 현재 내용을 읽는다 — 문지기와 결산이 같은 기준을
+// 쓰므로 잣대는 갈리지 않는다. 실패하면 빈 집합 — 조용히 열리는 대신 물어보는 쪽으로 기운다.
 export async function presentTagSlugs(
   root: string,
   present: Iterable<string>,
   ignoreGlobs: string[]
 ): Promise<ReadonlySet<string>> {
   try {
-    const mapping = await buildMapping(root, [...present].map(normalizeRel), ignoreGlobs);
+    const files = [...present].map(normalizeRel).filter(isCodeFile);
+    const mapping = await buildMapping(root, files, ignoreGlobs);
     return new Set(Object.keys(mapping));
   } catch {
     return new Set();

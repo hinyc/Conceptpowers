@@ -4570,14 +4570,41 @@ async function appendHistoryMany(root, inputs) {
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute, join as join5, relative, resolve } from "node:path";
+import { isAbsolute, join as join6, relative, resolve } from "node:path";
+
+// src/audit/gaps.ts
+import { join as join5, extname } from "node:path";
+var CODE_EXT = /* @__PURE__ */ new Set([
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".mts",
+  ".cts",
+  ".py",
+  ".go",
+  ".rs",
+  ".java",
+  ".rb",
+  ".php",
+  ".kt",
+  ".swift"
+]);
+function isCodeFile(rel) {
+  return CODE_EXT.has(extname(rel).toLowerCase());
+}
+
+// src/drift/follow.ts
 function isFollowed(relatedPaths, present) {
   const paths = relatedPaths.map(normalizeRel);
   return paths.length === 0 || paths.some((p) => present.has(p));
 }
 async function presentTagSlugs(root, present, ignoreGlobs) {
   try {
-    const mapping = await buildMapping(root, [...present].map(normalizeRel), ignoreGlobs);
+    const files = [...present].map(normalizeRel).filter(isCodeFile);
+    const mapping = await buildMapping(root, files, ignoreGlobs);
     return new Set(Object.keys(mapping));
   } catch {
     return /* @__PURE__ */ new Set();
@@ -4593,7 +4620,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat(join5(root, rel))).isFile();
+    return (await stat(join6(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -4655,7 +4682,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
     readInitConfig(root)
   ]);
   const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
-  const tagged = await presentTagSlugs(root, committed, ignoreGlobs);
+  const tagged = drift.length === 0 ? /* @__PURE__ */ new Set() : await presentTagSlugs(root, committed, ignoreGlobs);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
   const aligned = [];
