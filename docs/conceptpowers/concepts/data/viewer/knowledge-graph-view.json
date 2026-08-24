@@ -11,13 +11,13 @@
     "definition": "얽힌 관계를 점과 선으로 그려 한눈에 보여주는 화면.",
     "analogy": "지하철 노선도 — 전체를 펼쳐 보다가 한 역을 누르면 그 역에서 갈 수 있는 곳만 밝아지는 것.",
     "components": [
-      "점 세 종류: 개념, 기능, 코드 파일",
+      "점 두 종류: 개념, 코드 파일",
       "선: 점과 점 사이의 연결"
     ],
-    "example": "개념 하나를 고르면 그 개념에 걸린 기능과 코드 파일만 남아, 어디까지 영향이 미치는지 바로 보인다."
+    "example": "개념 하나를 고르면 그 개념에 걸린 코드 파일만 남아, 어디까지 영향이 미치는지 바로 보인다."
   },
   "purpose": {
-    "reason": "개념과 기능과 코드가 서로 어떻게 얽혀 있는지는 목록만 봐서는 절대 안 보인다. 관계는 그림으로 볼 때 비로소 이해된다.",
+    "reason": "개념과 코드가 서로 어떻게 얽혀 있는지는 목록만 봐서는 절대 안 보인다. 관계는 그림으로 볼 때 비로소 이해된다.",
     "benefits": [
       "개념 하나를 고치면 어디까지 영향이 가는지 미리 가늠할 수 있다",
       "어느 개념에도 이어지지 않은 외톨이 항목이 눈에 띈다"
@@ -35,7 +35,7 @@
     "restrict": [
       "그래프 화면에서 개념의 내용이나 승인 상태를 고치는 것"
     ],
-    "interaction": "기능은 개념과 코드를 잇는 다리(feature-spec-bridge)와 개념에서 코드로 가는 지도(concept-code-mapping)가 만든 연결을 이 화면이 그대로 그린다."
+    "interaction": "개념에서 코드로 가는 지도(concept-code-mapping)가 만든 연결을 이 화면이 그대로 그린다. 기능은 이 그림에 점으로 들어오지 않는다 — 기능은 목록의 한 줄로만 산다(feature-index-row)."
   },
   "principle": {
     "immutableRules": [
@@ -49,8 +49,8 @@
     "prev": "",
     "next": "",
     "related": [
-      "feature-spec-bridge",
-      "concept-code-mapping"
+      "concept-code-mapping",
+      "feature-index-row"
     ]
   },
   "codeLinks": [

@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile17 } from "node:fs/promises";
+import { readFile as readFile18 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
@@ -3077,7 +3077,8 @@ function cpPaths(root) {
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
-    attestFile: join(base, "concepts", ".alignment", "attest.json")
+    attestFile: join(base, "concepts", ".alignment", "attest.json"),
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
   };
 }
 
@@ -7135,6 +7136,19 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
   enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
@@ -7277,11 +7291,9 @@ import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
-var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
 var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-function buildGraphData(concepts, features, codeLinksBySlug = {}) {
-  const conceptSlugs = new Set(concepts.map((c) => c.slug));
+function buildGraphData(concepts, codeLinksBySlug = {}) {
   const nodes = [];
   const edges = [];
   const seen = /* @__PURE__ */ new Set();
@@ -7290,7 +7302,6 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     seen.add(n.id);
     nodes.push(n);
   };
-  const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
     add({
       id: `c:${c.slug}`,
@@ -7301,25 +7312,8 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
-      addFile(path);
+      add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
       edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: "concept-file" });
-    }
-  }
-  for (const f of features) {
-    add({
-      id: `f:${f.slug}`,
-      label: f.title,
-      type: "feature",
-      href: featureHref(f),
-      title: f.slug
-    });
-    for (const slug3 of f.concepts) {
-      if (!conceptSlugs.has(slug3)) continue;
-      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
-    }
-    for (const path of f.codePaths) {
-      addFile(path);
-      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: "feature-file" });
     }
   }
   return { nodes, edges };
@@ -7327,12 +7321,12 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 
 // src/viewer/manifest.ts
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
-var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+  const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
     locale,
@@ -7349,10 +7343,11 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
       slug: f.slug,
       group: f.group ?? "",
       title: f.title,
-      codePathCount: f.codePaths.length,
-      url: featureUrl(f)
+      description: f.description,
+      // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
+      concepts: f.concepts.filter((slug3) => defined.has(slug3))
     })),
-    graph: buildGraphData(concepts, features, codeLinksBySlug)
+    graph: buildGraphData(concepts, codeLinksBySlug)
   };
 }
 
@@ -7497,6 +7492,16 @@ var AttestEntry = external_exports.object({
   // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+var TestReviewEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["updated", "no-impact", "no-tests"]),
+  at: external_exports.string(),
+  tests: external_exports.array(external_exports.string()).optional(),
+  // 검토·수정한 검사 파일 경로
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
+});
+var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -8577,8 +8582,30 @@ async function noteChange(root, slug3, reason, at) {
   return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
 }
 
-// src/init/addReferencePath.ts
+// src/concept/testReview.ts
 import { readFile as readFile16 } from "node:fs/promises";
+async function readTestReviewLog(root) {
+  try {
+    return TestReviewLog.parse(JSON.parse(await readFile16(cpPaths(root).testReviewFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function recordTestReview(root, concept, result, evidence = {}) {
+  const entry = TestReviewEntry.parse({
+    hash: contractHash(concept),
+    result,
+    at: (/* @__PURE__ */ new Date()).toISOString(),
+    ...evidence.tests && evidence.tests.length > 0 ? { tests: evidence.tests } : {},
+    ...evidence.note ? { note: evidence.note } : {}
+  });
+  const next = { ...await readTestReviewLog(root), [concept.slug]: entry };
+  await writeFileAtomic(cpPaths(root).testReviewFile, JSON.stringify(next, null, 2) + "\n");
+  return entry;
+}
+
+// src/init/addReferencePath.ts
+import { readFile as readFile17 } from "node:fs/promises";
 import { join as join17 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
@@ -8590,7 +8617,7 @@ async function addReferencePath(root, raws) {
   const target = join17(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile16(target, "utf8");
+    existing = await readFile17(target, "utf8");
   } catch (error) {
     throw new Error(
       `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
@@ -8723,7 +8750,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile17(o.file, "utf8"));
+    const patch = JSON.parse(await readFile18(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8738,7 +8765,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile17(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile18(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -8827,6 +8854,23 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       compared,
       note: o.note
     });
+    out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
+  });
+  program2.command("attest-test-review").description("\uAC1C\uB150 \uBCC0\uACBD\uC5D0 \uB538\uB9B0 \uAC80\uC0AC\uB97C \uC5B4\uB5BB\uAC8C \uCC98\uB9AC\uD588\uB294\uC9C0 \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uAC80\uD1A0 \uAE30\uB85D)").argument("<slug>").requiredOption("--result <result>", "updated|no-impact|no-tests").option("--tests <paths>", "\uAC80\uD1A0\xB7\uC218\uC815\uD55C \uAC80\uC0AC \uD30C\uC77C \uACBD\uB85C \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84)").option("--note <text>", "\uD310\uB2E8 \uC694\uC57D (no-impact\xB7no-tests\uB294 \uC0AC\uC720\uB97C \uBC18\uB4DC\uC2DC \uC801\uB294\uB2E4)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    const results = ["updated", "no-impact", "no-tests"];
+    if (!results.includes(o.result)) {
+      throw new Error(`--result must be ${results.join("|")}, got: ${o.result}`);
+    }
+    const concept = await readConcept(o.root, slug3);
+    if (!concept) throw new Error(`Concept not found: ${slug3}`);
+    const tests = (o.tests ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (o.result === "updated" && tests.length === 0) {
+      throw new Error("--tests must list at least one test file when --result updated");
+    }
+    if (o.result !== "updated" && !o.note) {
+      throw new Error(`--note is required when --result ${o.result}`);
+    }
+    const entry = await recordTestReview(o.root, concept, o.result, { tests, note: o.note });
     out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
   });
   try {

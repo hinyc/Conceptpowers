@@ -1,7 +1,7 @@
 // @concept:sidebar-search @concept:sidebar-toggle @concept:list-item-readout
-// assets/sidebar.js — 개념/기능 상세 화면 좌측 곁 목록(넓은 화면 전용) 열고/닫기.
+// assets/sidebar.js — 개념 상세 화면 좌측 곁 목록(넓은 화면 전용) 열고/닫기.
 // 좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(topnav.js, group-navbar)가 목록 역할을 한다.
-// viewer.js가 정의하는 h()/state/displayName/conceptListSections/featureListSection과
+// viewer.js가 정의하는 h()/state/displayName/conceptListSections와
 // topnav.js의 CPTopnav에 의존한다. 로드 순서: index.html에서 sidebar.js를 viewer.js보다
 // 먼저 로드한다(전역 의존은 호출 시점에만 필요하므로 순서 자체는 안전하다).
 'use strict';
@@ -70,12 +70,6 @@ var CPSidebar = (function () {
   function sidebarListNode(activeKind, activeSlug) {
     var t = state.t;
     var active = { kind: activeKind, slug: activeSlug };
-    if (activeKind === 'feature') {
-      var featureOnly = featureListSection(active, true);
-      return h('div', { class: 'side__list' }, [
-        featureOnly || h('p', { class: 'muted' }, t.empty),
-      ]);
-    }
     var activeGroup = CPTopnav.activeGroupKey(state.manifest, active);
     var sections = conceptListSections(active, true, activeGroup);
     var body = sections.length ? sections : [h('p', { class: 'muted' }, t.empty)];

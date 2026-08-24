@@ -51,6 +51,7 @@
   },
   "codeLinks": [
     "skills/define-concept/SKILL.md",
-    "skills/update-baseline/SKILL.md"
+    "skills/update-baseline/SKILL.md",
+    "skills/auto/SKILL.md"
   ]
 }

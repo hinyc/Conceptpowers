@@ -1,7 +1,8 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline @concept:feature-index-row
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
-// 해시 라우트: #/ (목록) · #/group/:g (목록의 그룹 위치) · #/concept/:slug · #/feature/:slug · #/graph(/:focusSlug)
+// 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
+// #/concept/:slug · #/graph(/:focusSlug). 옛 #/feature/:slug는 색인 줄로 돌려보낸다.
 'use strict';
 
 var I18N = {
@@ -24,11 +25,9 @@ var I18N = {
     relatedFeatures: '관련 기능',
     relatedConcepts: '관련 개념',
     implementationPaths: '구현 경로',
-    featureEyebrow: '기능',
     graphTitle: '지식 그래프',
     openGraph: '지식 그래프 보기',
     conceptNode: '개념',
-    featureNode: '기능',
     fileNode: '파일',
     allConcepts: '전체 보기',
     focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
@@ -82,7 +81,7 @@ var I18N = {
     sidebarOpenLabel: '개념 목록 열기',
     sidebarCloseLabel: '개념 목록 닫기',
     closeSidebar: '닫기',
-    sidebarSearchPh: '개념 · 기능 검색',
+    sidebarSearchPh: '개념 검색',
     topnavLabel: '묶음 메뉴',
   },
   en: {
@@ -104,11 +103,9 @@ var I18N = {
     relatedFeatures: 'Related Features',
     relatedConcepts: 'Related Concepts',
     implementationPaths: 'Implementation',
-    featureEyebrow: 'Feature',
     graphTitle: 'Knowledge Graph',
     openGraph: 'View Knowledge Graph',
     conceptNode: 'Concept',
-    featureNode: 'Feature',
     fileNode: 'File',
     allConcepts: 'Show all',
     focusHint: 'Pick a concept to show only its related graph.',
@@ -162,7 +159,7 @@ var I18N = {
     sidebarOpenLabel: 'Open concept list',
     sidebarCloseLabel: 'Close concept list',
     closeSidebar: 'Close',
-    sidebarSearchPh: 'Search concepts · features',
+    sidebarSearchPh: 'Search concepts',
     topnavLabel: 'Group menu',
   },
 };
@@ -403,17 +400,16 @@ function displayName(title, slug) {
   if (!title || title === slug) return slug;
   return slug + ' | ' + title;
 }
-// 개념을 참조하는 기능들(그래프 엣지에서 역추적)
+// 개념을 참조하는 기능들. 연결은 기능 기록 한 곳에만 적히므로(feature-spec-bridge)
+// 역방향은 여기서 파생시킨다.
 function relatedFeatures(slug) {
-  var edges = (state.manifest.graph && state.manifest.graph.edges) || [];
-  return edges
-    .filter(function (e) {
-      return e.kind === 'feature-concept' && e.target === 'c:' + slug;
-    })
-    .map(function (e) {
-      return featureEntry(e.source.slice(2));
-    })
-    .filter(Boolean);
+  return (state.manifest.features || []).filter(function (f) {
+    return (f.concepts || []).indexOf(slug) !== -1;
+  });
+}
+// 기능 색인 줄의 주소. 기능은 전용 화면 없이 목록의 줄로만 산다(feature-index-row).
+function featureRowHref(slug) {
+  return '#/group/__features/' + slug;
 }
 
 // ---- 간이 마크다운 렌더러 ----
@@ -612,7 +608,7 @@ function viewDoc(kind) {
 
 // ---- 검색 ----
 // 개념(제목·slug·그룹·분류) · 기능(제목·slug) · 파일 경로(@concept 색인 = 그래프의 파일 노드)를
-// 부분 일치로 찾는다. 파일 결과에는 그 파일에 연결된 개념·기능 링크를 함께 보여준다.
+// 부분 일치로 찾는다. 파일 결과에는 그 파일에 연결된 개념 링크를 함께 보여준다.
 function searchData(q) {
   q = q.toLowerCase();
   var m = state.manifest;
@@ -638,21 +634,11 @@ function searchData(q) {
       );
     })
     .map(function (n) {
-      var linked = edges.filter(function (e) {
-        return e.target === n.id;
-      });
       return {
         path: n.title || n.label,
-        concepts: linked
+        concepts: edges
           .filter(function (e) {
-            return e.kind === 'concept-file';
-          })
-          .map(function (e) {
-            return e.source.slice(2);
-          }),
-        features: linked
-          .filter(function (e) {
-            return e.kind === 'feature-file';
+            return e.target === n.id;
           })
           .map(function (e) {
             return e.source.slice(2);
@@ -695,11 +681,6 @@ function renderSearchResults(q, box) {
             f.concepts.forEach(function (cs) {
               if (links.length) links.push(' · ');
               links.push(h('a', { href: '#/concept/' + cs }, displayName(conceptTitle(cs), cs)));
-            });
-            f.features.forEach(function (fs) {
-              var e = featureEntry(fs);
-              if (links.length) links.push(' · ');
-              links.push(h('a', { href: '#/feature/' + fs }, e ? displayName(e.title, fs) : fs));
             });
             return h('li', null, [
               h('code', null, f.path),
@@ -761,7 +742,20 @@ function conceptTable(items, showGroup) {
     ])
   );
 }
-function featureTable(items) {
+// 기능 색인 줄(feature-index-row): 전용 화면 없이 줄 하나로만 보여준다.
+// 이름표·제목은 독립 칸을 지키되(list-item-readout) 갈 곳이 없어 링크가 아니고,
+// 눌러서 나갈 수 있는 곳은 그 줄에 붙은 개념 딱지뿐이다. 코드 경로는 여기 늘어놓지 않는다.
+function featureRowId(slug) {
+  return 'frow-' + slug;
+}
+function conceptChips(slugs) {
+  var chips = (slugs || []).map(function (cs) {
+    var e = conceptEntry(cs);
+    return h('a', { class: 'chip', href: '#/concept/' + cs }, e ? e.title || cs : cs);
+  });
+  return chips.length ? chips : h('span', { class: 'muted' }, '—');
+}
+function featureTable(items, focusSlug) {
   var t = state.t;
   return h(
     'div',
@@ -773,7 +767,7 @@ function featureTable(items) {
         h('tr', null, [
           h('th', { class: 'ctable__code', scope: 'col' }, t.colCode),
           h('th', { class: 'ctable__title', scope: 'col' }, t.colTitle),
-          h('th', { class: 'ctable__meta', scope: 'col' }, t.codeLinksLabel),
+          h('th', { class: 'ctable__chips', scope: 'col' }, t.relatedConcepts),
         ])
       ),
       h(
@@ -782,14 +776,18 @@ function featureTable(items) {
         items.map(function (f) {
           return h(
             'tr',
-            null,
-            tableRowCells('#/feature/' + f.slug, f.slug, f.title).concat([
-              h(
-                'td',
-                { class: 'ctable__meta' },
-                String(f.codePathCount == null ? '' : f.codePathCount)
-              ),
-            ])
+            {
+              id: featureRowId(f.slug),
+              class: focusSlug === f.slug ? 'ctable__row--focus' : null,
+            },
+            [
+              h('td', { class: 'ctable__code' }, f.slug),
+              h('td', { class: 'ctable__title' }, [
+                h('span', { class: 'frow__title' }, f.title || f.slug),
+                f.description ? h('span', { class: 'frow__desc' }, f.description) : null,
+              ]),
+              h('td', { class: 'ctable__chips' }, conceptChips(f.concepts)),
+            ]
           );
         })
       ),
@@ -844,33 +842,24 @@ function conceptListSections(active, compact, onlyGroup) {
     ]);
   });
 }
-function featureListSection(active, compact) {
+// 기능 색인 구역. 목록 페이지에만 두고 곁 목록에는 두지 않는다 —
+// 기능은 펼쳐 볼 화면이 없어 "현재 보고 있는 기능"이라는 상태 자체가 없다.
+function featureListSection(focusSlug) {
   var t = state.t;
   var m = state.manifest;
   if (!(m.features || []).length) return null;
   return h('section', { class: 'group', id: 'g-__features' }, [
     h('h2', null, t.featureList),
-    compact
-      ? h(
-          'ul',
-          null,
-          m.features.map(function (f) {
-            var isActive = !!(active && active.kind === 'feature' && active.slug === f.slug);
-            return h('li', { class: isActive ? 'active' : null }, [
-              sideItem('#/feature/' + f.slug, f.slug, f.title, isActive),
-              h('small', null, String(f.codePathCount)),
-            ]);
-          })
-        )
-      : featureTable(m.features),
+    featureTable(m.features, focusSlug),
   ]);
 }
 // scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
-function viewIndex(scrollTo) {
+// focusFeature: #/group/__features/:slug로 들어오면 그 색인 줄까지 내려가 눈에 띄게 표시한다.
+function viewIndex(scrollTo, focusFeature) {
   var t = state.t;
   var m = state.manifest;
   var sections = conceptListSections(null, false);
-  var featureSection = featureListSection(null, false);
+  var featureSection = featureListSection(focusFeature);
   var body = (m.concepts || []).length ? sections : [h('p', { class: 'muted' }, t.empty)];
   // 검색: 입력이 있으면 목록 대신 결과를 보여주고, 지우면 목록으로 복귀한다.
   var bodyBox = h('div', null, [body, featureSection]);
@@ -908,10 +897,12 @@ function viewIndex(scrollTo) {
       bodyBox,
     ])
   );
-  if (scrollTo) {
-    var el = document.getElementById('g-' + scrollTo);
-    if (el) el.scrollIntoView();
-  }
+  var target = focusFeature
+    ? document.getElementById(featureRowId(focusFeature))
+    : scrollTo
+      ? document.getElementById('g-' + scrollTo)
+      : null;
+  if (target) target.scrollIntoView();
 }
 
 // ---- 뷰: 개념 상세 ----
@@ -1049,7 +1040,7 @@ function renderConceptRead(slug) {
               return h(
                 'li',
                 null,
-                h('a', { href: '#/feature/' + f.slug }, displayName(f.title, f.slug))
+                h('a', { href: featureRowHref(f.slug) }, displayName(f.title, f.slug))
               );
             })
           ),
@@ -1269,74 +1260,13 @@ function renderConceptEdit(slug) {
   );
 }
 
-// ---- 뷰: 기능 상세 ----
-function viewFeature(slug) {
-  var entry = featureEntry(slug);
-  if (!entry) return renderMissing();
-  var t = state.t;
-  fetchJson(entry.url)
-    .then(function (f) {
-      var conceptLinks = (f.concepts || []).map(function (cs) {
-        var e = conceptEntry(cs);
-        return e
-          ? h('li', null, h('a', { href: '#/concept/' + cs }, displayName(e.title, cs)))
-          : h('li', null, h('span', { class: 'muted' }, cs));
-      });
-      var paths = (f.codePaths || []).length
-        ? h(
-            'ul',
-            { class: 'paths' },
-            f.codePaths.map(function (p) {
-              return h('li', null, h('code', null, p));
-            })
-          )
-        : null;
-      setApp(
-        CPSidebar.shell(
-          'feature',
-          slug,
-          h('div', { class: 'wrap' }, [
-            breadcrumbs([
-              { label: t.home, href: '#/' },
-              { label: t.featureList, href: '#/group/__features' },
-              { label: displayName(f.title, slug) },
-            ]),
-            h('header', { class: 'hero' }, [
-              h('span', { class: 'hero__eyebrow' }, t.featureEyebrow),
-              h('h1', null, displayName(f.title, slug)),
-              heroSummary(f.description),
-            ]),
-            h('section', { class: 'section' }, [
-              h('h2', null, t.relatedConcepts),
-              h('ul', { class: 'links' }, conceptLinks),
-            ]),
-            h('section', { class: 'section' }, [h('h2', null, t.implementationPaths), paths]),
-            pagenav(),
-          ])
-        )
-      );
-    })
-    .catch(renderError);
-}
-
-// 선택한 개념의 1-hop 이웃만 추린다: 개념 자신 + 그 개념을 실현하는 기능 +
-// 개념·기능이 가리키는 파일 + (맥락용) 그 기능들이 함께 실현하는 다른 개념(잎 노드).
+// 선택한 개념의 1-hop 이웃만 추린다: 개념 자신 + 그 개념이 가리키는 파일.
 function subgraphFor(data, slug) {
   var focusId = 'c:' + slug;
   var keep = {};
   keep[focusId] = true;
-  var feats = {};
   data.edges.forEach(function (e) {
-    if (e.kind === 'feature-concept' && e.target === focusId) {
-      keep[e.source] = true;
-      feats[e.source] = true;
-    }
-    if (e.kind === 'concept-file' && e.source === focusId) keep[e.target] = true;
-  });
-  data.edges.forEach(function (e) {
-    if (!feats[e.source]) return;
-    if (e.kind === 'feature-file') keep[e.target] = true; // 기능→코드
-    if (e.kind === 'feature-concept') keep[e.target] = true; // 형제 개념(맥락 잎)
+    if (e.source === focusId) keep[e.target] = true;
   });
   return {
     nodes: data.nodes.filter(function (n) {
@@ -1375,7 +1305,6 @@ function viewGraph(focusSlug) {
   // 노드 색상 범례 — 그래프 우측 상단에 오버레이로 항상 표시
   var legend = h('div', { class: 'graph-legend' }, [
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--concept' }), t.conceptNode]),
-    h('span', { class: 'lg' }, [h('i', { class: 'dot dot--feature' }), t.featureNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--file' }), t.fileNode]),
   ]);
   var svg = h('svg', { id: 'graph', class: 'graph' });
@@ -1824,9 +1753,17 @@ function route() {
   var hash = window.location.hash.replace(/^#/, '') || '/';
   var parts = hash.split('/').filter(Boolean); // ['concept','slug'] 등
   if (parts[0] === 'concept' && parts[1]) return viewConcept(decodeURIComponent(parts[1]));
-  if (parts[0] === 'feature' && parts[1]) return viewFeature(decodeURIComponent(parts[1]));
+  // 옛 기능 주소는 빈 화면을 두지 않고 색인 줄로 데려간다(feature-index-row).
+  if (parts[0] === 'feature' && parts[1]) {
+    window.location.replace(featureRowHref(decodeURIComponent(parts[1])));
+    return;
+  }
   if (parts[0] === 'graph') return viewGraph(parts[1] ? decodeURIComponent(parts[1]) : null);
-  if (parts[0] === 'group' && parts[1]) return viewIndex(decodeURIComponent(parts[1]));
+  if (parts[0] === 'group' && parts[1]) {
+    var group = decodeURIComponent(parts[1]);
+    var focus = group === '__features' && parts[2] ? decodeURIComponent(parts[2]) : null;
+    return viewIndex(group, focus);
+  }
   if (parts[0] === 'architecture') return viewDoc('architecture');
   if (parts[0] === 'infra') return viewDoc('infra');
   return viewIndex();

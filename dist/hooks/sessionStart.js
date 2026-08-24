@@ -35,7 +35,8 @@ function cpPaths(root) {
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
-    attestFile: join(base, "concepts", ".alignment", "attest.json")
+    attestFile: join(base, "concepts", ".alignment", "attest.json"),
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
   };
 }
 
@@ -4093,6 +4094,19 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
   enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
@@ -4196,11 +4210,9 @@ import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
-var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
 var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-function buildGraphData(concepts, features, codeLinksBySlug = {}) {
-  const conceptSlugs = new Set(concepts.map((c) => c.slug));
+function buildGraphData(concepts, codeLinksBySlug = {}) {
   const nodes = [];
   const edges = [];
   const seen = /* @__PURE__ */ new Set();
@@ -4209,7 +4221,6 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     seen.add(n.id);
     nodes.push(n);
   };
-  const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
     add({
       id: `c:${c.slug}`,
@@ -4220,25 +4231,8 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
-      addFile(path);
+      add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
       edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: "concept-file" });
-    }
-  }
-  for (const f of features) {
-    add({
-      id: `f:${f.slug}`,
-      label: f.title,
-      type: "feature",
-      href: featureHref(f),
-      title: f.slug
-    });
-    for (const slug3 of f.concepts) {
-      if (!conceptSlugs.has(slug3)) continue;
-      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
-    }
-    for (const path of f.codePaths) {
-      addFile(path);
-      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: "feature-file" });
     }
   }
   return { nodes, edges };
@@ -4246,12 +4240,12 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 
 // src/viewer/manifest.ts
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
-var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+  const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
     locale,
@@ -4268,10 +4262,11 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
       slug: f.slug,
       group: f.group ?? "",
       title: f.title,
-      codePathCount: f.codePaths.length,
-      url: featureUrl(f)
+      description: f.description,
+      // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
+      concepts: f.concepts.filter((slug3) => defined.has(slug3))
     })),
-    graph: buildGraphData(concepts, features, codeLinksBySlug)
+    graph: buildGraphData(concepts, codeLinksBySlug)
   };
 }
 
@@ -4364,6 +4359,16 @@ var AttestEntry = external_exports.object({
   // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+var TestReviewEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["updated", "no-impact", "no-tests"]),
+  at: external_exports.string(),
+  tests: external_exports.array(external_exports.string()).optional(),
+  // 검토·수정한 검사 파일 경로
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
+});
+var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -5114,11 +5119,14 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   const config = await readInitConfig(root);
   const locale = config?.locale ?? "ko";
   const conceptTestsLine = config?.conceptDrivenTests !== false ? [
-    "- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag \u2192 manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules \u2014 each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept)."
+    "- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag \u2192 manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules \u2014 each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept). Every test file must carry an @concept tag naming a real concept; `@concept:none` is not accepted for tests (commit gate: concept-test-scope).",
+    `- When a concept changes, its tests MUST be reviewed in the same commit: update them to match the new rules and stage them, or \u2014 when the change genuinely needs no test change, or the concept has no tests yet \u2014 get the user's confirmation and record it: attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>". The record is bound to the concept hash, so editing the concept again invalidates it (commit gate: concept-test-follow).`,
+    "- Test changes must stay inside the concept: never assert behavior the concept does not state, and never weaken/delete a test just to make code pass. If the check you need lies outside the concept, stop and ask the user to change the concept first (update-baseline) \u2014 the test follows the concept, never the other way around."
   ] : [];
   const enforcement = config?.enforcement ?? "standard";
   const enforcementLine = enforcement === "strict" ? [
-    "- Commit gate enforcement: strict \u2014 governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval, stage related code together, run check-consistency + attest) or report to the user. Only the user may change the enforcement level."
+    "- Commit gate enforcement: strict \u2014 governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval, stage related code together, run check-consistency + attest) or report to the user. Only the user may change the enforcement level.",
+    "- Under strict, the two test rules above are DENY-level: a concept change with no test follow-up and no test-review record is blocked, and so is a staged test file with no real @concept tag. Resolve them by reviewing the tests (or recording the reason with attest-test-review) \u2014 never by loosening testGlobs, turning conceptDrivenTests off, or dropping the tests."
   ] : enforcement === "light" ? [
     "- Commit gate enforcement: light \u2014 governance issues do NOT stop commits; they pass with warnings in additionalContext. After each commit, summarize any passed warnings to the user in one concise line. Confidential-reference checks still ask. Only the user may change the enforcement level."
   ] : [];

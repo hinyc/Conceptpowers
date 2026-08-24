@@ -3,7 +3,9 @@
 // 상단 묶음 메뉴(assets/topnav.js)를 node:vm + 최소 DOM 스텁으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - group-navbar 구성요소 "묶음 줄: 화면 위쪽에 항상 있는, 묶음 이름들이 나열된 한 줄"
-//    → 묶음마다 버튼 하나, 기능은 맨 뒤
+//    → 개념 묶음마다 버튼 하나
+//  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고, 기능 하나만 펼쳐 보는 화면은 만들지 않는다"
+//    → 기능은 묶음 줄에도 펼침 목록에도 들어오지 않는다
 //  - group-navbar 구성요소 "현재 위치 표시: 지금 보고 있는 항목이 속한 묶음을 눈에 띄게 표시한다"
 //    → 보고 있는 항목의 묶음에 active 표시
 //  - group-navbar 불변 "마우스·터치·키보드 어느 입력으로도 펼침 목록을 열고 닫을 수 있다"
@@ -114,19 +116,19 @@ function load(): Ctx {
   return ctx as Ctx;
 }
 
-describe('CPTopnav.groupsOf — 묶음 나열(개념 묶음 순서대로, 기능은 맨 뒤)', () => {
-  it('개념을 묶음별로 모으고 기능 묶음을 맨 뒤에 덧붙인다', () => {
+describe('CPTopnav.groupsOf — 묶음 나열(개념 묶음 순서대로)', () => {
+  it('개념을 묶음별로 모은다', () => {
     const { CPTopnav } = load();
     const groups = CPTopnav.groupsOf(MANIFEST);
-    expect(groups.map((g) => g.key)).toEqual(['alpha', 'beta', '__features']);
+    expect(groups.map((g) => g.key)).toEqual(['alpha', 'beta']);
     expect(groups[0].items.map((i) => i.slug)).toEqual(['a-one', 'a-two']);
-    expect(groups[2].items[0]).toMatchObject({ kind: 'feature', slug: 'feat-x' });
   });
 
-  it('기능이 없으면 기능 묶음을 만들지 않는다', () => {
+  it('기능이 있어도 기능 묶음은 만들지 않는다', () => {
     const { CPTopnav } = load();
-    const groups = CPTopnav.groupsOf({ concepts: MANIFEST.concepts, features: [] });
-    expect(groups.map((g) => g.key)).toEqual(['alpha', 'beta']);
+    expect(MANIFEST.features.length).toBeGreaterThan(0);
+    const groups = CPTopnav.groupsOf(MANIFEST);
+    expect(groups.some((g) => g.key === '__features')).toBe(false);
   });
 });
 
@@ -135,11 +137,9 @@ describe('CPTopnav.activeGroupKey — 현재 위치의 묶음', () => {
     const { CPTopnav } = load();
     expect(CPTopnav.activeGroupKey(MANIFEST, { kind: 'concept', slug: 'b-one' })).toBe('beta');
   });
-  it('기능이면 기능 묶음이다', () => {
+  it('기능은 묶음을 갖지 않는다', () => {
     const { CPTopnav } = load();
-    expect(CPTopnav.activeGroupKey(MANIFEST, { kind: 'feature', slug: 'feat-x' })).toBe(
-      '__features'
-    );
+    expect(CPTopnav.activeGroupKey(MANIFEST, { kind: 'feature', slug: 'feat-x' })).toBe(null);
   });
   it('없는 항목·미지정이면 null이다', () => {
     const { CPTopnav } = load();
@@ -149,11 +149,11 @@ describe('CPTopnav.activeGroupKey — 현재 위치의 묶음', () => {
 });
 
 describe('CPTopnav.bar — 묶음 줄과 펼침 목록 (규칙: 묶음 줄 나열 · 현재 위치 표시)', () => {
-  it('묶음마다 버튼 하나씩, 기능 묶음 라벨은 번역 문구를 쓴다', () => {
+  it('개념 묶음마다 버튼 하나씩 그린다', () => {
     const ctx = load();
     const bar = ctx.CPTopnav.bar(null)!;
     const buttons = byClass(findAll(bar, 'button'), 'topnav__btn');
-    expect(buttons.map((b) => b.textContent)).toEqual(['alpha', 'beta', '기능 목록']);
+    expect(buttons.map((b) => b.textContent)).toEqual(['alpha', 'beta']);
   });
 
   it('보고 있는 항목의 묶음에 active 표시를 한다', () => {
@@ -203,15 +203,12 @@ describe('펼침 목록 항목 — list-item-readout 준수', () => {
     expect(legend).toHaveLength(1);
   });
 
-  it('기능 항목은 상태 동그라미 없이 이름표·제목만 그리고 범례도 없다', () => {
+  it('펼침 목록 어디에도 기능 항목은 없다', () => {
     const ctx = load();
     const bar = ctx.CPTopnav.bar(null)!;
-    const panels = byClass(findAll(bar, 'div'), 'topnav__panel');
-    const featPanel = panels[panels.length - 1];
-    const li = findAll(featPanel, 'li')[0];
-    expect(byClass(findAll(li, 'span'), 'status-dot')).toHaveLength(0);
-    expect(findAll(li, 'a')[0].getAttribute('href')).toBe('#/feature/feat-x');
-    expect(byClass(findAll(featPanel, 'div'), 'status-legend')).toHaveLength(0);
+    const links = findAll(bar, 'a').map((a) => a.getAttribute('href'));
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.every((href) => (href || '').indexOf('#/feature/') !== 0)).toBe(true);
   });
 
   it('항목을 고르면 닫히도록 li에 click을 바인딩한다 (규칙: 고르면 닫힌다)', () => {

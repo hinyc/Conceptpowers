@@ -1,13 +1,12 @@
-// @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
+// @concept:knowledge-graph-view @concept:globally-unique-slug
 // tests/viewer/subgraph.test.ts
 // 초점 보기(subgraphFor)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - knowledge-graph-view 불변 "초점을 맞추면 그 개념과 이어지지 않은 점과 선은 화면에서 감춘다"
-//    → 포커스 개념의 이웃(개념·실현 기능·코드·형제 개념)만 남긴다
+//    → 포커스 개념과 그 개념에 걸린 코드 파일만 남긴다
 //    → 남은 노드 양끝을 모두 가진 엣지만 보존한다 (한쪽이 감춰진 선은 남기지 않는다)
 //    → 연결이 전혀 없는 개념은 자기 노드 하나만 남는다
-//  - feature-spec-bridge 구성요소 "따르는 개념 / 구현 코드" + globally-unique-slug 불변(이름표 유일)
-//    → 이웃을 추릴 때 3종 엣지가 모두 표현된다
+//  - globally-unique-slug 불변(이름표 유일) → 초점 대상은 이름표로만 지정한다
 // 브라우저 SPA(assets/viewer.js)의 순수 함수 subgraphFor를 node:vm으로 로드해 검증한다.
 // 최상위는 함수/변수 선언만 하므로(boot()는 index.html이 호출) DOM 없이 안전히 평가된다.
 import { describe, it, expect } from 'vitest';
@@ -17,7 +16,6 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { buildGraphData } from '../../src/viewer/graph.js';
 import type { Concept } from '../../src/schema/concept.js';
-import type { Feature } from '../../src/schema/feature.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // 최상위 boot() 호출만 제거하면(SPA 진입점, 브라우저에서 index.html이 호출) DOM/네트워크 없이 평가된다.
@@ -36,7 +34,7 @@ const subgraphFor = ctx.subgraphFor as (
   slug: string
 ) => ReturnType<typeof buildGraphData>;
 
-const concept = (slug: string): Concept =>
+const concept = (slug: string, codeLinks: string[] = []): Concept =>
   ({
     slug,
     group: '',
@@ -49,44 +47,36 @@ const concept = (slug: string): Concept =>
     actions: { allow: [], restrict: [], interaction: '' },
     principle: { immutableRules: [], tradeoffs: '', lifecycle: [] },
     relations: { prev: '', next: '', related: [] },
-    codeLinks: [],
+    codeLinks,
   }) as Concept;
 
-const feature = (slug: string, concepts: string[], codePaths: string[] = []): Feature =>
-  ({ slug, group: '', title: slug, description: '', concepts, codePaths }) as Feature;
-
 describe('viewer subgraphFor', () => {
-  // a, b 두 개념. f1은 a·b 둘 다 실현(코드 x), f2는 b만 실현(코드 y). a는 코드 z 직접 연결.
-  const full = buildGraphData(
-    [concept('a'), concept('b')],
-    [feature('f1', ['a', 'b'], ['src/x.ts']), feature('f2', ['b'], ['src/y.ts'])],
-    { a: ['src/z.ts'] }
-  );
+  // a는 코드 x를 직접 가리키고 표식으로 z가 더 붙는다. b는 코드 y만 가리킨다.
+  const full = buildGraphData([concept('a', ['src/x.ts']), concept('b', ['src/y.ts'])], {
+    a: ['src/z.ts'],
+  });
 
-  it('포커스 개념의 이웃(개념·실현 기능·코드·형제 개념)만 남긴다', () => {
+  it('포커스 개념과 그 개념에 걸린 코드 파일만 남긴다', () => {
     const sub = subgraphFor(full, 'a');
     const ids = new Set(sub.nodes.map((n) => n.id));
-    expect(ids).toEqual(new Set(['c:a', 'f:f1', 'p:src/z.ts', 'p:src/x.ts', 'c:b']));
-    // f2/그 코드(y), b의 코드 등 무관한 노드는 빠진다
-    expect(ids.has('f:f2')).toBe(false);
+    expect(ids).toEqual(new Set(['c:a', 'p:src/x.ts', 'p:src/z.ts']));
+    // 무관한 개념 b와 그 코드는 빠진다
+    expect(ids.has('c:b')).toBe(false);
     expect(ids.has('p:src/y.ts')).toBe(false);
   });
 
-  it('남은 노드 양끝을 모두 가진 엣지만 보존한다(3종 모두 표현)', () => {
+  it('남은 노드 양끝을 모두 가진 엣지만 보존한다', () => {
     const sub = subgraphFor(full, 'a');
-    const kinds = new Set(sub.edges.map((e) => e.kind));
-    expect(kinds.has('feature-concept')).toBe(true); // f1→a, f1→b(형제)
-    expect(kinds.has('feature-file')).toBe(true); // f1→x
-    expect(kinds.has('concept-file')).toBe(true); // a→z
-    // 끊긴 엣지(끝점이 제외된)는 없어야 한다
+    expect(sub.edges.length).toBe(2);
     for (const e of sub.edges) {
+      expect(e.kind).toBe('concept-file');
       expect(sub.nodes.some((n) => n.id === e.source)).toBe(true);
       expect(sub.nodes.some((n) => n.id === e.target)).toBe(true);
     }
   });
 
   it('연결이 전혀 없는 개념은 자기 노드 하나만 남는다', () => {
-    const isolated = buildGraphData([concept('lonely')], []);
+    const isolated = buildGraphData([concept('lonely')]);
     const sub = subgraphFor(isolated, 'lonely');
     expect(sub.nodes.map((n) => n.id)).toEqual(['c:lonely']);
     expect(sub.edges).toEqual([]);

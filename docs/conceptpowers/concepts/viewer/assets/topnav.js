@@ -6,11 +6,11 @@
 'use strict';
 
 var CPTopnav = (function () {
-  var FEATURES_KEY = '__features';
   var openItem = null; // 현재 펼쳐진 .topnav__item (한 번에 하나만)
   var bound = false;
 
-  // manifest → [{key, items:[{kind, slug, title, status?}]}] — 개념 묶음 순서대로, 기능은 맨 뒤.
+  // manifest → [{key, items:[{slug, title, status}]}] — 개념 묶음 순서대로.
+  // 기능은 펼쳐 볼 화면이 없어(feature-index-row) 이 줄에 묶음으로 들어오지 않는다.
   // 순수 함수라 DOM 없이 검증할 수 있다.
   function groupsOf(manifest) {
     var order = [];
@@ -21,19 +21,14 @@ var CPTopnav = (function () {
         byKey[key] = { key: key, items: [] };
         order.push(byKey[key]);
       }
-      byKey[key].items.push({ kind: 'concept', slug: c.slug, title: c.title, status: c.status });
+      byKey[key].items.push({ slug: c.slug, title: c.title, status: c.status });
     });
-    var features = ((manifest && manifest.features) || []).map(function (f) {
-      return { kind: 'feature', slug: f.slug, title: f.title };
-    });
-    if (features.length) order.push({ key: FEATURES_KEY, items: features });
     return order;
   }
 
   // active({kind, slug}) → 그 항목이 속한 묶음 key. 못 찾으면 null.
   function activeGroupKey(manifest, active) {
     if (!active) return null;
-    if (active.kind === 'feature') return FEATURES_KEY;
     var found = ((manifest && manifest.concepts) || []).filter(function (c) {
       return c.slug === active.slug;
     })[0];
@@ -84,11 +79,9 @@ var CPTopnav = (function () {
 
   // 펼침 목록 항목 — 목록 항목 규칙(list-item-readout): 상태 동그라미 + 나뉜 이름표·제목.
   function panelItem(entry) {
-    var href = '#/' + entry.kind + '/' + entry.slug;
-    var isActive = false;
     var li = h('li', null, [
-      entry.kind === 'concept' ? statusDot(entry.status) : null,
-      sideItem(href, entry.slug, entry.title, isActive),
+      statusDot(entry.status),
+      sideItem('#/concept/' + entry.slug, entry.slug, entry.title, false),
     ]);
     li.addEventListener('click', close); // 항목을 고르면 펼침 목록은 닫힌다
     return li;
@@ -107,7 +100,7 @@ var CPTopnav = (function () {
     );
     var panel = h('div', { class: 'topnav__panel' }, [
       h('ul', { class: 'topnav__menu' }, group.items.map(panelItem)),
-      group.key === FEATURES_KEY ? null : h('div', { class: 'topnav__legend' }, statusLegend()),
+      h('div', { class: 'topnav__legend' }, statusLegend()),
     ]);
     var item = h(
       'div',
@@ -128,7 +121,7 @@ var CPTopnav = (function () {
     return item;
   }
 
-  // active: null 또는 { kind: 'concept'|'feature', slug } — 현재 위치의 묶음 강조.
+  // active: null 또는 { kind: 'concept', slug } — 현재 위치의 묶음 강조.
   function bar(active) {
     var t = state.t;
     ensureGlobalHandlers();
@@ -140,8 +133,7 @@ var CPTopnav = (function () {
       'nav',
       { class: 'topnav', 'aria-label': t.topnavLabel },
       groups.map(function (g) {
-        var label = g.key === FEATURES_KEY ? t.featureList : g.key;
-        return navItem(g, label, g.key === activeKey);
+        return navItem(g, g.key, g.key === activeKey);
       })
     );
   }

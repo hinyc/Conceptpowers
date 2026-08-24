@@ -102,11 +102,13 @@ describe('end-to-end', () => {
     const manifest = JSON.parse(
       readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/manifest.json'), 'utf8')
     );
+    // 그래프는 개념→파일만 그린다 — 기능은 색인 줄로만 나타난다(feature-index-row)
     const kinds = new Set(manifest.graph.edges.map((e: { kind: string }) => e.kind));
-    expect(kinds.has('feature-concept')).toBe(true);
-    expect(kinds.has('feature-file')).toBe(true);
-    expect(kinds.has('concept-file')).toBe(true);
-    // 같은 파일(src/login.ts)을 기능·개념이 공유 → 파일 노드는 하나로 합쳐진다
+    expect([...kinds]).toEqual(['concept-file']);
+    expect(manifest.graph.nodes.some((n: { type: string }) => n.type === 'feature')).toBe(false);
+    // 기능은 매니페스트의 색인 줄에 따르는 개념과 함께 남는다
+    expect(manifest.features[0]).toMatchObject({ slug: 'login', concepts: ['auth-session'] });
+    // 같은 파일(src/login.ts)은 여러 곳에서 가리켜도 파일 노드가 하나로 합쳐진다
     expect(
       manifest.graph.nodes.filter((n: { id: string }) => n.id === 'p:src/login.ts').length
     ).toBe(1);

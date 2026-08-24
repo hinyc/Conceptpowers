@@ -52,7 +52,7 @@ it('개념마다 HTML 파일을 만들지 않는다', async () => {
   expect(existsSync(viewer('auth/admin-role.html'))).toBe(false);
 });
 
-it('manifest.json에 개념/기능의 원본 JSON URL과 그래프가 담긴다', async () => {
+it('manifest.json에 개념의 원본 JSON URL과 기능 색인 줄, 그래프가 담긴다', async () => {
   await writeConcept(root, {
     slug: 'admin-role',
     group: 'auth',
@@ -72,8 +72,10 @@ it('manifest.json에 개념/기능의 원본 JSON URL과 그래프가 담긴다'
   await renderViewerToDisk(root);
   const m = JSON.parse(readFileSync(viewer('manifest.json'), 'utf8'));
   expect(m.concepts[0].url).toBe('../data/auth/admin-role.json');
-  expect(m.features[0].url).toBe('../../features/login.json');
-  expect(m.graph.edges.some((e: { target: string }) => e.target === 'c:admin-role')).toBe(true);
+  // 기능은 색인 줄로만 나타나므로(feature-index-row) 본문 URL 없이 따르는 개념만 담는다.
+  expect(m.features[0]).toMatchObject({ slug: 'login', concepts: ['admin-role'] });
+  expect(m.features[0].url).toBeUndefined();
+  expect(m.graph.nodes.some((n: { id: string }) => n.id === 'c:admin-role')).toBe(true);
 });
 
 it('mapping.json(@concept→코드)이 개념→파일 그래프 엣지와 codeLinks로 반영된다', async () => {

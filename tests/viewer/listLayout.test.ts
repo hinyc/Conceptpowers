@@ -1,4 +1,4 @@
-// @concept:home-search @concept:sidebar-search @concept:list-item-readout
+// @concept:home-search @concept:sidebar-search @concept:list-item-readout @concept:feature-index-row
 // tests/viewer/listLayout.test.ts
 // 목록 표시(assets/viewer.js)의 표시명 형식과 레이아웃을 node:vm + 최소 DOM 스텁으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -17,6 +17,11 @@
 //    안 맞는 것을 숨긴다" → li의 textContent에 코드와 제목이 모두 남아 걸러내기가 둘 다로 동작한다
 //  - home-search 정의 "첫 화면 검색창에 몇 글자만 넣으면 개념·기능·코드 파일을 한꺼번에 찾아준다"
 //    → 검색 결과도 목록과 같은 표 구조로 그린다
+//  - feature-index-row 불변 "기능 줄에는 그 기능이 따르는 개념이 하나도 빠짐없이 붙는다"
+//    → 색인 줄에 따르는 개념이 모두 딱지로 붙고, 눌러 나갈 곳은 딱지뿐이다
+//  - feature-index-row 허용 "개념 화면에서 … 목록의 그 줄로 돌아오고, 그 줄을 눈에 띄게 표시하는 것"
+//    → 초점 대상 줄에 id와 강조 표시가 붙는다
+//  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고 …" → 곁 목록에는 기능이 들어오지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -93,7 +98,14 @@ const MANIFEST = {
     },
     { slug: 'plain-slug', title: 'plain-slug', group: 'core', category: [], status: 'red' },
   ],
-  features: [{ slug: 'home-search', title: '한 곳에서 다 찾기', codePathCount: 2 }],
+  features: [
+    {
+      slug: 'viewer-search',
+      title: '뷰어 검색',
+      description: '개념·기능·코드 경로를 통합 검색한다.',
+      concepts: ['rezero-procedure', 'plain-slug'],
+    },
+  ],
   graph: { edges: [] },
 };
 
@@ -148,13 +160,34 @@ describe('목록 페이지 — 코드 열과 제목 열이 분리된 표', () =>
     expect(headers).toEqual(['상태', '코드', '제목', '분류']);
   });
 
-  it('기능 목록도 코드 열과 제목 열이 분리된 표로 그린다', () => {
+  it('기능 색인 줄도 코드 열과 제목 열이 분리된 표로 그린다', () => {
     const ctx = load();
-    const section = ctx.featureListSection(null, false) as unknown as StubNode;
+    const section = ctx.featureListSection(null) as unknown as StubNode;
     expect(findAll(section, 'table')).toHaveLength(1);
     const row = findAll(section, 'tbody')[0].children[0];
-    expect(byClass(findAll(row, 'td'), 'ctable__code')[0].textContent).toBe('home-search');
-    expect(byClass(findAll(row, 'td'), 'ctable__title')[0].textContent).toBe('한 곳에서 다 찾기');
+    expect(byClass(findAll(row, 'td'), 'ctable__code')[0].textContent).toBe('viewer-search');
+    expect(byClass(findAll(row, 'td'), 'ctable__title')[0].textContent).toContain('뷰어 검색');
+  });
+
+  it('기능 색인 줄에는 따르는 개념이 모두 딱지로 붙고, 딱지만 눌러서 나갈 수 있다', () => {
+    const ctx = load();
+    const section = ctx.featureListSection(null) as unknown as StubNode;
+    const row = findAll(section, 'tbody')[0].children[0];
+    const chips = byClass(findAll(row, 'a'), 'chip');
+    expect(chips.map((a) => a.getAttribute('href'))).toEqual([
+      '#/concept/rezero-procedure',
+      '#/concept/plain-slug',
+    ]);
+    // 딱지 말고는 링크가 없다 — 줄 자체는 갈 곳이 없다
+    expect(findAll(row, 'a')).toHaveLength(chips.length);
+  });
+
+  it('개념 화면에서 넘어온 기능 줄은 눈에 띄게 표시된다', () => {
+    const ctx = load();
+    const section = ctx.featureListSection('viewer-search') as unknown as StubNode;
+    const row = findAll(section, 'tbody')[0].children[0];
+    expect(row.getAttribute('id')).toBe('frow-viewer-search');
+    expect(row.getAttribute('class')).toBe('ctable__row--focus');
   });
 });
 
@@ -221,10 +254,11 @@ describe('사이드바 — 코드·제목 2줄 스택 (sidebar-search 필터 호
     expect(byClass(findAll(li, 'span'), 'side-item__title')).toHaveLength(0);
   });
 
-  it('기능 목록도 사이드바에서는 li 구조를 유지한다', () => {
+  it('곁 목록에는 기능이 들어오지 않는다 — 개념 묶음만 담는다', () => {
     const ctx = load();
-    const section = ctx.featureListSection(null, true) as unknown as StubNode;
-    expect(findAll(section, 'table')).toHaveLength(0);
-    expect(findAll(section, 'li')).toHaveLength(1);
+    const sections = ctx.conceptListSections(null, true) as unknown as StubNode[];
+    const links = sections.flatMap((s) => findAll(s, 'a')).map((a) => a.getAttribute('href'));
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.every((href) => (href || '').indexOf('#/feature/') !== 0)).toBe(true);
   });
 });

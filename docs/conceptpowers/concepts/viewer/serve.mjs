@@ -37,7 +37,8 @@ function cpPaths(root) {
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
-    attestFile: join(base, "concepts", ".alignment", "attest.json")
+    attestFile: join(base, "concepts", ".alignment", "attest.json"),
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
   };
 }
 
@@ -4214,6 +4215,16 @@ var AttestEntry = external_exports.object({
   // 판단 요약
 });
 var AttestLog = external_exports.record(external_exports.string(), AttestEntry);
+var TestReviewEntry = external_exports.object({
+  hash: external_exports.string(),
+  result: external_exports.enum(["updated", "no-impact", "no-tests"]),
+  at: external_exports.string(),
+  tests: external_exports.array(external_exports.string()).optional(),
+  // 검토·수정한 검사 파일 경로
+  note: external_exports.string().max(1e3).optional()
+  // 판단 요약
+});
+var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -4359,11 +4370,9 @@ import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
-var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
 var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-function buildGraphData(concepts, features, codeLinksBySlug = {}) {
-  const conceptSlugs = new Set(concepts.map((c) => c.slug));
+function buildGraphData(concepts, codeLinksBySlug = {}) {
   const nodes = [];
   const edges = [];
   const seen = /* @__PURE__ */ new Set();
@@ -4372,7 +4381,6 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     seen.add(n.id);
     nodes.push(n);
   };
-  const addFile = (path) => add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
   for (const c of concepts) {
     add({
       id: `c:${c.slug}`,
@@ -4383,25 +4391,8 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
     });
     const links = [.../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own(codeLinksBySlug, c.slug)])];
     for (const path of links) {
-      addFile(path);
+      add({ id: `p:${path}`, label: baseName(path), type: "file", href: "", title: path });
       edges.push({ source: `c:${c.slug}`, target: `p:${path}`, kind: "concept-file" });
-    }
-  }
-  for (const f of features) {
-    add({
-      id: `f:${f.slug}`,
-      label: f.title,
-      type: "feature",
-      href: featureHref(f),
-      title: f.slug
-    });
-    for (const slug3 of f.concepts) {
-      if (!conceptSlugs.has(slug3)) continue;
-      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
-    }
-    for (const path of f.codePaths) {
-      addFile(path);
-      edges.push({ source: `f:${f.slug}`, target: `p:${path}`, kind: "feature-file" });
     }
   }
   return { nodes, edges };
@@ -4409,12 +4400,12 @@ function buildGraphData(concepts, features, codeLinksBySlug = {}) {
 
 // src/viewer/manifest.ts
 var conceptUrl = (c) => `../data/${c.group ? `${c.group}/` : ""}${c.slug}.json`;
-var featureUrl = (f) => `../../features/${f.group ? `${f.group}/` : ""}${f.slug}.json`;
 var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
 function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+  const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
     locale,
@@ -4431,10 +4422,11 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
       slug: f.slug,
       group: f.group ?? "",
       title: f.title,
-      codePathCount: f.codePaths.length,
-      url: featureUrl(f)
+      description: f.description,
+      // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
+      concepts: f.concepts.filter((slug3) => defined.has(slug3))
     })),
-    graph: buildGraphData(concepts, features, codeLinksBySlug)
+    graph: buildGraphData(concepts, codeLinksBySlug)
   };
 }
 
@@ -4514,6 +4506,19 @@ var InitConfigSchema = external_exports.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
   enforcement: EnforcementSchema.default("standard"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,

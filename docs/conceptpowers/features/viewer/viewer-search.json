@@ -2,7 +2,7 @@
   "slug": "viewer-search",
   "group": "viewer",
   "title": "뷰어 검색",
-  "description": "홈 화면에서 개념·기능·코드 경로를 통합 검색하고, 상세 화면 사이드바에서는 이미 표시된 목록만 로컬로 걸러낸다.",
+  "description": "홈 화면에서 개념·기능·코드 경로를 통합 검색하고, 상세 화면 곁 목록에서는 이미 표시된 개념만 로컬로 걸러낸다.",
   "concepts": [
     "home-search",
     "sidebar-search"

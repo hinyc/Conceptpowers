@@ -18,12 +18,14 @@ export interface ConceptEntry {
   codeLinks: string[];
 }
 
+// 기능은 목록의 색인 줄로만 나타난다(feature-index-row) — 줄에 필요한 것만 담고,
+// 코드 경로는 담지 않는다(경로는 개념 화면이 보여준다).
 export interface FeatureEntry {
   slug: string;
   group: string;
   title: string;
-  codePathCount: number;
-  url: string;
+  description: string;
+  concepts: string[];
 }
 
 export interface Manifest {
@@ -34,12 +36,9 @@ export interface Manifest {
   graph: GraphData;
 }
 
-// 뷰어 루트(concepts/viewer/) 기준 상대 URL.
-// 데이터: base/concepts/data, 기능: base/features.
+// 뷰어 루트(concepts/viewer/) 기준 상대 URL. 데이터: base/concepts/data.
 const conceptUrl = (c: Pick<Concept, 'group' | 'slug'>) =>
   `../data/${c.group ? `${c.group}/` : ''}${c.slug}.json`;
-const featureUrl = (f: Pick<Feature, 'group' | 'slug'>) =>
-  `../../features/${f.group ? `${f.group}/` : ''}${f.slug}.json`;
 
 // 개념의 표시용 코드 링크 = concept.codeLinks ∪ mapping.json(@concept 태그) 경로.
 const own = (o: Record<string, string[]>, k: string) =>
@@ -54,6 +53,7 @@ export function buildManifest(
   locale: Locale = 'ko',
   codeLinksBySlug: Record<string, string[]> = {}
 ): Manifest {
+  const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
     locale,
@@ -70,9 +70,10 @@ export function buildManifest(
       slug: f.slug,
       group: f.group ?? '',
       title: f.title,
-      codePathCount: f.codePaths.length,
-      url: featureUrl(f),
+      description: f.description,
+      // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
+      concepts: f.concepts.filter((slug) => defined.has(slug)),
     })),
-    graph: buildGraphData(concepts, features, codeLinksBySlug),
+    graph: buildGraphData(concepts, codeLinksBySlug),
   };
 }

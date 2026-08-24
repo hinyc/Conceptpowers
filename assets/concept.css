@@ -1,4 +1,4 @@
-/* @concept:list-item-readout @concept:detail-summary-outline */
+/* @concept:list-item-readout @concept:detail-summary-outline @concept:feature-index-row */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -688,6 +688,43 @@ li::marker {
   color: var(--muted);
   font-size: 0.82rem;
 }
+/* 기능 색인 줄(feature-index-row): 제목 아래 한 줄 설명, 오른쪽에 따르는 개념 딱지.
+   줄 자체는 갈 곳이 없어 링크가 아니고, 눌러 나가는 곳은 딱지뿐이다. */
+.ctable--feature .ctable__code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  color: var(--fg-soft);
+}
+.frow__title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.frow__desc {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.ctable__chips {
+  padding-left: 0.8rem;
+  width: 30%;
+}
+.chip {
+  display: inline-block;
+  margin: 0.1rem 0.3rem 0.1rem 0;
+  padding: 0.12rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+/* 개념 화면에서 "관련 기능"을 눌러 넘어온 줄 — 어디로 왔는지 바로 보이게 표시한다. */
+.ctable__row--focus td {
+  background: color-mix(in srgb, var(--link) 14%, transparent);
+}
 /* 좁은 화면: 열을 유지하면 제목이 한 글자씩 끊겨 읽을 수 없다 —
    표를 항목별 세로 스택(상태·코드·제목·부가정보)으로 바꾼다. */
 @media (max-width: 640px) {
@@ -961,9 +998,6 @@ body.viewing-graph .graph-shell {
 .dot--concept {
   background: var(--link);
 }
-.dot--feature {
-  background: var(--allow);
-}
 .dot--file {
   background: var(--muted);
 }
@@ -988,9 +1022,6 @@ body.viewing-graph .graph-shell {
 }
 .gnode--concept circle {
   fill: var(--link);
-}
-.gnode--feature circle {
-  fill: var(--allow);
 }
 .gnode--file circle {
   fill: var(--muted);
