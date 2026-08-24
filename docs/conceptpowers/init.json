@@ -18,5 +18,15 @@
     "name": "",
     "description": ""
   },
-  "enforcement": "standard"
+  "enforcement": "standard",
+  "testGlobs": [
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]
 }
