@@ -7294,9 +7294,10 @@ import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
+var featureHref = (f) => `#/feature/${f.slug}`;
 var baseName = (p) => p.split("/").filter(Boolean).pop() ?? p;
 var own = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
-function buildGraphData(concepts, codeLinksBySlug = {}) {
+function buildGraphData(concepts, codeLinksBySlug = {}, features = []) {
   const nodes = [];
   const edges = [];
   const seen = /* @__PURE__ */ new Set();
@@ -7305,6 +7306,19 @@ function buildGraphData(concepts, codeLinksBySlug = {}) {
     seen.add(n.id);
     nodes.push(n);
   };
+  const defined = new Set(concepts.map((c) => c.slug));
+  for (const f of features) {
+    add({
+      id: `f:${f.slug}`,
+      label: f.title,
+      type: "feature",
+      href: featureHref(f),
+      title: f.slug
+    });
+    for (const slug3 of f.concepts.filter((s) => defined.has(s))) {
+      edges.push({ source: `f:${f.slug}`, target: `c:${slug3}`, kind: "feature-concept" });
+    }
+  }
   for (const c of concepts) {
     add({
       id: `c:${c.slug}`,
@@ -7350,7 +7364,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
       // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
       concepts: f.concepts.filter((slug3) => defined.has(slug3))
     })),
-    graph: buildGraphData(concepts, codeLinksBySlug)
+    graph: buildGraphData(concepts, codeLinksBySlug, features)
   };
 }
 
@@ -7386,7 +7400,6 @@ var ConceptSchema = external_exports.object({
   number: external_exports.number().int().positive().optional(),
   status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
-  eyebrow: external_exports.string().default(""),
   description: external_exports.object({
     definition: external_exports.string().min(1),
     analogy: external_exports.string().default(""),
@@ -7628,7 +7641,6 @@ var EDITABLE_FIELDS = [
   "category",
   "number",
   "title",
-  "eyebrow",
   "description",
   "purpose",
   "actions",
@@ -8449,11 +8461,10 @@ import { promisify } from "node:util";
 var execFileAsync = promisify(execFile);
 var MAX_BUFFER = 64 * 1024 * 1024;
 async function listTrackedFiles(root) {
-  const { stdout } = await execFileAsync(
-    "git",
-    ["-c", "core.quotePath=false", "ls-files", "-z"],
-    { cwd: root, maxBuffer: MAX_BUFFER }
-  );
+  const { stdout } = await execFileAsync("git", ["-c", "core.quotePath=false", "ls-files", "-z"], {
+    cwd: root,
+    maxBuffer: MAX_BUFFER
+  });
   return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
 }
 

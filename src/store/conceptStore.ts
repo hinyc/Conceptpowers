@@ -120,7 +120,6 @@ const EDITABLE_FIELDS = [
   'category',
   'number',
   'title',
-  'eyebrow',
   'description',
   'purpose',
   'actions',

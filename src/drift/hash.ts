@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 import type { Concept } from '../schema/concept.js';
 
-// 코드가 따라야 할 "계약" 필드만 해시한다. 표현/메타 필드(title, eyebrow, status,
+// 코드가 따라야 할 "계약" 필드만 해시한다. 표현/메타 필드(title, status,
 // analogy, example 등)는 제외해 사소한 편집을 drift로 오인하지 않는다.
 export function contractHash(c: Concept): string {
   const contract = {

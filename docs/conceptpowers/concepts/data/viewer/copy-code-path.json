@@ -6,7 +6,6 @@
   ],
   "status": "green",
   "title": "코드 경로 복사 버튼",
-  "eyebrow": "",
   "description": {
     "definition": "지식 그래프에서 파일 경로를 클릭 한 번으로 클립보드에 담는다.",
     "analogy": "주소를 손으로 받아 적는 대신 명함을 그대로 건네받는 것.",

@@ -75,11 +75,16 @@
     ]
   },
   "contract-hash": {
-    "hash": "2c4b395438b3",
+    "hash": "36a437268a3e",
     "result": "pass",
-    "at": "2026-08-24T05:34:31.807Z",
+    "at": "2026-08-24T09:04:35.775Z",
     "compared": [
-      "drift-reconcile"
+      "drift-reconcile",
+      "settled-status",
+      "concept-driven-tests",
+      "detail-title-single",
+      "human-owns-contract",
+      "concept-inline-edit"
     ]
   },
   "drift-reconcile": {

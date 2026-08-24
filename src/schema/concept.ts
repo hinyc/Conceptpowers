@@ -27,7 +27,6 @@ export const ConceptSchema = z.object({
   number: z.number().int().positive().optional(),
   status: ConceptStatus.default('red'),
   title: z.string().min(1),
-  eyebrow: z.string().default(''),
   description: z.object({
     definition: z.string().min(1),
     analogy: z.string().default(''),

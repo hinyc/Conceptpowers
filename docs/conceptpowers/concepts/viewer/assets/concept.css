@@ -1,4 +1,4 @@
-/* @concept:list-item-readout @concept:detail-summary-outline @concept:feature-index-row */
+/* @concept:list-item-readout @concept:detail-summary-outline @concept:detail-title-single @concept:feature-index-row @concept:knowledge-graph-view */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -14,6 +14,7 @@
   --restrict: #cf222e;
   --restrict-bg: #fbeaea;
   --pending: #9a6b00;
+  --feature-node: #8250df; /* 지식 그래프의 기능 점 */
   --maxw: 1280px; /* 본문 최대폭 */
 }
 
@@ -31,6 +32,7 @@
     --restrict: #f85149;
     --restrict-bg: #2b1416;
     --pending: #d29922;
+    --feature-node: #a371f7;
   }
 }
 
@@ -374,15 +376,6 @@ p:last-child {
 /* 헤더 영역 */
 .hero {
   margin-bottom: 8px;
-}
-.hero__eyebrow {
-  display: inline-block;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 0.4rem;
 }
 .hero h1 {
   margin-bottom: 0.35rem;
@@ -1004,6 +997,9 @@ body.viewing-graph .graph-shell {
   border-radius: 50%;
   display: inline-block;
 }
+.dot--feature {
+  background: var(--feature-node);
+}
 .dot--concept {
   background: var(--link);
 }
@@ -1029,6 +1025,9 @@ body.viewing-graph .graph-shell {
   stroke: var(--bg);
   stroke-width: 2;
 }
+.gnode--feature circle {
+  fill: var(--feature-node);
+}
 .gnode--concept circle {
   fill: var(--link);
 }
@@ -1037,6 +1036,37 @@ body.viewing-graph .graph-shell {
 }
 .gnode--file {
   cursor: default;
+}
+/* 점 클릭 강조(knowledge-graph-view): 누른 점과 이웃만 또렷하고 나머지는 옅어진다 */
+.graph--picked .gnode {
+  opacity: 0.22;
+}
+.graph--picked .gnode--hl {
+  opacity: 1;
+}
+.graph--picked .gedge {
+  opacity: 0.15;
+}
+.graph--picked .gedge--hl {
+  opacity: 1;
+  stroke: var(--fg-soft);
+  stroke-width: 1.6;
+}
+/* 누른 점 곁에 뜨는 바로가기 단추 */
+.gbtn {
+  position: fixed;
+  z-index: 21;
+  background: var(--link);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.gbtn:hover {
+  filter: brightness(1.1);
 }
 .gtip {
   position: fixed;

@@ -5,7 +5,7 @@
 //  - contract-hash 불변 "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다"
 //    → 계약 필드(definition)가 바뀌면 해시가 바뀐다
 //  - contract-hash 불변 "약속 밖 항목만 바뀐 경우에는 지문이 달라지지 않는다"
-//    → 비계약 필드(title/eyebrow/status)가 바뀌어도 해시는 불변
+//    → 비계약 필드(title/status/analogy)가 바뀌어도 해시는 불변
 import { describe, it, expect } from 'vitest';
 import { contractHash } from '../../src/drift/hash.js';
 import { parseConcept } from '../../src/schema/concept.js';
@@ -31,10 +31,15 @@ describe('contractHash', () => {
     );
     expect(a).not.toBe(b);
   });
-  it('비계약 필드(title/eyebrow/status)가 바뀌어도 해시는 불변', () => {
+  it('비계약 필드(title/status/analogy)가 바뀌어도 해시는 불변', () => {
     const a = contractHash(parseConcept(base));
     const b = contractHash(
-      parseConcept({ ...base, title: '다른 제목', eyebrow: 'X', status: 'green' })
+      parseConcept({
+        ...base,
+        title: '다른 제목',
+        status: 'green',
+        description: { ...base.description, analogy: '다른 비유' },
+      })
     );
     expect(a).toBe(b);
   });

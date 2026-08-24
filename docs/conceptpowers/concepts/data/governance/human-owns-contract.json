@@ -7,7 +7,6 @@
   ],
   "status": "green",
   "title": "소유권 원칙",
-  "eyebrow": "",
   "description": {
     "definition": "개념은 코드가 지켜야 할 약속이고, 그 약속의 주인은 사람이다.",
     "analogy": "AI는 계약서 초안을 잡아주는 서기일 뿐, 도장은 사람이 찍는다.",

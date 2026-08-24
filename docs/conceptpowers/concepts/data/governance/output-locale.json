@@ -6,7 +6,6 @@
   ],
   "status": "green",
   "title": "출력 언어",
-  "eyebrow": "",
   "description": {
     "definition": "프로젝트마다 산출물의 언어를 하나로 정해 둔다.",
     "analogy": "회사 공용어를 정해두면, 사내 문서는 누가 쓰든 그 언어로 나오는 것.",

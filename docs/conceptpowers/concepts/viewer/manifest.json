@@ -887,6 +887,146 @@
   "graph": {
     "nodes": [
       {
+        "id": "f:auto-guided-setup",
+        "label": "단계 안내 오케스트레이터 (auto)",
+        "type": "feature",
+        "href": "#/feature/auto-guided-setup",
+        "title": "auto-guided-setup"
+      },
+      {
+        "id": "f:commit-gate",
+        "label": "커밋 문지기",
+        "type": "feature",
+        "href": "#/feature/commit-gate",
+        "title": "commit-gate"
+      },
+      {
+        "id": "f:concept-audit",
+        "label": "개념 없는 코드 감사와 매핑",
+        "type": "feature",
+        "href": "#/feature/concept-audit",
+        "title": "concept-audit"
+      },
+      {
+        "id": "f:concept-driven-testing",
+        "label": "개념 기반 테스트 유도",
+        "type": "feature",
+        "href": "#/feature/concept-driven-testing",
+        "title": "concept-driven-testing"
+      },
+      {
+        "id": "f:concept-status-governance",
+        "label": "개념 신호등 관리",
+        "type": "feature",
+        "href": "#/feature/concept-status-governance",
+        "title": "concept-status-governance"
+      },
+      {
+        "id": "f:consistency-check",
+        "label": "개념 간 충돌 검사",
+        "type": "feature",
+        "href": "#/feature/consistency-check",
+        "title": "consistency-check"
+      },
+      {
+        "id": "f:drift-detection",
+        "label": "개념 어긋남 탐지와 결산",
+        "type": "feature",
+        "href": "#/feature/drift-detection",
+        "title": "drift-detection"
+      },
+      {
+        "id": "f:feature-registry",
+        "label": "기능 명세와 이름표 규칙",
+        "type": "feature",
+        "href": "#/feature/feature-registry",
+        "title": "feature-registry"
+      },
+      {
+        "id": "f:localized-output",
+        "label": "산출물 출력 언어",
+        "type": "feature",
+        "href": "#/feature/localized-output",
+        "title": "localized-output"
+      },
+      {
+        "id": "f:plugin-lifecycle",
+        "label": "플러그인 생애주기",
+        "type": "feature",
+        "href": "#/feature/plugin-lifecycle",
+        "title": "plugin-lifecycle"
+      },
+      {
+        "id": "f:prompt-injection-defense",
+        "label": "비신뢰 입력 무장해제",
+        "type": "feature",
+        "href": "#/feature/prompt-injection-defense",
+        "title": "prompt-injection-defense"
+      },
+      {
+        "id": "f:reference-materials",
+        "label": "참고자료 폴더",
+        "type": "feature",
+        "href": "#/feature/reference-materials",
+        "title": "reference-materials"
+      },
+      {
+        "id": "f:safe-storage",
+        "label": "안전한 기록 저장",
+        "type": "feature",
+        "href": "#/feature/safe-storage",
+        "title": "safe-storage"
+      },
+      {
+        "id": "f:viewer-code-path-copy",
+        "label": "코드 경로 복사",
+        "type": "feature",
+        "href": "#/feature/viewer-code-path-copy",
+        "title": "viewer-code-path-copy"
+      },
+      {
+        "id": "f:viewer-concept-detail",
+        "label": "개념 상세 화면",
+        "type": "feature",
+        "href": "#/feature/viewer-concept-detail",
+        "title": "viewer-concept-detail"
+      },
+      {
+        "id": "f:viewer-concept-editing",
+        "label": "뷰어에서 개념 편집",
+        "type": "feature",
+        "href": "#/feature/viewer-concept-editing",
+        "title": "viewer-concept-editing"
+      },
+      {
+        "id": "f:viewer-concept-list",
+        "label": "개념·기능 목록 화면",
+        "type": "feature",
+        "href": "#/feature/viewer-concept-list",
+        "title": "viewer-concept-list"
+      },
+      {
+        "id": "f:viewer-knowledge-graph",
+        "label": "지식 그래프 화면",
+        "type": "feature",
+        "href": "#/feature/viewer-knowledge-graph",
+        "title": "viewer-knowledge-graph"
+      },
+      {
+        "id": "f:viewer-search",
+        "label": "뷰어 검색",
+        "type": "feature",
+        "href": "#/feature/viewer-search",
+        "title": "viewer-search"
+      },
+      {
+        "id": "f:viewer-sidebar",
+        "label": "상세 화면 사이드바",
+        "type": "feature",
+        "href": "#/feature/viewer-sidebar",
+        "title": "viewer-sidebar"
+      },
+      {
         "id": "c:audit-gap-detection",
         "label": "개념 없는 코드 감사",
         "type": "concept",
@@ -2036,6 +2176,186 @@
       }
     ],
     "edges": [
+      {
+        "source": "f:auto-guided-setup",
+        "target": "c:human-owns-contract",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:auto-guided-setup",
+        "target": "c:governance-mode",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:commit-gate",
+        "target": "c:governance-mode",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "c:audit-gap-detection",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-audit",
+        "target": "c:concept-code-mapping",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-driven-testing",
+        "target": "c:concept-driven-tests",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "c:settled-status",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-status-governance",
+        "target": "c:human-owns-contract",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "c:pending-conflict-tracking",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:consistency-check",
+        "target": "c:reference-first-duty",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "c:contract-hash",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:drift-detection",
+        "target": "c:drift-reconcile",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "c:feature-spec-bridge",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "c:globally-unique-slug",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:feature-registry",
+        "target": "c:feature-index-row",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:localized-output",
+        "target": "c:output-locale",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:init-gate",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:plugin-version-sync",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:plugin-lifecycle",
+        "target": "c:generated-not-hand-edited",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:prompt-injection-defense",
+        "target": "c:untrusted-text-sanitization",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "c:reference-privacy",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:reference-materials",
+        "target": "c:reference-first-duty",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:safe-storage",
+        "target": "c:atomic-baseline-write",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-code-path-copy",
+        "target": "c:copy-code-path",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-detail",
+        "target": "c:detail-summary-outline",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-detail",
+        "target": "c:detail-title-single",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "c:concept-inline-edit",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-editing",
+        "target": "c:viewer-local-write-guard",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-list",
+        "target": "c:list-item-readout",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-list",
+        "target": "c:settled-status",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-concept-list",
+        "target": "c:feature-index-row",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-knowledge-graph",
+        "target": "c:knowledge-graph-view",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "c:home-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "c:sidebar-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "c:sidebar-toggle",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-sidebar",
+        "target": "c:sidebar-search",
+        "kind": "feature-concept"
+      },
       {
         "source": "c:audit-gap-detection",
         "target": "p:src/audit/gaps.ts",

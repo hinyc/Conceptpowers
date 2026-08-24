@@ -4164,7 +4164,6 @@ var ConceptSchema = external_exports.object({
   number: external_exports.number().int().positive().optional(),
   status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
-  eyebrow: external_exports.string().default(""),
   description: external_exports.object({
     definition: external_exports.string().min(1),
     analogy: external_exports.string().default(""),
