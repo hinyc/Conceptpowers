@@ -5,7 +5,7 @@
     {
       "slug": "audit-gap-detection",
       "group": "governance",
-      "title": "표식 없는 코드 찾아내기",
+      "title": "개념 없는 코드 감사",
       "status": "green",
       "category": [
         "behavior"
@@ -30,7 +30,7 @@
     {
       "slug": "concept-code-mapping",
       "group": "governance",
-      "title": "개념에서 코드로 가는 지도",
+      "title": "개념↔코드 연결",
       "status": "green",
       "category": [
         "term",
@@ -49,7 +49,7 @@
     {
       "slug": "concept-driven-tests",
       "group": "governance",
-      "title": "테스트도 개념에서 나온다",
+      "title": "개념 기반 테스트",
       "status": "green",
       "category": [
         "behavior"
@@ -75,7 +75,7 @@
     {
       "slug": "contract-hash",
       "group": "governance",
-      "title": "약속만 지문을 찍는다",
+      "title": "어긋남 판정 기준",
       "status": "green",
       "category": [
         "term",
@@ -101,7 +101,7 @@
     {
       "slug": "drift-reconcile",
       "group": "governance",
-      "title": "커밋 뒤 따라왔는지 결산한다",
+      "title": "어긋남 결산",
       "status": "green",
       "category": [
         "behavior"
@@ -126,7 +126,7 @@
     {
       "slug": "feature-spec-bridge",
       "group": "governance",
-      "title": "기능은 개념과 코드를 잇는 다리",
+      "title": "기능 명세",
       "status": "green",
       "category": [
         "term",
@@ -151,7 +151,7 @@
     {
       "slug": "globally-unique-slug",
       "group": "governance",
-      "title": "이름표는 프로젝트 전체에서 하나뿐",
+      "title": "이름표 규칙",
       "status": "green",
       "category": [
         "term"
@@ -174,7 +174,7 @@
     {
       "slug": "governance-mode",
       "group": "governance",
-      "title": "세 단계 문지기",
+      "title": "커밋 게이트 강도",
       "status": "green",
       "category": [
         "behavior"
@@ -210,7 +210,7 @@
     {
       "slug": "human-owns-contract",
       "group": "governance",
-      "title": "개념의 주인은 사람",
+      "title": "소유권 원칙",
       "status": "green",
       "category": [
         "behavior",
@@ -229,7 +229,7 @@
     {
       "slug": "output-locale",
       "group": "governance",
-      "title": "산출물은 정해진 언어로",
+      "title": "출력 언어",
       "status": "green",
       "category": [
         "behavior"
@@ -251,7 +251,7 @@
     {
       "slug": "pending-conflict-tracking",
       "group": "governance",
-      "title": "충돌하면 멈추고 이유를 남긴다",
+      "title": "충돌 기록",
       "status": "green",
       "category": [
         "behavior"
@@ -267,7 +267,7 @@
     {
       "slug": "reference-first-duty",
       "group": "governance",
-      "title": "참고자료는 개념 만들 때 한 번만",
+      "title": "참고자료 확인 의무",
       "status": "green",
       "category": [
         "behavior"
@@ -286,7 +286,7 @@
     {
       "slug": "settled-status",
       "group": "governance",
-      "title": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
+      "title": "상태 관리 원칙",
       "status": "green",
       "category": [
         "behavior",
@@ -324,7 +324,7 @@
     {
       "slug": "atomic-baseline-write",
       "group": "platform",
-      "title": "쓰다 만 파일은 남기지 않는다",
+      "title": "안전한 저장",
       "status": "green",
       "category": [
         "behavior"
@@ -366,7 +366,7 @@
     {
       "slug": "generated-not-hand-edited",
       "group": "platform",
-      "title": "만들어진 것은 손대지 않는다",
+      "title": "생성물 취급 원칙",
       "status": "green",
       "category": [
         "behavior"
@@ -391,7 +391,7 @@
     {
       "slug": "init-gate",
       "group": "platform",
-      "title": "시작하지 않은 곳에서는 아무것도 하지 않는다",
+      "title": "초기화 관문",
       "status": "green",
       "category": [
         "permission"
@@ -426,7 +426,7 @@
     {
       "slug": "plugin-version-sync",
       "group": "platform",
-      "title": "도구가 올라가면 껍데기만 맞춘다",
+      "title": "버전 동기화",
       "status": "green",
       "category": [
         "behavior"
@@ -456,7 +456,7 @@
     {
       "slug": "reference-privacy",
       "group": "platform",
-      "title": "참고자료는 밖으로 나가지 않는다",
+      "title": "참고자료 보호",
       "status": "green",
       "category": [
         "permission",
@@ -483,7 +483,7 @@
     {
       "slug": "untrusted-text-sanitization",
       "group": "platform",
-      "title": "남이 쓴 글은 무장해제하고 넘긴다",
+      "title": "비신뢰 입력 처리",
       "status": "green",
       "category": [
         "behavior"
@@ -498,7 +498,7 @@
     {
       "slug": "viewer-local-write-guard",
       "group": "platform",
-      "title": "고치는 문은 내 컴퓨터에서만 열린다",
+      "title": "뷰어 서버 보호",
       "status": "green",
       "category": [
         "permission",
@@ -513,7 +513,7 @@
     {
       "slug": "concept-inline-edit",
       "group": "viewer",
-      "title": "보면서 바로 고치기",
+      "title": "개념 편집 화면",
       "status": "green",
       "category": [
         "feature",
@@ -530,7 +530,7 @@
     {
       "slug": "copy-code-path",
       "group": "viewer",
-      "title": "경로 한 번에 복사",
+      "title": "코드 경로 복사 버튼",
       "status": "green",
       "category": [
         "feature"
@@ -544,7 +544,7 @@
     {
       "slug": "detail-summary-outline",
       "group": "viewer",
-      "title": "펼쳐 본 화면의 요약은 한 덩어리로 쏟지 않는다",
+      "title": "상세 화면 표시 규칙",
       "status": "green",
       "category": [
         "behavior"
@@ -559,7 +559,7 @@
     {
       "slug": "feature-index-row",
       "group": "viewer",
-      "title": "기능은 목록의 한 줄로만 산다",
+      "title": "기능 목록 표시 규칙",
       "status": "green",
       "category": [
         "behavior"
@@ -577,7 +577,7 @@
     {
       "slug": "group-navbar",
       "group": "viewer",
-      "title": "위에서 묶음을 고르면 목록이 내려온다",
+      "title": "상단 묶음 메뉴",
       "status": "green",
       "category": [
         "feature"
@@ -591,7 +591,7 @@
     {
       "slug": "home-search",
       "group": "viewer",
-      "title": "한 곳에서 다 찾기",
+      "title": "홈 화면 검색",
       "status": "green",
       "category": [
         "feature"
@@ -605,7 +605,7 @@
     {
       "slug": "knowledge-graph-view",
       "group": "viewer",
-      "title": "관계를 그림으로 보기",
+      "title": "지식 그래프 화면",
       "status": "green",
       "category": [
         "feature"
@@ -621,7 +621,7 @@
     {
       "slug": "list-item-readout",
       "group": "viewer",
-      "title": "목록은 읽으라고 있는 게 아니라 훑으라고 있다",
+      "title": "목록 표시 규칙",
       "status": "green",
       "category": [
         "behavior"
@@ -638,7 +638,7 @@
     {
       "slug": "sidebar-search",
       "group": "viewer",
-      "title": "옆 목록 안에서만 걸러내기",
+      "title": "사이드바 검색",
       "status": "green",
       "category": [
         "feature"
@@ -653,7 +653,7 @@
     {
       "slug": "sidebar-toggle",
       "group": "viewer",
-      "title": "내가 닫으면 닫힌 채로",
+      "title": "사이드바 열고 닫기",
       "status": "green",
       "category": [
         "feature"
@@ -866,7 +866,7 @@
     "nodes": [
       {
         "id": "c:audit-gap-detection",
-        "label": "표식 없는 코드 찾아내기",
+        "label": "개념 없는 코드 감사",
         "type": "concept",
         "href": "#/concept/audit-gap-detection",
         "title": "audit-gap-detection"
@@ -964,7 +964,7 @@
       },
       {
         "id": "c:concept-code-mapping",
-        "label": "개념에서 코드로 가는 지도",
+        "label": "개념↔코드 연결",
         "type": "concept",
         "href": "#/concept/concept-code-mapping",
         "title": "concept-code-mapping"
@@ -992,7 +992,7 @@
       },
       {
         "id": "c:concept-driven-tests",
-        "label": "테스트도 개념에서 나온다",
+        "label": "개념 기반 테스트",
         "type": "concept",
         "href": "#/concept/concept-driven-tests",
         "title": "concept-driven-tests"
@@ -1090,7 +1090,7 @@
       },
       {
         "id": "c:contract-hash",
-        "label": "약속만 지문을 찍는다",
+        "label": "어긋남 판정 기준",
         "type": "concept",
         "href": "#/concept/contract-hash",
         "title": "contract-hash"
@@ -1174,7 +1174,7 @@
       },
       {
         "id": "c:drift-reconcile",
-        "label": "커밋 뒤 따라왔는지 결산한다",
+        "label": "어긋남 결산",
         "type": "concept",
         "href": "#/concept/drift-reconcile",
         "title": "drift-reconcile"
@@ -1209,7 +1209,7 @@
       },
       {
         "id": "c:feature-spec-bridge",
-        "label": "기능은 개념과 코드를 잇는 다리",
+        "label": "기능 명세",
         "type": "concept",
         "href": "#/concept/feature-spec-bridge",
         "title": "feature-spec-bridge"
@@ -1251,7 +1251,7 @@
       },
       {
         "id": "c:globally-unique-slug",
-        "label": "이름표는 프로젝트 전체에서 하나뿐",
+        "label": "이름표 규칙",
         "type": "concept",
         "href": "#/concept/globally-unique-slug",
         "title": "globally-unique-slug"
@@ -1307,7 +1307,7 @@
       },
       {
         "id": "c:governance-mode",
-        "label": "세 단계 문지기",
+        "label": "커밋 게이트 강도",
         "type": "concept",
         "href": "#/concept/governance-mode",
         "title": "governance-mode"
@@ -1419,7 +1419,7 @@
       },
       {
         "id": "c:human-owns-contract",
-        "label": "개념의 주인은 사람",
+        "label": "소유권 원칙",
         "type": "concept",
         "href": "#/concept/human-owns-contract",
         "title": "human-owns-contract"
@@ -1454,7 +1454,7 @@
       },
       {
         "id": "c:output-locale",
-        "label": "산출물은 정해진 언어로",
+        "label": "출력 언어",
         "type": "concept",
         "href": "#/concept/output-locale",
         "title": "output-locale"
@@ -1496,7 +1496,7 @@
       },
       {
         "id": "c:pending-conflict-tracking",
-        "label": "충돌하면 멈추고 이유를 남긴다",
+        "label": "충돌 기록",
         "type": "concept",
         "href": "#/concept/pending-conflict-tracking",
         "title": "pending-conflict-tracking"
@@ -1517,7 +1517,7 @@
       },
       {
         "id": "c:reference-first-duty",
-        "label": "참고자료는 개념 만들 때 한 번만",
+        "label": "참고자료 확인 의무",
         "type": "concept",
         "href": "#/concept/reference-first-duty",
         "title": "reference-first-duty"
@@ -1566,7 +1566,7 @@
       },
       {
         "id": "c:settled-status",
-        "label": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
+        "label": "상태 관리 원칙",
         "type": "concept",
         "href": "#/concept/settled-status",
         "title": "settled-status"
@@ -1636,7 +1636,7 @@
       },
       {
         "id": "c:atomic-baseline-write",
-        "label": "쓰다 만 파일은 남기지 않는다",
+        "label": "안전한 저장",
         "type": "concept",
         "href": "#/concept/atomic-baseline-write",
         "title": "atomic-baseline-write"
@@ -1671,7 +1671,7 @@
       },
       {
         "id": "c:generated-not-hand-edited",
-        "label": "만들어진 것은 손대지 않는다",
+        "label": "생성물 취급 원칙",
         "type": "concept",
         "href": "#/concept/generated-not-hand-edited",
         "title": "generated-not-hand-edited"
@@ -1727,7 +1727,7 @@
       },
       {
         "id": "c:init-gate",
-        "label": "시작하지 않은 곳에서는 아무것도 하지 않는다",
+        "label": "초기화 관문",
         "type": "concept",
         "href": "#/concept/init-gate",
         "title": "init-gate"
@@ -1748,7 +1748,7 @@
       },
       {
         "id": "c:plugin-version-sync",
-        "label": "도구가 올라가면 껍데기만 맞춘다",
+        "label": "버전 동기화",
         "type": "concept",
         "href": "#/concept/plugin-version-sync",
         "title": "plugin-version-sync"
@@ -1804,7 +1804,7 @@
       },
       {
         "id": "c:reference-privacy",
-        "label": "참고자료는 밖으로 나가지 않는다",
+        "label": "참고자료 보호",
         "type": "concept",
         "href": "#/concept/reference-privacy",
         "title": "reference-privacy"
@@ -1825,7 +1825,7 @@
       },
       {
         "id": "c:untrusted-text-sanitization",
-        "label": "남이 쓴 글은 무장해제하고 넘긴다",
+        "label": "비신뢰 입력 처리",
         "type": "concept",
         "href": "#/concept/untrusted-text-sanitization",
         "title": "untrusted-text-sanitization"
@@ -1846,7 +1846,7 @@
       },
       {
         "id": "c:viewer-local-write-guard",
-        "label": "고치는 문은 내 컴퓨터에서만 열린다",
+        "label": "뷰어 서버 보호",
         "type": "concept",
         "href": "#/concept/viewer-local-write-guard",
         "title": "viewer-local-write-guard"
@@ -1860,14 +1860,14 @@
       },
       {
         "id": "c:concept-inline-edit",
-        "label": "보면서 바로 고치기",
+        "label": "개념 편집 화면",
         "type": "concept",
         "href": "#/concept/concept-inline-edit",
         "title": "concept-inline-edit"
       },
       {
         "id": "c:copy-code-path",
-        "label": "경로 한 번에 복사",
+        "label": "코드 경로 복사 버튼",
         "type": "concept",
         "href": "#/concept/copy-code-path",
         "title": "copy-code-path"
@@ -1881,7 +1881,7 @@
       },
       {
         "id": "c:detail-summary-outline",
-        "label": "펼쳐 본 화면의 요약은 한 덩어리로 쏟지 않는다",
+        "label": "상세 화면 표시 규칙",
         "type": "concept",
         "href": "#/concept/detail-summary-outline",
         "title": "detail-summary-outline"
@@ -1902,7 +1902,7 @@
       },
       {
         "id": "c:feature-index-row",
-        "label": "기능은 목록의 한 줄로만 산다",
+        "label": "기능 목록 표시 규칙",
         "type": "concept",
         "href": "#/concept/feature-index-row",
         "title": "feature-index-row"
@@ -1923,7 +1923,7 @@
       },
       {
         "id": "c:group-navbar",
-        "label": "위에서 묶음을 고르면 목록이 내려온다",
+        "label": "상단 묶음 메뉴",
         "type": "concept",
         "href": "#/concept/group-navbar",
         "title": "group-navbar"
@@ -1944,14 +1944,14 @@
       },
       {
         "id": "c:home-search",
-        "label": "한 곳에서 다 찾기",
+        "label": "홈 화면 검색",
         "type": "concept",
         "href": "#/concept/home-search",
         "title": "home-search"
       },
       {
         "id": "c:knowledge-graph-view",
-        "label": "관계를 그림으로 보기",
+        "label": "지식 그래프 화면",
         "type": "concept",
         "href": "#/concept/knowledge-graph-view",
         "title": "knowledge-graph-view"
@@ -1965,7 +1965,7 @@
       },
       {
         "id": "c:list-item-readout",
-        "label": "목록은 읽으라고 있는 게 아니라 훑으라고 있다",
+        "label": "목록 표시 규칙",
         "type": "concept",
         "href": "#/concept/list-item-readout",
         "title": "list-item-readout"
@@ -1979,14 +1979,14 @@
       },
       {
         "id": "c:sidebar-search",
-        "label": "옆 목록 안에서만 걸러내기",
+        "label": "사이드바 검색",
         "type": "concept",
         "href": "#/concept/sidebar-search",
         "title": "sidebar-search"
       },
       {
         "id": "c:sidebar-toggle",
-        "label": "내가 닫으면 닫힌 채로",
+        "label": "사이드바 열고 닫기",
         "type": "concept",
         "href": "#/concept/sidebar-toggle",
         "title": "sidebar-toggle"

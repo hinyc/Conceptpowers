@@ -5,8 +5,8 @@
     "feature"
   ],
   "status": "green",
-  "title": "관계를 그림으로 보기",
-  "eyebrow": "지식 그래프 화면",
+  "title": "지식 그래프 화면",
+  "eyebrow": "",
   "description": {
     "definition": "얽힌 관계를 점과 선으로 그려 한눈에 보여주는 화면.",
     "analogy": "지하철 노선도 — 전체를 펼쳐 보다가 한 역을 누르면 그 역에서 갈 수 있는 곳만 밝아지는 것.",

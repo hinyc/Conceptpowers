@@ -1,0 +1,428 @@
+{
+  "audit-gap-detection": {
+    "hash": "98df6e993653",
+    "result": "no-impact",
+    "at": "2026-08-24T05:30:07.550Z",
+    "tests": [
+      "tests/mapping/scan.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/util/glob.test.ts",
+      "tests/cli/audit.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/audit/gaps.test.ts",
+      "tests/audit/audit.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "concept-code-mapping": {
+    "hash": "536ce7b7e677",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.294Z",
+    "tests": [
+      "tests/mapping/scan.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/viewer/renderDisk.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "concept-driven-tests": {
+    "hash": "9a0b83e53882",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.351Z",
+    "tests": [
+      "tests/init/scaffold.test.ts",
+      "tests/cli/testReview.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/concept/testReview.test.ts",
+      "tests/hooks/testScopeGate.test.ts",
+      "tests/hooks/testFollowGate.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "contract-hash": {
+    "hash": "2c4b395438b3",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.407Z",
+    "tests": [
+      "tests/drift/history.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/drift/lock.test.ts",
+      "tests/drift/hash.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/schema/alignment.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "drift-reconcile": {
+    "hash": "9d8e1b91e744",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.466Z",
+    "tests": [
+      "tests/drift/history.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/schema/alignment.test.ts",
+      "tests/drift/follow.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "feature-spec-bridge": {
+    "hash": "cd3d76946053",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.523Z",
+    "tests": [
+      "tests/integration/smoke.test.ts",
+      "tests/cli/feature.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/schema/feature.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/viewer/renderDisk.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/store/featureStore.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "globally-unique-slug": {
+    "hash": "a74530aeb70f",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.619Z",
+    "tests": [
+      "tests/cli/feature.test.ts",
+      "tests/schema/feature.test.ts",
+      "tests/schema/concept.test.ts",
+      "tests/viewer/manifest.test.ts",
+      "tests/viewer/graph.test.ts",
+      "tests/viewer/subgraph.test.ts",
+      "tests/store/conceptStore.test.ts",
+      "tests/store/featureStore.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "governance-mode": {
+    "hash": "026fadf4878b",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.692Z",
+    "tests": [
+      "tests/cli/cli.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/gates.modes.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "human-owns-contract": {
+    "hash": "24eca08d0a21",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.766Z",
+    "tests": [
+      "tests/cli/cli.test.ts",
+      "tests/viewer/serve.test.ts",
+      "tests/store/conceptStore.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "output-locale": {
+    "hash": "582e42ab52d1",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.841Z",
+    "tests": [
+      "tests/init/scaffold.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/init/readConfig.test.ts",
+      "tests/viewer/sidebarState.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/i18n/messages.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "pending-conflict-tracking": {
+    "hash": "bf1404011a90",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.902Z",
+    "tests": [
+      "tests/cli/cli.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "reference-first-duty": {
+    "hash": "9673a3dbd422",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:09.956Z",
+    "tests": [
+      "tests/init/referencePaths.test.ts",
+      "tests/cli/reference.test.ts",
+      "tests/init/reference.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "settled-status": {
+    "hash": "85e5ca1e24b2",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.010Z",
+    "tests": [
+      "tests/integration/smoke.test.ts",
+      "tests/cli/quality.test.ts",
+      "tests/drift/history.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/schema/alignment.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/schema/concept.test.ts",
+      "tests/viewer/serve.test.ts",
+      "tests/viewer/renderDisk.test.ts",
+      "tests/audit/audit.test.ts",
+      "tests/concept/quality.test.ts",
+      "tests/concept/approve.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/concept/attest.test.ts",
+      "tests/concept/quality-gate.test.ts",
+      "tests/store/conceptStore.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "atomic-baseline-write": {
+    "hash": "9f8c6ae2b554",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.063Z",
+    "tests": [
+      "tests/init/ensureConfigDefaults.test.ts",
+      "tests/init/alignmentGitignore.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/cli/quality.test.ts",
+      "tests/cli/testReview.test.ts",
+      "tests/drift/history.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/viewer/serve.test.ts",
+      "tests/viewer/renderDisk.test.ts",
+      "tests/audit/audit.test.ts",
+      "tests/concept/approve.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/concept/quality-gate.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/store/conceptStore.test.ts",
+      "tests/store/featureStore.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "generated-not-hand-edited": {
+    "hash": "34e7fa7b82a9",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.116Z",
+    "tests": [
+      "tests/init/scaffold.test.ts",
+      "tests/init/packageScript.test.ts",
+      "tests/init/syncGenerated.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/viewer/manifest.test.ts",
+      "tests/viewer/renderDisk.test.ts",
+      "tests/version/autoSync.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "init-gate": {
+    "hash": "99ea56612c8d",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.171Z",
+    "tests": [
+      "tests/init/scaffold.test.ts",
+      "tests/init/reference.test.ts",
+      "tests/init/referenceGitignore.test.ts",
+      "tests/init/syncGenerated.test.ts",
+      "tests/init/alignmentGitignore.test.ts",
+      "tests/init/readConfig.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/cli/requireInit.test.ts",
+      "tests/cli/quality.test.ts",
+      "tests/cli/reference.test.ts",
+      "tests/cli/testReview.test.ts",
+      "tests/cli/audit.test.ts",
+      "tests/cli/feature.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/version/autoSync.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
+      "tests/concept/approve.test.ts",
+      "tests/hooks/postToolUse.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/gates.modes.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "plugin-version-sync": {
+    "hash": "dbb458bc5169",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.231Z",
+    "tests": [
+      "tests/init/ensureConfigDefaults.test.ts",
+      "tests/init/syncGenerated.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/init/packageScript.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/version/checkUpdate.test.ts",
+      "tests/version/compareSemver.test.ts",
+      "tests/version/autoSync.test.ts",
+      "tests/hooks/sessionStart.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "reference-privacy": {
+    "hash": "842610b39e5c",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.311Z",
+    "tests": [
+      "tests/init/addReferencePath.test.ts",
+      "tests/init/reference.test.ts",
+      "tests/init/scaffold.test.ts",
+      "tests/init/referencePaths.test.ts",
+      "tests/init/referenceGitignore.test.ts",
+      "tests/cli/reference.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/i18n/messages.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "untrusted-text-sanitization": {
+    "hash": "2dbd2431add0",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.371Z",
+    "tests": [
+      "tests/drift/safe.test.ts",
+      "tests/hooks/preToolUse.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "viewer-local-write-guard": {
+    "hash": "58ca1cb549d6",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.431Z",
+    "tests": [
+      "tests/viewer/serve.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "concept-inline-edit": {
+    "hash": "6edf6d4c3f51",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.490Z",
+    "tests": [
+      "tests/viewer/serve.test.ts",
+      "tests/store/conceptStore.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "copy-code-path": {
+    "hash": "7fe96cb97576",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.550Z",
+    "tests": [
+      "tests/viewer/copyPath.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "detail-summary-outline": {
+    "hash": "4df06921425d",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.624Z",
+    "tests": [
+      "tests/viewer/heroSummary.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "feature-index-row": {
+    "hash": "cc3922693b61",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.688Z",
+    "tests": [
+      "tests/viewer/listLayout.test.ts",
+      "tests/viewer/featureRoute.test.ts",
+      "tests/viewer/manifest.test.ts",
+      "tests/viewer/graph.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "group-navbar": {
+    "hash": "e8e0fd6752f5",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.756Z",
+    "tests": [
+      "tests/viewer/topnav.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "home-search": {
+    "hash": "76ecb259cb3b",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.817Z",
+    "tests": [
+      "tests/viewer/listLayout.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "knowledge-graph-view": {
+    "hash": "beec19120b9d",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.876Z",
+    "tests": [
+      "tests/mapping/scan.test.ts",
+      "tests/viewer/subgraph.test.ts",
+      "tests/viewer/graph.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "list-item-readout": {
+    "hash": "f5776b2ee4cd",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:10.960Z",
+    "tests": [
+      "tests/viewer/listLayout.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "sidebar-search": {
+    "hash": "9255705e4426",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:11.018Z",
+    "tests": [
+      "tests/viewer/sidebarState.test.ts",
+      "tests/viewer/listLayout.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "sidebar-toggle": {
+    "hash": "bc23a4f7755d",
+    "result": "no-impact",
+    "at": "2026-08-24T05:35:11.129Z",
+    "tests": [
+      "tests/viewer/sidebarState.test.ts"
+    ],
+    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  }
+}

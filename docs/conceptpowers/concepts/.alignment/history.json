@@ -970,5 +970,275 @@
     "at": "2026-08-24T01:31:50.949Z",
     "ignored": true,
     "aligned": false
+  },
+  {
+    "slug": "audit-gap-detection",
+    "hash": "98df6e993653",
+    "prevHash": "98df6e993653",
+    "reason": "뷰어 표시 정리: 표식 없는 코드 찾아내기를 제거하고 개념 없는 코드 감사를 타이틀로 사용",
+    "at": "2026-08-24T05:29:44.787Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "536ce7b7e677",
+    "prevHash": "536ce7b7e677",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.076Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "9a0b83e53882",
+    "prevHash": "9a0b83e53882",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.173Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "contract-hash",
+    "hash": "2c4b395438b3",
+    "prevHash": "2c4b395438b3",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.252Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "9d8e1b91e744",
+    "prevHash": "9d8e1b91e744",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.326Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "cd3d76946053",
+    "prevHash": "cd3d76946053",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.399Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "globally-unique-slug",
+    "hash": "a74530aeb70f",
+    "prevHash": "a74530aeb70f",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.472Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "026fadf4878b",
+    "prevHash": "026fadf4878b",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.548Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "24eca08d0a21",
+    "prevHash": "24eca08d0a21",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.628Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "output-locale",
+    "hash": "582e42ab52d1",
+    "prevHash": "582e42ab52d1",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.712Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "pending-conflict-tracking",
+    "hash": "bf1404011a90",
+    "prevHash": "bf1404011a90",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.785Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-first-duty",
+    "hash": "9673a3dbd422",
+    "prevHash": "9673a3dbd422",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.858Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "settled-status",
+    "hash": "85e5ca1e24b2",
+    "prevHash": "85e5ca1e24b2",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:21.934Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "atomic-baseline-write",
+    "hash": "9f8c6ae2b554",
+    "prevHash": "9f8c6ae2b554",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.004Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "generated-not-hand-edited",
+    "hash": "34e7fa7b82a9",
+    "prevHash": "34e7fa7b82a9",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.075Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "99ea56612c8d",
+    "prevHash": "99ea56612c8d",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.145Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "dbb458bc5169",
+    "prevHash": "dbb458bc5169",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.233Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-privacy",
+    "hash": "842610b39e5c",
+    "prevHash": "842610b39e5c",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.341Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "2dbd2431add0",
+    "prevHash": "2dbd2431add0",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.414Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-local-write-guard",
+    "hash": "58ca1cb549d6",
+    "prevHash": "58ca1cb549d6",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.487Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "6edf6d4c3f51",
+    "prevHash": "6edf6d4c3f51",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.557Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "copy-code-path",
+    "hash": "7fe96cb97576",
+    "prevHash": "7fe96cb97576",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.644Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "detail-summary-outline",
+    "hash": "4df06921425d",
+    "prevHash": "4df06921425d",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.719Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "cc3922693b61",
+    "prevHash": "",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.790Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "group-navbar",
+    "hash": "e8e0fd6752f5",
+    "prevHash": "e8e0fd6752f5",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.873Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "home-search",
+    "hash": "76ecb259cb3b",
+    "prevHash": "76ecb259cb3b",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:22.942Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "beec19120b9d",
+    "prevHash": "beec19120b9d",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:23.013Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "list-item-readout",
+    "hash": "f5776b2ee4cd",
+    "prevHash": "f5776b2ee4cd",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:23.087Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "9255705e4426",
+    "prevHash": "9255705e4426",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:23.166Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-toggle",
+    "hash": "bc23a4f7755d",
+    "prevHash": "bc23a4f7755d",
+    "reason": "뷰어 표시 정리: 은유적 부제 title을 제거하고 기존 eyebrow(평이한 이름표)를 title로 사용",
+    "at": "2026-08-24T05:34:23.239Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

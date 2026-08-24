@@ -6,8 +6,8 @@
     "term"
   ],
   "status": "green",
-  "title": "개념 신호등: 한 번 확정되면 함부로 안 바뀐다",
-  "eyebrow": "상태 관리 원칙",
+  "title": "상태 관리 원칙",
+  "eyebrow": "",
   "description": {
     "definition": "모든 개념은 신호등 색으로 상태를 가진다.",
     "analogy": "도장이 찍힌 서류(초록·빨강)는 다시 꺼내 고칠 수 없고, 바꾸려면 새로 결재를 올려야 한다.",

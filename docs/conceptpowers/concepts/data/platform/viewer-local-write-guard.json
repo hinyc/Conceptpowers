@@ -6,8 +6,8 @@
     "behavior"
   ],
   "status": "green",
-  "title": "고치는 문은 내 컴퓨터에서만 열린다",
-  "eyebrow": "뷰어 서버 보호",
+  "title": "뷰어 서버 보호",
+  "eyebrow": "",
   "description": {
     "definition": "뷰어에서 개념을 고치는 통로는 내 컴퓨터에서 들어온 요청에만 열린다.",
     "analogy": "집 안에서만 열리는 잠금장치 — 밖에서 초인종을 아무리 눌러도 문고리는 안 돌아간다.",

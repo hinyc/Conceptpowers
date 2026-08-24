@@ -5,8 +5,8 @@
     "feature"
   ],
   "status": "green",
-  "title": "한 곳에서 다 찾기",
-  "eyebrow": "홈 화면 검색",
+  "title": "홈 화면 검색",
+  "eyebrow": "",
   "description": {
     "definition": "첫 화면 검색창에 몇 글자만 넣으면 개념·기능·코드 파일을 한꺼번에 찾아준다.",
     "analogy": "서랍마다 열어보는 대신, 도서관 안내 데스크에 이름 일부만 말하는 것.",
