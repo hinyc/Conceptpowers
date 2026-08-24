@@ -5,7 +5,9 @@ import { appendHistoryMany, type HistoryInput } from './history.js';
 import { computeDrift } from './detect.js';
 import { contractHash } from './hash.js';
 import { normalizeRel } from './safe.js';
-import { isFollowed } from './follow.js';
+import { isFollowedWithTags, presentTagSlugs } from './follow.js';
+import { readInitConfig } from '../init/readConfig.js';
+import { InitConfigSchema } from '../schema/initConfig.js';
 import type { AlignmentLock } from '../schema/alignment.js';
 
 export interface ReconcileResult {
@@ -23,11 +25,15 @@ export async function reconcileAfterCommit(
 ): Promise<ReconcileResult> {
   const stamp = at ?? new Date().toISOString();
   const committed = new Set(committedFiles.map(normalizeRel));
-  const [concepts, lock, drift] = await Promise.all([
+  const [concepts, lock, drift, cfg] = await Promise.all([
     listConcepts(root),
     readLock(root),
     computeDrift(root),
+    readInitConfig(root),
   ]);
+  // 문지기(driftGate)와 같은 확장 잣대의 재료: 커밋된 파일의 첫머리 태그(생성물 제외).
+  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(undefined);
+  const tagged = await presentTagSlugs(root, committed, ignoreGlobs);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock: AlignmentLock = { ...lock };
   const aligned: string[] = [];
@@ -36,8 +42,9 @@ export async function reconcileAfterCommit(
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
-      // 문지기(driftGate)와 같은 잣대: 연결 코드 가운데 하나라도 커밋에 들어왔으면 따라옴.
-      if (isFollowed(d.relatedPaths, committed)) {
+      // 문지기(driftGate)와 같은 잣대: 연결 코드 가운데 하나라도 커밋에 들어왔거나,
+      // 커밋된 파일의 첫머리 태그가 이 개념을 가리키면 따라옴.
+      if (isFollowedWithTags(d, committed, tagged)) {
         aligned.push(c.slug);
         entries.push({
           slug: c.slug,

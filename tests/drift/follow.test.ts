@@ -8,6 +8,9 @@
 //    → pruneMissingPaths 6개: 없는 경로·디렉터리·루트 밖·절대 경로를 빼고, 전부 사라지면 빈 목록
 //  - drift-reconcile 불변 "커밋 전 문지기(governance-mode)의 어긋남 경고와 커밋 뒤 결산은 같은
 //    잣대로 따라옴을 판정한다" → 문지기·결산 동일 잣대
+//  - concept-code-mapping "태그가 진실의 원천, mapping은 캐시" → 캐시가 낡아 연결 목록에 없어도
+//    첫머리에 @concept:<slug>를 단 파일이 들어오면 따라옴이다(문지기·결산 동일).
+//    생성물(ignoreGlobs)의 태그와 본문 중간의 태그는 세지 않는다.
 //  - 경로 표기 정규화(./ 접두·역슬래시)는 개념 규칙이 아니라 같은 파일을 다르게 세지 않기 위한 구현 세부다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -131,4 +134,45 @@ describe('문지기·결산 동일 잣대', () => {
       expect(r.ignored.includes('auth-token')).toBe(!followed);
     }
   );
+
+  // 태그는 진실의 원천, mapping은 캐시(concept-code-mapping) — 캐시가 낡아 연결 목록에
+  // 없는 파일이라도 첫머리 태그가 따라옴을 증언한다. 문지기·결산이 같은 판정을 내린다.
+  function writeTagged(rel: string, content: string) {
+    const p = join(root, rel);
+    mkdirSync(dirname(p), { recursive: true });
+    writeFileSync(p, content);
+  }
+  it('연결 목록에 없어도 첫머리에 @concept 태그를 단 파일이 들어오면 따라옴이다', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/store.ts', '// @concept:auth-token\nexport const s = 1;\n');
+    const gate = await checkDrift({ root, files: ['src/store.ts'] } as never);
+    expect(gate).toBeNull();
+    const r = await reconcileAfterCommit(root, ['src/store.ts'], 't2');
+    expect(r.aligned).toContain('auth-token');
+    expect(r.ignored).toEqual([]);
+  });
+  it('다른 개념의 태그는 이 개념의 따라옴이 아니다', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/store.ts', '// @concept:other-concept\nexport const s = 1;\n');
+    const gate = await checkDrift({ root, files: ['src/store.ts'] } as never);
+    expect(gate).not.toBeNull();
+    const r = await reconcileAfterCommit(root, ['src/store.ts'], 't2');
+    expect(r.ignored).toContain('auth-token');
+  });
+  it('ignoreGlobs에 걸리는 생성물의 태그는 세지 않는다', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('dist/copy.js', '// @concept:auth-token\nvar s = 1;\n');
+    const gate = await checkDrift({ root, files: ['dist/copy.js'] } as never);
+    expect(gate).not.toBeNull();
+    const r = await reconcileAfterCommit(root, ['dist/copy.js'], 't2');
+    expect(r.ignored).toContain('auth-token');
+  });
+  it('본문 중간의 태그는 세지 않는다 — 첫머리 주석 블록만 본다', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/late.ts', 'export const s = 1;\n// @concept:auth-token\n');
+    const gate = await checkDrift({ root, files: ['src/late.ts'] } as never);
+    expect(gate).not.toBeNull();
+    const r = await reconcileAfterCommit(root, ['src/late.ts'], 't2');
+    expect(r.ignored).toContain('auth-token');
+  });
 });

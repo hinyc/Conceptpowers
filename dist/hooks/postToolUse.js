@@ -10,7 +10,7 @@ var __export = (target, all) => {
 // src/hooks/postToolUse.ts
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile7 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -4125,6 +4125,9 @@ var InitConfigSchema = external_exports.object({
   ]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
+function parseInitConfig(input) {
+  return InitConfigSchema.parse(input);
+}
 
 // src/store/conceptStore.ts
 import { readFile, readdir } from "node:fs/promises";
@@ -4322,19 +4325,146 @@ async function listFeatures(root) {
 
 // src/mapping/scan.ts
 import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
+
+// src/mapping/leadingComment.ts
+var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
+var BLOCK_OPENER_RE = /^\s*(\/\*|<!--)/;
+var CLOSER = { "/*": "*/", "<!--": "-->" };
+function leadingCommentBlock(content) {
+  const lines = content.split("\n");
+  const kept = [];
+  let openBlock = null;
+  outer: for (const line of lines) {
+    let pos = 0;
+    let lineBuf = "";
+    for (; ; ) {
+      if (openBlock) {
+        const closeAt = line.indexOf(CLOSER[openBlock], pos);
+        if (closeAt === -1) {
+          lineBuf += line.slice(pos);
+          break;
+        }
+        const closeEnd = closeAt + CLOSER[openBlock].length;
+        lineBuf += line.slice(pos, closeEnd);
+        pos = closeEnd;
+        openBlock = null;
+        continue;
+      }
+      const rest = line.slice(pos);
+      if (rest.trim() === "") {
+        lineBuf += rest;
+        break;
+      }
+      if (!LEADING_COMMENT_LINE_RE.test(rest)) {
+        if (lineBuf !== "") kept.push(lineBuf);
+        break outer;
+      }
+      const openMatch = rest.match(BLOCK_OPENER_RE);
+      if (openMatch) {
+        const opener = openMatch[1];
+        const openStart = pos + (openMatch[0].length - opener.length);
+        const closeAt = line.indexOf(CLOSER[opener], openStart + opener.length);
+        if (closeAt === -1) {
+          lineBuf += line.slice(pos);
+          openBlock = opener;
+          break;
+        }
+        const closeEnd = closeAt + CLOSER[opener].length;
+        lineBuf += line.slice(pos, closeEnd);
+        pos = closeEnd;
+        continue;
+      }
+      lineBuf += rest;
+      break;
+    }
+    kept.push(lineBuf);
+  }
+  return kept.join("\n");
+}
 
 // src/drift/safe.ts
 function normalizeRel(p) {
   return p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/").replace(/^\/+/, "");
 }
 
+// src/util/glob.ts
+var REGEX_SPECIAL = "\\^$.|?+()[]{}";
+function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++;
+        if (glob[i + 1] === "/") {
+          re += "(?:.*/)?";
+          i++;
+        } else {
+          re += ".*";
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (REGEX_SPECIAL.includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp("^" + re + "$");
+}
+function matchesAny(path, globs) {
+  const p = normalizeRel(path);
+  return globs.some((g) => globToRegExp(g).test(p));
+}
+
 // src/mapping/scan.ts
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
+var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
+var NO_CONCEPT_TAG = "none";
+async function scanTags(root, files, ignoreGlobs = []) {
+  const result = {};
+  for (const rel of files) {
+    if (matchesAny(rel, ignoreGlobs)) continue;
+    let content;
+    try {
+      content = await readFile3(join4(root, rel), "utf8");
+    } catch {
+      continue;
+    }
+    const slugs = [];
+    for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
+      if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]);
+    }
+    if (slugs.length) result[rel] = slugs;
+  }
+  return result;
+}
+async function buildMapping(root, files, ignoreGlobs = []) {
+  const tags = await scanTags(root, files, ignoreGlobs);
+  const mapping = {};
+  for (const [file, slugs] of Object.entries(tags)) {
+    for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
+  }
+  return mapping;
+}
 async function readMappingCache(root) {
   try {
     return MappingSchema.parse(JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
+  }
+}
+
+// src/init/readConfig.ts
+import { readFile as readFile4 } from "node:fs/promises";
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile4(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
   }
 }
 
@@ -4392,10 +4522,10 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile4 } from "node:fs/promises";
+import { readFile as readFile5 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile4(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile5(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -4405,10 +4535,10 @@ async function writeLock(root, lock) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile5(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile6(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4440,10 +4570,21 @@ async function appendHistoryMany(root, inputs) {
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute, join as join4, relative, resolve } from "node:path";
+import { isAbsolute, join as join5, relative, resolve } from "node:path";
 function isFollowed(relatedPaths, present) {
   const paths = relatedPaths.map(normalizeRel);
   return paths.length === 0 || paths.some((p) => present.has(p));
+}
+async function presentTagSlugs(root, present, ignoreGlobs) {
+  try {
+    const mapping = await buildMapping(root, [...present].map(normalizeRel), ignoreGlobs);
+    return new Set(Object.keys(mapping));
+  } catch {
+    return /* @__PURE__ */ new Set();
+  }
+}
+function isFollowedWithTags(d, present, taggedSlugs) {
+  return isFollowed(d.relatedPaths, present) || taggedSlugs.has(d.slug);
 }
 function isInsideRoot(root, rel) {
   const r = relative(resolve(root), resolve(root, rel));
@@ -4452,7 +4593,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat(join4(root, rel))).isFile();
+    return (await stat(join5(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -4507,11 +4648,14 @@ async function computeDrift(root) {
 async function reconcileAfterCommit(root, committedFiles2, at) {
   const stamp = at ?? (/* @__PURE__ */ new Date()).toISOString();
   const committed = new Set(committedFiles2.map(normalizeRel));
-  const [concepts, lock, drift] = await Promise.all([
+  const [concepts, lock, drift, cfg] = await Promise.all([
     listConcepts(root),
     readLock(root),
-    computeDrift(root)
+    computeDrift(root),
+    readInitConfig(root)
   ]);
+  const ignoreGlobs = cfg?.ignoreGlobs ?? InitConfigSchema.shape.ignoreGlobs.parse(void 0);
+  const tagged = await presentTagSlugs(root, committed, ignoreGlobs);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
   const aligned = [];
@@ -4520,7 +4664,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
-      if (isFollowed(d.relatedPaths, committed)) {
+      if (isFollowedWithTags(d, committed, tagged)) {
         aligned.push(c.slug);
         entries.push({
           slug: c.slug,
@@ -4587,7 +4731,7 @@ async function committedFiles(root) {
 }
 async function readLastCommit(root) {
   try {
-    return (await readFile6(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile7(cpPaths(root).alignmentLastCommit, "utf8")).trim();
   } catch {
     return "";
   }

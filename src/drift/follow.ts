@@ -1,6 +1,7 @@
 // @concept:drift-reconcile
 import { stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { buildMapping } from '../mapping/scan.js';
 import { normalizeRel } from './safe.js';
 
 // 따라옴 판정의 단일 잣대 — 커밋 전 문지기(driftGate)와 커밋 뒤 결산(reconcile)이 함께 쓴다.
@@ -10,6 +11,34 @@ import { normalizeRel } from './safe.js';
 export function isFollowed(relatedPaths: readonly string[], present: ReadonlySet<string>): boolean {
   const paths = relatedPaths.map(normalizeRel);
   return paths.length === 0 || paths.some((p) => present.has(p));
+}
+
+// 태그는 진실의 원천이고 mapping은 캐시다(concept-code-mapping). 캐시가 낡아 개념의 연결
+// 목록에 아직 없는 파일이라도, 첫머리 주석에 @concept:<slug>를 단 채 목록(present)에
+// 들어왔다면 그 개념을 따라온 것이다 — 파일에서 직접 스캔해 slug 집합을 만든다.
+// ignoreGlobs로 생성물(dist/** 등)의 태그 사본은 세지 않는다. 스캔이 실패하면 빈 집합을
+// 돌려준다 — 판정이 조용히 열리는 쪽(fail-open)이 아니라 물어보는 쪽으로 기운다.
+export async function presentTagSlugs(
+  root: string,
+  present: Iterable<string>,
+  ignoreGlobs: string[]
+): Promise<ReadonlySet<string>> {
+  try {
+    const mapping = await buildMapping(root, [...present].map(normalizeRel), ignoreGlobs);
+    return new Set(Object.keys(mapping));
+  } catch {
+    return new Set();
+  }
+}
+
+// 문지기(driftGate)와 결산(reconcile)이 함께 쓰는 확장 잣대(drift-reconcile 불변 규칙:
+// 같은 잣대) — 연결 코드가 함께 들어왔거나, 들어온 파일의 첫머리 태그가 이 개념을 가리킨다.
+export function isFollowedWithTags(
+  d: { slug: string; relatedPaths: readonly string[] },
+  present: ReadonlySet<string>,
+  taggedSlugs: ReadonlySet<string>
+): boolean {
+  return isFollowed(d.relatedPaths, present) || taggedSlugs.has(d.slug);
 }
 
 // 목록(present)에 들어오지 않은 연결 코드 — 안내문에 쓴다.
