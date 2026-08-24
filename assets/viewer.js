@@ -381,13 +381,6 @@ function conceptEntry(slug) {
     })[0] || null
   );
 }
-function featureEntry(slug) {
-  return (
-    (state.manifest.features || []).filter(function (f) {
-      return f.slug === slug;
-    })[0] || null
-  );
-}
 function conceptTitle(slug) {
   var e = conceptEntry(slug);
   return e ? e.title : slug;
@@ -408,8 +401,9 @@ function relatedFeatures(slug) {
   });
 }
 // 기능 색인 줄의 주소. 기능은 전용 화면 없이 목록의 줄로만 산다(feature-index-row).
+// 라우트가 decodeURIComponent로 되읽으므로 인코딩해 넣어야 왕복이 대칭이다.
 function featureRowHref(slug) {
-  return '#/group/__features/' + slug;
+  return '#/group/__features/' + encodeURIComponent(slug);
 }
 
 // ---- 간이 마크다운 렌더러 ----
@@ -755,7 +749,9 @@ function conceptChips(slugs) {
   });
   return chips.length ? chips : h('span', { class: 'muted' }, '—');
 }
-function featureTable(items, focusSlug) {
+// withRowId: 앵커 id(frow-*)를 붙일지 — 색인 구역의 표에서만 켠다. 검색 결과는 본문을
+// 숨긴 채 같은 표를 한 번 더 그리므로, 여기도 id를 붙이면 문서에 같은 id가 두 번 생긴다.
+function featureTable(items, focusSlug, withRowId) {
   var t = state.t;
   return h(
     'div',
@@ -774,11 +770,16 @@ function featureTable(items, focusSlug) {
         'tbody',
         null,
         items.map(function (f) {
+          var focused = focusSlug === f.slug;
           return h(
             'tr',
             {
-              id: featureRowId(f.slug),
-              class: focusSlug === f.slug ? 'ctable__row--focus' : null,
+              id: withRowId ? featureRowId(f.slug) : null,
+              class: focused ? 'ctable__row--focus' : null,
+              // 강조는 색만으로 전달되지 않는다 — 읽어줄 수 있는 표시와
+              // 키보드 초점 자리(tabindex)를 함께 둔다.
+              'aria-current': focused ? 'true' : null,
+              tabindex: focused ? '-1' : null,
             },
             [
               h('td', { class: 'ctable__code' }, f.slug),
@@ -850,8 +851,19 @@ function featureListSection(focusSlug) {
   if (!(m.features || []).length) return null;
   return h('section', { class: 'group', id: 'g-__features' }, [
     h('h2', null, t.featureList),
-    featureTable(m.features, focusSlug),
+    featureTable(m.features, focusSlug, true),
   ]);
+}
+// 색인에서 스크롤할 곳: 초점 줄 → (기능이 삭제돼 줄이 없으면) 기능 구역 → 묶음 제목.
+// 옛 주소의 기능이 사라졌어도 아무 안내 없이 꼭대기에 떨구지 않는다(feature-index-row).
+function indexScrollTarget(scrollTo, focusFeature) {
+  if (focusFeature) {
+    return (
+      document.getElementById(featureRowId(focusFeature)) ||
+      document.getElementById('g-__features')
+    );
+  }
+  return scrollTo ? document.getElementById('g-' + scrollTo) : null;
 }
 // scrollTo: 그룹 이름(또는 '__features') — #/group/:g 라우트로 진입하면 해당 섹션으로 스크롤.
 // focusFeature: #/group/__features/:slug로 들어오면 그 색인 줄까지 내려가 눈에 띄게 표시한다.
@@ -897,12 +909,12 @@ function viewIndex(scrollTo, focusFeature) {
       bodyBox,
     ])
   );
-  var target = focusFeature
-    ? document.getElementById(featureRowId(focusFeature))
-    : scrollTo
-      ? document.getElementById('g-' + scrollTo)
-      : null;
-  if (target) target.scrollIntoView();
+  var target = indexScrollTarget(scrollTo, focusFeature);
+  if (target) {
+    target.scrollIntoView();
+    // 키보드로 넘어온 사용자의 초점도 함께 옮긴다(초점 줄은 tabindex=-1을 갖는다).
+    if (typeof target.focus === 'function') target.focus();
+  }
 }
 
 // ---- 뷰: 개념 상세 ----

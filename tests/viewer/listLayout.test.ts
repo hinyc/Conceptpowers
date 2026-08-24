@@ -20,7 +20,10 @@
 //  - feature-index-row 불변 "기능 줄에는 그 기능이 따르는 개념이 하나도 빠짐없이 붙는다"
 //    → 색인 줄에 따르는 개념이 모두 딱지로 붙고, 눌러 나갈 곳은 딱지뿐이다
 //  - feature-index-row 허용 "개념 화면에서 … 목록의 그 줄로 돌아오고, 그 줄을 눈에 띄게 표시하는 것"
-//    → 초점 대상 줄에 id와 강조 표시가 붙는다
+//    → 초점 대상 줄에 id와 강조 표시가 붙고, 색만이 아니라 읽어줄 수 있는 표시(aria-current)와
+//      키보드 초점을 받을 수 있는 tabindex도 함께 붙는다
+//    → 앵커 노릇은 색인 구역의 표만 한다 — 검색 결과 표에는 줄 id를 붙이지 않아 문서에
+//      같은 id가 두 번 생기지 않는다
 //  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고 …" → 곁 목록에는 기능이 들어오지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -188,6 +191,23 @@ describe('목록 페이지 — 코드 열과 제목 열이 분리된 표', () =>
     const row = findAll(section, 'tbody')[0].children[0];
     expect(row.getAttribute('id')).toBe('frow-viewer-search');
     expect(row.getAttribute('class')).toBe('ctable__row--focus');
+    // 색만으로는 전달되지 않는다 — 읽어줄 수 있는 표시와 키보드 초점 자리를 함께 둔다.
+    expect(row.getAttribute('aria-current')).toBe('true');
+    expect(row.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('색인 구역의 줄은 초점이 없어도 앵커 id를 갖는다', () => {
+    const ctx = load();
+    const section = ctx.featureListSection(null) as unknown as StubNode;
+    const row = findAll(section, 'tbody')[0].children[0];
+    expect(row.getAttribute('id')).toBe('frow-viewer-search');
+  });
+
+  it('검색 결과처럼 앵커가 아닌 기능 표에는 줄 id를 붙이지 않는다', () => {
+    const ctx = load();
+    const table = ctx.featureTable(MANIFEST.features) as unknown as StubNode;
+    const row = findAll(table, 'tbody')[0].children[0];
+    expect(row.getAttribute('id')).toBeNull();
   });
 });
 

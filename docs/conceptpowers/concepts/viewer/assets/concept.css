@@ -721,9 +721,18 @@ li::marker {
   line-height: 1.5;
   white-space: nowrap;
 }
-/* 개념 화면에서 "관련 기능"을 눌러 넘어온 줄 — 어디로 왔는지 바로 보이게 표시한다. */
+/* 개념 화면에서 "관련 기능"을 눌러 넘어온 줄 — 어디로 왔는지 바로 보이게 표시한다.
+   색만으로 전달하지 않는다: 왼쪽 굵은 선을 병기하고, color-mix 미지원엔 단색 폴백을 둔다. */
 .ctable__row--focus td {
+  background: #eef4ff;
   background: color-mix(in srgb, var(--link) 14%, transparent);
+}
+.ctable__row--focus td:first-child {
+  box-shadow: inset 3px 0 0 var(--link);
+}
+.ctable__row--focus:focus {
+  outline: 2px solid var(--link);
+  outline-offset: -2px;
 }
 /* 좁은 화면: 열을 유지하면 제목이 한 글자씩 끊겨 읽을 수 없다 —
    표를 항목별 세로 스택(상태·코드·제목·부가정보)으로 바꾼다. */
