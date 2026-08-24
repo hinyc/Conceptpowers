@@ -74,6 +74,6 @@ export function buildManifest(
       // 갈 곳이 없는 참조는 딱지로 그릴 수 없으므로 정의된 개념만 남긴다.
       concepts: f.concepts.filter((slug) => defined.has(slug)),
     })),
-    graph: buildGraphData(concepts, codeLinksBySlug),
+    graph: buildGraphData(concepts, codeLinksBySlug, features),
   };
 }

@@ -25,7 +25,6 @@ const concept = (slug: string, group = ''): Concept =>
     group,
     category: ['role'],
     title: slug.toUpperCase(),
-    eyebrow: '',
     status: 'green',
     description: { definition: 'd', analogy: '', components: [], example: '' },
     purpose: { reason: 'r', benefits: [], vision: '', painPoints: [] },
@@ -51,6 +50,13 @@ describe('buildManifest', () => {
     expect(m.version).toBe(1);
     expect(m.locale).toBe('en');
     expect(m.graph.nodes.some((n) => n.id === 'c:auth')).toBe(true);
+    // 그래프는 기능을 기준으로 잇는다(knowledge-graph-view) — 기능 노드와 기능→개념 엣지도 담는다
+    expect(m.graph.nodes.some((n) => n.id === 'f:login')).toBe(true);
+    expect(m.graph.edges).toContainEqual({
+      source: 'f:login',
+      target: 'c:auth',
+      kind: 'feature-concept',
+    });
   });
   it('개념 엔트리는 data/*.json 상대 URL과 메타를 가진다', () => {
     const m = buildManifest([concept('admin-role', 'auth')], [], 'ko');

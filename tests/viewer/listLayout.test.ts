@@ -18,13 +18,15 @@
 //  - home-search 정의 "첫 화면 검색창에 몇 글자만 넣으면 개념·기능·코드 파일을 한꺼번에 찾아준다"
 //    → 검색 결과도 목록과 같은 표 구조로 그린다
 //  - feature-index-row 불변 "기능 줄에는 그 기능이 따르는 개념이 하나도 빠짐없이 붙는다"
-//    → 색인 줄에 따르는 개념이 모두 딱지로 붙고, 눌러 나갈 곳은 딱지뿐이다
+//    → 색인 줄에 따르는 개념이 모두 딱지로 붙는다
+//  - feature-index-row 허용 "줄의 이름표를 눌러 그 기능에 초점을 맞춘 지식 그래프로 가는 것"
+//    → 코드 칸의 이름표가 #/graph/<slug> 링크다 — 나가는 길은 딱지와 이름표뿐
 //  - feature-index-row 허용 "개념 화면에서 … 목록의 그 줄로 돌아오고, 그 줄을 눈에 띄게 표시하는 것"
 //    → 초점 대상 줄에 id와 강조 표시가 붙고, 색만이 아니라 읽어줄 수 있는 표시(aria-current)와
 //      키보드 초점을 받을 수 있는 tabindex도 함께 붙는다
 //    → 앵커 노릇은 색인 구역의 표만 한다 — 검색 결과 표에는 줄 id를 붙이지 않아 문서에
 //      같은 id가 두 번 생기지 않는다
-//  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고 …" → 곁 목록에는 기능이 들어오지 않는다
+//  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 …" → 곁 목록에는 기능이 들어오지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -119,26 +121,11 @@ function load() {
   const state = ctx.state as { manifest: unknown; t: unknown };
   state.manifest = MANIFEST;
   state.t = (ctx.I18N as Record<string, unknown>).ko;
-  return ctx as Record<string, (...args: unknown[]) => StubNode> & {
-    displayName: (title: string, slug: string) => string;
-  };
+  return ctx as Record<string, (...args: unknown[]) => StubNode>;
 }
 
-describe('viewer displayName — 코드 | 제목', () => {
-  const { displayName } = load();
-
-  it('제목이 코드와 다르면 "코드 | 제목"으로 병기한다', () => {
-    expect(displayName('영점 절차', 'rezero-procedure')).toBe('rezero-procedure | 영점 절차');
-  });
-
-  it('제목이 코드와 같으면 코드만 보여준다', () => {
-    expect(displayName('plain-slug', 'plain-slug')).toBe('plain-slug');
-  });
-
-  it('제목이 비어 있으면 코드만 보여준다', () => {
-    expect(displayName('', 'rezero-procedure')).toBe('rezero-procedure');
-  });
-});
+// 제목 문자열을 "이름표 | 이름" 한 줄로 만드는 규칙은 상세 제목 표시 규칙(detail-title-single)이
+// 소유한다 — 검증은 tests/viewer/detailTitle.test.ts에 있다.
 
 describe('목록 페이지 — 코드 열과 제목 열이 분리된 표', () => {
   it('개념 목록을 표로 그리고 코드·제목을 각각 다른 칸에 넣는다', () => {
@@ -172,7 +159,7 @@ describe('목록 페이지 — 코드 열과 제목 열이 분리된 표', () =>
     expect(byClass(findAll(row, 'td'), 'ctable__title')[0].textContent).toContain('뷰어 검색');
   });
 
-  it('기능 색인 줄에는 따르는 개념이 모두 딱지로 붙고, 딱지만 눌러서 나갈 수 있다', () => {
+  it('기능 색인 줄에는 따르는 개념이 모두 딱지로 붙는다', () => {
     const ctx = load();
     const section = ctx.featureListSection(null) as unknown as StubNode;
     const row = findAll(section, 'tbody')[0].children[0];
@@ -181,8 +168,16 @@ describe('목록 페이지 — 코드 열과 제목 열이 분리된 표', () =>
       '#/concept/rezero-procedure',
       '#/concept/plain-slug',
     ]);
-    // 딱지 말고는 링크가 없다 — 줄 자체는 갈 곳이 없다
-    expect(findAll(row, 'a')).toHaveLength(chips.length);
+    // 나가는 길은 딱지(개념)와 이름표(그래프)뿐 — 그 밖의 링크는 없다
+    expect(findAll(row, 'a')).toHaveLength(chips.length + 1);
+  });
+
+  it('기능 줄의 이름표를 누르면 그 기능에 초점을 맞춘 지식 그래프로 간다', () => {
+    const ctx = load();
+    const section = ctx.featureListSection(null) as unknown as StubNode;
+    const row = findAll(section, 'tbody')[0].children[0];
+    const codeCell = byClass(findAll(row, 'td'), 'ctable__code')[0];
+    expect(findAll(codeCell, 'a')[0].getAttribute('href')).toBe('#/graph/viewer-search');
   });
 
   it('개념 화면에서 넘어온 기능 줄은 눈에 띄게 표시된다', () => {

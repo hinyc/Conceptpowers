@@ -2,7 +2,7 @@
   "slug": "viewer-knowledge-graph",
   "group": "viewer",
   "title": "지식 그래프 화면",
-  "description": "개념과 코드 파일을 점과 선으로 그리고, 개념 하나에 초점을 맞추면 연관된 것만 남긴다.",
+  "description": "기능·개념·코드 파일을 점과 선으로 그린다 — 기능에서 개념으로, 개념에서 코드로. 기능이나 개념 하나에 초점을 맞추면 연관된 것만 남긴다.",
   "concepts": [
     "knowledge-graph-view"
   ],

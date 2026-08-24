@@ -21,10 +21,10 @@
         "tests/audit/gaps.test.ts",
         "tests/cli/audit.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/mapping/scan.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/util/glob.test.ts"
+        "tests/util/glob.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -41,9 +41,9 @@
         "src/mapping/scan.ts",
         "src/mapping/leadingComment.ts",
         "tests/cli/cli.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/mapping/scan.test.ts",
-        "tests/viewer/renderDisk.test.ts"
+        "tests/viewer/renderDisk.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -88,14 +88,14 @@
         "src/drift/lock.ts",
         "src/drift/note.ts",
         "tests/drift/detect.test.ts",
-        "tests/drift/hash.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/lock.test.ts",
         "tests/drift/reconcile.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/schema/alignment.test.ts"
+        "tests/schema/alignment.test.ts",
+        "tests/drift/hash.test.ts"
       ]
     },
     {
@@ -142,10 +142,11 @@
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/schema/feature.test.ts",
         "tests/store/featureStore.test.ts",
-        "tests/viewer/renderDisk.test.ts"
+        "tests/viewer/renderDisk.test.ts",
+        "tests/viewer/graph.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -164,11 +165,11 @@
         "tests/cli/feature.test.ts",
         "tests/schema/concept.test.ts",
         "tests/schema/feature.test.ts",
-        "tests/store/conceptStore.test.ts",
         "tests/store/featureStore.test.ts",
+        "tests/store/conceptStore.test.ts",
         "tests/viewer/graph.test.ts",
-        "tests/viewer/manifest.test.ts",
-        "tests/viewer/subgraph.test.ts"
+        "tests/viewer/subgraph.test.ts",
+        "tests/viewer/manifest.test.ts"
       ]
     },
     {
@@ -203,8 +204,8 @@
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/schema/initConfig.test.ts"
+        "tests/schema/initConfig.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -222,8 +223,8 @@
         "skills/update-baseline/SKILL.md",
         "skills/auto/SKILL.md",
         "tests/cli/cli.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/store/conceptStore.test.ts"
       ]
     },
     {
@@ -298,7 +299,6 @@
         "src/concept/approve.ts",
         "src/concept/quality.ts",
         "src/concept/attest.ts",
-        "assets/viewer.js",
         "tests/audit/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/quality.test.ts",
@@ -313,12 +313,13 @@
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/schema/alignment.test.ts",
         "tests/schema/concept.test.ts",
-        "tests/store/conceptStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/store/conceptStore.test.ts",
+        "tests/integration/smoke.test.ts",
+        "assets/viewer.js"
       ]
     },
     {
@@ -356,11 +357,11 @@
         "tests/hooks/sessionStart.test.ts",
         "tests/init/alignmentGitignore.test.ts",
         "tests/init/ensureConfigDefaults.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/store/conceptStore.test.ts",
         "tests/store/featureStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/store/conceptStore.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -382,10 +383,10 @@
         "tests/init/packageScript.test.ts",
         "tests/init/scaffold.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/version/autoSync.test.ts",
+        "tests/viewer/renderDisk.test.ts",
         "tests/viewer/manifest.test.ts",
-        "tests/viewer/renderDisk.test.ts"
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -419,8 +420,8 @@
         "tests/init/referenceGitignore.test.ts",
         "tests/init/scaffold.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/version/autoSync.test.ts"
+        "tests/version/autoSync.test.ts",
+        "tests/integration/smoke.test.ts"
       ]
     },
     {
@@ -523,8 +524,8 @@
       "codeLinks": [
         "assets/viewer.js",
         "src/store/conceptStore.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/store/conceptStore.test.ts"
       ]
     },
     {
@@ -557,6 +558,24 @@
       ]
     },
     {
+      "slug": "detail-title-single",
+      "group": "viewer",
+      "title": "상세 제목 표시 규칙",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "url": "../data/viewer/detail-title-single.json",
+      "codeLinks": [
+        "assets/viewer.js",
+        "assets/concept.css",
+        "src/schema/concept.ts",
+        "src/store/conceptStore.ts",
+        "tests/viewer/detailTitle.test.ts",
+        "tests/store/conceptStore.test.ts"
+      ]
+    },
+    {
       "slug": "feature-index-row",
       "group": "viewer",
       "title": "기능 목록 표시 규칙",
@@ -567,11 +586,11 @@
       "url": "../data/viewer/feature-index-row.json",
       "codeLinks": [
         "assets/viewer.js",
-        "assets/concept.css",
         "tests/viewer/graph.test.ts",
-        "tests/viewer/listLayout.test.ts",
         "tests/viewer/manifest.test.ts",
-        "tests/viewer/featureRoute.test.ts"
+        "tests/viewer/featureRoute.test.ts",
+        "tests/viewer/listLayout.test.ts",
+        "assets/concept.css"
       ]
     },
     {
@@ -615,7 +634,9 @@
         "assets/viewer.js",
         "src/viewer/graph.ts",
         "tests/viewer/graph.test.ts",
-        "tests/viewer/subgraph.test.ts"
+        "tests/viewer/subgraph.test.ts",
+        "tests/viewer/highlight.test.ts",
+        "assets/concept.css"
       ]
     },
     {
@@ -646,8 +667,8 @@
       "url": "../data/viewer/sidebar-search.json",
       "codeLinks": [
         "assets/sidebar.js",
-        "tests/viewer/listLayout.test.ts",
-        "tests/viewer/sidebarState.test.ts"
+        "tests/viewer/sidebarState.test.ts",
+        "tests/viewer/listLayout.test.ts"
       ]
     },
     {
@@ -806,9 +827,10 @@
       "slug": "viewer-concept-detail",
       "group": "viewer",
       "title": "개념 상세 화면",
-      "description": "개념 하나를 펼쳐 제목·상태·요약과 본문 절들을 보여준다. 제목 아래 요약은 이야기 단위로 끊어 항목마다 한 줄씩 표시한다.",
+      "description": "개념 하나를 펼쳐 제목·상태·요약과 본문 절들을 보여준다. 제목은 이름표와 이름 하나로만 이루어지고, 제목 아래 요약은 이야기 단위로 끊어 항목마다 한 줄씩 표시한다.",
       "concepts": [
-        "detail-summary-outline"
+        "detail-summary-outline",
+        "detail-title-single"
       ]
     },
     {
@@ -836,7 +858,7 @@
       "slug": "viewer-knowledge-graph",
       "group": "viewer",
       "title": "지식 그래프 화면",
-      "description": "개념과 코드 파일을 점과 선으로 그리고, 개념 하나에 초점을 맞추면 연관된 것만 남긴다.",
+      "description": "기능·개념·코드 파일을 점과 선으로 그린다 — 기능에서 개념으로, 개념에서 코드로. 기능이나 개념 하나에 초점을 맞추면 연관된 것만 남긴다.",
       "concepts": [
         "knowledge-graph-view"
       ]
@@ -935,13 +957,6 @@
         "title": "tests/hooks/preToolUse.test.ts"
       },
       {
-        "id": "p:tests/integration/smoke.test.ts",
-        "label": "smoke.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/integration/smoke.test.ts"
-      },
-      {
         "id": "p:tests/mapping/scan.test.ts",
         "label": "scan.test.ts",
         "type": "file",
@@ -961,6 +976,13 @@
         "type": "file",
         "href": "",
         "title": "tests/util/glob.test.ts"
+      },
+      {
+        "id": "p:tests/integration/smoke.test.ts",
+        "label": "smoke.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/integration/smoke.test.ts"
       },
       {
         "id": "c:concept-code-mapping",
@@ -1131,13 +1153,6 @@
         "title": "tests/drift/detect.test.ts"
       },
       {
-        "id": "p:tests/drift/hash.test.ts",
-        "label": "hash.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/hash.test.ts"
-      },
-      {
         "id": "p:tests/drift/history.test.ts",
         "label": "history.test.ts",
         "type": "file",
@@ -1171,6 +1186,13 @@
         "type": "file",
         "href": "",
         "title": "tests/schema/alignment.test.ts"
+      },
+      {
+        "id": "p:tests/drift/hash.test.ts",
+        "label": "hash.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/hash.test.ts"
       },
       {
         "id": "c:drift-reconcile",
@@ -1250,6 +1272,13 @@
         "title": "tests/store/featureStore.test.ts"
       },
       {
+        "id": "p:tests/viewer/graph.test.ts",
+        "label": "graph.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/graph.test.ts"
+      },
+      {
         "id": "c:globally-unique-slug",
         "label": "이름표 규칙",
         "type": "concept",
@@ -1285,11 +1314,11 @@
         "title": "tests/store/conceptStore.test.ts"
       },
       {
-        "id": "p:tests/viewer/graph.test.ts",
-        "label": "graph.test.ts",
+        "id": "p:tests/viewer/subgraph.test.ts",
+        "label": "subgraph.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/viewer/graph.test.ts"
+        "title": "tests/viewer/subgraph.test.ts"
       },
       {
         "id": "p:tests/viewer/manifest.test.ts",
@@ -1297,13 +1326,6 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/manifest.test.ts"
-      },
-      {
-        "id": "p:tests/viewer/subgraph.test.ts",
-        "label": "subgraph.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/subgraph.test.ts"
       },
       {
         "id": "c:governance-mode",
@@ -1593,13 +1615,6 @@
         "title": "src/concept/attest.ts"
       },
       {
-        "id": "p:assets/viewer.js",
-        "label": "viewer.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/viewer.js"
-      },
-      {
         "id": "p:tests/cli/quality.test.ts",
         "label": "quality.test.ts",
         "type": "file",
@@ -1633,6 +1648,13 @@
         "type": "file",
         "href": "",
         "title": "tests/concept/quality.test.ts"
+      },
+      {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
       },
       {
         "id": "c:atomic-baseline-write",
@@ -1901,6 +1923,20 @@
         "title": "tests/viewer/heroSummary.test.ts"
       },
       {
+        "id": "c:detail-title-single",
+        "label": "상세 제목 표시 규칙",
+        "type": "concept",
+        "href": "#/concept/detail-title-single",
+        "title": "detail-title-single"
+      },
+      {
+        "id": "p:tests/viewer/detailTitle.test.ts",
+        "label": "detailTitle.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/detailTitle.test.ts"
+      },
+      {
         "id": "c:feature-index-row",
         "label": "기능 목록 표시 규칙",
         "type": "concept",
@@ -1908,18 +1944,18 @@
         "title": "feature-index-row"
       },
       {
-        "id": "p:tests/viewer/listLayout.test.ts",
-        "label": "listLayout.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/listLayout.test.ts"
-      },
-      {
         "id": "p:tests/viewer/featureRoute.test.ts",
         "label": "featureRoute.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/viewer/featureRoute.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/listLayout.test.ts",
+        "label": "listLayout.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/listLayout.test.ts"
       },
       {
         "id": "c:group-navbar",
@@ -1962,6 +1998,13 @@
         "type": "file",
         "href": "",
         "title": "src/viewer/graph.ts"
+      },
+      {
+        "id": "p:tests/viewer/highlight.test.ts",
+        "label": "highlight.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/highlight.test.ts"
       },
       {
         "id": "c:list-item-readout",
@@ -2040,11 +2083,6 @@
       },
       {
         "source": "c:audit-gap-detection",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
         "target": "p:tests/mapping/scan.test.ts",
         "kind": "concept-file"
       },
@@ -2056,6 +2094,11 @@
       {
         "source": "c:audit-gap-detection",
         "target": "p:tests/util/glob.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:audit-gap-detection",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2075,17 +2118,17 @@
       },
       {
         "source": "c:concept-code-mapping",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
         "target": "p:tests/mapping/scan.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
         "target": "p:tests/viewer/renderDisk.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2185,11 +2228,6 @@
       },
       {
         "source": "c:contract-hash",
-        "target": "p:tests/drift/hash.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
         "target": "p:tests/drift/history.test.ts",
         "kind": "concept-file"
       },
@@ -2221,6 +2259,11 @@
       {
         "source": "c:contract-hash",
         "target": "p:tests/schema/alignment.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:tests/drift/hash.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2330,11 +2373,6 @@
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
         "target": "p:tests/schema/feature.test.ts",
         "kind": "concept-file"
       },
@@ -2346,6 +2384,16 @@
       {
         "source": "c:feature-spec-bridge",
         "target": "p:tests/viewer/renderDisk.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/viewer/graph.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2380,12 +2428,12 @@
       },
       {
         "source": "c:globally-unique-slug",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:tests/store/featureStore.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:globally-unique-slug",
-        "target": "p:tests/store/featureStore.test.ts",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2395,12 +2443,12 @@
       },
       {
         "source": "c:globally-unique-slug",
-        "target": "p:tests/viewer/manifest.test.ts",
+        "target": "p:tests/viewer/subgraph.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:globally-unique-slug",
-        "target": "p:tests/viewer/subgraph.test.ts",
+        "target": "p:tests/viewer/manifest.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2515,12 +2563,12 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/schema/initConfig.test.ts",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2545,12 +2593,12 @@
       },
       {
         "source": "c:human-owns-contract",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:human-owns-contract",
-        "target": "p:tests/viewer/serve.test.ts",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2680,11 +2728,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/audit/audit.test.ts",
         "kind": "concept-file"
       },
@@ -2755,11 +2798,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/schema/alignment.test.ts",
         "kind": "concept-file"
       },
@@ -2770,17 +2808,27 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/viewer/renderDisk.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/store/conceptStore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
@@ -2910,16 +2958,6 @@
       },
       {
         "source": "c:atomic-baseline-write",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
         "target": "p:tests/store/featureStore.test.ts",
         "kind": "concept-file"
       },
@@ -2931,6 +2969,16 @@
       {
         "source": "c:atomic-baseline-write",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:tests/store/conceptStore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:atomic-baseline-write",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2980,12 +3028,12 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/version/autoSync.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:tests/version/autoSync.test.ts",
+        "target": "p:tests/viewer/renderDisk.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2995,7 +3043,7 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:tests/viewer/renderDisk.test.ts",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3105,12 +3153,12 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/version/autoSync.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/version/autoSync.test.ts",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3310,12 +3358,12 @@
       },
       {
         "source": "c:concept-inline-edit",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-inline-edit",
-        "target": "p:tests/viewer/serve.test.ts",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3344,23 +3392,43 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:detail-title-single",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-title-single",
+        "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-title-single",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-title-single",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-title-single",
+        "target": "p:tests/viewer/detailTitle.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:detail-title-single",
+        "target": "p:tests/store/conceptStore.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:feature-index-row",
         "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
         "source": "c:feature-index-row",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
         "target": "p:tests/viewer/graph.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3371,6 +3439,16 @@
       {
         "source": "c:feature-index-row",
         "target": "p:tests/viewer/featureRoute.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-index-row",
+        "target": "p:tests/viewer/listLayout.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-index-row",
+        "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {
@@ -3414,6 +3492,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:knowledge-graph-view",
+        "target": "p:tests/viewer/highlight.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:knowledge-graph-view",
+        "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:list-item-readout",
         "target": "p:assets/viewer.js",
         "kind": "concept-file"
@@ -3445,12 +3533,12 @@
       },
       {
         "source": "c:sidebar-search",
-        "target": "p:tests/viewer/listLayout.test.ts",
+        "target": "p:tests/viewer/sidebarState.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:sidebar-search",
-        "target": "p:tests/viewer/sidebarState.test.ts",
+        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {

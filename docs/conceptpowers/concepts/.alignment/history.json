@@ -1240,5 +1240,50 @@
     "at": "2026-08-24T05:34:23.239Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "6a7011cb2cf8",
+    "prevHash": "beec19120b9d",
+    "reason": "사용자 승인: 그래프를 feature 기준으로 확장 — 기능·개념·코드 3종 노드, 기능→개념→코드 연결",
+    "at": "2026-08-24T08:21:17.752Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "18170ade4681",
+    "prevHash": "cc3922693b61",
+    "reason": "사용자 승인: 기능이 지식 그래프의 점으로도 나타나도록 규칙 완화 (전용 화면 금지는 유지)",
+    "at": "2026-08-24T08:21:23.979Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "606b7250dfb4",
+    "prevHash": "cd3d76946053",
+    "reason": "사용자 승인: 그래프가 기능 기록의 연결을 뿌리로 그리도록 interaction 문장 정합화",
+    "at": "2026-08-24T08:25:43.444Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "5d556a710943",
+    "prevHash": "6a7011cb2cf8",
+    "reason": "사용자 요청: 기능 점 중앙·강조 색, 진입 시 쪽맞춤, 점 클릭 시 이웃 하이라이트와 바로가기 단추",
+    "at": "2026-08-24T08:41:51.918Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "c651c53e8990",
+    "prevHash": "18170ade4681",
+    "reason": "사용자 요청: 기능 줄의 이름표 클릭 시 그 기능 초점의 지식 그래프로 이동",
+    "at": "2026-08-24T08:56:27.742Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

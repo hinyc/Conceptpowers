@@ -9,7 +9,7 @@
 //    → 기능이 이미 삭제돼 그 줄이 없으면 기능 구역으로라도 데려간다 — 꼭대기에 떨구지 않는다
 //  - feature-index-row 허용 "개념 화면에서 그 개념이 속한 기능을 눌러 목록의 그 줄로 돌아오는 것"
 //    → 색인 줄 주소는 기능 묶음 아래 그 이름표를 가리킨다
-//  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고, 기능 하나만 펼쳐 보는 화면은 만들지 않는다"
+//  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 — 기능은 목록의 줄과 지식 그래프의 점으로만 나타난다"
 //    → 기능 묶음이 아닌 묶음 주소(#/group/core/…)에서는 세 번째 조각을 초점으로 삼지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';

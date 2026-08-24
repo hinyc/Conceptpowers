@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline @concept:feature-index-row
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline @concept:detail-title-single @concept:feature-index-row
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -27,10 +27,12 @@ var I18N = {
     implementationPaths: '구현 경로',
     graphTitle: '지식 그래프',
     openGraph: '지식 그래프 보기',
+    featureNode: '기능',
     conceptNode: '개념',
     fileNode: '파일',
     allConcepts: '전체 보기',
-    focusHint: '개념을 선택하면 연관 그래프만 표시됩니다.',
+    focusHint: '기능이나 개념을 선택하면 연관 그래프만 표시됩니다.',
+    goTo: '바로가기 →',
     copyPath: '경로 복사',
     copied: '복사됨',
     copyFailed: '복사 실패',
@@ -61,7 +63,6 @@ var I18N = {
     downgradedNotice:
       '내용이 바뀌어 상태가 보류(pending)로 내려갔습니다. 다음 세션에서 일관성 재검토 후 승인됩니다.',
     title: '제목',
-    eyebrow: '윗단 문구',
     definition: '정의',
     analogy: '비유',
     components: '구성요소',
@@ -105,10 +106,12 @@ var I18N = {
     implementationPaths: 'Implementation',
     graphTitle: 'Knowledge Graph',
     openGraph: 'View Knowledge Graph',
+    featureNode: 'Feature',
     conceptNode: 'Concept',
     fileNode: 'File',
     allConcepts: 'Show all',
-    focusHint: 'Pick a concept to show only its related graph.',
+    focusHint: 'Pick a feature or concept to show only its related graph.',
+    goTo: 'Open →',
     copyPath: 'Copy path',
     copied: 'Copied',
     copyFailed: 'Copy failed',
@@ -139,7 +142,6 @@ var I18N = {
     downgradedNotice:
       'Content changed, so status was lowered to pending. It will be re-approved after a consistency re-check next session.',
     title: 'Title',
-    eyebrow: 'Eyebrow',
     definition: 'Definition',
     analogy: 'Analogy',
     components: 'Components',
@@ -248,7 +250,10 @@ function actionCard(kind, title, items) {
 }
 function actionsSection(t, actions) {
   var a = actions || {};
-  var cards = [actionCard('allow', t.allow, a.allow), actionCard('restrict', t.restrict, a.restrict)];
+  var cards = [
+    actionCard('allow', t.allow, a.allow),
+    actionCard('restrict', t.restrict, a.restrict),
+  ];
   var shown = cards.filter(Boolean);
   return shown.length ? h('section', { class: 'section cols' }, shown) : null;
 }
@@ -738,8 +743,8 @@ function conceptTable(items, showGroup) {
   );
 }
 // 기능 색인 줄(feature-index-row): 전용 화면 없이 줄 하나로만 보여준다.
-// 이름표·제목은 독립 칸을 지키되(list-item-readout) 갈 곳이 없어 링크가 아니고,
-// 눌러서 나갈 수 있는 곳은 그 줄에 붙은 개념 딱지뿐이다. 코드 경로는 여기 늘어놓지 않는다.
+// 이름표·제목은 독립 칸을 지킨다(list-item-readout). 나가는 길은 둘 — 개념 딱지는 그 개념
+// 화면으로, 이름표는 그 기능에 초점을 맞춘 지식 그래프로. 코드 경로는 여기 늘어놓지 않는다.
 function featureRowId(slug) {
   return 'frow-' + slug;
 }
@@ -784,7 +789,11 @@ function featureTable(items, focusSlug, withRowId) {
               tabindex: focused ? '-1' : null,
             },
             [
-              h('td', { class: 'ctable__code' }, f.slug),
+              h(
+                'td',
+                { class: 'ctable__code' },
+                h('a', { href: '#/graph/' + encodeURIComponent(f.slug) }, f.slug)
+              ),
               h('td', { class: 'ctable__title' }, [
                 h('span', { class: 'frow__title' }, f.title || f.slug),
                 f.description ? h('span', { class: 'frow__desc' }, f.description) : null,
@@ -861,8 +870,7 @@ function featureListSection(focusSlug) {
 function indexScrollTarget(scrollTo, focusFeature) {
   if (focusFeature) {
     return (
-      document.getElementById(featureRowId(focusFeature)) ||
-      document.getElementById('g-__features')
+      document.getElementById(featureRowId(focusFeature)) || document.getElementById('g-__features')
     );
   }
   return scrollTo ? document.getElementById('g-' + scrollTo) : null;
@@ -990,6 +998,17 @@ function statusControl(slug, c) {
   );
 }
 
+// 펼쳐 본 화면의 제목 자리(detail-title-single). 제목은 이름표와 이름 하나로만 이루어지고,
+// 그 위나 옆에 부제 자리를 두지 않는다 — 옛 기록에 부제 값이 남아 있어도 되살리지 않는다.
+function conceptHero(slug, c) {
+  return h('header', { class: 'hero' }, [
+    statusBadge(c.status),
+    h('h1', null, displayName(c.title, slug)),
+    heroSummary(c.description.definition),
+    h('p', { class: 'cats' }, (c.category || []).join(' · ')),
+  ]);
+}
+
 // 읽기 모드.
 function renderConceptRead(slug) {
   var t = state.t;
@@ -1016,13 +1035,7 @@ function renderConceptRead(slug) {
       { label: group, href: '#/group/' + encodeURIComponent(group) },
       { label: displayName(c.title, slug) },
     ]),
-    h('header', { class: 'hero' }, [
-      c.eyebrow ? h('span', { class: 'hero__eyebrow' }, c.eyebrow) : null,
-      statusBadge(c.status),
-      h('h1', null, displayName(c.title, slug)),
-      heroSummary(c.description.definition),
-      h('p', { class: 'cats' }, (c.category || []).join(' · ')),
-    ]),
+    conceptHero(slug, c),
     editBar,
     // 정의는 hero(제목 아래)에서 이미 보여주므로 여기서 반복하지 않는다.
     c.description.analogy || (c.description.components || []).length || c.description.example
@@ -1118,7 +1131,6 @@ function renderConceptEdit(slug) {
   var c = state.current;
   var f = {};
   f.title = input(c.title);
-  f.eyebrow = input(c.eyebrow);
   var catBox = h(
     'div',
     { class: 'cats-pick' },
@@ -1154,7 +1166,6 @@ function renderConceptEdit(slug) {
     });
     return {
       title: f.title.value.trim(),
-      eyebrow: f.eyebrow.value.trim(),
       category: category,
       description: {
         definition: f.definition.value.trim(),
@@ -1241,7 +1252,6 @@ function renderConceptEdit(slug) {
         h('div', { class: 'edit-bar' }, [saveBtn, cancelBtn]),
         h('section', { class: 'section edit-form' }, [
           field(t.title, f.title),
-          field(t.eyebrow, f.eyebrow),
           field(t.category, catBox),
           h('h2', null, t.description),
           field(t.definition, f.definition),
@@ -1273,13 +1283,24 @@ function renderConceptEdit(slug) {
   );
 }
 
-// 선택한 개념의 1-hop 이웃만 추린다: 개념 자신 + 그 개념이 가리키는 파일.
+// 초점 이웃만 추린다(knowledge-graph-view). 이름표 하나로 기능·개념 어느 쪽이든 찾는다.
+// 기능 초점: 따르는 개념들 + 각 개념에 걸린 파일까지(기능→개념→코드).
+// 개념 초점: 걸린 파일 + 그 개념을 따르는 기능.
 function subgraphFor(data, slug) {
-  var focusId = 'c:' + slug;
+  var fid = 'f:' + slug;
+  var isFeature = data.nodes.some(function (n) {
+    return n.id === fid;
+  });
+  var focusId = isFeature ? fid : 'c:' + slug;
   var keep = {};
   keep[focusId] = true;
   data.edges.forEach(function (e) {
-    if (e.kind === 'concept-file' && e.source === focusId) keep[e.target] = true;
+    if (e.source === focusId) keep[e.target] = true;
+    if (e.kind === 'feature-concept' && e.target === focusId) keep[e.source] = true;
+  });
+  // 기능 초점이면 위에서 남은 개념들에 걸린 파일까지 이어 남긴다.
+  data.edges.forEach(function (e) {
+    if (e.kind === 'concept-file' && keep[e.source]) keep[e.target] = true;
   });
   return {
     nodes: data.nodes.filter(function (n) {
@@ -1291,14 +1312,34 @@ function subgraphFor(data, slug) {
   };
 }
 
-// 개념 선택 드롭다운: 변경 시 #/graph/<slug> 로 이동(전체 보기는 __all).
-function focusSelect(concepts, value) {
-  var t = state.t;
-  var sel = h('select', { class: 'graph-focus', 'aria-label': t.conceptNode });
-  sel.appendChild(h('option', { value: '__all' }, t.allConcepts));
-  concepts.forEach(function (c) {
-    sel.appendChild(h('option', { value: c.slug }, displayName(c.title, c.slug)));
+// 누른 점과 선으로 바로 이어진 이웃(1촌)만 모은다 — 클릭 강조에 쓴다(knowledge-graph-view
+// 불변 "점을 누르면 그 점과 바로 이어진 이웃을 함께 도드라지게 표시").
+function neighborIds(data, id) {
+  var keep = {};
+  keep[id] = true;
+  data.edges.forEach(function (e) {
+    if (e.source === id) keep[e.target] = true;
+    if (e.target === id) keep[e.source] = true;
   });
+  return keep;
+}
+
+// 초점 선택 드롭다운: 기능·개념을 묶음으로 나눠 담고, 변경 시 #/graph/<slug> 로
+// 이동한다(전체 보기는 __all). 이름표 하나로 어느 쪽이든 찾아간다(globally-unique-slug).
+function focusSelect(features, concepts, value) {
+  var t = state.t;
+  var sel = h('select', { class: 'graph-focus', 'aria-label': t.graphTitle });
+  sel.appendChild(h('option', { value: '__all' }, t.allConcepts));
+  function optgroup(label, items) {
+    if (!items.length) return;
+    var g = h('optgroup', { label: label });
+    items.forEach(function (it) {
+      g.appendChild(h('option', { value: it.slug }, displayName(it.title, it.slug)));
+    });
+    sel.appendChild(g);
+  }
+  optgroup(t.featureNode, features);
+  optgroup(t.conceptNode, concepts);
   sel.value = value;
   sel.addEventListener('change', function () {
     window.location.hash = '/graph/' + sel.value;
@@ -1307,33 +1348,44 @@ function focusSelect(concepts, value) {
 }
 
 // ---- 뷰: 지식 그래프 ----
-// focusSlug: 개념 slug면 그 이웃만, '__all'이면 전체, 없으면 첫 개념을 기본 포커스.
+// focusSlug: 기능/개념 slug면 그 이웃만, '__all'이면 전체.
+// 없으면 그래프의 뿌리인 첫 기능을 기본 포커스로 한다(기능이 없으면 첫 개념).
 function viewGraph(focusSlug) {
   var t = state.t;
   var full = state.manifest.graph || { nodes: [], edges: [] };
   var concepts = state.manifest.concepts || [];
+  var features = state.manifest.features || [];
   var isAll = focusSlug === '__all';
-  var effective = isAll ? null : focusSlug || (concepts.length ? concepts[0].slug : null);
+  var fallback = features.length ? features[0].slug : concepts.length ? concepts[0].slug : null;
+  var effective = isAll ? null : focusSlug || fallback;
   var data = effective ? subgraphFor(full, effective) : full;
   // 노드 색상 범례 — 그래프 우측 상단에 오버레이로 항상 표시
   var legend = h('div', { class: 'graph-legend' }, [
+    h('span', { class: 'lg' }, [h('i', { class: 'dot dot--feature' }), t.featureNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--concept' }), t.conceptNode]),
     h('span', { class: 'lg' }, [h('i', { class: 'dot dot--file' }), t.fileNode]),
   ]);
   var svg = h('svg', { id: 'graph', class: 'graph' });
   var zoomBox = h('span', { class: 'graph-zoom' });
+  var focusFeature = null;
+  features.forEach(function (f) {
+    if (f.slug === effective) focusFeature = f;
+  });
+  var focusTitle = focusFeature ? focusFeature.title : conceptTitle(effective);
   var crumbs = effective
     ? breadcrumbs([
         { label: t.home, href: '#/' },
         { label: t.graphTitle, href: '#/graph/__all' },
-        { label: displayName(conceptTitle(effective), effective) },
+        { label: displayName(focusTitle, effective) },
       ])
     : breadcrumbs([{ label: t.home, href: '#/' }, { label: t.graphTitle }]);
   setApp(
     h('div', { class: 'graph-shell' }, [
       h('header', { class: 'graph-bar' }, [
         crumbs,
-        concepts.length ? focusSelect(concepts, effective || '__all') : null,
+        features.length || concepts.length
+          ? focusSelect(features, concepts, effective || '__all')
+          : null,
         zoomBox,
       ]),
       svg,
@@ -1360,7 +1412,8 @@ function renderGraph(svg, data, gen, zoomBox) {
     W = dim.w,
     H = dim.h;
   var view = { x: 0, y: 0, w: W, h: H };
-  var trackMode = 'fitw'; // 'fitw'(폭맞춤) | 'fitp'(쪽맞춤) — 퍼센트 배율은 추적 없음
+  // 처음 들어오면 그래프 전체가 한 화면에 들어오게 쪽맞춤한다(knowledge-graph-view).
+  var trackMode = 'fitp'; // 'fitw'(폭맞춤) | 'fitp'(쪽맞춤) — 퍼센트 배율은 추적 없음
   var tracking = true; // 팬/스크롤하는 순간 false — 같은 옵션을 다시 선택하면 재추적
   function applyView() {
     svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
@@ -1517,7 +1570,7 @@ function renderGraph(svg, data, gen, zoomBox) {
     ].forEach(function (o) {
       zsel.appendChild(h('option', { value: o[0] }, o[1]));
     });
-    zsel.value = 'fitw';
+    zsel.value = 'fitp';
     zsel.addEventListener('change', function () {
       var v = zsel.value;
       if (v === 'fitw') {
@@ -1541,11 +1594,35 @@ function renderGraph(svg, data, gen, zoomBox) {
     return view;
   });
 
+  // 점 클릭 강조(knowledge-graph-view): 누른 점과 이웃만 도드라지고,
+  // 갈 화면이 있는 점이면 바로가기 단추가 그 점 곁에 뜬다. 같은 점을 다시 누르면 풀린다.
+  var picked = null;
+  var goBtn = buildGoButton(svg, function () {
+    return view;
+  });
+  function applyPick() {
+    var hl = picked ? neighborIds(data, picked.id) : null;
+    if (hl) svg.classList.add('graph--picked');
+    else svg.classList.remove('graph--picked');
+    groups.forEach(function (g, i) {
+      if (hl && hl[nodes[i].id]) g.classList.add('gnode--hl');
+      else g.classList.remove('gnode--hl');
+    });
+    lines.forEach(function (l, i) {
+      var e = edges[i];
+      if (hl && (e.s.id === picked.id || e.t.id === picked.id)) l.classList.add('gedge--hl');
+      else l.classList.remove('gedge--hl');
+    });
+    if (picked) goBtn.show(picked);
+    else goBtn.hide();
+  }
+
   var groups = nodes.map(function (d) {
     var g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'gnode gnode--' + d.type);
     var c = document.createElementNS(NS, 'circle');
-    c.setAttribute('r', d.type === 'file' ? 5 : 9);
+    // 기능은 그래프의 뿌리 — 가장 크게, 파일은 잎 — 가장 작게 그린다.
+    c.setAttribute('r', d.type === 'file' ? 5 : d.type === 'feature' ? 11 : 9);
     g.appendChild(c);
     var tx = document.createElementNS(NS, 'text');
     tx.setAttribute('x', 13);
@@ -1587,12 +1664,13 @@ function renderGraph(svg, data, gen, zoomBox) {
         tip.scheduleHide();
       });
     }
-    if (d.href) {
-      g.style.cursor = 'pointer';
-      g.addEventListener('click', function () {
-        if (!d.drag) window.location.hash = d.href.replace(/^#/, '');
-      });
-    }
+    // 클릭은 이동이 아니라 강조다 — 이동은 곁에 뜨는 바로가기 단추가 맡는다.
+    g.style.cursor = 'pointer';
+    g.addEventListener('click', function () {
+      if (d.drag) return;
+      picked = picked && picked.id === d.id ? null : d;
+      applyPick();
+    });
     gN.appendChild(g);
     return g;
   });
@@ -1634,8 +1712,10 @@ function renderGraph(svg, data, gen, zoomBox) {
         e.t.vy -= (dy / dd) * f;
       });
       nodes.forEach(function (d) {
-        d.vx += (W / 2 - d.x) * 0.002 * heat;
-        d.vy += (H / 2 - d.y) * 0.002 * heat;
+        // 기능 점은 그래프의 뿌리 — 화면 가운데 쪽으로 더 세게 끌어 중앙에 자리 잡는다.
+        var pull = d.type === 'feature' ? 0.01 : 0.002;
+        d.vx += (W / 2 - d.x) * pull * heat;
+        d.vy += (H / 2 - d.y) * pull * heat;
         d.vx *= DAMPING;
         d.vy *= DAMPING;
         // 속도 상한 — 한 프레임에 크게 도약해 시선을 끄는 움직임을 막는다.
@@ -1672,9 +1752,56 @@ function renderGraph(svg, data, gen, zoomBox) {
       trackMode === 'fitp' ? fitPage() : fitWidth();
     } // 팬하기 전까지 배치 추적
     tip.reposition(); // 노드가 움직이는 동안 툴팁을 따라붙인다
+    goBtn.reposition(); // 바로가기 단추도 누른 점을 따라붙인다
     requestAnimationFrame(tick);
   }
+  // 빈 배경을 누르면 강조를 푼다 — 전체가 다시 또렷해진다.
+  svg.addEventListener('click', function (ev) {
+    if (ev.target === svg) {
+      picked = null;
+      applyPick();
+    }
+  });
   if (data.nodes.length) requestAnimationFrame(tick);
+}
+
+// 바로가기 단추 빌더(knowledge-graph-view): 누른 점 곁에 그 점의 화면으로 가는 링크를 띄운다.
+// 갈 화면이 없는 점(파일)에는 띄우지 않는다. 노드 좌표(현재 뷰박스 기준)를 화면 좌표로 바꿔
+// fixed 위치에 두고, 시뮬레이션이 움직이는 동안 따라붙는다.
+function buildGoButton(svg, getView) {
+  var el = document.createElement('a');
+  el.className = 'gbtn';
+  el.style.display = 'none';
+  el.textContent = state.t.goTo;
+  (svg.parentNode || document.body).appendChild(el);
+  var active = null;
+  function reposition() {
+    if (!active) return;
+    var view = getView();
+    var r = svg.getBoundingClientRect();
+    var sx = ((active.x - view.x) / view.w) * r.width + r.left;
+    var sy = ((active.y - view.y) / view.h) * r.height + r.top;
+    el.style.left = sx + 14 + 'px';
+    el.style.top = sy + 14 + 'px';
+  }
+  return {
+    show: function (d) {
+      if (!d.href) {
+        active = null;
+        el.style.display = 'none';
+        return;
+      }
+      active = d;
+      el.setAttribute('href', d.href);
+      el.style.display = '';
+      reposition();
+    },
+    hide: function () {
+      active = null;
+      el.style.display = 'none';
+    },
+    reposition: reposition,
+  };
 }
 
 // 파일 노드 호버 툴팁 빌더: 전체 경로 표시 + 경로 복사 버튼. 노드 좌표(현재 뷰박스 기준)를

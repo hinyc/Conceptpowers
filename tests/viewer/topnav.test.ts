@@ -4,7 +4,7 @@
 // 검증 대상 규칙 ↔ 시나리오:
 //  - group-navbar 구성요소 "묶음 줄: 화면 위쪽에 항상 있는, 묶음 이름들이 나열된 한 줄"
 //    → 개념 묶음마다 버튼 하나
-//  - feature-index-row 불변 "기능은 목록의 줄로만 보여주고, 기능 하나만 펼쳐 보는 화면은 만들지 않는다"
+//  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 — 기능은 목록의 줄과 지식 그래프의 점으로만 나타난다"
 //    → 기능은 묶음 줄에도 펼침 목록에도 들어오지 않는다
 //  - group-navbar 구성요소 "현재 위치 표시: 지금 보고 있는 항목이 속한 묶음을 눈에 띄게 표시한다"
 //    → 보고 있는 항목의 묶음에 active 표시
@@ -92,9 +92,7 @@ const MANIFEST = {
     { slug: 'a-two', title: '둘째', group: 'alpha', category: [], status: 'pending' },
     { slug: 'b-one', title: 'b-one', group: 'beta', category: [], status: 'red' },
   ],
-  features: [
-    { slug: 'feat-x', title: '기능 엑스', description: '설명', concepts: ['a-one'] },
-  ],
+  features: [{ slug: 'feat-x', title: '기능 엑스', description: '설명', concepts: ['a-one'] }],
   graph: { edges: [] },
 };
 

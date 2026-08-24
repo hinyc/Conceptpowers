@@ -9,7 +9,7 @@
 //  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
 //    파생시킨다" + concept-code-mapping 허용 "코드의 표식을 훑어 지도를 만들고 보관본으로 저장하는 것"
 //    + generated-not-hand-edited 허용 "다시 만들었을 때 결과가 달라지는지 확인하는 것"
-//    → feature 작성 → concept 정의 → map → render 뒤 그래프에 3종 엣지가 모두 생긴다
+//    → feature 작성 → concept 정의 → map → render 뒤 그래프가 기능→개념→파일로 이어진다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -64,7 +64,7 @@ describe('end-to-end', () => {
     expect(blocked!.hookSpecificOutput.permissionDecision).toBe('ask');
   });
 
-  it('init → feature 작성 → concept 정의 → map → render: 그래프에 3종 엣지가 모두 생긴다', async () => {
+  it('init → feature 작성 → concept 정의 → map → render: 그래프가 기능→개념→파일로 이어진다', async () => {
     expect(await runCli(['init', '--root', root])).toBe(0);
 
     // 개념(개념→코드는 @concept 태그 + map으로 배선)
@@ -102,10 +102,15 @@ describe('end-to-end', () => {
     const manifest = JSON.parse(
       readFileSync(join(root, 'docs/conceptpowers/concepts/viewer/manifest.json'), 'utf8')
     );
-    // 그래프는 개념→파일만 그린다 — 기능은 색인 줄로만 나타난다(feature-index-row)
+    // 그래프는 기능을 기준으로 잇는다 — 기능→개념, 개념→파일(knowledge-graph-view)
     const kinds = new Set(manifest.graph.edges.map((e: { kind: string }) => e.kind));
-    expect([...kinds]).toEqual(['concept-file']);
-    expect(manifest.graph.nodes.some((n: { type: string }) => n.type === 'feature')).toBe(false);
+    expect(kinds).toEqual(new Set(['feature-concept', 'concept-file']));
+    expect(manifest.graph.nodes.some((n: { type: string }) => n.type === 'feature')).toBe(true);
+    expect(manifest.graph.edges).toContainEqual({
+      source: 'f:login',
+      target: 'c:auth-session',
+      kind: 'feature-concept',
+    });
     // 기능은 매니페스트의 색인 줄에 따르는 개념과 함께 남는다
     expect(manifest.features[0]).toMatchObject({ slug: 'login', concepts: ['auth-session'] });
     // 같은 파일(src/login.ts)은 여러 곳에서 가리켜도 파일 노드가 하나로 합쳐진다

@@ -2,8 +2,10 @@
 // tests/viewer/subgraph.test.ts
 // 초점 보기(subgraphFor)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - knowledge-graph-view 불변 "초점을 맞추면 그 개념과 이어지지 않은 점과 선은 화면에서 감춘다"
-//    → 포커스 개념과 그 개념에 걸린 코드 파일만 남긴다
+//  - knowledge-graph-view 허용 "기능이나 개념 하나에 초점을 맞춰 연관된 점과 선만 남기고 보여주는 것"
+//    → 기능에 초점: 그 기능이 따르는 개념들과 각 개념에 걸린 코드 파일까지 남긴다 (기능→개념→코드)
+//    → 개념에 초점: 그 개념에 걸린 코드 파일과 그 개념을 따르는 기능을 남긴다
+//  - knowledge-graph-view 불변 "초점을 맞추면 그 점과 이어지지 않은 점과 선은 화면에서 감춘다"
 //    → 남은 노드 양끝을 모두 가진 엣지만 보존한다 (한쪽이 감춰진 선은 남기지 않는다)
 //    → 연결이 전혀 없는 개념은 자기 노드 하나만 남는다
 //  - globally-unique-slug 불변(이름표 유일) → 초점 대상은 이름표로만 지정한다
@@ -16,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { buildGraphData } from '../../src/viewer/graph.js';
 import type { Concept } from '../../src/schema/concept.js';
+import type { Feature } from '../../src/schema/feature.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // 최상위 boot() 호출만 제거하면(SPA 진입점, 브라우저에서 index.html이 호출) DOM/네트워크 없이 평가된다.
@@ -40,7 +43,6 @@ const concept = (slug: string, codeLinks: string[] = []): Concept =>
     group: '',
     category: ['feature'],
     title: slug.toUpperCase(),
-    eyebrow: '',
     status: 'red',
     description: { definition: 'd', analogy: '', components: [], example: '' },
     purpose: { reason: 'r', benefits: [], vision: '', painPoints: [] },
@@ -50,16 +52,40 @@ const concept = (slug: string, codeLinks: string[] = []): Concept =>
     codeLinks,
   }) as Concept;
 
+const feature = (slug: string, concepts: string[]): Feature => ({
+  slug,
+  group: '',
+  title: slug.toUpperCase(),
+  description: '',
+  concepts,
+  codePaths: [],
+});
+
 describe('viewer subgraphFor', () => {
-  // a는 코드 x를 직접 가리키고 표식으로 z가 더 붙는다. b는 코드 y만 가리킨다.
-  const full = buildGraphData([concept('a', ['src/x.ts']), concept('b', ['src/y.ts'])], {
-    a: ['src/z.ts'],
+  // 기능 login은 개념 a·b를 따른다. a는 코드 x를 직접 가리키고 표식으로 z가 더 붙는다.
+  // b는 코드 y만 가리킨다. 기능 other는 개념 c만 따른다.
+  const full = buildGraphData(
+    [concept('a', ['src/x.ts']), concept('b', ['src/y.ts']), concept('c', ['src/w.ts'])],
+    { a: ['src/z.ts'] },
+    [feature('login', ['a', 'b']), feature('other', ['c'])]
+  );
+
+  it('기능에 초점: 따르는 개념들과 각 개념에 걸린 코드 파일까지 남긴다', () => {
+    const sub = subgraphFor(full, 'login');
+    const ids = new Set(sub.nodes.map((n) => n.id));
+    expect(ids).toEqual(
+      new Set(['f:login', 'c:a', 'c:b', 'p:src/x.ts', 'p:src/z.ts', 'p:src/y.ts'])
+    );
+    // 무관한 기능 other와 개념 c, 그 코드는 빠진다
+    expect(ids.has('f:other')).toBe(false);
+    expect(ids.has('c:c')).toBe(false);
+    expect(ids.has('p:src/w.ts')).toBe(false);
   });
 
-  it('포커스 개념과 그 개념에 걸린 코드 파일만 남긴다', () => {
+  it('개념에 초점: 걸린 코드 파일과 그 개념을 따르는 기능을 남긴다', () => {
     const sub = subgraphFor(full, 'a');
     const ids = new Set(sub.nodes.map((n) => n.id));
-    expect(ids).toEqual(new Set(['c:a', 'p:src/x.ts', 'p:src/z.ts']));
+    expect(ids).toEqual(new Set(['c:a', 'p:src/x.ts', 'p:src/z.ts', 'f:login']));
     // 무관한 개념 b와 그 코드는 빠진다
     expect(ids.has('c:b')).toBe(false);
     expect(ids.has('p:src/y.ts')).toBe(false);
@@ -67,12 +93,13 @@ describe('viewer subgraphFor', () => {
 
   it('남은 노드 양끝을 모두 가진 엣지만 보존한다', () => {
     const sub = subgraphFor(full, 'a');
-    expect(sub.edges.length).toBe(2);
+    // c:a의 파일 2개 + login→a. login→b는 b가 감춰졌으므로 빠진다.
+    expect(sub.edges.length).toBe(3);
     for (const e of sub.edges) {
-      expect(e.kind).toBe('concept-file');
       expect(sub.nodes.some((n) => n.id === e.source)).toBe(true);
       expect(sub.nodes.some((n) => n.id === e.target)).toBe(true);
     }
+    expect(sub.edges.some((e) => e.source === 'f:login' && e.target === 'c:b')).toBe(false);
   });
 
   it('연결이 전혀 없는 개념은 자기 노드 하나만 남는다', () => {

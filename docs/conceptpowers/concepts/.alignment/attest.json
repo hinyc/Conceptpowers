@@ -54,12 +54,15 @@
     ]
   },
   "knowledge-graph-view": {
-    "hash": "beec19120b9d",
+    "hash": "5d556a710943",
     "result": "pass",
-    "at": "2026-08-24T05:35:01.153Z",
+    "at": "2026-08-24T08:42:01.919Z",
     "compared": [
+      "feature-index-row",
+      "feature-spec-bridge",
       "concept-code-mapping",
-      "feature-index-row"
+      "copy-code-path",
+      "list-item-readout"
     ]
   },
   "copy-code-path": {
@@ -107,12 +110,13 @@
     ]
   },
   "feature-spec-bridge": {
-    "hash": "cd3d76946053",
+    "hash": "606b7250dfb4",
     "result": "pass",
-    "at": "2026-08-24T05:34:31.922Z",
+    "at": "2026-08-24T08:25:55.225Z",
     "compared": [
-      "concept-code-mapping",
+      "knowledge-graph-view",
       "feature-index-row",
+      "concept-code-mapping",
       "globally-unique-slug"
     ]
   },
@@ -260,13 +264,29 @@
     ]
   },
   "feature-index-row": {
-    "hash": "cc3922693b61",
+    "hash": "c651c53e8990",
     "result": "pass",
-    "at": "2026-08-24T05:35:00.988Z",
+    "at": "2026-08-24T08:56:27.814Z",
     "compared": [
+      "knowledge-graph-view",
       "feature-spec-bridge",
       "list-item-readout",
       "home-search"
+    ]
+  },
+  "detail-title-single": {
+    "hash": "1b3de3fe7f2a",
+    "result": "pass",
+    "at": "2026-08-24T08:21:30.271Z",
+    "compared": [
+      "detail-summary-outline",
+      "list-item-readout",
+      "concept-inline-edit",
+      "contract-hash",
+      "globally-unique-slug",
+      "feature-index-row",
+      "plugin-version-sync",
+      "generated-not-hand-edited"
     ]
   }
 }

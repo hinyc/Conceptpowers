@@ -1,11 +1,12 @@
 // @concept:knowledge-graph-view
 // src/viewer/graph.ts
-// concept · 구현 경로(file)의 관계를 지식 그래프 데이터로 표현한다.
-// 기능은 이 그림에 점으로 들어오지 않는다 — 목록의 색인 줄로만 나타난다(feature-index-row).
+// 기능 · concept · 구현 경로(file)의 관계를 지식 그래프 데이터로 표현한다.
+// 그래프는 기능을 기준으로 잇는다 — 기능에서 개념으로, 개념에서 코드 파일로(knowledge-graph-view).
 // 렌더는 클라이언트(assets/viewer.js)가 담당하고, 여기서는 순수 데이터만 만든다.
 import type { Concept } from '../schema/concept.js';
+import type { Feature } from '../schema/feature.js';
 
-export type NodeType = 'concept' | 'file';
+export type NodeType = 'feature' | 'concept' | 'file';
 
 export interface GraphNode {
   id: string;
@@ -18,7 +19,7 @@ export interface GraphNode {
 export interface GraphEdge {
   source: string;
   target: string;
-  kind: 'concept-file';
+  kind: 'feature-concept' | 'concept-file';
 }
 
 export interface GraphData {
@@ -26,17 +27,22 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
-// 노드 클릭 시 이동할 SPA 해시 라우트. 파일 노드는 이동 대상이 없다.
+// 노드 클릭 시 이동할 SPA 해시 라우트. 기능 주소는 색인 줄로 돌려보내진다(feature-index-row).
+// 파일 노드는 이동 대상이 없다.
 const conceptHref = (c: Concept) => `#/concept/${c.slug}`;
+const featureHref = (f: Feature) => `#/feature/${f.slug}`;
 const baseName = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 const own = (o: Record<string, string[]>, k: string) =>
   Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 
 // codeLinksBySlug: @concept 매핑 캐시(mapping.json) 등 개념→코드 경로의 외부 출처.
 // 개념 자신의 codeLinks와 합쳐 "개념→파일" 연결을 만든다(같은 경로는 하나의 파일 노드를 공유).
+// features: 기능 기록(feature-spec-bridge)이 적은 "기능→개념" 연결의 단일 원본.
+// 기능의 codePaths는 선이 되지 않는다 — 코드는 개념을 거쳐 이어진다.
 export function buildGraphData(
   concepts: Concept[],
-  codeLinksBySlug: Record<string, string[]> = {}
+  codeLinksBySlug: Record<string, string[]> = {},
+  features: Feature[] = []
 ): GraphData {
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
@@ -46,6 +52,21 @@ export function buildGraphData(
     seen.add(n.id);
     nodes.push(n);
   };
+
+  const defined = new Set(concepts.map((c) => c.slug));
+  for (const f of features) {
+    add({
+      id: `f:${f.slug}`,
+      label: f.title,
+      type: 'feature',
+      href: featureHref(f),
+      title: f.slug,
+    });
+    // 갈 곳이 없는(정의되지 않은) 개념 참조는 선을 만들지 않는다.
+    for (const slug of f.concepts.filter((s) => defined.has(s))) {
+      edges.push({ source: `f:${f.slug}`, target: `c:${slug}`, kind: 'feature-concept' });
+    }
+  }
 
   for (const c of concepts) {
     add({
