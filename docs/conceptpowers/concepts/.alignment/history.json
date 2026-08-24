@@ -1285,5 +1285,32 @@
     "at": "2026-08-24T08:56:27.742Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "606b7250dfb4",
+    "prevHash": "606b7250dfb4",
+    "reason": "사용자 승인: 그래프가 기능 기록의 연결을 뿌리로 그리도록 interaction 문장 정합화",
+    "at": "2026-08-24T08:58:21.324Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "c651c53e8990",
+    "prevHash": "c651c53e8990",
+    "reason": "사용자 요청: 기능 줄의 이름표 클릭 시 그 기능 초점의 지식 그래프로 이동",
+    "at": "2026-08-24T08:58:21.324Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "5d556a710943",
+    "prevHash": "5d556a710943",
+    "reason": "사용자 요청: 기능 점 중앙·강조 색, 진입 시 쪽맞춤, 점 클릭 시 이웃 하이라이트와 바로가기 단추",
+    "at": "2026-08-24T08:58:21.324Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
