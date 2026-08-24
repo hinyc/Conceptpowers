@@ -67,7 +67,16 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: pass 기록이 저장된다', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'cli-target', '--root', root],
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'pass',
+        '--compared',
+        'cli-target',
+        '--root',
+        root,
+      ],
       out
     );
     expect(code).toBe(0);
@@ -78,7 +87,16 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: result가 pass|conflict 외면 exit 1', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'yes', '--compared', 'cli-target', '--root', root],
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'yes',
+        '--compared',
+        'cli-target',
+        '--root',
+        root,
+      ],
       out
     );
     expect(code).toBe(1);
@@ -97,7 +115,16 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: --compared에 미존재 slug가 있으면 exit 1', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'ghost-x', '--root', root],
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'pass',
+        '--compared',
+        'ghost-x',
+        '--root',
+        root,
+      ],
       out
     );
     expect(code).toBe(1);
@@ -107,8 +134,18 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: compared/note가 증빙 로그에 기록된다', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'pass',
-       '--compared', 'cli-target', '--note', '충돌 없음', '--root', root],
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'pass',
+        '--compared',
+        'cli-target',
+        '--note',
+        '충돌 없음',
+        '--root',
+        root,
+      ],
       out
     );
     expect(code).toBe(0);
@@ -121,7 +158,16 @@ describe('cli: quality / attest-consistency', () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     // 기존 증빙을 먼저 남겨 "덮어쓰기로 과거 증빙이 사라지지 않는지" 검증한다.
     const okCode = await runCli(
-      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'cli-target', '--root', root],
+      [
+        'attest-consistency',
+        'cli-target',
+        '--result',
+        'pass',
+        '--compared',
+        'cli-target',
+        '--root',
+        root,
+      ],
       out
     );
     expect(okCode).toBe(0);

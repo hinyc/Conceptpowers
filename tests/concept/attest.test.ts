@@ -109,9 +109,7 @@ describe('attest', () => {
       actions: {},
       principle: { immutableRules: ['관리자는 하드삭제되지 않는다'] },
     });
-    await expect(
-      recordAttest(root, b, 'pass', { note: 'x'.repeat(1001) })
-    ).rejects.toThrow();
+    await expect(recordAttest(root, b, 'pass', { note: 'x'.repeat(1001) })).rejects.toThrow();
 
     // 실패한 기록 시도가 기존 로그를 훼손하지 않아야 한다 (덮어쓰기 금지).
     const log = await readAttestLog(root);

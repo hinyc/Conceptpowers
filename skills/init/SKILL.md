@@ -25,7 +25,7 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
    - **light**: 커밋을 멈추지 않고 경고만 모아 보고합니다. 소규모·단기·실험 프로젝트의
      도입 장벽을 낮춥니다. 나중에 standard/strict로 올릴 수 있습니다(init.json의
      `enforcement`를 사용자가 직접 수정).
-   Pass the choice as `--enforcement <strict|standard|light>`.
+     Pass the choice as `--enforcement <strict|standard|light>`.
 3. Confirm the output language with the user and pass it as `--lang` (`ko` or `en`, default `ko`).
    This sets `locale` in `init.json`; the agent then produces concept content, architecture/infra
    docs, and user-facing messages in that language.

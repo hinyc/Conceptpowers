@@ -68,9 +68,9 @@ describe('buildGraphData', () => {
   it('기능에서 파일로 바로 가는 선은 만들지 않는다', () => {
     const c = { ...concept('auth'), codeLinks: ['src/login.ts'] } as Concept;
     const g = buildGraphData([c], {}, [feature('login', ['auth'], ['src/login.ts'])]);
-    expect(
-      g.edges.every((e) => e.kind === 'feature-concept' || e.kind === 'concept-file')
-    ).toBe(true);
+    expect(g.edges.every((e) => e.kind === 'feature-concept' || e.kind === 'concept-file')).toBe(
+      true
+    );
     expect(g.edges.some((e) => e.source === 'f:login' && e.target === 'p:src/login.ts')).toBe(
       false
     );

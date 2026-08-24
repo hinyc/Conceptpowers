@@ -13,11 +13,10 @@ const MAX_BUFFER = 64 * 1024 * 1024;
 export async function listTrackedFiles(root: string): Promise<string[]> {
   // core.quotePath=false + -z: git이 비-ASCII 경로(예: src/한글.ts)를 따옴표로
   // 감싸 사람이 읽기 좋게 바꾸지 않고 NUL로 구분된 원본 그대로 내보내게 한다.
-  const { stdout } = await execFileAsync(
-    'git',
-    ['-c', 'core.quotePath=false', 'ls-files', '-z'],
-    { cwd: root, maxBuffer: MAX_BUFFER }
-  );
+  const { stdout } = await execFileAsync('git', ['-c', 'core.quotePath=false', 'ls-files', '-z'], {
+    cwd: root,
+    maxBuffer: MAX_BUFFER,
+  });
   return stdout
     .split('\0')
     .map((l) => l.trim())

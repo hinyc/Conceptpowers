@@ -57,11 +57,9 @@ const feature = (slug: string, concepts: string[]): Feature => ({
 
 describe('viewer neighborIds', () => {
   // login→a→x.ts, login→b→y.ts. a를 누르면 login·a·x.ts만 강조, y.ts와 b는 빠진다.
-  const full = buildGraphData(
-    [concept('a', ['src/x.ts']), concept('b', ['src/y.ts'])],
-    {},
-    [feature('login', ['a', 'b'])]
-  );
+  const full = buildGraphData([concept('a', ['src/x.ts']), concept('b', ['src/y.ts'])], {}, [
+    feature('login', ['a', 'b']),
+  ]);
 
   it('누른 점 자신과 바로 이어진 이웃만 담는다 (방향 무관)', () => {
     const hl = neighborIds(full, 'c:a');
