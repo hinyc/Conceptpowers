@@ -41,6 +41,7 @@ import { writeFeature } from '../../src/store/featureStore.js';
 import { writeLock } from '../../src/drift/lock.js';
 import { contractHash } from '../../src/drift/hash.js';
 import { appendHistory } from '../../src/drift/history.js';
+import { recordTestReview } from '../../src/concept/testReview.js';
 import { parseConcept } from '../../src/schema/concept.js';
 import { recordAttest } from '../../src/concept/attest.js';
 
@@ -270,6 +271,11 @@ describe('decidePreToolUse', () => {
       actions: {},
       principle: {},
     } as any);
+    // 이 시나리오가 보려는 것은 drift 게이트 하나다. 개념에 딸린 검사가 없으므로
+    // concept-test-follow가 따로 붙잡는데, 그 사실을 기록해 두 게이트를 분리한다.
+    await recordTestReview(root, (await readConcept(root, 'auth-token'))!, 'no-tests', {
+      note: 'drift 게이트 단독 시나리오 — 이 픽스처 개념에는 딸린 검사가 없다',
+    });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -309,6 +315,11 @@ describe('decidePreToolUse', () => {
       actions: {},
       principle: {},
     } as any);
+    // drift 게이트의 '따라옴 = 하나라도'만 보려는 시나리오다 — 딸린 검사(tests/login.test.ts)가
+    // 이번 스테이지에 없어 concept-test-follow가 걸리므로, 검토 결과를 기록해 분리한다.
+    await recordTestReview(root, (await readConcept(root, 'auth-token'))!, 'no-impact', {
+      note: 'drift 게이트 단독 시나리오 — 검사 변경이 필요 없는 픽스처',
+    });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },

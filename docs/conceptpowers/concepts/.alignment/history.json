@@ -880,5 +880,50 @@
     "at": "2026-08-21T03:59:22.174Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "cd3d76946053",
+    "prevHash": "5a18d6b74907",
+    "reason": "뷰어에서 기능을 색인 줄로 강등: 기능 기록은 지식 그래프 재료가 아니며, 개념→코드 지도의 원본은 코드 표식임을 반영",
+    "at": "2026-08-24T00:22:42.529Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "beec19120b9d",
+    "prevHash": "68ba61c7b2fe",
+    "reason": "그래프에서 기능 점을 제거해 점을 개념·코드 파일 두 종류로 축소",
+    "at": "2026-08-24T00:22:42.604Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "home-search",
+    "hash": "76ecb259cb3b",
+    "prevHash": "8092dbaba7d9",
+    "reason": "검색 결과의 기능 구역을 목록과 같은 색인 줄로 통일, 파일에 걸린 기능 표시 제거",
+    "at": "2026-08-24T00:22:42.676Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "sidebar-search",
+    "hash": "9255705e4426",
+    "prevHash": "512b250b66b0",
+    "reason": "곁 목록에서 기능 항목이 사라져 걸러내기 대상이 개념만 남음",
+    "at": "2026-08-24T00:22:42.740Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "9a0b83e53882",
+    "prevHash": "463c65a266b4",
+    "reason": "개념 수정 시 관련 테스트 검토 강제 + 테스트의 개념 범위 이탈 금지를 커밋 게이트로 승격 (사용자 승인)",
+    "at": "2026-08-24T00:24:16.781Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

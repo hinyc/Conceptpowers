@@ -25,6 +25,7 @@ import { setPendingConflict, clearPendingConflict } from './concept/pendingConfl
 import { readConcept, editConceptContent } from './store/conceptStore.js';
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
+import { recordTestReview } from './concept/testReview.js';
 import { listReferenceFiles } from './init/reference.js';
 import { checkReferencePaths } from './init/referencePaths.js';
 import { addReferencePath } from './init/addReferencePath.js';
@@ -363,6 +364,36 @@ export async function runCli(
         compared,
         note: o.note,
       });
+      out(JSON.stringify({ ok: true, slug, ...entry }));
+    });
+
+  program
+    .command('attest-test-review')
+    .description('개념 변경에 딸린 검사를 어떻게 처리했는지 계약 해시에 묶어 기록 (검토 기록)')
+    .argument('<slug>')
+    .requiredOption('--result <result>', 'updated|no-impact|no-tests')
+    .option('--tests <paths>', '검토·수정한 검사 파일 경로 목록 (쉼표 구분)')
+    .option('--note <text>', '판단 요약 (no-impact·no-tests는 사유를 반드시 적는다)')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (slug, o) => {
+      const results = ['updated', 'no-impact', 'no-tests'];
+      if (!results.includes(o.result)) {
+        throw new Error(`--result must be ${results.join('|')}, got: ${o.result}`);
+      }
+      const concept = await readConcept(o.root, slug);
+      if (!concept) throw new Error(`Concept not found: ${slug}`);
+      const tests = ((o.tests as string) ?? '')
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      if (o.result === 'updated' && tests.length === 0) {
+        throw new Error('--tests must list at least one test file when --result updated');
+      }
+      // 검사를 고치지 않기로 한 판단은 근거 없이 남길 수 없다 — 기록의 목적이 사유 보존이다.
+      if (o.result !== 'updated' && !o.note) {
+        throw new Error(`--note is required when --result ${o.result}`);
+      }
+      const entry = await recordTestReview(o.root, concept, o.result, { tests, note: o.note });
       out(JSON.stringify({ ok: true, slug, ...entry }));
     });
 

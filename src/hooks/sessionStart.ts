@@ -55,7 +55,9 @@ export async function buildSessionStartOutput(
   const conceptTestsLine =
     config?.conceptDrivenTests !== false
       ? [
-          '- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag → manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules — each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept).',
+          '- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag → manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules — each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:define-concept). Every test file must carry an @concept tag naming a real concept; `@concept:none` is not accepted for tests (commit gate: concept-test-scope).',
+          '- When a concept changes, its tests MUST be reviewed in the same commit: update them to match the new rules and stage them, or — when the change genuinely needs no test change, or the concept has no tests yet — get the user\'s confirmation and record it: attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>". The record is bound to the concept hash, so editing the concept again invalidates it (commit gate: concept-test-follow).',
+          '- Test changes must stay inside the concept: never assert behavior the concept does not state, and never weaken/delete a test just to make code pass. If the check you need lies outside the concept, stop and ask the user to change the concept first (update-baseline) — the test follows the concept, never the other way around.',
         ]
       : [];
   // 커밋 게이트 강도(governance-mode): strict/light일 때만 행동 지침 한 줄을 주입한다.
@@ -64,6 +66,7 @@ export async function buildSessionStartOutput(
     enforcement === 'strict'
       ? [
           '- Commit gate enforcement: strict — governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval, stage related code together, run check-consistency + attest) or report to the user. Only the user may change the enforcement level.',
+          '- Under strict, the two test rules above are DENY-level: a concept change with no test follow-up and no test-review record is blocked, and so is a staged test file with no real @concept tag. Resolve them by reviewing the tests (or recording the reason with attest-test-review) — never by loosening testGlobs, turning conceptDrivenTests off, or dropping the tests.',
         ]
       : enforcement === 'light'
         ? [

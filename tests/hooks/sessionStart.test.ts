@@ -159,6 +159,50 @@ describe('buildSessionStartOutput', () => {
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('Test code is governed too');
   });
+  // 규칙 검증: "개념이 바뀌면 그 개념에 딸린 검사를 반드시 다시 본다" (immutable) —
+  // 스위치가 켜져 있으면 검토 의무와 기록 방법이 작업 시작 안내에 함께 들어간다.
+  it('스위치가 켜져 있으면 개념 변경 시 검사 검토 의무와 기록 방법을 안내한다', async () => {
+    await scaffoldInit(root, {});
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).toContain('When a concept changes, its tests MUST be reviewed');
+    expect(ctx).toContain('attest-test-review');
+  });
+  // 규칙 검증: "검사는 대상 개념의 규칙 범위 안에 머문다 — 범위 밖을 검사해야 한다면 개념을 먼저 고친다"
+  it('스위치가 켜져 있으면 검사가 개념 범위를 벗어나지 않아야 함을 안내한다', async () => {
+    await scaffoldInit(root, {});
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).toContain('Test changes must stay inside the concept');
+  });
+  // 규칙 검증: "검사 파일에 '해당 개념 없음' 표시를 다는 것" 금지 (restrict)
+  it('스위치가 켜져 있으면 검사 파일에 @concept:none을 쓸 수 없음을 안내한다', async () => {
+    await scaffoldInit(root, {});
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).toContain('`@concept:none` is not accepted for tests');
+  });
+  // 규칙 검증: 스위치를 끄면 세 줄 전부가 사라진다 (concept-driven-tests 정의: 스위치로 끌 수 있다)
+  it('conceptDrivenTests: false면 검사 검토·범위 안내도 사라진다', async () => {
+    await scaffoldInit(root, {});
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    writeFileSync(initPath, JSON.stringify({ ...cfg, conceptDrivenTests: false }, null, 2));
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).not.toContain('attest-test-review');
+    expect(ctx).not.toContain('Test changes must stay inside the concept');
+  });
+  // 규칙 검증: governance-mode "엄격은 차단한다" + concept-driven-tests 허용 "붙잡는 방식은 문지기 강도가 정한다"
+  it('strict면 두 검사 규칙이 차단 수준임을 안내한다', async () => {
+    await scaffoldInit(root, {});
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    writeFileSync(initPath, JSON.stringify({ ...cfg, enforcement: 'strict' }, null, 2));
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).toContain('the two test rules above are DENY-level');
+  });
   it('ko면 Output language 디렉티브가 Korean이다 (기본)', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, '/plugin');

@@ -1,4 +1,4 @@
-// @concept:governance-mode
+// @concept:governance-mode @concept:concept-driven-tests
 // src/hooks/preToolUse.ts
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -9,6 +9,8 @@ import { checkReferenceGate } from './gates/referenceGate.js';
 import { checkUnknownTags } from './gates/unknownTagsGate.js';
 import { checkConceptless } from './gates/conceptlessGate.js';
 import { checkDrift } from './gates/driftGate.js';
+import { checkTestFollow } from './gates/testFollowGate.js';
+import { checkTestScope } from './gates/testScopeGate.js';
 import { checkQualityFloor } from './gates/qualityGate.js';
 import { checkAttest } from './gates/attestGate.js';
 import { checkConflictedPending } from './gates/conflictedPendingGate.js';
@@ -57,6 +59,8 @@ const GOVERNANCE_GATES: { name: string; check: GateCheck }[] = [
   { name: 'unknown-tags', check: checkUnknownTags },
   { name: 'conceptless-code', check: checkConceptless },
   { name: 'concept-drift', check: checkDrift },
+  { name: 'concept-test-follow', check: checkTestFollow },
+  { name: 'concept-test-scope', check: checkTestScope },
   { name: 'quality-floor', check: checkQualityFloor },
   { name: 'consistency-attest', check: checkAttest },
   { name: 'conflicted-pending', check: checkConflictedPending },
@@ -75,7 +79,9 @@ const ALLOW_DEFAULT: PreToolOutput = {
 };
 
 function failedGatesNote(failedGates: string[]): string {
-  return failedGates.length > 0 ? ` — 검사 ${failedGates.length}종 실행 실패(${failedGates.join(', ')})` : '';
+  return failedGates.length > 0
+    ? ` — 검사 ${failedGates.length}종 실행 실패(${failedGates.join(', ')})`
+    : '';
 }
 
 // 실패한 게이트가 있어도(strict/light) 조용히 삼키지 않고 additionalContext에 덧붙인다.
@@ -127,7 +133,10 @@ async function runAllGates(
 function buildWarningsNote(findings: GateFinding[], failedGates: string[]): string {
   if (findings.length === 0 && failedGates.length === 0) return '';
   const detail = findings.map((f) => f.reason).join(' / ');
-  const countNote = findings.length > 0 ? ` [GOVERNANCE WARNINGS] light enforcement — this commit proceeds with ${findings.length} additional governance warning(s) alongside the reference-document question: ${detail}` : '';
+  const countNote =
+    findings.length > 0
+      ? ` [GOVERNANCE WARNINGS] light enforcement — this commit proceeds with ${findings.length} additional governance warning(s) alongside the reference-document question: ${detail}`
+      : '';
   return countNote + failedGatesNote(failedGates);
 }
 
@@ -137,7 +146,9 @@ function denyOutput(
 ): PreToolOutput {
   const ref = opts?.ref ?? null;
   const failedGates = opts?.failedGates ?? [];
-  const allReasons = ref ? [ref.reason, ...findings.map((f) => f.reason)] : findings.map((f) => f.reason);
+  const allReasons = ref
+    ? [ref.reason, ...findings.map((f) => f.reason)]
+    : findings.map((f) => f.reason);
   const detail = allReasons.join(' / ');
   const refNote = ref
     ? ' (기밀 확인 대상 reference 문서도 포함 — 커밋이 어차피 진행되지 않으므로 따로 묻지 않고 함께 차단합니다)'

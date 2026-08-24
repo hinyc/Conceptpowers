@@ -22,5 +22,6 @@ export function cpPaths(root: string) {
     alignmentLastCommit: join(base, 'concepts', '.alignment', 'last-commit'),
     pendingConflicts: join(base, 'concepts', '.alignment', 'pending-conflicts.json'),
     attestFile: join(base, 'concepts', '.alignment', 'attest.json'),
+    testReviewFile: join(base, 'concepts', '.alignment', 'test-review.json'),
   } as const;
 }

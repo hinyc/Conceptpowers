@@ -46,6 +46,14 @@ User-authored concepts do NOT come here — they go pending → green via `conce
      user's confirmation, settle it back to `green` (set `status: green` in the JSON + `render`,
      or the viewer's status control). The approve flow above is red-only — it does not apply to pending.
    - If the change affects existing code (@concept links), report the impact scope to the user.
+   - **Review the tests for that concept in the same commit** (conceptDrivenTests). Re-derive the
+     scenario checklist from the new rules, update the tests that verified the old ones, and stage
+     them alongside. When they genuinely need no change — or the concept has no tests yet — get the
+     user's confirmation and record the reason instead:
+     `node "<cli>" attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>" --root .`
+     The record is hash-bound and dies with the next concept edit. Keep every test inside the
+     concept's rules: if the concept now needs a check it does not state, that is another concept
+     edit for the user to approve — not a wider test.
 3. **When modifying architecture/infra/feature spec**: review with the user whether the change should
    also change a concept (the high-level basis constrains lower-level concepts, D9).
 4. Report a summary, and **remind the user an edited concept is now `pending`** until it settles

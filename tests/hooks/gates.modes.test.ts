@@ -68,10 +68,7 @@ describe('strict 모드 (차단)', () => {
   });
   it('기밀 reference 문서는 strict여도 차단이 아니라 ask다 [규칙: 기밀 확인은 항상 묻는다]', async () => {
     setEnforcement(root, 'strict');
-    const r = await decidePreToolUse(
-      root,
-      commitEvent(['docs/conceptpowers/reference/계약서.md'])
-    );
+    const r = await decidePreToolUse(root, commitEvent(['docs/conceptpowers/reference/계약서.md']));
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('reference');
   });
@@ -118,9 +115,8 @@ describe('strict 모드 (차단)', () => {
       },
     }));
     try {
-      const { decidePreToolUse: decideWithThrowingGate } = await import(
-        '../../src/hooks/preToolUse.js'
-      );
+      const { decidePreToolUse: decideWithThrowingGate } =
+        await import('../../src/hooks/preToolUse.js');
       const r = await decideWithThrowingGate(
         root,
         commitEvent(['docs/conceptpowers/reference/계약서.md'])
@@ -149,10 +145,7 @@ describe('light 모드 (경고만)', () => {
   });
   it('기밀 reference 문서는 light여도 ask다 [규칙: 기밀 확인은 항상 묻는다]', async () => {
     setEnforcement(root, 'light');
-    const r = await decidePreToolUse(
-      root,
-      commitEvent(['docs/conceptpowers/reference/계약서.md'])
-    );
+    const r = await decidePreToolUse(root, commitEvent(['docs/conceptpowers/reference/계약서.md']));
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
   });
   it('경고가 없으면 기본 allow 컨텍스트를 반환한다', async () => {
@@ -189,5 +182,55 @@ describe('enforcement 폴백', () => {
     writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
     const r = await decidePreToolUse(root, commitEvent(['src/foo.ts']));
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+  });
+});
+
+// concept-driven-tests 허용 "붙잡는 방식(차단·질문·경고)은 문지기 강도가 정한다" —
+// 같은 검사 항목이 강도에 따라 차단/질문/경고로만 달라진다(governance-mode 불변과 같은 축).
+describe('검사 관련 문지기의 강도별 대응', () => {
+  // 일반 코드에는 허용되는 '해당 개념 없음' 표시 — 검사 파일에서는 범위 문지기만 걸린다
+  // (개념 없는 코드 문지기는 이 표시를 인정하므로 새 문지기의 대응만 남는다).
+  const noConceptTest = () => {
+    mkdirSync(join(root, 'tests'), { recursive: true });
+    writeFileSync(
+      join(root, 'tests/pay.test.ts'),
+      '// @concept:none\nimport { it } from "vitest"\n'
+    );
+  };
+
+  it("strict면 '해당 개념 없음' 검사 파일이 커밋을 막는다 [규칙: 엄격은 차단한다]", async () => {
+    setEnforcement(root, 'strict');
+    noConceptTest();
+    const r = await decidePreToolUse(root, commitEvent(['tests/pay.test.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('TEST SCOPE');
+  });
+
+  it('standard면 같은 검사 항목이 차단이 아니라 질문이다 [규칙: 지키는 대상은 같고 대응만 다르다]', async () => {
+    setEnforcement(root, 'standard');
+    noConceptTest();
+    const r = await decidePreToolUse(root, commitEvent(['tests/pay.test.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('TEST SCOPE');
+  });
+
+  it('light면 막지 않고 경고로만 알린다 [규칙: 가벼움은 경고로 모아 알린다]', async () => {
+    setEnforcement(root, 'light');
+    noConceptTest();
+    const r = await decidePreToolUse(root, commitEvent(['tests/pay.test.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('TEST SCOPE');
+  });
+
+  it('이름표가 있는 검사 파일은 strict에서도 통과한다', async () => {
+    setEnforcement(root, 'strict');
+    mkdirSync(join(root, 'tests'), { recursive: true });
+    writeFileSync(
+      join(root, 'tests/pay.test.ts'),
+      '// @concept:none-such\nimport { it } from "vitest"\n'
+    );
+    const r = await decidePreToolUse(root, commitEvent(['tests/pay.test.ts']));
+    // 미정의 개념을 가리키는 것은 unknown-tags가 잡는 별개 문제다 — 범위 문지기는 걸리지 않는다.
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('TEST SCOPE');
   });
 });

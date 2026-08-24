@@ -19,6 +19,21 @@ export const InitConfigSchema = z.object({
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
   conceptDrivenTests: z.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: z
+    .array(z.string())
+    .default([
+      'tests/**',
+      'test/**',
+      '__tests__/**',
+      '**/*.test.*',
+      '**/*.spec.*',
+      '**/*_test.*',
+      '**/*_spec.*',
+      '**/test_*.py',
+    ]),
   enforcement: EnforcementSchema.default('standard'),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,

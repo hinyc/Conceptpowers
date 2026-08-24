@@ -75,7 +75,34 @@ When the purpose of the change is writing or modifying **tests** and `init.json`
   maps to at least one test scenario where feasible, and each scenario names the rule it
   verifies.
 - Concept lookup reuses step 1 as-is (tag → index → targeted read) — no extra scanning.
+- **Every test file names its concept.** Add `@concept:<slug>` to the leading comment block. The
+  reserved `@concept:none` marker is valid for ordinary code but NOT for tests — a test that names
+  no concept has no stated basis for what it asserts (commit gate: `concept-test-scope`).
+- **Stay inside the concept.** Each scenario must trace to a rule in `actions.allow` /
+  `actions.restrict` / `principle.immutableRules`. Asserting behavior the concept does not state
+  is the same class of error as violating it: the test silently becomes a second, un-owned
+  contract. If the check you need lies outside the concept, STOP and tell the user the concept
+  must be extended first (`conceptpowers:update-baseline`) — never widen the test instead.
+  The reverse is equally prohibited: never weaken or delete a test to make code pass.
 - If `conceptDrivenTests` is explicitly `false`, skip this section entirely.
+
+### When the concept itself changed (test-follow duty)
+
+A concept edit puts every test derived from it in question — this is the point of deriving
+scenarios from rules. In the SAME commit as the concept change:
+
+1. Locate the tests for that concept (mapping cache / `@concept` tag → test files).
+2. Re-derive the scenario checklist from the NEW rules and compare it against what the tests
+   currently assert. Rules that changed, disappeared, or arrived each map to a test to update,
+   remove, or add.
+3. Stage the updated tests together with the concept change.
+4. If the tests genuinely need no change (wording-only edit), or the concept has no tests yet,
+   confirm that with the user and record the reason — the judgment must not vanish:
+   `node "<cli>" attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>" --root .`
+   The record is bound to the concept's contract hash, so editing the concept again invalidates it.
+
+The commit gate `concept-test-follow` enforces exactly this: a drifted concept with no staged
+test and no fresh record is blocked under `strict`, asked under `standard`, warned under `light`.
 
 ## Prohibited
 
