@@ -1,8 +1,8 @@
 {
   "concept-inline-edit": [
     "tests/viewer/serve.test.ts",
-    "assets/viewer.js",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "assets/viewer.js"
   ],
   "settled-status": [
     "src/concept/approve.ts",
@@ -27,9 +27,9 @@
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
     "tests/integration/smoke.test.ts",
-    "assets/viewer.js",
+    "tests/store/conceptStore.test.ts",
     "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts"
+    "assets/viewer.js"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
@@ -42,9 +42,9 @@
     "tests/init/syncGenerated.test.ts",
     "tests/version/autoSync.test.ts",
     "tests/viewer/renderDisk.test.ts",
-    "src/viewer/manifest.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "src/viewer/manifest.ts"
   ],
   "plugin-version-sync": [
     "scripts/release.mjs",
@@ -167,7 +167,8 @@
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/alignment.test.ts",
     "src/drift/hash.ts",
-    "tests/drift/hash.test.ts"
+    "tests/drift/hash.test.ts",
+    "tests/concept/aliases.test.ts"
   ],
   "drift-reconcile": [
     "src/drift/detect.ts",
@@ -250,8 +251,8 @@
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
     "tests/integration/smoke.test.ts",
-    "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "src/store/conceptStore.ts"
   ],
   "concept-code-mapping": [
     "src/mapping/leadingComment.ts",
@@ -270,8 +271,8 @@
     "tests/viewer/graph.test.ts",
     "tests/viewer/subgraph.test.ts",
     "tests/viewer/manifest.test.ts",
-    "src/schema/concept.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "src/schema/concept.ts"
   ],
   "feature-spec-bridge": [
     "src/schema/feature.ts",
@@ -301,24 +302,25 @@
     "tests/viewer/graph.test.ts",
     "tests/viewer/manifest.test.ts",
     "tests/viewer/featureRoute.test.ts",
-    "assets/viewer.js",
     "assets/concept.css",
-    "tests/viewer/listLayout.test.ts"
+    "tests/viewer/listLayout.test.ts",
+    "assets/viewer.js"
   ],
   "knowledge-graph-view": [
     "src/viewer/graph.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/subgraph.test.ts",
     "tests/viewer/highlight.test.ts",
-    "assets/viewer.js",
     "assets/concept.css",
-    "tests/viewer/copyPath.test.ts"
+    "tests/viewer/copyPath.test.ts",
+    "assets/viewer.js"
   ],
   "home-search": [
     "assets/sidebar.js",
-    "assets/viewer.js",
     "tests/viewer/listLayout.test.ts",
-    "tests/viewer/sidebarState.test.ts"
+    "tests/viewer/sidebarState.test.ts",
+    "tests/viewer/search.test.ts",
+    "assets/viewer.js"
   ],
   "viewer-navigation": [
     "assets/sidebar.js",
@@ -329,13 +331,21 @@
   "viewer-readability": [
     "assets/sidebar.js",
     "assets/topnav.js",
-    "assets/viewer.js",
     "assets/concept.css",
-    "src/schema/concept.ts",
-    "src/store/conceptStore.ts",
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/detailTitle.test.ts",
     "tests/viewer/heroSummary.test.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "src/schema/concept.ts",
+    "src/store/conceptStore.ts",
+    "assets/viewer.js"
+  ],
+  "concept-aliases": [
+    "tests/concept/aliases.test.ts",
+    "tests/viewer/search.test.ts",
+    "src/schema/concept.ts",
+    "src/store/conceptStore.ts",
+    "src/viewer/manifest.ts",
+    "assets/viewer.js"
   ]
 }

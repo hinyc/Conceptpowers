@@ -1,4 +1,4 @@
-// @concept:generated-not-hand-edited
+// @concept:generated-not-hand-edited @concept:concept-aliases
 // src/viewer/manifest.ts
 // 뷰어가 부팅 시 읽는 매니페스트를 만든다. 개념/기능의 "원본 JSON 위치(URL)"와
 // 목록 렌더에 필요한 최소 메타, 그리고 지식 그래프 데이터를 담는다.
@@ -14,6 +14,8 @@ export interface ConceptEntry {
   title: string;
   status: ConceptStatus;
   category: ConceptCategory[];
+  // 찾아오는 길을 넓히는 다른 이름들(concept-aliases). 가리키는 열쇠는 언제나 slug다.
+  aliases: string[];
   url: string;
   codeLinks: string[];
 }
@@ -63,6 +65,7 @@ export function buildManifest(
       title: c.title,
       status: c.status,
       category: c.category,
+      aliases: c.aliases,
       url: conceptUrl(c),
       codeLinks: mergeLinks(c, codeLinksBySlug),
     })),

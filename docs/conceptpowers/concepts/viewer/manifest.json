@@ -10,6 +10,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/audit-gap-detection.json",
       "codeLinks": [
         "src/audit/gaps.ts",
@@ -28,6 +29,26 @@
       ]
     },
     {
+      "slug": "concept-aliases",
+      "group": "governance",
+      "title": "개념 별칭",
+      "status": "green",
+      "category": [
+        "term",
+        "behavior"
+      ],
+      "aliases": [],
+      "url": "../data/governance/concept-aliases.json",
+      "codeLinks": [
+        "src/schema/concept.ts",
+        "src/store/conceptStore.ts",
+        "src/viewer/manifest.ts",
+        "assets/viewer.js",
+        "tests/concept/aliases.test.ts",
+        "tests/viewer/search.test.ts"
+      ]
+    },
+    {
       "slug": "concept-code-mapping",
       "group": "governance",
       "title": "개념↔코드 연결",
@@ -36,6 +57,7 @@
         "term",
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/concept-code-mapping.json",
       "codeLinks": [
         "src/mapping/scan.ts",
@@ -54,6 +76,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/concept-driven-tests.json",
       "codeLinks": [
         "src/schema/initConfig.ts",
@@ -67,9 +90,9 @@
         "tests/concept/testReview.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/hooks/testFollowGate.test.ts",
-        "tests/hooks/testScopeGate.test.ts",
         "tests/init/scaffold.test.ts",
-        "tests/schema/initConfig.test.ts"
+        "tests/schema/initConfig.test.ts",
+        "tests/hooks/testScopeGate.test.ts"
       ]
     },
     {
@@ -81,6 +104,7 @@
         "behavior",
         "term"
       ],
+      "aliases": [],
       "url": "../data/governance/concept-scope.json",
       "codeLinks": [
         "skills/define-concept/SKILL.md",
@@ -96,6 +120,7 @@
         "term",
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/contract-hash.json",
       "codeLinks": [
         "src/drift/hash.ts",
@@ -110,7 +135,8 @@
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/schema/alignment.test.ts",
-        "tests/drift/hash.test.ts"
+        "tests/drift/hash.test.ts",
+        "tests/concept/aliases.test.ts"
       ]
     },
     {
@@ -121,6 +147,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/drift-reconcile.json",
       "codeLinks": [
         "src/drift/reconcile.ts",
@@ -147,6 +174,7 @@
         "term",
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/feature-spec-bridge.json",
       "codeLinks": [
         "src/schema/feature.ts",
@@ -172,6 +200,7 @@
       "category": [
         "term"
       ],
+      "aliases": [],
       "url": "../data/governance/globally-unique-slug.json",
       "codeLinks": [
         "src/schema/concept.ts",
@@ -195,6 +224,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/governance-mode.json",
       "codeLinks": [
         "src/hooks/preToolUse.ts",
@@ -232,6 +262,7 @@
         "behavior",
         "permission"
       ],
+      "aliases": [],
       "url": "../data/governance/human-owns-contract.json",
       "codeLinks": [
         "skills/define-concept/SKILL.md",
@@ -250,6 +281,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/output-locale.json",
       "codeLinks": [
         "src/i18n/messages.ts",
@@ -272,6 +304,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/pending-conflict-tracking.json",
       "codeLinks": [
         "src/concept/pendingConflicts.ts",
@@ -288,6 +321,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/governance/reference-first-duty.json",
       "codeLinks": [
         "src/init/reference.ts",
@@ -308,6 +342,7 @@
         "behavior",
         "term"
       ],
+      "aliases": [],
       "url": "../data/governance/settled-status.json",
       "codeLinks": [
         "src/store/conceptStore.ts",
@@ -333,8 +368,8 @@
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/serve.test.ts",
         "tests/integration/smoke.test.ts",
-        "assets/viewer.js",
-        "tests/store/conceptStore.test.ts"
+        "tests/store/conceptStore.test.ts",
+        "assets/viewer.js"
       ]
     },
     {
@@ -345,6 +380,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/atomic-baseline-write.json",
       "codeLinks": [
         "src/util/atomicWrite.ts",
@@ -387,6 +423,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/generated-not-hand-edited.json",
       "codeLinks": [
         "src/viewer/render.ts",
@@ -412,6 +449,7 @@
       "category": [
         "permission"
       ],
+      "aliases": [],
       "url": "../data/platform/init-gate.json",
       "codeLinks": [
         "src/cli.ts",
@@ -447,6 +485,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/plugin-version-sync.json",
       "codeLinks": [
         "src/init/syncGenerated.ts",
@@ -478,6 +517,7 @@
         "permission",
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/reference-privacy.json",
       "codeLinks": [
         "src/init/reference.ts",
@@ -504,11 +544,13 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/untrusted-text-sanitization.json",
       "codeLinks": [
         "src/drift/safe.ts",
         "tests/drift/safe.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/testScopeGate.test.ts"
       ]
     },
     {
@@ -520,6 +562,7 @@
         "permission",
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/platform/viewer-local-write-guard.json",
       "codeLinks": [
         "src/viewer/serve.ts",
@@ -535,6 +578,7 @@
         "feature",
         "permission"
       ],
+      "aliases": [],
       "url": "../data/viewer/concept-inline-edit.json",
       "codeLinks": [
         "assets/viewer.js",
@@ -551,6 +595,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/viewer/feature-index-row.json",
       "codeLinks": [
         "assets/viewer.js",
@@ -569,12 +614,14 @@
       "category": [
         "feature"
       ],
+      "aliases": [],
       "url": "../data/viewer/home-search.json",
       "codeLinks": [
         "assets/viewer.js",
         "assets/sidebar.js",
         "tests/viewer/listLayout.test.ts",
-        "tests/viewer/sidebarState.test.ts"
+        "tests/viewer/sidebarState.test.ts",
+        "tests/viewer/search.test.ts"
       ]
     },
     {
@@ -585,6 +632,7 @@
       "category": [
         "feature"
       ],
+      "aliases": [],
       "url": "../data/viewer/knowledge-graph-view.json",
       "codeLinks": [
         "assets/viewer.js",
@@ -605,6 +653,7 @@
         "behavior",
         "feature"
       ],
+      "aliases": [],
       "url": "../data/viewer/viewer-navigation.json",
       "codeLinks": [
         "assets/topnav.js",
@@ -621,6 +670,7 @@
       "category": [
         "behavior"
       ],
+      "aliases": [],
       "url": "../data/viewer/viewer-readability.json",
       "codeLinks": [
         "assets/viewer.js",
@@ -670,9 +720,10 @@
       "slug": "concept-definition",
       "group": "governance",
       "title": "개념 정의",
-      "description": "새 개념을 정의하는 자리. 무엇이 개념이 될 수 있는지 자격을 따지고, 내용은 사람이 쓴다.",
+      "description": "새 개념을 정의하는 자리. 무엇이 개념이 될 수 있는지 자격을 따지고, 정식 이름과 별칭을 사람이 적는다.",
       "concepts": [
         "concept-scope",
+        "concept-aliases",
         "human-owns-contract"
       ]
     },
@@ -828,9 +879,10 @@
       "slug": "viewer-search",
       "group": "viewer",
       "title": "뷰어 찾기",
-      "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다.",
+      "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다. 정식 이름뿐 아니라 별칭으로도 닿는다.",
       "concepts": [
         "home-search",
+        "concept-aliases",
         "viewer-readability"
       ]
     }
@@ -1076,6 +1128,55 @@
         "title": "tests/integration/smoke.test.ts"
       },
       {
+        "id": "c:concept-aliases",
+        "label": "개념 별칭",
+        "type": "concept",
+        "href": "#/concept/concept-aliases",
+        "title": "concept-aliases"
+      },
+      {
+        "id": "p:src/schema/concept.ts",
+        "label": "concept.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/concept.ts"
+      },
+      {
+        "id": "p:src/store/conceptStore.ts",
+        "label": "conceptStore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/store/conceptStore.ts"
+      },
+      {
+        "id": "p:src/viewer/manifest.ts",
+        "label": "manifest.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/manifest.ts"
+      },
+      {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
+      },
+      {
+        "id": "p:tests/concept/aliases.test.ts",
+        "label": "aliases.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/aliases.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/search.test.ts",
+        "label": "search.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/search.test.ts"
+      },
+      {
         "id": "c:concept-code-mapping",
         "label": "개념↔코드 연결",
         "type": "concept",
@@ -1188,18 +1289,18 @@
         "title": "tests/hooks/testFollowGate.test.ts"
       },
       {
-        "id": "p:tests/hooks/testScopeGate.test.ts",
-        "label": "testScopeGate.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/testScopeGate.test.ts"
-      },
-      {
         "id": "p:tests/init/scaffold.test.ts",
         "label": "scaffold.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/init/scaffold.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/testScopeGate.test.ts",
+        "label": "testScopeGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/testScopeGate.test.ts"
       },
       {
         "id": "c:concept-scope",
@@ -1396,20 +1497,6 @@
         "type": "concept",
         "href": "#/concept/globally-unique-slug",
         "title": "globally-unique-slug"
-      },
-      {
-        "id": "p:src/schema/concept.ts",
-        "label": "concept.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/schema/concept.ts"
-      },
-      {
-        "id": "p:src/store/conceptStore.ts",
-        "label": "conceptStore.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/store/conceptStore.ts"
       },
       {
         "id": "p:tests/schema/concept.test.ts",
@@ -1748,13 +1835,6 @@
         "title": "tests/concept/quality.test.ts"
       },
       {
-        "id": "p:assets/viewer.js",
-        "label": "viewer.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/viewer.js"
-      },
-      {
         "id": "c:atomic-baseline-write",
         "label": "안전한 저장",
         "type": "concept",
@@ -1802,13 +1882,6 @@
         "type": "file",
         "href": "",
         "title": "src/viewer/render.ts"
-      },
-      {
-        "id": "p:src/viewer/manifest.ts",
-        "label": "manifest.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/viewer/manifest.ts"
       },
       {
         "id": "p:scripts/build.mjs",
@@ -2131,6 +2204,11 @@
       },
       {
         "source": "f:concept-definition",
+        "target": "c:concept-aliases",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-definition",
         "target": "c:human-owns-contract",
         "kind": "feature-concept"
       },
@@ -2281,6 +2359,11 @@
       },
       {
         "source": "f:viewer-search",
+        "target": "c:concept-aliases",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
         "target": "c:viewer-readability",
         "kind": "feature-concept"
       },
@@ -2347,6 +2430,36 @@
       {
         "source": "c:audit-gap-detection",
         "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:src/viewer/manifest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:tests/concept/aliases.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:tests/viewer/search.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2436,17 +2549,17 @@
       },
       {
         "source": "c:concept-driven-tests",
-        "target": "p:tests/hooks/testScopeGate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
         "target": "p:tests/init/scaffold.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-driven-tests",
         "target": "p:tests/schema/initConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/hooks/testScopeGate.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2522,6 +2635,11 @@
       {
         "source": "c:contract-hash",
         "target": "p:tests/drift/hash.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:contract-hash",
+        "target": "p:tests/concept/aliases.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3081,12 +3199,12 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:assets/viewer.js",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
@@ -3595,6 +3713,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:untrusted-text-sanitization",
+        "target": "p:tests/hooks/testScopeGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:viewer-local-write-guard",
         "target": "p:src/viewer/serve.ts",
         "kind": "concept-file"
@@ -3672,6 +3795,11 @@
       {
         "source": "c:home-search",
         "target": "p:tests/viewer/sidebarState.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
+        "target": "p:tests/viewer/search.test.ts",
         "kind": "concept-file"
       },
       {

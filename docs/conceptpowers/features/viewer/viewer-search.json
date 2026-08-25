@@ -2,9 +2,10 @@
   "slug": "viewer-search",
   "group": "viewer",
   "title": "뷰어 찾기",
-  "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다.",
+  "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다. 정식 이름뿐 아니라 별칭으로도 닿는다.",
   "concepts": [
     "home-search",
+    "concept-aliases",
     "viewer-readability"
   ],
   "codePaths": [

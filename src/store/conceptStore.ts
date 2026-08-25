@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:atomic-baseline-write @concept:viewer-readability
+// @concept:settled-status @concept:atomic-baseline-write @concept:viewer-readability @concept:concept-aliases
 // src/store/conceptStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
@@ -15,6 +15,32 @@ function fileFor(root: string, c: Concept): string {
   return c.group ? join(dataDir, c.group, `${c.slug}.json`) : join(dataDir, `${c.slug}.json`);
 }
 
+// 별칭은 찾아오는 길일 뿐 가리키는 열쇠가 아니다(concept-aliases). 그래서 별칭이
+// 어떤 이름표와도, 다른 개념의 별칭과도 겹치지 않아야 무엇을 가리키는지가 갈리지 않는다.
+// 자기 자신(같은 파일)의 별칭은 겹침으로 보지 않는다 — 다시 저장하는 경우다.
+function assertAliasesFree(
+  concept: Concept,
+  existing: Concept[],
+  target: string,
+  root: string
+): void {
+  const slugs = new Set([concept.slug, ...existing.map((c) => c.slug)]);
+  const takenBy = new Map<string, string>();
+  for (const other of existing) {
+    if (fileFor(root, other) === target) continue;
+    for (const alias of other.aliases) takenBy.set(alias, other.slug);
+  }
+  for (const alias of concept.aliases) {
+    if (slugs.has(alias)) {
+      throw new Error(`Alias collides with a concept slug: "${alias}" (aliases are not keys)`);
+    }
+    const owner = takenBy.get(alias);
+    if (owner) {
+      throw new Error(`Duplicate alias: "${alias}" is already used by ${owner}`);
+    }
+  }
+}
+
 export async function writeConcept(root: string, input: unknown): Promise<Concept> {
   const concept = parseConcept(input);
   const target = fileFor(root, concept);
@@ -23,6 +49,7 @@ export async function writeConcept(root: string, input: unknown): Promise<Concep
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
+  assertAliasesFree(concept, existing, target, root);
   // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
   await writeFileAtomic(target, JSON.stringify(concept, null, 2) + '\n');
   return concept;

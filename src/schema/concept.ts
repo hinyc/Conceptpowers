@@ -1,4 +1,4 @@
-// @concept:globally-unique-slug @concept:viewer-readability
+// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-aliases
 import { z } from 'zod';
 
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term']);
@@ -27,6 +27,9 @@ export const ConceptSchema = z.object({
   number: z.number().int().positive().optional(),
   status: ConceptStatus.default('red'),
   title: z.string().min(1),
+  // 같은 개념을 부르는 다른 이름들. 찾아오는 데에만 쓰이고 개념을 가리키는 열쇠는
+  // 언제나 slug다 — 없어도 개념은 성립하므로 기본값은 빈 배열이다.
+  aliases: z.array(z.string().min(1, 'alias must not be empty')).default([]),
   description: z.object({
     definition: z.string().min(1),
     analogy: z.string().default(''),

@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-index-row
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-index-row @concept:concept-aliases
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -612,8 +612,20 @@ function searchData(q) {
   q = q.toLowerCase();
   var m = state.manifest;
   var concepts = (m.concepts || []).filter(function (c) {
+    // 별칭도 함께 훑는다(concept-aliases) — 쓰던 말로 쳐도 같은 개념에 닿아야 한다.
+    // 걸리는 것은 별칭이지만 결과에 실리는 것은 개념 자체라 정식 이름으로 보인다.
     return (
-      (c.title + ' ' + c.slug + ' ' + (c.group || '') + ' ' + (c.category || []).join(' '))
+      (
+        c.title +
+        ' ' +
+        c.slug +
+        ' ' +
+        (c.group || '') +
+        ' ' +
+        (c.category || []).join(' ') +
+        ' ' +
+        (c.aliases || []).join(' ')
+      )
         .toLowerCase()
         .indexOf(q) !== -1
     );

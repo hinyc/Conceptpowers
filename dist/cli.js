@@ -7353,6 +7353,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
       title: c.title,
       status: c.status,
       category: c.category,
+      aliases: c.aliases,
       url: conceptUrl(c),
       codeLinks: mergeLinks(c, codeLinksBySlug)
     })),
@@ -7400,6 +7401,9 @@ var ConceptSchema = external_exports.object({
   number: external_exports.number().int().positive().optional(),
   status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
+  // 같은 개념을 부르는 다른 이름들. 찾아오는 데에만 쓰이고 개념을 가리키는 열쇠는
+  // 언제나 slug다 — 없어도 개념은 성립하므로 기본값은 빈 배열이다.
+  aliases: external_exports.array(external_exports.string().min(1, "alias must not be empty")).default([]),
   description: external_exports.object({
     definition: external_exports.string().min(1),
     analogy: external_exports.string().default(""),
@@ -7565,6 +7569,23 @@ function fileFor(root, c) {
   const dataDir = cpPaths(root).conceptsData;
   return c.group ? join2(dataDir, c.group, `${c.slug}.json`) : join2(dataDir, `${c.slug}.json`);
 }
+function assertAliasesFree(concept, existing, target, root) {
+  const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((c) => c.slug)]);
+  const takenBy = /* @__PURE__ */ new Map();
+  for (const other of existing) {
+    if (fileFor(root, other) === target) continue;
+    for (const alias of other.aliases) takenBy.set(alias, other.slug);
+  }
+  for (const alias of concept.aliases) {
+    if (slugs.has(alias)) {
+      throw new Error(`Alias collides with a concept slug: "${alias}" (aliases are not keys)`);
+    }
+    const owner = takenBy.get(alias);
+    if (owner) {
+      throw new Error(`Duplicate alias: "${alias}" is already used by ${owner}`);
+    }
+  }
+}
 async function writeConcept(root, input) {
   const concept = parseConcept(input);
   const target = fileFor(root, concept);
@@ -7573,6 +7594,7 @@ async function writeConcept(root, input) {
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
+  assertAliasesFree(concept, existing, target, root);
   await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }

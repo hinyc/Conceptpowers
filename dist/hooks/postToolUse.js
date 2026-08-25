@@ -4164,6 +4164,9 @@ var ConceptSchema = external_exports.object({
   number: external_exports.number().int().positive().optional(),
   status: ConceptStatus.default("red"),
   title: external_exports.string().min(1),
+  // 같은 개념을 부르는 다른 이름들. 찾아오는 데에만 쓰이고 개념을 가리키는 열쇠는
+  // 언제나 slug다 — 없어도 개념은 성립하므로 기본값은 빈 배열이다.
+  aliases: external_exports.array(external_exports.string().min(1, "alias must not be empty")).default([]),
   description: external_exports.object({
     definition: external_exports.string().min(1),
     analogy: external_exports.string().default(""),

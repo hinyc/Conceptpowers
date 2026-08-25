@@ -502,5 +502,40 @@
       "viewer-readability"
     ],
     "note": "상단 묶음 메뉴와 곁 목록 여닫이 통합(group-navbar+sidebar-toggle). 항목 생김새는 viewer-readability에, 곁 목록 안 검색은 home-search에 위임해 규칙 중복 없음."
+  },
+  "concept-aliases": {
+    "hash": "444f1769f859",
+    "result": "pass",
+    "at": "2026-08-25T01:27:12.465Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "이름표 규칙(globally-unique-slug)과는 역할이 갈린다 — 그쪽은 가리키는 열쇠 하나, 이쪽은 찾아오는 길 여럿. 찾기(home-search)의 부분일치·대소문자 무시 규칙과 상충 없음. 어긋남 판정 기준(contract-hash)의 계약 항목에 별칭이 없으므로 별칭을 고쳐도 어긋남이 생기지 않으며, 지문 항목을 늘리지도 않는다. 개념 자격 기준(concept-scope) 두 테스트 통과."
   }
 }
