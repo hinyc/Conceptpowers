@@ -456,7 +456,9 @@ li::marker {
   border-top: 1px solid var(--border);
 }
 .col-card {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0; /* 긴 토큰의 min-content가 균등 분배를 깨지 않도록 */
+  overflow-wrap: break-word;
   padding: 16px 18px;
   border-radius: 10px;
   border: 1px solid var(--border);
