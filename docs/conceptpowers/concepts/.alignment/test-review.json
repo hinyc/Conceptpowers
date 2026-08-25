@@ -43,21 +43,16 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "contract-hash": {
-    "hash": "2c4b395438b3",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.407Z",
+    "hash": "f4d2ce0f2941",
+    "result": "updated",
+    "at": "2026-08-25T03:36:57.336Z",
     "tests": [
-      "tests/drift/history.test.ts",
-      "tests/drift/detect.test.ts",
-      "tests/drift/lock.test.ts",
       "tests/drift/hash.test.ts",
+      "tests/drift/detect.test.ts",
       "tests/drift/reconcile.test.ts",
-      "tests/schema/alignment.test.ts",
-      "tests/hooks/postToolUse.test.ts",
-      "tests/hooks/preToolUse.test.ts",
-      "tests/hooks/sessionStart.test.ts"
+      "tests/drift/history.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "새 불변 2건(상호작용 제외, 판 비교 금지)을 검증하는 시나리오 4개 추가: 상호작용만 바뀌면 지문 불변 / 지문의 판 접두 / 옛 판 기준선은 drift 아님 / 결산 때 조용한 재기준. 지문 형식 변경으로 길이 단정 1건을 형식 검사로 교체."
   },
   "drift-reconcile": {
     "hash": "9d8e1b91e744",
@@ -321,13 +316,13 @@
     "note": "규칙은 그대로. 새 정의문에 맞춰 검사 이름의 표현('무장해제한다' → '명령이 아니다')만 고침."
   },
   "viewer-local-write-guard": {
-    "hash": "58ca1cb549d6",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.431Z",
+    "hash": "cfaae826426f",
+    "result": "updated",
+    "at": "2026-08-25T03:36:57.515Z",
     "tests": [
       "tests/viewer/serve.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "새 정의문(약속 서술)을 파일 머리에 인용해 불변 규칙 전체가 그 약속의 검증임을 명시. 검사 내용 변경 없음."
   },
   "concept-inline-edit": {
     "hash": "6edf6d4c3f51",
@@ -426,17 +421,13 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "viewer-readability": {
-    "hash": "fa0936f2d443",
+    "hash": "c6ee62a4f000",
     "result": "updated",
-    "at": "2026-08-25T00:57:06.382Z",
+    "at": "2026-08-25T03:36:57.425Z",
     "tests": [
-      "tests/viewer/listLayout.test.ts",
-      "tests/viewer/detailTitle.test.ts",
-      "tests/viewer/heroSummary.test.ts",
-      "tests/viewer/topnav.test.ts",
-      "tests/store/conceptStore.test.ts"
+      "tests/viewer/heroSummary.test.ts"
     ],
-    "note": "통합된 세 개념의 규칙이 문구 그대로 살아남아, 각 시나리오가 인용하는 규칙 출처만 viewer-readability로 옮김. 검사 내용은 변경 없음(609개 전체 통과)."
+    "note": "규칙이 상호작용에서 불변으로 옮겨져 인용 표기(맞물림→불변)만 갱신. 검사 내용 변경 없음."
   },
   "viewer-navigation": {
     "hash": "4d01ab24e550",

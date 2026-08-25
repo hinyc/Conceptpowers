@@ -3,7 +3,7 @@ import { listConcepts } from '../store/conceptStore.js';
 import { readLock, writeLock } from './lock.js';
 import { appendHistoryMany, type HistoryInput } from './history.js';
 import { computeDrift } from './detect.js';
-import { contractHash } from './hash.js';
+import { contractHash, hashVersion, CONTRACT_HASH_VERSION } from './hash.js';
 import { normalizeRel } from './safe.js';
 import { isFollowedWithTags, presentTagSlugs } from './follow.js';
 import { readInitConfig } from '../init/readConfig.js';
@@ -66,7 +66,11 @@ export async function reconcileAfterCommit(
         });
       }
       nextLock[c.slug] = { hash: d.currentHash, at: stamp };
-    } else if (lock[c.slug] === undefined) {
+    } else if (
+      lock[c.slug] === undefined ||
+      hashVersion(lock[c.slug].hash) !== CONTRACT_HASH_VERSION
+    ) {
+      // 신규 등록, 또는 판이 달라 견줄 수 없던 기준선의 재기준 — 둘 다 어긋남 기록 없이 조용히 맞춘다.
       nextLock[c.slug] = { hash: contractHash(c), at: stamp };
     }
   }

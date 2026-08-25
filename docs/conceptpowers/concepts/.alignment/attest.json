@@ -124,17 +124,40 @@
     ]
   },
   "contract-hash": {
-    "hash": "36a437268a3e",
+    "hash": "f4d2ce0f2941",
     "result": "pass",
-    "at": "2026-08-24T09:04:35.775Z",
+    "at": "2026-08-25T03:36:33.918Z",
     "compared": [
-      "drift-reconcile",
-      "settled-status",
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
       "concept-driven-tests",
-      "detail-title-single",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
       "human-owns-contract",
-      "concept-inline-edit"
-    ]
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "상호작용을 약속에서 제외하고 판을 도입한 재정의. 어긋남 결산(drift-reconcile)의 '기준선을 현재 지문으로 다시 맞춘다'와 상충 없음 — 판이 다른 기준선의 재기준도 같은 결산 자리에서 일어난다. 상호작용에 판정 규칙을 적지 않는다는 새 불변은 개념 자격 기준(concept-scope)의 3층 분리와 같은 방향. 다른 28개 개념의 상호작용은 전수 감사 결과 이미 역할 경계 서술이거나 규칙이 허용·제한·불변에 중복 존재해 위배 없음 (설치판 지문 병기)"
   },
   "drift-reconcile": {
     "hash": "9d8e1b91e744",
@@ -210,14 +233,40 @@
     ]
   },
   "viewer-local-write-guard": {
-    "hash": "58ca1cb549d6",
+    "hash": "cfaae826426f",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.755Z",
+    "at": "2026-08-25T03:36:34.358Z",
     "compared": [
-      "concept-inline-edit",
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
       "settled-status",
-      "untrusted-text-sanitization"
-    ]
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "정의문만 약속 서술로 교정. 허용·제한·불변 규칙 그대로라 다른 개념과의 경계 불변 (설치판 지문 병기)"
   },
   "untrusted-text-sanitization": {
     "hash": "bace9ae001de",
@@ -434,11 +483,12 @@
     "note": "기존 31개 전부와 대조. settled-status(승격 조건)와는 검사 시점이 달라 충돌 아님 — 이 기준은 정의 시점, 신호등은 승격 시점. 초안의 '화면 표기 규칙은 기능 기록에 적는다'는 feature 스키마에 규칙 필드가 없고 feature-spec-bridge가 기능 기록 내용을 한정하므로 실행 불가 — 목적지를 상위 기준 문서로 통일해 해소. 그 외 충돌 없음."
   },
   "viewer-readability": {
-    "hash": "fa0936f2d443",
+    "hash": "c6ee62a4f000",
     "result": "pass",
-    "at": "2026-08-25T00:56:48.906Z",
+    "at": "2026-08-25T03:36:34.138Z",
     "compared": [
       "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
@@ -466,7 +516,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "훑는 자리와 펼쳐 읽는 자리의 표시 규칙 통합(list-item-readout+detail-summary-outline+detail-title-single). settled-status와는 역할 분담(색의 뜻 대 색의 표시), viewer-navigation·feature-index-row와는 담당 영역이 갈려 충돌 없음."
+    "note": "상호작용의 판정 규칙 한 문장을 불변으로 옮긴 것뿐 — 규칙 내용 동일, 다른 개념과의 경계 불변. contract-hash 새 불변(상호작용에 규칙 금지)을 따르기 위한 이동 (설치판 지문 병기)"
   },
   "viewer-navigation": {
     "hash": "4d01ab24e550",

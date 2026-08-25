@@ -4230,18 +4230,19 @@ var TestReviewLog = external_exports.record(external_exports.string(), TestRevie
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
+var CONTRACT_HASH_VERSION = 2;
 function contractHash(c) {
   const contract = {
     definition: c.description.definition,
     components: c.description.components,
     allow: c.actions.allow,
     restrict: c.actions.restrict,
-    interaction: c.actions.interaction,
     immutableRules: c.principle.immutableRules,
     lifecycle: c.principle.lifecycle,
     reason: c.purpose.reason
   };
-  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+  const digest = createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+  return `${CONTRACT_HASH_VERSION}:${digest}`;
 }
 
 // src/concept/attest.ts

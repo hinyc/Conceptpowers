@@ -142,6 +142,16 @@ describe('reconcileAfterCommit', () => {
     expect(r.aligned).toContain('auth-token');
     expect(r.ignored).toEqual([]);
   });
+  it('판이 다른 기준선은 결산 때 현재 지문으로 재기준하고, 어긋남 기록은 남기지 않는다', async () => {
+    await writeConcept(root, concept());
+    await writeLock(root, { 'auth-token': { hash: 'a1b2c3d4e5f6', at: 't' } }); // 옛 판(접두 없음)
+    const res = await reconcileAfterCommit(root, [], 't2');
+    expect(res.aligned).toEqual([]);
+    expect(res.ignored).toEqual([]);
+    const lock = await readLock(root);
+    const c = await readConcept(root, 'auth-token');
+    expect(lock['auth-token'].hash).toBe(contractHash(c!)); // 현재 판으로 재기준됨
+  });
   it('삭제된 개념의 stale lock 항목을 정리한다 (M1)', async () => {
     await writeConcept(root, concept());
     await writeLock(root, {

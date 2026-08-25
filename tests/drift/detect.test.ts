@@ -5,6 +5,8 @@
 //    → 개념이 바뀌면 drift로 보고한다 / lock 해시와 현재 해시가 같으면 drift가 아니다
 //  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → lock에 없는 개념은 drift가 아니다 (견줄 기준선이 아직 없다)
+//  - contract-hash 불변 "판이 다른 지문끼리는 견주지 않는다 — 계산 규칙이 바뀌어 판이 달라진
+//    기준선은 어긋남이 아니라 재기준 대상이다" → 옛 판 기준선은 drift로 보고하지 않는다
 //  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
 //    파생시킨다" → feature codePaths를 relatedPaths로 모은다
 //  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
@@ -155,6 +157,12 @@ describe('computeDrift', () => {
       at: '2026-03-01T00:00:00.000Z',
     });
     expect((await computeDrift(root))[0].reason).toBe('이번 사유');
+  });
+  it('판이 다른 기준선과는 견주지 않는다 — 계산 규칙이 바뀌어도 가짜 어긋남을 만들지 않는다', async () => {
+    await writeConcept(root, concept());
+    // 접두 없는 옛 판(1판) 지문이 기준선에 남아 있는 상황 — 판이 달라 비교 불가.
+    await writeLock(root, { 'auth-token': { hash: 'a1b2c3d4e5f6', at: 't' } });
+    expect(await computeDrift(root)).toEqual([]);
   });
   it('되돌리기(v1→v2→v1)로 옛 지문이 재등장해도 기준선 이전의 옛 사유는 붙지 않는다', async () => {
     await writeConcept(root, concept());

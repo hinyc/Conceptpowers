@@ -6,8 +6,14 @@
 //    → 계약 필드(definition)가 바뀌면 해시가 바뀐다
 //  - contract-hash 불변 "약속 밖 항목만 바뀐 경우에는 지문이 달라지지 않는다"
 //    → 비계약 필드(title/status/analogy)가 바뀌어도 해시는 불변
+//  - contract-hash 불변 "상호작용 항목은 개념 사이의 역할 경계만 서술한다 — 코드가 지켜야 할 판정
+//    규칙은 상호작용이 아니라 허용 행동·제한 행동·불변 규칙에 적는다"
+//    → 상호작용만 바뀌어도 지문은 달라지지 않는다 (상호작용은 약속 밖이다)
+//  - contract-hash 구성요소 "지문: 약속 부분만 모아 만든 짧은 표식 — 지문에는 계산 규칙의
+//    판(version)이 함께 적혀, 판이 다른 지문끼리는 견주지 않는다"
+//    → 지문이 현재 판 접두로 시작한다 / 접두 없는 옛 지문은 1판으로 읽는다
 import { describe, it, expect } from 'vitest';
-import { contractHash } from '../../src/drift/hash.js';
+import { contractHash, hashVersion, CONTRACT_HASH_VERSION } from '../../src/drift/hash.js';
 import { parseConcept } from '../../src/schema/concept.js';
 
 const base = {
@@ -42,5 +48,21 @@ describe('contractHash', () => {
       })
     );
     expect(a).toBe(b);
+  });
+  it('상호작용만 바뀌어도 지문은 달라지지 않는다 — 역할 경계 서술은 약속 밖이다', () => {
+    const a = contractHash(parseConcept(base));
+    const b = contractHash(
+      parseConcept({
+        ...base,
+        actions: { ...base.actions, interaction: '다른 개념과의 역할 경계' },
+      })
+    );
+    expect(a).toBe(b);
+  });
+  it('지문은 현재 판 접두로 시작하고, 접두 없는 옛 지문은 1판으로 읽는다', () => {
+    const h = contractHash(parseConcept(base));
+    expect(h.startsWith(CONTRACT_HASH_VERSION + ':')).toBe(true);
+    expect(hashVersion(h)).toBe(CONTRACT_HASH_VERSION);
+    expect(hashVersion('abc123def456')).toBe(1);
   });
 });

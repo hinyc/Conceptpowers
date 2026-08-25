@@ -4,7 +4,7 @@ import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';
 import { readLock } from './lock.js';
 import { readHistory } from './history.js';
-import { contractHash } from './hash.js';
+import { contractHash, hashVersion, CONTRACT_HASH_VERSION } from './hash.js';
 import { normalizeRel } from './safe.js';
 import { pruneMissingPaths } from './follow.js';
 import type { Concept } from '../schema/concept.js';
@@ -74,6 +74,9 @@ export async function computeDrift(root: string): Promise<DriftItem[]> {
     .filter(
       (x): x is { c: Concept; locked: { hash: string; at: string } } => x.locked !== undefined
     ) // 신규: 첫 커밋에서 등록됨
+    // 판이 다른 기준선과는 견주지 않는다 — 계산 규칙이 바뀐 것이지 개념이 바뀐 게 아니다.
+    // 이런 항목은 어긋남이 아니라 재기준 대상이며, 다음 결산(reconcile)이 현재 판으로 다시 맞춘다.
+    .filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION)
     .map((x) => ({ ...x, current: contractHash(x.c) }))
     .filter((x) => x.locked.hash !== x.current) // 정렬됨
     .map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));

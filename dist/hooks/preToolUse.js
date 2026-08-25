@@ -4259,18 +4259,23 @@ var TestReviewLog = external_exports.record(external_exports.string(), TestRevie
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
+var CONTRACT_HASH_VERSION = 2;
 function contractHash(c) {
   const contract = {
     definition: c.description.definition,
     components: c.description.components,
     allow: c.actions.allow,
     restrict: c.actions.restrict,
-    interaction: c.actions.interaction,
     immutableRules: c.principle.immutableRules,
     lifecycle: c.principle.lifecycle,
     reason: c.purpose.reason
   };
-  return createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+  const digest = createHash("sha256").update(JSON.stringify(contract)).digest("hex").slice(0, 12);
+  return `${CONTRACT_HASH_VERSION}:${digest}`;
+}
+function hashVersion(hash) {
+  const m = /^(\d+):/.exec(hash);
+  return m ? Number(m[1]) : 1;
 }
 
 // src/concept/attest.ts
@@ -4779,7 +4784,7 @@ async function computeDrift(root) {
   ]);
   const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
     (x) => x.locked !== void 0
-  ).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
+  ).filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
   const unique = [...new Set(drifted.flatMap((x) => x.related))];
   const alive = new Set(await pruneMissingPaths(root, unique));
   return drifted.map((x) => ({

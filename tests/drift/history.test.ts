@@ -47,7 +47,7 @@ describe('history', () => {
     const e = await noteChange(root, 'auth-token', '만료 30분으로', 't1');
     expect(e.slug).toBe('auth-token');
     expect(e.reason).toBe('만료 30분으로');
-    expect(e.hash).toHaveLength(12);
+    expect(e.hash).toMatch(/^\d+:[0-9a-f]{12}$/); // 판 접두 + 12자리 지문
   });
   it('noteChange는 없는 개념이면 throw', async () => {
     await expect(noteChange(root, 'ghost', 'x', 't')).rejects.toThrow('ghost');

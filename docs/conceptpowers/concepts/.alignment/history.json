@@ -1456,5 +1456,32 @@
     "at": "2026-08-25T02:26:26.820Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "contract-hash",
+    "hash": "2:5d978bfa169c",
+    "prevHash": "36a437268a3e",
+    "reason": "독립성 회복 — 상호작용을 약속(지문)에서 제외해 역할 경계 문구를 고쳐도 어긋남이 나지 않게 하고, 판정 규칙은 상호작용에 적지 않는다는 불변을 세움. 지문에 판을 도입해 계산 규칙이 바뀔 때 가짜 어긋남이 나지 않게 함. 보류했던 정의문 약속 서술 교정 포함",
+    "at": "2026-08-25T03:35:50.580Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-readability",
+    "hash": "2:748895083ba6",
+    "prevHash": "",
+    "reason": "상호작용에 섞여 있던 판정 규칙(본문 각 절은 원래 생김새대로)을 불변 규칙으로 이동 — 상호작용은 역할 경계만 서술한다는 contract-hash 새 불변에 맞춤. 규칙 내용 변경 없음",
+    "at": "2026-08-25T03:36:07.505Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-local-write-guard",
+    "hash": "2:6ca3f6a0f0a8",
+    "prevHash": "58ca1cb549d6",
+    "reason": "보류했던 정의문 교정 — 기법 서술(내 컴퓨터 요청에만 열린다)을 사용자 약속 서술로 바꿈. 규칙 내용 변경 없음",
+    "at": "2026-08-25T03:36:07.580Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

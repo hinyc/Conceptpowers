@@ -13,7 +13,7 @@
 //    앞에 표식을 붙이는 것" → 표식을 붙일 수 있도록 목록(ul.hero__points) 구조로 그린다
 //  - viewer-readability 제한 "이름·번호·자릿수처럼 붙어 있어야 뜻이 통하는 표기를 끊는 자리로
 //    오해해 도중에 자르는 것" → 파일 이름·판번호 안의 마침표는 끊는 자리가 아니다
-//  - viewer-readability 맞물림 "요약 아래로 이어지는 본문 각 절은 원래 글의 생김새를 그대로
+//  - viewer-readability 불변 "요약 아래로 이어지는 본문 각 절은 원래 글의 생김새를 그대로
 //    따른다" → 허용·제한 카드는 항목이 있는 쪽만 그리고, 둘 다 비면 절 자체를 두지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -171,7 +171,7 @@ describe('heroSummary — 제목 아래 요약을 그린다', () => {
   });
 });
 
-// 검증 대상 규칙(viewer-readability 맞물림): "요약 아래로 이어지는 본문 각 절은 원래 글의
+// 검증 대상 규칙(viewer-readability 불변): "요약 아래로 이어지는 본문 각 절은 원래 글의
 // 생김새를 그대로 따른다" → 원래 글에 항목이 없는 절은 화면에도 자리를 만들지 않는다.
 // 중복을 걷어낸 뒤 허용이나 제한이 빈 개념이 생겼고, 빈 카드가 제목만 남긴 채 그려지면 안 된다.
 describe('actionsSection — 허용·제한 카드', () => {
