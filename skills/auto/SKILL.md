@@ -8,14 +8,14 @@ description: Use after init when the user wants guided setup ("auto", "다음 �
 > **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
 > until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
-Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된다 — baseline(상위 기준) 없이
+Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된다 — 기준 문서(baseline, 상위 기준) 없이
 개념을 정의하거나, reference 없이 후보를 뽑거나, 매핑 없이 감사하면 결과가 부실해진다.
-이 스킬은 그 순서를 대신 기억한다: 현재 단계를 진단하고, **baseline → define → audit →
+이 스킬은 그 순서를 대신 기억한다: 현재 단계를 진단하고, **기준 문서(baseline) → define → audit →
 mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사용자에게 진행 여부를 묻는다.
 
 ## Role (orchestrator only)
 
-- 이 스킬은 **호출과 안내만** 한다. baseline·개념의 내용은 절대 직접 쓰지 않는다 —
+- 이 스킬은 **호출과 안내만** 한다. 기준 문서(baseline)·개념의 내용은 절대 직접 쓰지 않는다 —
   작성은 각 스킬(update-baseline, define-concept) 안에서 사용자와 함께 이뤄진다.
 - **매 단계 경계에서 한 번 묻는다**: 무엇을 할지 한두 문장으로 안내 → 실행 → 결과 요약 →
   "다음 단계로 진행할까요? (진행 / 이 단계 건너뛰기 / 여기서 중단)". 확인 없이 두 단계를
@@ -28,7 +28,7 @@ mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사�
 
 무엇도 바꾸지 말고 현재 상태만 수집한다:
 
-1. **baseline**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿
+1. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿
    그대로인지(주석 한 줄뿐인지) 확인.
 2. **reference**: `reference/`가 비었는지 확인 — 파일 없음(스캐폴드 `README.md`뿐)이고 `paths.md`의 외부 경로 항목도 없으면 빈 것으로 본다. **존재 확인만 한다(디렉터리 목록·paths.md 항목 유무) — 내용은 읽지 않는다.** reference 내용은 오직 개념 정의·업그레이드 시점(define-concept/check-consistency)에만 읽는다. 비었으면 Stage 2에서 파일 추가 또는 **외부 로컬 경로 등록(paths.md, 여러 개 가능)**을 제안한다.
 3. **개념**: `concepts/data/` 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red).
@@ -40,7 +40,7 @@ mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사�
 시작할지 — 그리고 첫 미완료 단계로 진행할지 묻는다. 모든 단계가 완료 상태면 그대로
 보고하고 종료한다(최적 상태).
 
-## Stage 1 — Baseline (개념의 상위 기준)
+## Stage 1 — Baseline (기준 문서 — 개념의 상위 기준)
 
 architecture.md / infra.md가 아직 템플릿이면:
 
@@ -49,10 +49,10 @@ architecture.md / infra.md가 아직 템플릿이면:
   1. **코드 분석 초안 (권장)** — 에이전트가 코드베이스를 분석해 현재 구현 기준의
      architecture/infra 초안을 작성해 보여준다. 초안은 **제안일 뿐 저장이 아니다** —
      사용자가 리뷰·수정·확정한 뒤에만 `conceptpowers:update-baseline` 절차로 저장한다.
-     리뷰 때 반드시 안내: "이 초안은 **현재 구현(as-is)**을 읽은 것입니다. baseline은
+     리뷰 때 반드시 안내: "이 초안은 **현재 구현(as-is)**을 읽은 것입니다. 기준 문서(baseline)는
      **의도(to-be)**의 기준이므로, 구현과 다르게 가야 할 부분이 있으면 지금 고쳐주세요."
   2. **직접 작성** — 사용자가 내용을 말하고 에이전트는 받아 적는다.
-  3. **건너뛰기** — "baseline 없이 정의된 개념은 나중에 상위 기준과 어긋날 수 있다"고
+  3. **건너뛰기** — "기준 문서(baseline) 없이 정의된 개념은 나중에 상위 기준과 어긋날 수 있다"고
      한 줄 경고하고 다음 단계로.
 - 어느 방식이든 **사용자 확인 없이 저장하지 않는다** (초안 제시는 허용, 무단 저장 금지 —
   human-owns-contract).
@@ -105,7 +105,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 ## Prohibited
 
 - 사용자 확인 없이 단계를 연속 실행하는 것.
-- baseline·개념 내용을 **사용자 확인 없이** 저장하는 것 (human-owns-contract — 초안을
+- 기준 문서(baseline)·개념 내용을 **사용자 확인 없이** 저장하는 것 (human-owns-contract — 초안을
   만들어 보여주는 것은 허용, 확정은 언제나 사람).
 - 🔴 red 개념을 auto가 스스로 승인하는 것 (settled-status — 승인은 사용자 요청 + update-baseline 승인 플로우).
 

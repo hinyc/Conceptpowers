@@ -1393,5 +1393,14 @@
     "at": "2026-08-25T01:12:11.596Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "bace9ae001de",
+    "prevHash": "bace9ae001de",
+    "reason": "개념 자격 기준(concept-scope): 정의문을 기법 서술에서 사용자 약속 서술로 교정 — 규칙 내용 변경 없음",
+    "at": "2026-08-25T01:21:57.881Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
