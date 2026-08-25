@@ -38,7 +38,7 @@
       "기능 하나만 펼쳐 보는 전용 화면을 두는 것",
       "기능 줄에 코드 경로를 늘어놓는 것 — 코드 경로는 개념 화면이 보여준다"
     ],
-    "interaction": "줄의 생김새는 목록 표시 규칙(list-item-readout)을 따른다. 기능 기록 자체의 구조 — 이름표·따르는 개념·구현 코드 — 는 기능은 개념과 코드를 잇는 다리(feature-spec-bridge)가 정한다. 지식 그래프(knowledge-graph-view)에는 기능이 점으로도 나타난다 — 그것은 관계를 그린 그림이지 기능 전용 화면이 아니다."
+    "interaction": "줄의 생김새는 훑기와 읽기(viewer-readability)를 따른다. 기능 기록 자체의 구조 — 이름표·따르는 개념·구현 코드 — 는 기능은 개념과 코드를 잇는 다리(feature-spec-bridge)가 정한다. 지식 그래프(knowledge-graph-view)에는 기능이 점으로도 나타난다 — 그것은 관계를 그린 그림이지 기능 전용 화면이 아니다."
   },
   "principle": {
     "immutableRules": [
@@ -54,7 +54,7 @@
     "next": "",
     "related": [
       "feature-spec-bridge",
-      "list-item-readout",
+      "viewer-readability",
       "home-search"
     ]
   },

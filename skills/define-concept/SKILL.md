@@ -71,7 +71,7 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
    slug is decided (step 5), add it to that feature's `concepts` so the _feature → concept_ graph edge
    exists — a concept with no feature pointing at it is an orphan in the knowledge graph.
 2. Decide the concept's **category**: feature | behavior | role | permission | term (multiple allowed).
-   - **Title 표기 (개념 `detail-title-single`):** `title`은 짧고 평이한 한국어 이름표로 쓴다
+   - **Title 표기 (개념 `viewer-readability`):** `title`은 짧고 평이한 한국어 이름표로 쓴다
      (예: "개념 없는 코드 감사"). 은유적 부제를 따로 만들어 얹지 않는다 — 부제를 담을 항목 자체가
      없다. 뷰어 제목은 `slug + " | " + title`로 조합되므로 title 하나면 충분하다.
 3. Fill in the following structure together with the user:

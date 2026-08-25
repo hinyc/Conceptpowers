@@ -1,15 +1,15 @@
-// @concept:detail-title-single
+// @concept:viewer-readability
 // tests/viewer/detailTitle.test.ts
 // 펼쳐 본 화면의 제목 자리(assets/viewer.js)와 부제 항목의 부재를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - detail-title-single 불변 "펼쳐 본 화면의 제목은 이름표와 이름 하나로만 이루어진다"
+//  - viewer-readability 불변 "펼쳐 본 화면의 제목은 이름표와 이름 하나로만 이루어진다"
 //    → 제목 자리에 h1이 하나뿐이고 그 글자가 "이름표 | 이름"이다
-//  - detail-title-single 허용 "이름이 비어 있거나 이름표와 똑같으면 이름표만 제목으로 보여주는 것"
+//  - viewer-readability 허용 "이름이 비어 있거나 이름표와 똑같으면 이름표만 제목으로 보여주는 것"
 //    → 이름이 이름표와 같으면 이름표만 / 이름이 비면 이름표만
-//  - detail-title-single 불변 "제목 위나 옆에 별도의 부제 자리를 두지 않는다 — 그런 자리를 만들 수
+//  - viewer-readability 불변 "제목 위나 옆에 별도의 부제 자리를 두지 않는다 — 그런 자리를 만들 수
 //    있는 항목 자체를 두지 않는다"
 //    → 저장 구조가 부제 값을 받아도 남기지 않는다 / 편집 화면 이름표 목록에 부제 항목이 없다
-//  - detail-title-single 제한 "항목에 적혀 있던 부제 값을 제목 자리 근처에 되살려 보여주는 것"
+//  - viewer-readability 제한 "항목에 적혀 있던 부제 값을 제목 자리 근처에 되살려 보여주는 것"
 //    → 옛 기록에 부제가 실려 있어도 제목 자리 어디에도 그 글자가 나타나지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';

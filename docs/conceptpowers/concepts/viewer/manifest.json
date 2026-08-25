@@ -73,6 +73,21 @@
       ]
     },
     {
+      "slug": "concept-scope",
+      "group": "governance",
+      "title": "개념 자격 기준",
+      "status": "green",
+      "category": [
+        "behavior",
+        "term"
+      ],
+      "url": "../data/governance/concept-scope.json",
+      "codeLinks": [
+        "skills/define-concept/SKILL.md",
+        "src/concept/quality.ts"
+      ]
+    },
+    {
       "slug": "contract-hash",
       "group": "governance",
       "title": "어긋남 판정 기준",
@@ -166,10 +181,10 @@
         "tests/schema/concept.test.ts",
         "tests/schema/feature.test.ts",
         "tests/store/featureStore.test.ts",
-        "tests/store/conceptStore.test.ts",
         "tests/viewer/graph.test.ts",
         "tests/viewer/subgraph.test.ts",
-        "tests/viewer/manifest.test.ts"
+        "tests/viewer/manifest.test.ts",
+        "tests/store/conceptStore.test.ts"
       ]
     },
     {
@@ -317,9 +332,9 @@
         "tests/schema/concept.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/serve.test.ts",
-        "tests/store/conceptStore.test.ts",
         "tests/integration/smoke.test.ts",
-        "assets/viewer.js"
+        "assets/viewer.js",
+        "tests/store/conceptStore.test.ts"
       ]
     },
     {
@@ -360,8 +375,8 @@
         "tests/store/featureStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/serve.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/integration/smoke.test.ts"
+        "tests/integration/smoke.test.ts",
+        "tests/store/conceptStore.test.ts"
       ]
     },
     {
@@ -529,53 +544,6 @@
       ]
     },
     {
-      "slug": "copy-code-path",
-      "group": "viewer",
-      "title": "코드 경로 복사 버튼",
-      "status": "green",
-      "category": [
-        "feature"
-      ],
-      "url": "../data/viewer/copy-code-path.json",
-      "codeLinks": [
-        "assets/viewer.js",
-        "tests/viewer/copyPath.test.ts"
-      ]
-    },
-    {
-      "slug": "detail-summary-outline",
-      "group": "viewer",
-      "title": "상세 화면 표시 규칙",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "url": "../data/viewer/detail-summary-outline.json",
-      "codeLinks": [
-        "assets/viewer.js",
-        "assets/concept.css",
-        "tests/viewer/heroSummary.test.ts"
-      ]
-    },
-    {
-      "slug": "detail-title-single",
-      "group": "viewer",
-      "title": "상세 제목 표시 규칙",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "url": "../data/viewer/detail-title-single.json",
-      "codeLinks": [
-        "assets/viewer.js",
-        "assets/concept.css",
-        "src/schema/concept.ts",
-        "src/store/conceptStore.ts",
-        "tests/viewer/detailTitle.test.ts",
-        "tests/store/conceptStore.test.ts"
-      ]
-    },
-    {
       "slug": "feature-index-row",
       "group": "viewer",
       "title": "기능 목록 표시 규칙",
@@ -589,28 +557,14 @@
         "tests/viewer/graph.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/featureRoute.test.ts",
-        "tests/viewer/listLayout.test.ts",
-        "assets/concept.css"
-      ]
-    },
-    {
-      "slug": "group-navbar",
-      "group": "viewer",
-      "title": "상단 묶음 메뉴",
-      "status": "green",
-      "category": [
-        "feature"
-      ],
-      "url": "../data/viewer/group-navbar.json",
-      "codeLinks": [
-        "assets/topnav.js",
-        "tests/viewer/topnav.test.ts"
+        "assets/concept.css",
+        "tests/viewer/listLayout.test.ts"
       ]
     },
     {
       "slug": "home-search",
       "group": "viewer",
-      "title": "홈 화면 검색",
+      "title": "찾기",
       "status": "green",
       "category": [
         "feature"
@@ -618,7 +572,9 @@
       "url": "../data/viewer/home-search.json",
       "codeLinks": [
         "assets/viewer.js",
-        "tests/viewer/listLayout.test.ts"
+        "assets/sidebar.js",
+        "tests/viewer/listLayout.test.ts",
+        "tests/viewer/sidebarState.test.ts"
       ]
     },
     {
@@ -636,53 +592,47 @@
         "tests/viewer/graph.test.ts",
         "tests/viewer/subgraph.test.ts",
         "tests/viewer/highlight.test.ts",
-        "assets/concept.css"
+        "assets/concept.css",
+        "tests/viewer/copyPath.test.ts"
       ]
     },
     {
-      "slug": "list-item-readout",
+      "slug": "viewer-navigation",
       "group": "viewer",
-      "title": "목록 표시 규칙",
+      "title": "화면 사이 이동",
+      "status": "green",
+      "category": [
+        "behavior",
+        "feature"
+      ],
+      "url": "../data/viewer/viewer-navigation.json",
+      "codeLinks": [
+        "assets/topnav.js",
+        "assets/sidebar.js",
+        "tests/viewer/sidebarState.test.ts",
+        "tests/viewer/topnav.test.ts"
+      ]
+    },
+    {
+      "slug": "viewer-readability",
+      "group": "viewer",
+      "title": "훑기와 읽기",
       "status": "green",
       "category": [
         "behavior"
       ],
-      "url": "../data/viewer/list-item-readout.json",
+      "url": "../data/viewer/viewer-readability.json",
       "codeLinks": [
         "assets/viewer.js",
         "assets/sidebar.js",
         "assets/concept.css",
+        "src/schema/concept.ts",
+        "src/store/conceptStore.ts",
         "assets/topnav.js",
-        "tests/viewer/listLayout.test.ts"
-      ]
-    },
-    {
-      "slug": "sidebar-search",
-      "group": "viewer",
-      "title": "사이드바 검색",
-      "status": "green",
-      "category": [
-        "feature"
-      ],
-      "url": "../data/viewer/sidebar-search.json",
-      "codeLinks": [
-        "assets/sidebar.js",
-        "tests/viewer/sidebarState.test.ts",
-        "tests/viewer/listLayout.test.ts"
-      ]
-    },
-    {
-      "slug": "sidebar-toggle",
-      "group": "viewer",
-      "title": "사이드바 열고 닫기",
-      "status": "green",
-      "category": [
-        "feature"
-      ],
-      "url": "../data/viewer/sidebar-toggle.json",
-      "codeLinks": [
-        "assets/sidebar.js",
-        "tests/viewer/sidebarState.test.ts"
+        "tests/viewer/listLayout.test.ts",
+        "tests/viewer/detailTitle.test.ts",
+        "tests/viewer/heroSummary.test.ts",
+        "tests/store/conceptStore.test.ts"
       ]
     }
   ],
@@ -714,6 +664,16 @@
       "concepts": [
         "audit-gap-detection",
         "concept-code-mapping"
+      ]
+    },
+    {
+      "slug": "concept-definition",
+      "group": "governance",
+      "title": "개념 정의",
+      "description": "새 개념을 정의하는 자리. 무엇이 개념이 될 수 있는지 자격을 따지고, 내용은 사람이 쓴다.",
+      "concepts": [
+        "concept-scope",
+        "human-owns-contract"
       ]
     },
     {
@@ -815,22 +775,12 @@
       ]
     },
     {
-      "slug": "viewer-code-path-copy",
-      "group": "viewer",
-      "title": "코드 경로 복사",
-      "description": "개념·기능에 연결된 코드 경로를 클립보드로 복사하고 성공·실패를 즉시 알린다.",
-      "concepts": [
-        "copy-code-path"
-      ]
-    },
-    {
       "slug": "viewer-concept-detail",
       "group": "viewer",
       "title": "개념 상세 화면",
-      "description": "개념 하나를 펼쳐 제목·상태·요약과 본문 절들을 보여준다. 제목은 이름표와 이름 하나로만 이루어지고, 제목 아래 요약은 이야기 단위로 끊어 항목마다 한 줄씩 표시한다.",
+      "description": "개념 하나를 펼쳐 읽는 화면. 제목 한 줄과 끊어 보여주는 요약으로 시작한다.",
       "concepts": [
-        "detail-summary-outline",
-        "detail-title-single"
+        "viewer-readability"
       ]
     },
     {
@@ -847,9 +797,9 @@
       "slug": "viewer-concept-list",
       "group": "viewer",
       "title": "개념·기능 목록 화면",
-      "description": "첫 화면에서 개념을 묶음별로, 기능을 한데 모아 나열한다. 개념 항목마다 이름표와 제목을 나뉜 영역에 보여주고 승인 상태를 색 동그라미로 표시하며, 화면 위쪽에 색의 뜻을 알려주는 설명을 둔다. 기능은 전용 화면 없이 색인 줄로만 나타나고, 그 줄에 따르는 개념이 딱지로 붙는다.",
+      "description": "개념과 기능을 세로로 늘어놓아 훑어 찾게 하는 화면.",
       "concepts": [
-        "list-item-readout",
+        "viewer-readability",
         "settled-status",
         "feature-index-row"
       ]
@@ -858,29 +808,30 @@
       "slug": "viewer-knowledge-graph",
       "group": "viewer",
       "title": "지식 그래프 화면",
-      "description": "기능·개념·코드 파일을 점과 선으로 그린다 — 기능에서 개념으로, 개념에서 코드로. 기능이나 개념 하나에 초점을 맞추면 연관된 것만 남긴다.",
+      "description": "기능·개념·코드를 점과 선으로 잇고, 파일 경로를 클릭 한 번으로 복사한다.",
       "concepts": [
         "knowledge-graph-view"
       ]
     },
     {
-      "slug": "viewer-search",
+      "slug": "viewer-navigation",
       "group": "viewer",
-      "title": "뷰어 검색",
-      "description": "홈 화면에서 개념·기능·코드 경로를 통합 검색하고, 상세 화면 곁 목록에서는 이미 표시된 개념만 로컬로 걸러낸다.",
+      "title": "화면 사이 이동",
+      "description": "상단 묶음 메뉴와 곁 목록으로 어느 화면 너비에서든 항목에 닿게 하고, 사람이 손댄 여닫이 선택을 기억한다.",
       "concepts": [
+        "viewer-navigation",
         "home-search",
-        "sidebar-search"
+        "viewer-readability"
       ]
     },
     {
-      "slug": "viewer-sidebar",
+      "slug": "viewer-search",
       "group": "viewer",
-      "title": "상세 화면 사이드바",
-      "description": "개념 상세 화면 왼쪽에 목록 서랍을 두고, 열고 닫은 선택을 기억하며, 상단 검색창으로 목록을 좁힌다.",
+      "title": "뷰어 찾기",
+      "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다.",
       "concepts": [
-        "sidebar-toggle",
-        "sidebar-search"
+        "home-search",
+        "viewer-readability"
       ]
     }
   ],
@@ -906,6 +857,13 @@
         "type": "feature",
         "href": "#/feature/concept-audit",
         "title": "concept-audit"
+      },
+      {
+        "id": "f:concept-definition",
+        "label": "개념 정의",
+        "type": "feature",
+        "href": "#/feature/concept-definition",
+        "title": "concept-definition"
       },
       {
         "id": "f:concept-driven-testing",
@@ -978,13 +936,6 @@
         "title": "safe-storage"
       },
       {
-        "id": "f:viewer-code-path-copy",
-        "label": "코드 경로 복사",
-        "type": "feature",
-        "href": "#/feature/viewer-code-path-copy",
-        "title": "viewer-code-path-copy"
-      },
-      {
         "id": "f:viewer-concept-detail",
         "label": "개념 상세 화면",
         "type": "feature",
@@ -1013,18 +964,18 @@
         "title": "viewer-knowledge-graph"
       },
       {
+        "id": "f:viewer-navigation",
+        "label": "화면 사이 이동",
+        "type": "feature",
+        "href": "#/feature/viewer-navigation",
+        "title": "viewer-navigation"
+      },
+      {
         "id": "f:viewer-search",
-        "label": "뷰어 검색",
+        "label": "뷰어 찾기",
         "type": "feature",
         "href": "#/feature/viewer-search",
         "title": "viewer-search"
-      },
-      {
-        "id": "f:viewer-sidebar",
-        "label": "상세 화면 사이드바",
-        "type": "feature",
-        "href": "#/feature/viewer-sidebar",
-        "title": "viewer-sidebar"
       },
       {
         "id": "c:audit-gap-detection",
@@ -1251,6 +1202,27 @@
         "title": "tests/init/scaffold.test.ts"
       },
       {
+        "id": "c:concept-scope",
+        "label": "개념 자격 기준",
+        "type": "concept",
+        "href": "#/concept/concept-scope",
+        "title": "concept-scope"
+      },
+      {
+        "id": "p:skills/define-concept/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/define-concept/SKILL.md"
+      },
+      {
+        "id": "p:src/concept/quality.ts",
+        "label": "quality.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/quality.ts"
+      },
+      {
         "id": "c:contract-hash",
         "label": "어긋남 판정 기준",
         "type": "concept",
@@ -1447,13 +1419,6 @@
         "title": "tests/schema/concept.test.ts"
       },
       {
-        "id": "p:tests/store/conceptStore.test.ts",
-        "label": "conceptStore.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/store/conceptStore.test.ts"
-      },
-      {
         "id": "p:tests/viewer/subgraph.test.ts",
         "label": "subgraph.test.ts",
         "type": "file",
@@ -1466,6 +1431,13 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/manifest.test.ts"
+      },
+      {
+        "id": "p:tests/store/conceptStore.test.ts",
+        "label": "conceptStore.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/store/conceptStore.test.ts"
       },
       {
         "id": "c:governance-mode",
@@ -1585,13 +1557,6 @@
         "type": "concept",
         "href": "#/concept/human-owns-contract",
         "title": "human-owns-contract"
-      },
-      {
-        "id": "p:skills/define-concept/SKILL.md",
-        "label": "SKILL.md",
-        "type": "file",
-        "href": "",
-        "title": "skills/define-concept/SKILL.md"
       },
       {
         "id": "p:skills/update-baseline/SKILL.md",
@@ -1739,13 +1704,6 @@
         "type": "file",
         "href": "",
         "title": "src/concept/approve.ts"
-      },
-      {
-        "id": "p:src/concept/quality.ts",
-        "label": "quality.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/concept/quality.ts"
       },
       {
         "id": "p:src/concept/attest.ts",
@@ -2028,55 +1986,6 @@
         "title": "concept-inline-edit"
       },
       {
-        "id": "c:copy-code-path",
-        "label": "코드 경로 복사 버튼",
-        "type": "concept",
-        "href": "#/concept/copy-code-path",
-        "title": "copy-code-path"
-      },
-      {
-        "id": "p:tests/viewer/copyPath.test.ts",
-        "label": "copyPath.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/copyPath.test.ts"
-      },
-      {
-        "id": "c:detail-summary-outline",
-        "label": "상세 화면 표시 규칙",
-        "type": "concept",
-        "href": "#/concept/detail-summary-outline",
-        "title": "detail-summary-outline"
-      },
-      {
-        "id": "p:assets/concept.css",
-        "label": "concept.css",
-        "type": "file",
-        "href": "",
-        "title": "assets/concept.css"
-      },
-      {
-        "id": "p:tests/viewer/heroSummary.test.ts",
-        "label": "heroSummary.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/heroSummary.test.ts"
-      },
-      {
-        "id": "c:detail-title-single",
-        "label": "상세 제목 표시 규칙",
-        "type": "concept",
-        "href": "#/concept/detail-title-single",
-        "title": "detail-title-single"
-      },
-      {
-        "id": "p:tests/viewer/detailTitle.test.ts",
-        "label": "detailTitle.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/detailTitle.test.ts"
-      },
-      {
         "id": "c:feature-index-row",
         "label": "기능 목록 표시 규칙",
         "type": "concept",
@@ -2091,6 +2000,13 @@
         "title": "tests/viewer/featureRoute.test.ts"
       },
       {
+        "id": "p:assets/concept.css",
+        "label": "concept.css",
+        "type": "file",
+        "href": "",
+        "title": "assets/concept.css"
+      },
+      {
         "id": "p:tests/viewer/listLayout.test.ts",
         "label": "listLayout.test.ts",
         "type": "file",
@@ -2098,32 +2014,18 @@
         "title": "tests/viewer/listLayout.test.ts"
       },
       {
-        "id": "c:group-navbar",
-        "label": "상단 묶음 메뉴",
-        "type": "concept",
-        "href": "#/concept/group-navbar",
-        "title": "group-navbar"
-      },
-      {
-        "id": "p:assets/topnav.js",
-        "label": "topnav.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/topnav.js"
-      },
-      {
-        "id": "p:tests/viewer/topnav.test.ts",
-        "label": "topnav.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/topnav.test.ts"
-      },
-      {
         "id": "c:home-search",
-        "label": "홈 화면 검색",
+        "label": "찾기",
         "type": "concept",
         "href": "#/concept/home-search",
         "title": "home-search"
+      },
+      {
+        "id": "p:assets/sidebar.js",
+        "label": "sidebar.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/sidebar.js"
       },
       {
         "id": "c:knowledge-graph-view",
@@ -2147,32 +2049,53 @@
         "title": "tests/viewer/highlight.test.ts"
       },
       {
-        "id": "c:list-item-readout",
-        "label": "목록 표시 규칙",
-        "type": "concept",
-        "href": "#/concept/list-item-readout",
-        "title": "list-item-readout"
-      },
-      {
-        "id": "p:assets/sidebar.js",
-        "label": "sidebar.js",
+        "id": "p:tests/viewer/copyPath.test.ts",
+        "label": "copyPath.test.ts",
         "type": "file",
         "href": "",
-        "title": "assets/sidebar.js"
+        "title": "tests/viewer/copyPath.test.ts"
       },
       {
-        "id": "c:sidebar-search",
-        "label": "사이드바 검색",
+        "id": "c:viewer-navigation",
+        "label": "화면 사이 이동",
         "type": "concept",
-        "href": "#/concept/sidebar-search",
-        "title": "sidebar-search"
+        "href": "#/concept/viewer-navigation",
+        "title": "viewer-navigation"
       },
       {
-        "id": "c:sidebar-toggle",
-        "label": "사이드바 열고 닫기",
+        "id": "p:assets/topnav.js",
+        "label": "topnav.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/topnav.js"
+      },
+      {
+        "id": "p:tests/viewer/topnav.test.ts",
+        "label": "topnav.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/topnav.test.ts"
+      },
+      {
+        "id": "c:viewer-readability",
+        "label": "훑기와 읽기",
         "type": "concept",
-        "href": "#/concept/sidebar-toggle",
-        "title": "sidebar-toggle"
+        "href": "#/concept/viewer-readability",
+        "title": "viewer-readability"
+      },
+      {
+        "id": "p:tests/viewer/detailTitle.test.ts",
+        "label": "detailTitle.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/detailTitle.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/heroSummary.test.ts",
+        "label": "heroSummary.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/heroSummary.test.ts"
       }
     ],
     "edges": [
@@ -2199,6 +2122,16 @@
       {
         "source": "f:concept-audit",
         "target": "c:concept-code-mapping",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-definition",
+        "target": "c:concept-scope",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:concept-definition",
+        "target": "c:human-owns-contract",
         "kind": "feature-concept"
       },
       {
@@ -2292,18 +2225,8 @@
         "kind": "feature-concept"
       },
       {
-        "source": "f:viewer-code-path-copy",
-        "target": "c:copy-code-path",
-        "kind": "feature-concept"
-      },
-      {
         "source": "f:viewer-concept-detail",
-        "target": "c:detail-summary-outline",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:viewer-concept-detail",
-        "target": "c:detail-title-single",
+        "target": "c:viewer-readability",
         "kind": "feature-concept"
       },
       {
@@ -2318,7 +2241,7 @@
       },
       {
         "source": "f:viewer-concept-list",
-        "target": "c:list-item-readout",
+        "target": "c:viewer-readability",
         "kind": "feature-concept"
       },
       {
@@ -2337,23 +2260,28 @@
         "kind": "feature-concept"
       },
       {
+        "source": "f:viewer-navigation",
+        "target": "c:viewer-navigation",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-navigation",
+        "target": "c:home-search",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-navigation",
+        "target": "c:viewer-readability",
+        "kind": "feature-concept"
+      },
+      {
         "source": "f:viewer-search",
         "target": "c:home-search",
         "kind": "feature-concept"
       },
       {
         "source": "f:viewer-search",
-        "target": "c:sidebar-search",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:viewer-sidebar",
-        "target": "c:sidebar-toggle",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:viewer-sidebar",
-        "target": "c:sidebar-search",
+        "target": "c:viewer-readability",
         "kind": "feature-concept"
       },
       {
@@ -2519,6 +2447,16 @@
       {
         "source": "c:concept-driven-tests",
         "target": "p:tests/schema/initConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
+        "target": "p:skills/define-concept/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
+        "target": "p:src/concept/quality.ts",
         "kind": "concept-file"
       },
       {
@@ -2753,11 +2691,6 @@
       },
       {
         "source": "c:globally-unique-slug",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:globally-unique-slug",
         "target": "p:tests/viewer/graph.test.ts",
         "kind": "concept-file"
       },
@@ -2769,6 +2702,11 @@
       {
         "source": "c:globally-unique-slug",
         "target": "p:tests/viewer/manifest.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3138,17 +3076,17 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
         "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3293,12 +3231,12 @@
       },
       {
         "source": "c:atomic-baseline-write",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:atomic-baseline-write",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3687,61 +3625,6 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:copy-code-path",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:copy-code-path",
-        "target": "p:tests/viewer/copyPath.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-summary-outline",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-summary-outline",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-summary-outline",
-        "target": "p:tests/viewer/heroSummary.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:src/schema/concept.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:src/store/conceptStore.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:tests/viewer/detailTitle.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:detail-title-single",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
         "source": "c:feature-index-row",
         "target": "p:assets/viewer.js",
         "kind": "concept-file"
@@ -3763,22 +3646,12 @@
       },
       {
         "source": "c:feature-index-row",
-        "target": "p:tests/viewer/listLayout.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
         "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {
-        "source": "c:group-navbar",
-        "target": "p:assets/topnav.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:group-navbar",
-        "target": "p:tests/viewer/topnav.test.ts",
+        "source": "c:feature-index-row",
+        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3788,7 +3661,17 @@
       },
       {
         "source": "c:home-search",
+        "target": "p:assets/sidebar.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
         "target": "p:tests/viewer/listLayout.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
+        "target": "p:tests/viewer/sidebarState.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3822,53 +3705,78 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:list-item-readout",
-        "target": "p:assets/viewer.js",
+        "source": "c:knowledge-graph-view",
+        "target": "p:tests/viewer/copyPath.test.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:list-item-readout",
-        "target": "p:assets/sidebar.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:list-item-readout",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:list-item-readout",
+        "source": "c:viewer-navigation",
         "target": "p:assets/topnav.js",
         "kind": "concept-file"
       },
       {
-        "source": "c:list-item-readout",
-        "target": "p:tests/viewer/listLayout.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:sidebar-search",
+        "source": "c:viewer-navigation",
         "target": "p:assets/sidebar.js",
         "kind": "concept-file"
       },
       {
-        "source": "c:sidebar-search",
+        "source": "c:viewer-navigation",
         "target": "p:tests/viewer/sidebarState.test.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:sidebar-search",
-        "target": "p:tests/viewer/listLayout.test.ts",
+        "source": "c:viewer-navigation",
+        "target": "p:tests/viewer/topnav.test.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:sidebar-toggle",
+        "source": "c:viewer-readability",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
         "target": "p:assets/sidebar.js",
         "kind": "concept-file"
       },
       {
-        "source": "c:sidebar-toggle",
-        "target": "p:tests/viewer/sidebarState.test.ts",
+        "source": "c:viewer-readability",
+        "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:assets/topnav.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:tests/viewer/listLayout.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:tests/viewer/detailTitle.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:tests/viewer/heroSummary.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       }
     ]

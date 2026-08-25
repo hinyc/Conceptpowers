@@ -1,6 +1,6 @@
-// @concept:sidebar-search @concept:sidebar-toggle @concept:list-item-readout
+// @concept:home-search @concept:viewer-navigation @concept:viewer-readability
 // assets/sidebar.js — 개념 상세 화면 좌측 곁 목록(넓은 화면 전용) 열고/닫기.
-// 좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(topnav.js, group-navbar)가 목록 역할을 한다.
+// 좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(topnav.js, viewer-navigation)가 목록 역할을 한다.
 // viewer.js가 정의하는 h()/state/displayName/conceptListSections와
 // topnav.js의 CPTopnav에 의존한다. 로드 순서: index.html에서 sidebar.js를 viewer.js보다
 // 먼저 로드한다(전역 의존은 호출 시점에만 필요하므로 순서 자체는 안전하다).
@@ -28,7 +28,7 @@ var CPSidebar = (function () {
   }
 
   // 기본값은 열림 — 곁 목록은 넓은 화면에서만 보이므로 너비는 더 보지 않는다.
-  // 사람이 직접 닫은 적이 있으면 그 선택을 우선한다(sidebar-toggle).
+  // 사람이 직접 닫은 적이 있으면 그 선택을 우선한다(viewer-navigation).
   function isOpen() {
     var stored = readStored();
     if (stored === '0') return false;
@@ -57,7 +57,7 @@ var CPSidebar = (function () {
     escBound = true;
     document.addEventListener('keydown', function (ev) {
       if (ev.key !== 'Escape') return;
-      // 상단 묶음 메뉴가 펼쳐져 있으면 그쪽이 먼저 닫힌다(group-navbar와의 층 순서).
+      // 상단 묶음 메뉴가 펼쳐져 있으면 그쪽이 먼저 닫힌다(viewer-navigation와의 층 순서).
       if (typeof CPTopnav !== 'undefined' && CPTopnav.isMenuOpen()) return;
       // 상세 화면을 떠나면 currentShell은 분리된 노드가 된다 — 그때의 Esc는 무시해야
       // 사용자가 명시적으로 닫지 않은 상태를 localStorage에 쓰지 않는다.

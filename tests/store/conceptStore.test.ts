@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:atomic-baseline-write @concept:globally-unique-slug @concept:human-owns-contract @concept:concept-inline-edit @concept:detail-title-single
+// @concept:settled-status @concept:atomic-baseline-write @concept:globally-unique-slug @concept:human-owns-contract @concept:concept-inline-edit @concept:viewer-readability
 // tests/store/conceptStore.test.ts
 // 개념 본문의 저장·읽기와 상태 전이 가드를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -18,7 +18,7 @@
 //    → 스키마 위반(빈 definition)은 거부한다
 //  - atomic-baseline-write 불변 "대상 기록은 갈아 끼우기 방식으로만 저장한다" + "임시 파일 이름이 이미
 //    있으면 그것을 따라가지 않고 실패시킨다" → 임시파일+rename 경로를 쓰고 심볼릭 링크를 따라가지 않는다
-//  - detail-title-single 불변 "제목 위나 옆에 별도의 부제 자리를 두지 않는다 — 그런 자리를 만들 수
+//  - viewer-readability 불변 "제목 위나 옆에 별도의 부제 자리를 두지 않는다 — 그런 자리를 만들 수
 //    있는 항목 자체를 두지 않는다" → 부제를 patch에 실어도 저장 결과에 남지 않는다
 //  - "없는 개념은 에러를 던진다"는 대응하는 개념 규칙이 없다 — 방어적 처리다.
 import { describe, it, expect, beforeEach } from 'vitest';

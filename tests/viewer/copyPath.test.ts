@@ -1,13 +1,13 @@
-// @concept:copy-code-path
+// @concept:knowledge-graph-view
 // tests/viewer/copyPath.test.ts
 // 그래프 말풍선의 경로 복사 버튼(assets/viewer.js buildFileTip)을 node:vm + 최소 DOM 스텁으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - copy-code-path 구성요소 "위치: 파일 점에 마우스를 올렸을 때 뜨는 말풍선 안, 경로 옆"
+//  - knowledge-graph-view 구성요소 "경로 복사 단추: 파일 점의 말풍선 안, 경로 옆에 놓인다"
 //    → 말풍선 안에 복사 버튼과 경로가 함께 들어가고, 버튼이 경로보다 앞에 놓인다
-//  - copy-code-path 구성요소 "즉시 피드백: 성공하면 \"복사됨\", 실패하면 \"복사 실패\"로 글자가 바뀐다"
-//    + 불변 "복사 성공과 실패를 모두 사용자에게 즉시 보여준다 — 조용히 실패하지 않는다"
+//  - knowledge-graph-view 불변 "경로 복사의 성공과 실패를 모두 사용자에게 즉시 보여준다 — 조용히
+//    실패하지 않는다"
 //    → 성공하면 버튼 글자가 "복사됨" / 실패하면 "복사 실패" / 잠시 뒤 원래 글자로 돌아온다
-//  - copy-code-path 정의 "지식 그래프에서 파일 경로를 클릭 한 번으로 클립보드에 담는다"
+//  - knowledge-graph-view 허용 "파일 점의 말풍선에서 경로를 클릭 한 번으로 클립보드에 담는 것"
 //    → 클립보드에 담기는 값은 말풍선에 보이는 그 경로다
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';

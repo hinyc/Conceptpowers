@@ -1,4 +1,4 @@
-/* @concept:list-item-readout @concept:detail-summary-outline @concept:detail-title-single @concept:feature-index-row @concept:knowledge-graph-view */
+/* @concept:viewer-readability @concept:feature-index-row @concept:knowledge-graph-view */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -224,7 +224,7 @@ body {
   }
 }
 
-/* 상단 묶음 메뉴(group-navbar) — 묶음 이름 한 줄 + 본문 위에 뜨는 펼침 목록 */
+/* 상단 묶음 메뉴(viewer-navigation) — 묶음 이름 한 줄 + 본문 위에 뜨는 펼침 목록 */
 .topnav {
   display: flex;
   flex-wrap: wrap;
@@ -257,7 +257,7 @@ body {
   background: var(--surface);
   border-color: var(--border);
 }
-/* 펼침 목록: 본문을 밀어내지 않고 위에 뜬다(group-navbar 불변 규칙). 길면 안에서 스크롤. */
+/* 펼침 목록: 본문을 밀어내지 않고 위에 뜬다(viewer-navigation 불변 규칙). 길면 안에서 스크롤. */
 .topnav__panel {
   display: none;
   position: absolute;
@@ -292,7 +292,7 @@ body {
 .topnav__menu li:hover {
   background: color-mix(in srgb, var(--link) 10%, transparent);
 }
-/* 항목 표기는 곁 목록과 같은 규칙(list-item-readout): 이름표·제목이 각자 한 줄씩 잘린다. */
+/* 항목 표기는 곁 목록과 같은 규칙(viewer-readability): 이름표·제목이 각자 한 줄씩 잘린다. */
 .topnav__menu .side-item {
   flex: 1 1 0%;
   min-width: 0;
@@ -384,7 +384,7 @@ p:last-child {
   font-size: 1.05rem;
   color: var(--fg-soft);
 }
-/* 제목 아래 요약: 이야기 단위로 끊어 항목마다 한 줄씩(detail-summary-outline) */
+/* 제목 아래 요약: 이야기 단위로 끊어 항목마다 한 줄씩(viewer-readability) */
 .hero__points {
   margin: 0.5rem 0 0;
   padding-left: 1.1rem;

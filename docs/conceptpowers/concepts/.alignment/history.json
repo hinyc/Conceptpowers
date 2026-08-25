@@ -1330,5 +1330,32 @@
     "at": "2026-08-24T09:06:38.848Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "home-search",
+    "hash": "dc23149ed876",
+    "prevHash": "76ecb259cb3b",
+    "reason": "sidebar-search 흡수 — 개념 자격 기준(concept-scope) 규칙 5: 목적이 같은 개념을 따로 세우지 않는다. 넓게 찾기와 좁히기를 한 개념의 두 자리로 통합",
+    "at": "2026-08-25T00:50:01.961Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "b7f3b225de3a",
+    "prevHash": "5d556a710943",
+    "reason": "copy-code-path 흡수 — 개념 자격 기준(concept-scope) 규칙 1·4: 버튼 하나만 정하는 규칙은 개념으로 두지 않고, 그 화면 개념 안에 둔다",
+    "at": "2026-08-25T00:50:39.371Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "0e8c05578c41",
+    "prevHash": "c651c53e8990",
+    "reason": "list-item-readout이 viewer-readability로 통합되어 사라진 개념을 가리키던 참조를 옮김 (내용 변경 없음)",
+    "at": "2026-08-25T00:55:34.001Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

@@ -1,17 +1,18 @@
-// @concept:sidebar-toggle @concept:sidebar-search @concept:output-locale
+// @concept:viewer-navigation @concept:home-search @concept:output-locale
 // tests/viewer/sidebarState.test.ts
 // CPSidebar.isOpen/setOpen(assets/sidebar.js)을 node:vm으로 로드해 검증한다.
 // 순수 상태 판단(localStorage + width)만 하므로 DOM 없이 스텁으로 평가 가능.
 // (동일 패턴: tests/viewer/subgraph.test.ts)
 // 검증 대상 규칙 ↔ 시나리오:
-//  - sidebar-toggle 허용 "사람이 아무 선택도 한 적 없을 때만 기본값(열림)을 쓰는 것"
+//  - viewer-navigation 허용 "사람이 아무 선택도 한 적 없을 때만 곁 목록의 기본값(열림)을 쓰는 것"
 //    → 아무 선택도 한 적 없으면 기본 열림이다 (곁 목록은 넓은 화면 전용이라 너비는 보지 않는다)
-//  - sidebar-toggle 불변 "저장된 선택이 있으면 기본값보다 그 선택을 우선한다"
+//  - viewer-navigation 불변 "저장된 선택이 있으면 기본값보다 그 선택을 우선한다"
 //    → 사용자가 닫으면 닫힘을 기억해 유지한다 / 닫았다가 다시 열면 열림을 기억해 유지한다
-//  - sidebar-toggle 불변 "저장은 사람이 직접 조작했을 때만 한다 — 화면 크기 변화로는 저장하지 않는다"
+//  - viewer-navigation 불변 "곁 목록의 여닫이 저장은 사람이 직접 조작했을 때만 한다 — 화면 크기 변화로는
+//    저장하지 않는다"
 //    → 저장 경로를 타는 것은 setOpen(사람의 조작)뿐이다
-//  - sidebar-search 정의 "상세 화면 곁 목록의 검색창은 새로 찾아오지 않고, 이미 떠 있는 것 중에서
-//    안 맞는 것을 숨긴다" → matchesQuery: 빈 검색어는 항상 true / 대소문자 무시 부분일치 /
+//  - home-search 불변 "첫 화면 찾기는 코드 파일 경로까지 찾아오고, 곁 목록 찾기는 이미 화면에
+//    떠 있는 것만 좁힌다" → matchesQuery: 빈 검색어는 항상 true / 대소문자 무시 부분일치 /
 //    앞뒤 공백 무시 / text가 없어도 예외 없이 false
 //  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
 //    → ko/en 번역에 sidebarSearchPh 키가 있다
@@ -54,7 +55,7 @@ function loadSidebar(width: number) {
   };
 }
 
-describe('CPSidebar 열림 상태 (sidebar-toggle: 기본 열림, 저장된 선택 우선)', () => {
+describe('CPSidebar 열림 상태 (viewer-navigation: 기본 열림, 저장된 선택 우선)', () => {
   it('아무 선택도 한 적 없으면 기본 열림이다 — 곁 목록은 넓은 화면 전용이라 너비는 보지 않는다', () => {
     expect(loadSidebar(1280).isOpen()).toBe(true);
     expect(loadSidebar(320).isOpen()).toBe(true);

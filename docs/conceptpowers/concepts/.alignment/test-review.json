@@ -357,16 +357,16 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "feature-index-row": {
-    "hash": "cc3922693b61",
+    "hash": "8f7432e081fb",
     "result": "no-impact",
-    "at": "2026-08-24T05:35:10.688Z",
+    "at": "2026-08-25T00:57:06.697Z",
     "tests": [
       "tests/viewer/listLayout.test.ts",
+      "tests/viewer/topnav.test.ts",
       "tests/viewer/featureRoute.test.ts",
-      "tests/viewer/manifest.test.ts",
-      "tests/viewer/graph.test.ts"
+      "tests/viewer/manifest.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "사라진 개념을 가리키던 참조만 옮긴 변경이라 규칙 내용이 그대로여서 검사 시나리오에 영향 없음."
   },
   "group-navbar": {
     "hash": "e8e0fd6752f5",
@@ -378,24 +378,23 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "home-search": {
-    "hash": "76ecb259cb3b",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.817Z",
+    "hash": "dc23149ed876",
+    "result": "updated",
+    "at": "2026-08-25T00:57:06.542Z",
     "tests": [
-      "tests/viewer/listLayout.test.ts"
+      "tests/viewer/listLayout.test.ts",
+      "tests/viewer/sidebarState.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "sidebar-search 정의를 인용하던 시나리오를 home-search의 새 불변 규칙('첫 화면 찾기는 코드 파일 경로까지, 곁 목록 찾기는 이미 떠 있는 것만')으로 다시 묶음."
   },
   "knowledge-graph-view": {
-    "hash": "beec19120b9d",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.876Z",
+    "hash": "b7f3b225de3a",
+    "result": "updated",
+    "at": "2026-08-25T00:57:06.615Z",
     "tests": [
-      "tests/mapping/scan.test.ts",
-      "tests/viewer/subgraph.test.ts",
-      "tests/viewer/graph.test.ts"
+      "tests/viewer/copyPath.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "copy-code-path 인용을 knowledge-graph-view의 허용·불변·구성요소로 옮김. 복사 성공·실패 표시 검사는 그대로 유지."
   },
   "list-item-readout": {
     "hash": "f5776b2ee4cd",
@@ -424,5 +423,28 @@
       "tests/viewer/sidebarState.test.ts"
     ],
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+  },
+  "viewer-readability": {
+    "hash": "fa0936f2d443",
+    "result": "updated",
+    "at": "2026-08-25T00:57:06.382Z",
+    "tests": [
+      "tests/viewer/listLayout.test.ts",
+      "tests/viewer/detailTitle.test.ts",
+      "tests/viewer/heroSummary.test.ts",
+      "tests/viewer/topnav.test.ts",
+      "tests/store/conceptStore.test.ts"
+    ],
+    "note": "통합된 세 개념의 규칙이 문구 그대로 살아남아, 각 시나리오가 인용하는 규칙 출처만 viewer-readability로 옮김. 검사 내용은 변경 없음(609개 전체 통과)."
+  },
+  "viewer-navigation": {
+    "hash": "4d01ab24e550",
+    "result": "updated",
+    "at": "2026-08-25T00:57:06.461Z",
+    "tests": [
+      "tests/viewer/topnav.test.ts",
+      "tests/viewer/sidebarState.test.ts"
+    ],
+    "note": "group-navbar·sidebar-toggle 규칙이 문구 그대로 살아남아 인용 출처만 옮기고, '곁 목록의' 한정어가 붙은 두 규칙은 인용문을 새 문구에 맞춤."
   }
 }

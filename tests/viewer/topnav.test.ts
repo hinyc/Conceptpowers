@@ -1,18 +1,18 @@
-// @concept:group-navbar
+// @concept:viewer-navigation
 // tests/viewer/topnav.test.ts
 // 상단 묶음 메뉴(assets/topnav.js)를 node:vm + 최소 DOM 스텁으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - group-navbar 구성요소 "묶음 줄: 화면 위쪽에 항상 있는, 묶음 이름들이 나열된 한 줄"
+//  - viewer-navigation 구성요소 "묶음 줄: 화면 위쪽에 항상 있는, 묶음 이름들이 나열된 한 줄"
 //    → 개념 묶음마다 버튼 하나
 //  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 — 기능은 목록의 줄과 지식 그래프의 점으로만 나타난다"
 //    → 기능은 묶음 줄에도 펼침 목록에도 들어오지 않는다
-//  - group-navbar 구성요소 "현재 위치 표시: 지금 보고 있는 항목이 속한 묶음을 눈에 띄게 표시한다"
+//  - viewer-navigation 구성요소 "현재 위치 표시: 지금 보고 있는 항목이 속한 묶음을 눈에 띄게 표시한다"
 //    → 보고 있는 항목의 묶음에 active 표시
-//  - group-navbar 불변 "마우스·터치·키보드 어느 입력으로도 펼침 목록을 열고 닫을 수 있다"
+//  - viewer-navigation 불변 "마우스·터치·키보드 어느 입력으로도 펼침 목록을 열고 닫을 수 있다"
 //    → button 요소 + click/mouseenter 바인딩
-//  - group-navbar 제한 "펼침 목록 항목을 목록 항목 규칙(list-item-readout)과 다르게 그리는 것"
+//  - viewer-navigation 제한 "펼침 목록 항목을 훑는 자리의 표시 원칙(viewer-readability)과 다르게 그리는 것"
 //    → 펼침 목록 항목은 상태 동그라미 + 나뉜 이름표·제목으로 그린다
-//  - list-item-readout 불변 "상태 동그라미를 쓰는 화면에는 그 색이 무슨 뜻인지 알려주는 설명이 같은
+//  - viewer-readability 불변 "상태 동그라미를 쓰는 화면에는 그 색이 무슨 뜻인지 알려주는 설명이 같은
 //    화면 안에 있다" → 펼침 목록 안에 범례를 둔다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -183,7 +183,7 @@ describe('CPTopnav.bar — 묶음 줄과 펼침 목록 (규칙: 묶음 줄 나�
   });
 });
 
-describe('펼침 목록 항목 — list-item-readout 준수', () => {
+describe('펼침 목록 항목 — viewer-readability 준수', () => {
   it('개념 항목은 상태 동그라미 + 나뉜 이름표·제목으로 그린다', () => {
     const ctx = load();
     const bar = ctx.CPTopnav.bar(null)!;

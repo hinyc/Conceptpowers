@@ -1,4 +1,4 @@
-// @concept:globally-unique-slug
+// @concept:globally-unique-slug @concept:viewer-readability
 import { z } from 'zod';
 
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term']);

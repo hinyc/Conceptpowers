@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:atomic-baseline-write
+// @concept:settled-status @concept:atomic-baseline-write @concept:viewer-readability
 // src/store/conceptStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';

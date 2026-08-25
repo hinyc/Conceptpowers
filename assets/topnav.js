@@ -1,4 +1,4 @@
-// @concept:group-navbar @concept:list-item-readout
+// @concept:viewer-navigation @concept:viewer-readability
 // assets/topnav.js — 상단 묶음 메뉴. 묶음 이름을 한 줄로 나열하고, 올리거나 누르면
 // 그 묶음의 항목이 아래로 펼쳐진다(본문을 밀어내지 않고 위에 뜬다).
 // viewer.js가 정의하는 h()/state/statusDot/statusLegend/sideItem에 의존한다
@@ -66,7 +66,7 @@ var CPTopnav = (function () {
     bound = true;
     document.addEventListener('keydown', function (ev) {
       if (ev.key !== 'Escape' || !isMenuOpen()) return;
-      ev.stopImmediatePropagation(); // 곁 목록(sidebar-toggle)의 Esc보다 펼침 목록이 먼저 닫힌다
+      ev.stopImmediatePropagation(); // 곁 목록(viewer-navigation)의 Esc보다 펼침 목록이 먼저 닫힌다
       close();
     });
     document.addEventListener('click', function (ev) {
@@ -77,7 +77,7 @@ var CPTopnav = (function () {
     });
   }
 
-  // 펼침 목록 항목 — 목록 항목 규칙(list-item-readout): 상태 동그라미 + 나뉜 이름표·제목.
+  // 펼침 목록 항목 — 훑기와 읽기(viewer-readability): 상태 동그라미 + 나뉜 이름표·제목.
   function panelItem(entry) {
     var li = h('li', null, [
       statusDot(entry.status),

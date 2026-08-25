@@ -1,0 +1,14 @@
+{
+  "slug": "concept-definition",
+  "group": "governance",
+  "title": "개념 정의",
+  "description": "새 개념을 정의하는 자리. 무엇이 개념이 될 수 있는지 자격을 따지고, 내용은 사람이 쓴다.",
+  "concepts": [
+    "concept-scope",
+    "human-owns-contract"
+  ],
+  "codePaths": [
+    "skills/define-concept/SKILL.md",
+    "src/concept/quality.ts"
+  ]
+}

@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:copy-code-path @concept:settled-status @concept:list-item-readout @concept:detail-summary-outline @concept:detail-title-single @concept:feature-index-row
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-index-row
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -213,7 +213,7 @@ function ul(items, cls) {
   );
 }
 
-// ---- 상세 화면 제목 아래 요약(detail-summary-outline) ----
+// ---- 상세 화면 제목 아래 요약(viewer-readability) ----
 // 뜻이 마무리되는 자리에서 요약을 끊어 이야기 단위 항목으로 나눈다. 끊을 때 글자를
 // 더하거나 빼지 않고 나눌 자리만 정한다. 마침표 바로 앞이 영문자·숫자면(assets/viewer.js,
 // v1.5.1처럼 붙어 있어야 뜻이 통하는 표기) 끊는 자리로 보지 않는다.
@@ -743,7 +743,7 @@ function conceptTable(items, showGroup) {
   );
 }
 // 기능 색인 줄(feature-index-row): 전용 화면 없이 줄 하나로만 보여준다.
-// 이름표·제목은 독립 칸을 지킨다(list-item-readout). 나가는 길은 둘 — 개념 딱지는 그 개념
+// 이름표·제목은 독립 칸을 지킨다(viewer-readability). 나가는 길은 둘 — 개념 딱지는 그 개념
 // 화면으로, 이름표는 그 기능에 초점을 맞춘 지식 그래프로. 코드 경로는 여기 늘어놓지 않는다.
 function featureRowId(slug) {
   return 'frow-' + slug;
@@ -807,7 +807,7 @@ function featureTable(items, focusSlug, withRowId) {
   );
 }
 // 사이드바 항목: 코드 줄 위, 제목 줄 아래. 제목이 코드와 같으면 제목 줄은 만들지 않는다.
-// li의 textContent에 코드와 제목이 모두 남아야 sidebar-search의 걸러내기가 둘 다로 동작한다.
+// li의 textContent에 코드와 제목이 모두 남아야 home-search의 걸러내기가 둘 다로 동작한다.
 function sideItem(href, slug, title, isActive) {
   return h(
     'a',
@@ -825,7 +825,7 @@ function sideItem(href, slug, title, isActive) {
 }
 // active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
 // compact: true면 사이드바용(2줄 스택 + 축약 상태 표시), 기본(목록 페이지)은 표.
-// onlyGroup: 지정하면 그 묶음 섹션만 만든다(곁 목록은 활성 묶음만 담는다 — group-navbar와 역할 분담).
+// onlyGroup: 지정하면 그 묶음 섹션만 만든다(곁 목록은 활성 묶음만 담는다 — viewer-navigation와 역할 분담).
 function conceptListSections(active, compact, onlyGroup) {
   var m = state.manifest;
   var groups = {};
@@ -998,7 +998,7 @@ function statusControl(slug, c) {
   );
 }
 
-// 펼쳐 본 화면의 제목 자리(detail-title-single). 제목은 이름표와 이름 하나로만 이루어지고,
+// 펼쳐 본 화면의 제목 자리(viewer-readability). 제목은 이름표와 이름 하나로만 이루어지고,
 // 그 위나 옆에 부제 자리를 두지 않는다 — 옛 기록에 부제 값이 남아 있어도 되살리지 않는다.
 function conceptHero(slug, c) {
   return h('header', { class: 'hero' }, [

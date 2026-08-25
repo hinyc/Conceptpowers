@@ -2,13 +2,14 @@
   "slug": "viewer-concept-detail",
   "group": "viewer",
   "title": "개념 상세 화면",
-  "description": "개념 하나를 펼쳐 제목·상태·요약과 본문 절들을 보여준다. 제목은 이름표와 이름 하나로만 이루어지고, 제목 아래 요약은 이야기 단위로 끊어 항목마다 한 줄씩 표시한다.",
+  "description": "개념 하나를 펼쳐 읽는 화면. 제목 한 줄과 끊어 보여주는 요약으로 시작한다.",
   "concepts": [
-    "detail-summary-outline",
-    "detail-title-single"
+    "viewer-readability"
   ],
   "codePaths": [
     "assets/viewer.js",
-    "assets/concept.css"
+    "assets/concept.css",
+    "src/schema/concept.ts",
+    "src/store/conceptStore.ts"
   ]
 }

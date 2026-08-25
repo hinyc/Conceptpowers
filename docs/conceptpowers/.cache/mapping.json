@@ -1,37 +1,8 @@
 {
-  "list-item-readout": [
-    "assets/sidebar.js",
-    "assets/topnav.js",
-    "tests/viewer/listLayout.test.ts",
-    "assets/viewer.js",
-    "assets/concept.css"
-  ],
-  "detail-summary-outline": [
-    "tests/viewer/heroSummary.test.ts",
-    "assets/viewer.js",
-    "assets/concept.css"
-  ],
-  "sidebar-search": [
-    "assets/sidebar.js",
-    "tests/viewer/sidebarState.test.ts",
-    "tests/viewer/listLayout.test.ts"
-  ],
-  "sidebar-toggle": [
-    "assets/sidebar.js",
-    "tests/viewer/sidebarState.test.ts"
-  ],
-  "group-navbar": [
-    "assets/topnav.js",
-    "tests/viewer/topnav.test.ts"
-  ],
   "concept-inline-edit": [
     "tests/viewer/serve.test.ts",
-    "tests/store/conceptStore.test.ts",
-    "assets/viewer.js"
-  ],
-  "copy-code-path": [
-    "tests/viewer/copyPath.test.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "tests/store/conceptStore.test.ts"
   ],
   "settled-status": [
     "src/concept/approve.ts",
@@ -55,10 +26,10 @@
     "tests/schema/concept.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
-    "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts",
     "tests/integration/smoke.test.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "src/store/conceptStore.ts",
+    "tests/store/conceptStore.test.ts"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
@@ -277,9 +248,9 @@
     "tests/store/featureStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
+    "tests/integration/smoke.test.ts",
     "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/store/conceptStore.test.ts"
   ],
   "concept-code-mapping": [
     "src/mapping/leadingComment.ts",
@@ -295,11 +266,11 @@
     "tests/schema/concept.test.ts",
     "tests/schema/feature.test.ts",
     "tests/store/featureStore.test.ts",
-    "src/schema/concept.ts",
-    "tests/store/conceptStore.test.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/subgraph.test.ts",
-    "tests/viewer/manifest.test.ts"
+    "tests/viewer/manifest.test.ts",
+    "src/schema/concept.ts",
+    "tests/store/conceptStore.test.ts"
   ],
   "feature-spec-bridge": [
     "src/schema/feature.ts",
@@ -325,19 +296,13 @@
     "tests/viewer/serve.test.ts",
     "tests/store/conceptStore.test.ts"
   ],
-  "detail-title-single": [
-    "tests/viewer/detailTitle.test.ts",
-    "tests/store/conceptStore.test.ts",
-    "assets/viewer.js",
-    "assets/concept.css"
-  ],
   "feature-index-row": [
     "tests/viewer/graph.test.ts",
     "tests/viewer/manifest.test.ts",
     "tests/viewer/featureRoute.test.ts",
-    "tests/viewer/listLayout.test.ts",
     "assets/viewer.js",
-    "assets/concept.css"
+    "assets/concept.css",
+    "tests/viewer/listLayout.test.ts"
   ],
   "knowledge-graph-view": [
     "src/viewer/graph.ts",
@@ -345,10 +310,31 @@
     "tests/viewer/subgraph.test.ts",
     "tests/viewer/highlight.test.ts",
     "assets/viewer.js",
-    "assets/concept.css"
+    "assets/concept.css",
+    "tests/viewer/copyPath.test.ts"
   ],
   "home-search": [
+    "assets/sidebar.js",
+    "assets/viewer.js",
     "tests/viewer/listLayout.test.ts",
-    "assets/viewer.js"
+    "tests/viewer/sidebarState.test.ts"
+  ],
+  "viewer-navigation": [
+    "assets/sidebar.js",
+    "assets/topnav.js",
+    "tests/viewer/sidebarState.test.ts",
+    "tests/viewer/topnav.test.ts"
+  ],
+  "viewer-readability": [
+    "assets/sidebar.js",
+    "assets/topnav.js",
+    "assets/viewer.js",
+    "assets/concept.css",
+    "src/schema/concept.ts",
+    "src/store/conceptStore.ts",
+    "tests/viewer/listLayout.test.ts",
+    "tests/viewer/detailTitle.test.ts",
+    "tests/viewer/heroSummary.test.ts",
+    "tests/store/conceptStore.test.ts"
   ]
 }
