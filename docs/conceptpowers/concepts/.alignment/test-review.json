@@ -310,14 +310,15 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "untrusted-text-sanitization": {
-    "hash": "2dbd2431add0",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.371Z",
+    "hash": "bace9ae001de",
+    "result": "updated",
+    "at": "2026-08-25T01:12:36.758Z",
     "tests": [
       "tests/drift/safe.test.ts",
-      "tests/hooks/preToolUse.test.ts"
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/testScopeGate.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "규칙은 그대로. 새 정의문에 맞춰 검사 이름의 표현('무장해제한다' → '명령이 아니다')만 고침."
   },
   "viewer-local-write-guard": {
     "hash": "58ca1cb549d6",

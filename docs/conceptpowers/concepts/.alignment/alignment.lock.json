@@ -75,25 +75,13 @@
     "hash": "6edf6d4c3f51",
     "at": "2026-08-21T03:59:22.174Z"
   },
-  "copy-code-path": {
-    "hash": "7fe96cb97576",
-    "at": "2026-08-21T03:59:22.174Z"
-  },
   "home-search": {
-    "hash": "76ecb259cb3b",
-    "at": "2026-08-24T01:31:50.949Z"
+    "hash": "dc23149ed876",
+    "at": "2026-08-25T01:10:51.447Z"
   },
   "knowledge-graph-view": {
-    "hash": "5d556a710943",
-    "at": "2026-08-24T08:58:21.324Z"
-  },
-  "sidebar-search": {
-    "hash": "9255705e4426",
-    "at": "2026-08-24T01:31:50.949Z"
-  },
-  "sidebar-toggle": {
-    "hash": "bc23a4f7755d",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "b7f3b225de3a",
+    "at": "2026-08-25T01:10:51.447Z"
   },
   "concept-driven-tests": {
     "hash": "9a0b83e53882",
@@ -103,24 +91,20 @@
     "hash": "026fadf4878b",
     "at": "2026-08-21T03:59:22.174Z"
   },
-  "list-item-readout": {
-    "hash": "f5776b2ee4cd",
-    "at": "2026-08-21T03:59:22.174Z"
-  },
-  "group-navbar": {
-    "hash": "e8e0fd6752f5",
-    "at": "2026-08-21T03:59:22.174Z"
-  },
-  "detail-summary-outline": {
-    "hash": "4df06921425d",
-    "at": "2026-08-21T03:59:22.174Z"
-  },
   "feature-index-row": {
-    "hash": "c651c53e8990",
-    "at": "2026-08-24T08:58:21.324Z"
+    "hash": "8f7432e081fb",
+    "at": "2026-08-25T01:10:51.447Z"
   },
-  "detail-title-single": {
-    "hash": "1b3de3fe7f2a",
-    "at": "2026-08-24T08:58:21.324Z"
+  "concept-scope": {
+    "hash": "770336299cfc",
+    "at": "2026-08-25T01:10:51.447Z"
+  },
+  "viewer-navigation": {
+    "hash": "4d01ab24e550",
+    "at": "2026-08-25T01:10:51.447Z"
+  },
+  "viewer-readability": {
+    "hash": "fa0936f2d443",
+    "at": "2026-08-25T01:10:51.447Z"
   }
 }

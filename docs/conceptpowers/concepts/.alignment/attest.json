@@ -220,12 +220,39 @@
     ]
   },
   "untrusted-text-sanitization": {
-    "hash": "2dbd2431add0",
+    "hash": "bace9ae001de",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.692Z",
+    "at": "2026-08-25T01:12:36.460Z",
     "compared": [
-      "viewer-local-write-guard"
-    ]
+      "audit-gap-detection",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "정의문만 약속 서술로 교정. 허용·제한·불변 규칙과 상호작용은 그대로여서 다른 개념과의 경계가 바뀌지 않음. 개념 자격 기준(concept-scope)의 약속/기법 테스트를 통과하도록 표현만 맞춤."
   },
   "atomic-baseline-write": {
     "hash": "9f8c6ae2b554",

@@ -1357,5 +1357,41 @@
     "at": "2026-08-25T00:55:34.001Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "feature-index-row",
+    "hash": "8f7432e081fb",
+    "prevHash": "0e8c05578c41",
+    "reason": "list-item-readout이 viewer-readability로 통합되어 사라진 개념을 가리키던 참조를 옮김 (내용 변경 없음)",
+    "at": "2026-08-25T01:10:51.447Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "home-search",
+    "hash": "dc23149ed876",
+    "prevHash": "dc23149ed876",
+    "reason": "sidebar-search 흡수 — 개념 자격 기준(concept-scope) 규칙 5: 목적이 같은 개념을 따로 세우지 않는다. 넓게 찾기와 좁히기를 한 개념의 두 자리로 통합",
+    "at": "2026-08-25T01:10:51.447Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "b7f3b225de3a",
+    "prevHash": "b7f3b225de3a",
+    "reason": "copy-code-path 흡수 — 개념 자격 기준(concept-scope) 규칙 1·4: 버튼 하나만 정하는 규칙은 개념으로 두지 않고, 그 화면 개념 안에 둔다",
+    "at": "2026-08-25T01:10:51.447Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "bace9ae001de",
+    "prevHash": "2dbd2431add0",
+    "reason": "개념 자격 기준(concept-scope): 정의문을 기법 서술에서 사용자 약속 서술로 교정 — 규칙 내용 변경 없음",
+    "at": "2026-08-25T01:12:11.596Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

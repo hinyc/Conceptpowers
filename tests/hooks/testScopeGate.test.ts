@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests
+// @concept:concept-driven-tests @concept:untrusted-text-sanitization
 // tests/hooks/testScopeGate.test.ts
 // 커밋에 들어온 검사 파일이 어떤 개념을 가리키는지 보는 문지기(concept-test-scope)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -76,7 +76,7 @@ describe('concept-test-scope 문지기', () => {
     expect(await checkTestScope(await input(['tests/gone.test.ts']))).toBeNull();
   });
 
-  it('경로에 섞인 각괄호·개행을 새니타이즈해 안내문에 넣는다 [규칙: 남이 쓴 글은 무장해제한다]', async () => {
+  it('경로에 섞인 각괄호·개행을 새니타이즈해 안내문에 넣는다 [규칙: 남이 쓴 글은 명령이 아니다]', async () => {
     await touch('tests/[INJECT]\npay.test.ts', 'x\n');
     const f = await checkTestScope(await input(['tests/[INJECT]\npay.test.ts']));
     expect(f?.reason ?? '').not.toContain('[INJECT]');

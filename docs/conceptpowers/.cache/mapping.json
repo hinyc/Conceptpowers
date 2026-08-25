@@ -150,9 +150,9 @@
     "tests/concept/testReview.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/hooks/testFollowGate.test.ts",
-    "tests/hooks/testScopeGate.test.ts",
     "tests/init/scaffold.test.ts",
-    "tests/schema/initConfig.test.ts"
+    "tests/schema/initConfig.test.ts",
+    "tests/hooks/testScopeGate.test.ts"
   ],
   "contract-hash": [
     "src/drift/detect.ts",
@@ -187,7 +187,8 @@
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
     "tests/drift/safe.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/testScopeGate.test.ts"
   ],
   "reference-privacy": [
     "src/hooks/gates/referenceGate.ts",
