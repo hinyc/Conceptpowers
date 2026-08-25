@@ -839,7 +839,7 @@ function sideItem(href, slug, title, isActive) {
 }
 // active: null 또는 { kind: 'concept'|'feature', slug } — 사이드바에서 현재 보고 있는 항목 강조용.
 // compact: true면 사이드바용(2줄 스택 + 축약 상태 표시), 기본(목록 페이지)은 표.
-// onlyGroup: 지정하면 그 묶음 섹션만 만든다(곁 목록은 활성 묶음만 담는다 — viewer-navigation와 역할 분담).
+// onlyGroup: 지정하면 그 묶음 섹션만 만든다(곁 목록은 활성 묶음만 담는다 — viewer-navigation과 역할 분담).
 function conceptListSections(active, compact, onlyGroup) {
   var m = state.manifest;
   var groups = {};

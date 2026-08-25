@@ -4269,10 +4269,15 @@ function assertAliasesFree(concept, existing, target, root) {
     if (fileFor(root, other) === target) continue;
     for (const alias of other.aliases) takenBy.set(alias, other.slug);
   }
+  const seen = /* @__PURE__ */ new Set();
   for (const alias of concept.aliases) {
     if (slugs.has(alias)) {
       throw new Error(`Alias collides with a concept slug: "${alias}" (aliases are not keys)`);
     }
+    if (seen.has(alias)) {
+      throw new Error(`Duplicate alias within the concept: "${alias}" is listed twice`);
+    }
+    seen.add(alias);
     const owner = takenBy.get(alias);
     if (owner) {
       throw new Error(`Duplicate alias: "${alias}" is already used by ${owner}`);

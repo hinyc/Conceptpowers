@@ -449,14 +449,14 @@
     "note": "group-navbar·sidebar-toggle 규칙이 문구 그대로 살아남아 인용 출처만 옮기고, '곁 목록의' 한정어가 붙은 두 규칙은 인용문을 새 문구에 맞춤."
   },
   "concept-aliases": {
-    "hash": "d8c746493de9",
+    "hash": "5e985044fbf4",
     "result": "updated",
-    "at": "2026-08-25T02:03:08.881Z",
+    "at": "2026-08-25T02:25:44.462Z",
     "tests": [
-      "tests/viewer/heroAliases.test.ts",
       "tests/concept/aliases.test.ts",
-      "tests/viewer/search.test.ts"
+      "tests/viewer/search.test.ts",
+      "tests/viewer/heroAliases.test.ts"
     ],
-    "note": "새 표시 규칙 3건을 확인하는 검사 파일(heroAliases)을 추가했다 — 별칭이 있을 때의 표기, 제목보다 뒤에 오는 순서, 없을 때 자리를 만들지 않는 것(aliases 항목 자체가 없는 옛 기록 포함). 기존 검사는 규칙 문구가 그대로라 변경 없음."
+    "note": "넓힌 규칙에 맞춰 개념 안 같은 별칭 반복을 거절하는 시나리오를 추가하고 헤더 인용을 새 문구로 맞춤. 나머지 규칙은 그대로라 기존 시나리오 변경 없음."
   }
 }

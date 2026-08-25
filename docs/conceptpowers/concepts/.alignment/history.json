@@ -1438,5 +1438,14 @@
     "at": "2026-08-25T02:03:39.225Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "concept-aliases",
+    "hash": "5e985044fbf4",
+    "prevHash": "d8c746493de9",
+    "reason": "코드 리뷰 발견사항 반영 — 별칭 유일성 규칙을 개념 간뿐 아니라 개념 안 반복까지 판정 가능하게 넓힘 (저장 거절 구현과 검사가 이미 있어 규칙을 맞춤)",
+    "at": "2026-08-25T02:25:31.828Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

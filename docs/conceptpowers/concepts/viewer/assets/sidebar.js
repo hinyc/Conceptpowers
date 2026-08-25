@@ -57,7 +57,7 @@ var CPSidebar = (function () {
     escBound = true;
     document.addEventListener('keydown', function (ev) {
       if (ev.key !== 'Escape') return;
-      // 상단 묶음 메뉴가 펼쳐져 있으면 그쪽이 먼저 닫힌다(viewer-navigation와의 층 순서).
+      // 상단 묶음 메뉴가 펼쳐져 있으면 그쪽이 먼저 닫힌다(viewer-navigation과의 층 순서).
       if (typeof CPTopnav !== 'undefined' && CPTopnav.isMenuOpen()) return;
       // 상세 화면을 떠나면 currentShell은 분리된 노드가 된다 — 그때의 Esc는 무시해야
       // 사용자가 명시적으로 닫지 않은 상태를 localStorage에 쓰지 않는다.

@@ -504,9 +504,9 @@
     "note": "상단 묶음 메뉴와 곁 목록 여닫이 통합(group-navbar+sidebar-toggle). 항목 생김새는 viewer-readability에, 곁 목록 안 검색은 home-search에 위임해 규칙 중복 없음."
   },
   "concept-aliases": {
-    "hash": "d8c746493de9",
+    "hash": "5e985044fbf4",
     "result": "pass",
-    "at": "2026-08-25T02:03:08.834Z",
+    "at": "2026-08-25T02:25:44.413Z",
     "compared": [
       "audit-gap-detection",
       "concept-code-mapping",
@@ -536,6 +536,6 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "상세 화면 표시 규칙 3건 추가. 훑기와 읽기(viewer-readability)의 '제목 위나 옆에 부제 자리를 두지 않는다'는 위·옆을 막는 규칙이고 별칭 줄은 제목 아래이므로 걸리지 않는다. '별칭이 없으면 자리를 만들지 않는다'가 제목 아래 줄 수가 항목마다 달라지는 문제도 실제 내용이 있을 때로 한정한다. 생김새(색·크기)는 개념 자격 기준(concept-scope) 4번에 따라 개념이 아니라 상위 기준 문서에 적었다."
+    "note": "별칭 유일성 규칙 한 줄을 개념 안 반복까지 포함하도록 넓힌 것뿐 — 다른 개념이 허용·제한하는 어떤 행동과도 겹치지 않고, 이름표 규칙(globally-unique-slug)의 열쇠 유일성과는 여전히 역할이 갈린다. 충돌 없음."
   }
 }
