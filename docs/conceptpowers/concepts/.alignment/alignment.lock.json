@@ -1,114 +1,114 @@
 {
   "human-owns-contract": {
-    "hash": "24eca08d0a21",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:88f8d023dcc3",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "settled-status": {
-    "hash": "85e5ca1e24b2",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:aa2204a72120",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "audit-gap-detection": {
-    "hash": "98df6e993653",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:875c3d62d892",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "concept-code-mapping": {
-    "hash": "536ce7b7e677",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:230c58da9311",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "contract-hash": {
-    "hash": "f4d2ce0f2941",
-    "at": "2026-08-25T03:37:24.928Z"
+    "hash": "2:5d978bfa169c",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "drift-reconcile": {
-    "hash": "9d8e1b91e744",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:685eec3d03a2",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "feature-spec-bridge": {
-    "hash": "606b7250dfb4",
-    "at": "2026-08-24T08:58:21.324Z"
+    "hash": "2:13b248fd8066",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "globally-unique-slug": {
-    "hash": "a74530aeb70f",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:dc07df115d93",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "output-locale": {
-    "hash": "582e42ab52d1",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:6bda9b859b20",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "pending-conflict-tracking": {
-    "hash": "bf1404011a90",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:8cc343e68cfe",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "reference-first-duty": {
-    "hash": "9673a3dbd422",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:5eab59d9c8b2",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "atomic-baseline-write": {
-    "hash": "9f8c6ae2b554",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:c6fde2d59eef",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "generated-not-hand-edited": {
-    "hash": "34e7fa7b82a9",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:3044eb9c9e1c",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "init-gate": {
-    "hash": "99ea56612c8d",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:0960f7466875",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "plugin-version-sync": {
-    "hash": "dbb458bc5169",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:0a2db8dbcdcc",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "reference-privacy": {
-    "hash": "842610b39e5c",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:ca7eda0da323",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "untrusted-text-sanitization": {
-    "hash": "bace9ae001de",
-    "at": "2026-08-25T01:21:57.881Z"
+    "hash": "2:f3baa3c0db16",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "viewer-local-write-guard": {
-    "hash": "cfaae826426f",
-    "at": "2026-08-25T03:37:24.928Z"
+    "hash": "2:6ca3f6a0f0a8",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "concept-inline-edit": {
-    "hash": "6edf6d4c3f51",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:8d2fd6af69c7",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "home-search": {
-    "hash": "dc23149ed876",
-    "at": "2026-08-25T01:10:51.447Z"
+    "hash": "2:723c2454a924",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "knowledge-graph-view": {
-    "hash": "b7f3b225de3a",
-    "at": "2026-08-25T01:10:51.447Z"
+    "hash": "2:d69cbcb5d09d",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "concept-driven-tests": {
-    "hash": "9a0b83e53882",
-    "at": "2026-08-24T01:31:50.949Z"
+    "hash": "2:c9bd2ec63943",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "governance-mode": {
-    "hash": "026fadf4878b",
-    "at": "2026-08-21T03:59:22.174Z"
+    "hash": "2:cc4be4a2a118",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "feature-index-row": {
-    "hash": "8f7432e081fb",
-    "at": "2026-08-25T01:10:51.447Z"
+    "hash": "2:564e53ced1c8",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "concept-scope": {
-    "hash": "770336299cfc",
-    "at": "2026-08-25T01:10:51.447Z"
+    "hash": "2:f957e1ff4163",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "viewer-navigation": {
-    "hash": "4d01ab24e550",
-    "at": "2026-08-25T01:10:51.447Z"
+    "hash": "2:a77b0117682c",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "viewer-readability": {
-    "hash": "c6ee62a4f000",
-    "at": "2026-08-25T03:37:24.928Z"
+    "hash": "2:748895083ba6",
+    "at": "2026-08-25T03:39:40.208Z"
   },
   "concept-aliases": {
-    "hash": "5e985044fbf4",
-    "at": "2026-08-25T02:26:26.820Z"
+    "hash": "2:d7e50943f2f9",
+    "at": "2026-08-25T03:39:40.208Z"
   }
 }
