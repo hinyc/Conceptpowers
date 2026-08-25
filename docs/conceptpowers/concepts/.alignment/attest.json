@@ -1,27 +1,81 @@
 {
   "human-owns-contract": {
-    "hash": "24eca08d0a21",
+    "hash": "2:88f8d023dcc3",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.100Z",
-    "compared": [
-      "settled-status"
-    ]
-  },
-  "settled-status": {
-    "hash": "85e5ca1e24b2",
-    "result": "pass",
-    "at": "2026-08-24T05:34:32.325Z",
-    "compared": [
-      "governance-mode",
-      "human-owns-contract"
-    ]
-  },
-  "home-search": {
-    "hash": "dc23149ed876",
-    "result": "pass",
-    "at": "2026-08-25T00:56:49.214Z",
+    "at": "2026-08-25T03:44:01.969Z",
     "compared": [
       "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "settled-status": {
+    "hash": "2:aa2204a72120",
+    "result": "pass",
+    "at": "2026-08-25T03:44:02.416Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "home-search": {
+    "hash": "2:723c2454a924",
+    "result": "pass",
+    "at": "2026-08-25T03:44:03.544Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
@@ -44,12 +98,11 @@
       "viewer-local-write-guard",
       "concept-inline-edit",
       "feature-index-row",
-      "home-search",
       "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "sidebar-search 흡수. 넓게 찾기와 좁히기를 한 개념의 두 자리로 두고, 곁 목록 여닫이·Esc 우선순위는 viewer-navigation에 남겨 충돌 없음."
+    "note": "viewer-navigation과 Esc·여닫이 경계 상호 일치(규칙은 navigation 불변에 단일 존재). concept-aliases 별칭 검색과 일치."
   },
   "sidebar-search": {
     "hash": "9255705e4426",
@@ -70,21 +123,47 @@
     ]
   },
   "concept-inline-edit": {
-    "hash": "6edf6d4c3f51",
+    "hash": "2:8d2fd6af69c7",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.819Z",
-    "compared": [
-      "human-owns-contract",
-      "settled-status",
-      "viewer-local-write-guard"
-    ]
-  },
-  "knowledge-graph-view": {
-    "hash": "b7f3b225de3a",
-    "result": "pass",
-    "at": "2026-08-25T00:56:49.490Z",
+    "at": "2026-08-25T03:44:03.329Z",
     "compared": [
       "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "knowledge-graph-view": {
+    "hash": "2:d69cbcb5d09d",
+    "result": "pass",
+    "at": "2026-08-25T03:44:03.655Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
@@ -108,11 +187,10 @@
       "concept-inline-edit",
       "feature-index-row",
       "home-search",
-      "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "copy-code-path 흡수. 경로 복사 규칙을 그래프 화면 개념 안으로 옮겼을 뿐 기존 규칙과 상충 없음."
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "copy-code-path": {
     "hash": "7fe96cb97576",
@@ -124,16 +202,15 @@
     ]
   },
   "contract-hash": {
-    "hash": "f4d2ce0f2941",
+    "hash": "2:5d978bfa169c",
     "result": "pass",
-    "at": "2026-08-25T03:36:33.918Z",
+    "at": "2026-08-25T03:44:01.411Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
-      "contract-hash",
       "drift-reconcile",
       "feature-spec-bridge",
       "globally-unique-slug",
@@ -157,87 +234,48 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "상호작용을 약속에서 제외하고 판을 도입한 재정의. 어긋남 결산(drift-reconcile)의 '기준선을 현재 지문으로 다시 맞춘다'와 상충 없음 — 판이 다른 기준선의 재기준도 같은 결산 자리에서 일어난다. 상호작용에 판정 규칙을 적지 않는다는 새 불변은 개념 자격 기준(concept-scope)의 3층 분리와 같은 방향. 다른 28개 개념의 상호작용은 전수 감사 결과 이미 역할 경계 서술이거나 규칙이 허용·제한·불변에 중복 존재해 위배 없음 (설치판 지문 병기)"
+    "note": "새 불변 2건(상호작용 규칙 금지·판 비교 금지)을 28개 전체 상호작용과 대조 — 규칙성 문장은 예외 없이 해당 개념의 restrict/불변에 중복 존재해 위반 0. drift-reconcile의 '기준선 재맞춤'과 재기준 동작 일치."
   },
   "drift-reconcile": {
-    "hash": "9d8e1b91e744",
+    "hash": "2:685eec3d03a2",
     "result": "pass",
-    "at": "2026-08-24T05:34:31.864Z",
+    "at": "2026-08-25T03:44:01.524Z",
     "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
       "contract-hash",
-      "governance-mode"
-    ]
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "governance-mode와의 경계 재확인 — '커밋을 막지 않는다'는 커밋 뒤 결산의 제한이고 커밋 순간 차단은 문지기 강도 소관이라 비충돌. 판이 다른 기준선의 조용한 재기준은 '무시 기록' 대상이 아님(어긋남 자체가 아님)을 contract-hash 새 불변과 대조 확인."
   },
   "audit-gap-detection": {
-    "hash": "98df6e993653",
+    "hash": "2:875c3d62d892",
     "result": "pass",
-    "at": "2026-08-24T05:29:57.637Z",
+    "at": "2026-08-25T03:44:00.804Z",
     "compared": [
-      "concept-code-mapping",
-      "governance-mode"
-    ]
-  },
-  "concept-code-mapping": {
-    "hash": "536ce7b7e677",
-    "result": "pass",
-    "at": "2026-08-24T05:34:31.681Z",
-    "compared": [
-      "audit-gap-detection",
-      "feature-spec-bridge"
-    ]
-  },
-  "feature-spec-bridge": {
-    "hash": "606b7250dfb4",
-    "result": "pass",
-    "at": "2026-08-24T08:25:55.225Z",
-    "compared": [
-      "knowledge-graph-view",
-      "feature-index-row",
-      "concept-code-mapping",
-      "globally-unique-slug"
-    ]
-  },
-  "globally-unique-slug": {
-    "hash": "a74530aeb70f",
-    "result": "pass",
-    "at": "2026-08-24T05:34:31.985Z",
-    "compared": [
-      "feature-spec-bridge",
-      "concept-code-mapping"
-    ]
-  },
-  "pending-conflict-tracking": {
-    "hash": "bf1404011a90",
-    "result": "pass",
-    "at": "2026-08-24T05:34:32.209Z",
-    "compared": [
-      "settled-status",
-      "human-owns-contract"
-    ]
-  },
-  "reference-first-duty": {
-    "hash": "9673a3dbd422",
-    "result": "pass",
-    "at": "2026-08-24T05:34:32.266Z",
-    "compared": [
-      "human-owns-contract",
-      "reference-privacy"
-    ]
-  },
-  "output-locale": {
-    "hash": "582e42ab52d1",
-    "result": "pass",
-    "at": "2026-08-24T05:34:32.152Z",
-    "compared": [
-      "human-owns-contract"
-    ]
-  },
-  "viewer-local-write-guard": {
-    "hash": "cfaae826426f",
-    "result": "pass",
-    "at": "2026-08-25T03:36:34.358Z",
-    "compared": [
-      "audit-gap-detection",
       "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
@@ -266,15 +304,15 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "정의문만 약속 서술로 교정. 허용·제한·불변 규칙 그대로라 다른 개념과의 경계 불변 (설치판 지문 병기)"
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
-  "untrusted-text-sanitization": {
-    "hash": "bace9ae001de",
+  "concept-code-mapping": {
+    "hash": "2:230c58da9311",
     "result": "pass",
-    "at": "2026-08-25T01:12:36.460Z",
+    "at": "2026-08-25T03:44:01.058Z",
     "compared": [
       "audit-gap-detection",
-      "concept-code-mapping",
+      "concept-aliases",
       "concept-driven-tests",
       "concept-scope",
       "contract-hash",
@@ -301,69 +339,497 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "정의문만 약속 서술로 교정. 허용·제한·불변 규칙과 상호작용은 그대로여서 다른 개념과의 경계가 바뀌지 않음. 개념 자격 기준(concept-scope)의 약속/기법 테스트를 통과하도록 표현만 맞춤."
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "feature-spec-bridge": {
+    "hash": "2:13b248fd8066",
+    "result": "pass",
+    "at": "2026-08-25T03:44:01.634Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "globally-unique-slug": {
+    "hash": "2:dc07df115d93",
+    "result": "pass",
+    "at": "2026-08-25T03:44:01.743Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "pending-conflict-tracking": {
+    "hash": "2:8cc343e68cfe",
+    "result": "pass",
+    "at": "2026-08-25T03:44:02.196Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "reference-first-duty": {
+    "hash": "2:5eab59d9c8b2",
+    "result": "pass",
+    "at": "2026-08-25T03:44:02.306Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "output-locale": {
+    "hash": "2:6bda9b859b20",
+    "result": "pass",
+    "at": "2026-08-25T03:44:02.084Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "viewer-local-write-guard": {
+    "hash": "2:6ca3f6a0f0a8",
+    "result": "pass",
+    "at": "2026-08-25T03:44:03.217Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "untrusted-text-sanitization과 두 겹 방어 역할 분리 유지. settled-status 전이 규칙과 비충돌."
+  },
+  "untrusted-text-sanitization": {
+    "hash": "2:f3baa3c0db16",
+    "result": "pass",
+    "at": "2026-08-25T03:44:03.103Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "atomic-baseline-write": {
-    "hash": "9f8c6ae2b554",
+    "hash": "2:c6fde2d59eef",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.383Z",
+    "at": "2026-08-25T03:44:02.524Z",
     "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
       "drift-reconcile",
-      "pending-conflict-tracking"
-    ]
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "generated-not-hand-edited": {
-    "hash": "34e7fa7b82a9",
+    "hash": "2:3044eb9c9e1c",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.436Z",
+    "at": "2026-08-25T03:44:02.636Z",
     "compared": [
-      "plugin-version-sync"
-    ]
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "plugin-version-sync": {
-    "hash": "dbb458bc5169",
+    "hash": "2:0a2db8dbcdcc",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.550Z",
+    "at": "2026-08-25T03:44:02.866Z",
     "compared": [
-      "generated-not-hand-edited"
-    ]
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "generated-not-hand-edited·atomic-baseline-write와 상보 — 저장 방식 규칙은 atomic 불변에 단일 존재. 1.9.0 실동작(같은 판 no-op, baseline 불변, 한 줄 알림)으로 관측 검증됨."
   },
   "init-gate": {
-    "hash": "99ea56612c8d",
+    "hash": "2:0960f7466875",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.490Z",
+    "at": "2026-08-25T03:44:02.755Z",
     "compared": [
-      "governance-mode"
-    ]
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "reference-privacy": {
-    "hash": "842610b39e5c",
+    "hash": "2:ca7eda0da323",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.610Z",
+    "at": "2026-08-25T03:44:02.979Z",
     "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
       "reference-first-duty",
-      "untrusted-text-sanitization"
-    ]
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "concept-driven-tests": {
-    "hash": "9a0b83e53882",
+    "hash": "2:c9bd2ec63943",
     "result": "pass",
-    "at": "2026-08-24T05:34:31.751Z",
+    "at": "2026-08-25T03:44:01.173Z",
     "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
+      "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
       "governance-mode",
-      "drift-reconcile"
-    ]
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "governance-mode": {
-    "hash": "026fadf4878b",
+    "hash": "2:cc4be4a2a118",
     "result": "pass",
-    "at": "2026-08-24T05:34:32.045Z",
+    "at": "2026-08-25T03:44:01.854Z",
     "compared": [
-      "settled-status",
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "contract-hash",
       "drift-reconcile",
-      "reference-privacy"
-    ]
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "feature-index-row",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "drift-reconcile·settled-status·init-gate와의 역할 분리 재확인. '지키는 대상은 같다' 불변은 초기화 관문(강도 미적용)과 적용 범위가 달라 비충돌."
   },
   "list-item-readout": {
     "hash": "f5776b2ee4cd",
@@ -394,14 +860,64 @@
     ]
   },
   "feature-index-row": {
-    "hash": "8f7432e081fb",
+    "hash": "2:564e53ced1c8",
     "result": "pass",
-    "at": "2026-08-25T00:56:49.645Z",
+    "at": "2026-08-25T03:44:03.439Z",
     "compared": [
       "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
+      "contract-hash",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "pending-conflict-tracking",
+      "reference-first-duty",
+      "settled-status",
+      "atomic-baseline-write",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "viewer-local-write-guard",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+  },
+  "detail-title-single": {
+    "hash": "1b3de3fe7f2a",
+    "result": "pass",
+    "at": "2026-08-24T08:21:30.271Z",
+    "compared": [
+      "detail-summary-outline",
+      "list-item-readout",
+      "concept-inline-edit",
+      "contract-hash",
+      "globally-unique-slug",
+      "feature-index-row",
+      "plugin-version-sync",
+      "generated-not-hand-edited"
+    ]
+  },
+  "concept-scope": {
+    "hash": "2:f957e1ff4163",
+    "result": "pass",
+    "at": "2026-08-25T03:44:01.287Z",
+    "compared": [
+      "audit-gap-detection",
+      "concept-aliases",
+      "concept-code-mapping",
+      "concept-driven-tests",
       "contract-hash",
       "drift-reconcile",
       "feature-spec-bridge",
@@ -426,66 +942,12 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "사라진 list-item-readout 참조를 viewer-readability로 옮긴 참조 정정. 규칙 내용 변경 없음."
-  },
-  "detail-title-single": {
-    "hash": "1b3de3fe7f2a",
-    "result": "pass",
-    "at": "2026-08-24T08:21:30.271Z",
-    "compared": [
-      "detail-summary-outline",
-      "list-item-readout",
-      "concept-inline-edit",
-      "contract-hash",
-      "globally-unique-slug",
-      "feature-index-row",
-      "plugin-version-sync",
-      "generated-not-hand-edited"
-    ]
-  },
-  "concept-scope": {
-    "hash": "770336299cfc",
-    "result": "pass",
-    "at": "2026-08-25T00:34:58.503Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "copy-code-path",
-      "detail-summary-outline",
-      "detail-title-single",
-      "feature-index-row",
-      "group-navbar",
-      "home-search",
-      "knowledge-graph-view",
-      "list-item-readout",
-      "sidebar-search",
-      "sidebar-toggle"
-    ],
-    "note": "기존 31개 전부와 대조. settled-status(승격 조건)와는 검사 시점이 달라 충돌 아님 — 이 기준은 정의 시점, 신호등은 승격 시점. 초안의 '화면 표기 규칙은 기능 기록에 적는다'는 feature 스키마에 규칙 필드가 없고 feature-spec-bridge가 기능 기록 내용을 한정하므로 실행 불가 — 목적지를 상위 기준 문서로 통일해 해소. 그 외 충돌 없음."
+    "note": "platform 개념들의 정의문이 약속 서술임을 재확인(절충 조항 적용). settled-status와 검사 시점 분리 유지."
   },
   "viewer-readability": {
-    "hash": "c6ee62a4f000",
+    "hash": "2:748895083ba6",
     "result": "pass",
-    "at": "2026-08-25T03:36:34.138Z",
+    "at": "2026-08-25T03:44:04.062Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
@@ -513,17 +975,17 @@
       "feature-index-row",
       "home-search",
       "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
+      "viewer-navigation"
     ],
-    "note": "상호작용의 판정 규칙 한 문장을 불변으로 옮긴 것뿐 — 규칙 내용 동일, 다른 개념과의 경계 불변. contract-hash 새 불변(상호작용에 규칙 금지)을 따르기 위한 이동 (설치판 지문 병기)"
+    "note": "상호작용에서 옮긴 불변(본문 각 절 원형 유지)이 요약 끊기 규칙과 상보. concept-aliases 별칭 줄·detail 규칙과 비충돌."
   },
   "viewer-navigation": {
-    "hash": "4d01ab24e550",
+    "hash": "2:a77b0117682c",
     "result": "pass",
-    "at": "2026-08-25T00:56:49.067Z",
+    "at": "2026-08-25T03:44:03.933Z",
     "compared": [
       "audit-gap-detection",
+      "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
@@ -548,15 +1010,14 @@
       "feature-index-row",
       "home-search",
       "knowledge-graph-view",
-      "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "상단 묶음 메뉴와 곁 목록 여닫이 통합(group-navbar+sidebar-toggle). 항목 생김새는 viewer-readability에, 곁 목록 안 검색은 home-search에 위임해 규칙 중복 없음."
+    "note": "home-search·viewer-readability와의 3자 경계 상호 일치. Esc 우선순위 규칙 단일 소유 확인."
   },
   "concept-aliases": {
-    "hash": "5e985044fbf4",
+    "hash": "2:d7e50943f2f9",
     "result": "pass",
-    "at": "2026-08-25T02:25:44.413Z",
+    "at": "2026-08-25T03:44:00.922Z",
     "compared": [
       "audit-gap-detection",
       "concept-code-mapping",
@@ -586,6 +1047,6 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "별칭 유일성 규칙 한 줄을 개념 안 반복까지 포함하도록 넓힌 것뿐 — 다른 개념이 허용·제한하는 어떤 행동과도 겹치지 않고, 이름표 규칙(globally-unique-slug)의 열쇠 유일성과는 여전히 역할이 갈린다. 충돌 없음."
+    "note": "viewer-readability의 부제 금지(제목 위·옆)와 별칭 줄(제목 아래·별칭 명시)이 비충돌. globally-unique-slug(열쇠 유일)와 역할 분리. home-search 검색 규칙과 일치."
   }
 }
