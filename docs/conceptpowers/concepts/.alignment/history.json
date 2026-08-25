@@ -1429,5 +1429,14 @@
     "at": "2026-08-25T02:00:57.674Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "concept-aliases",
+    "hash": "d8c746493de9",
+    "prevHash": "d8c746493de9",
+    "reason": "별칭이 있을 때 상세 화면에 드러나게 함 — 어떤 말이 혼용되고 있는지 보여야 정리할 대상이 보인다. 없을 때는 자리를 만들지 않아 제목 아래가 들쭉날쭉해지지 않게 한다",
+    "at": "2026-08-25T02:03:39.225Z",
+    "ignored": false,
+    "aligned": true
   }
 ]

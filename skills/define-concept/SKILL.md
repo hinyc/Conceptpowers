@@ -74,6 +74,9 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
    - **Title 표기 (개념 `viewer-readability`):** `title`은 짧고 평이한 한국어 이름표로 쓴다
      (예: "개념 없는 코드 감사"). 은유적 부제를 따로 만들어 얹지 않는다 — 부제를 담을 항목 자체가
      없다. 뷰어 제목은 `slug + " | " + title`로 조합되므로 title 하나면 충분하다.
+   - **Aliases (개념 `concept-aliases`):** 정식 이름은 하나다. `aliases`에는 **이미 다르게
+     부르고 있는 말**만 적는다 — 새 이름을 지어 넣지 않는다(수집이지 발명이 아니다). 어떤 개념의
+     slug나 다른 개념의 별칭과 겹치면 저장이 거절된다. 혼용이 없으면 비워 둔다 — 빈 목록이 정상이다.
 3. Fill in the following structure together with the user:
    - **Description** (`description`): core definition, analogy, components, example
    - **Purpose** (`purpose`): reason for existence, benefits, vision, pain points

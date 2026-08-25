@@ -173,6 +173,20 @@ Editing a concept's content (`conceptpowers:update-baseline`) is the one path th
 
 When a green concept conflicts with others: **green wins** over red (the red one is revised/re-flagged), and a **green ↔ green** conflict stops and is escalated to you.
 
+### Concept aliases
+
+A concept has exactly **one official name** (`slug` + `title`). The optional `aliases` array exists
+for one purpose: when different people already call the same thing by different names, record those
+names so anyone searching by them lands on the one concept — and learns its official name. Aliases
+are **collected, never invented**: don't mint new names into the list, and delete an alias once the
+mixed usage is gone. An empty list is the healthy state.
+
+Mechanics: home search matches aliases (case-insensitive, partial), results always show the official
+name, and the detail view renders an "aliases:" line under the title only when the list is non-empty.
+Aliases are not keys — `@concept` tags, feature specs, and relations use the slug only — and the
+store rejects an alias that collides with any slug or any other concept's alias. Alias edits don't
+count as contract drift, so tidying them never triggers the commit gate.
+
 ### What happens at commit time
 
 A `git commit` is bracketed by two hooks, with the verification skills expected to have run in between. This is where the governance actually bites.
