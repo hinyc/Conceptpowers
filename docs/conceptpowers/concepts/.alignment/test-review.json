@@ -447,5 +447,15 @@
       "tests/viewer/sidebarState.test.ts"
     ],
     "note": "group-navbar·sidebar-toggle 규칙이 문구 그대로 살아남아 인용 출처만 옮기고, '곁 목록의' 한정어가 붙은 두 규칙은 인용문을 새 문구에 맞춤."
+  },
+  "concept-aliases": {
+    "hash": "35e95e0da72a",
+    "result": "updated",
+    "at": "2026-08-25T01:56:28.336Z",
+    "tests": [
+      "tests/concept/aliases.test.ts",
+      "tests/viewer/search.test.ts"
+    ],
+    "note": "'별칭이 없어도 성립한다'를 '별칭이 없는 것이 정상이다'로 바꾼 새 문구에 인용을 맞추고, 새 불변 '정식 이름은 언제나 하나다'를 확인하는 시나리오를 추가했다. 나머지 규칙은 문구가 그대로라 시나리오 변경 없음."
   }
 }
