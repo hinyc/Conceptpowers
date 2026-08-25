@@ -20,6 +20,7 @@ var I18N = {
     colGroup: '묶음',
     statusApproved: '승인됨',
     statusUnapproved: '미승인',
+    aliases: '별칭',
     statusPending: '보류',
     featureList: '기능 목록',
     relatedFeatures: '관련 기능',
@@ -99,6 +100,7 @@ var I18N = {
     colGroup: 'Group',
     statusApproved: 'Approved',
     statusUnapproved: 'Unapproved',
+    aliases: 'Aliases',
     statusPending: 'Pending',
     featureList: 'Features',
     relatedFeatures: 'Related Features',
@@ -1013,9 +1015,15 @@ function statusControl(slug, c) {
 // 펼쳐 본 화면의 제목 자리(viewer-readability). 제목은 이름표와 이름 하나로만 이루어지고,
 // 그 위나 옆에 부제 자리를 두지 않는다 — 옛 기록에 부제 값이 남아 있어도 되살리지 않는다.
 function conceptHero(slug, c) {
+  // 별칭은 있을 때만 자리를 만든다(concept-aliases) — 없으면 제목 아래가 바로 요약으로 이어져
+  // 항목마다 제목 아래 줄 수가 달라지지 않는다. 정식 이름보다 뒤에, "별칭"이라고 밝힌 채 낸다.
+  var aliases = c.aliases || [];
   return h('header', { class: 'hero' }, [
     statusBadge(c.status),
     h('h1', null, displayName(c.title, slug)),
+    aliases.length
+      ? h('p', { class: 'aliases' }, state.t.aliases + ' : ' + aliases.join(', '))
+      : null,
     heroSummary(c.description.definition),
     h('p', { class: 'cats' }, (c.category || []).join(' · ')),
   ]);

@@ -1411,5 +1411,23 @@
     "at": "2026-08-25T01:55:39.792Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "concept-aliases",
+    "hash": "35e95e0da72a",
+    "prevHash": "35e95e0da72a",
+    "reason": "취지 명확화 — 별칭은 여러 이름을 허용하는 장치가 아니라 이름을 하나로 모으기 위한 임시 다리다. 새 이름을 별칭으로 만드는 것을 금하고, 별칭이 없는 상태를 정상으로 못박음",
+    "at": "2026-08-25T01:57:00.185Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "concept-aliases",
+    "hash": "d8c746493de9",
+    "prevHash": "35e95e0da72a",
+    "reason": "별칭이 있을 때 상세 화면에 드러나게 함 — 어떤 말이 혼용되고 있는지 보여야 정리할 대상이 보인다. 없을 때는 자리를 만들지 않아 제목 아래가 들쭉날쭉해지지 않게 한다",
+    "at": "2026-08-25T02:00:57.674Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

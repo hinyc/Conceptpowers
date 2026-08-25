@@ -44,6 +44,7 @@
         "src/store/conceptStore.ts",
         "src/viewer/manifest.ts",
         "assets/viewer.js",
+        "assets/concept.css",
         "tests/concept/aliases.test.ts",
         "tests/viewer/search.test.ts"
       ]
@@ -602,8 +603,8 @@
         "tests/viewer/graph.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/featureRoute.test.ts",
-        "assets/concept.css",
-        "tests/viewer/listLayout.test.ts"
+        "tests/viewer/listLayout.test.ts",
+        "assets/concept.css"
       ]
     },
     {
@@ -640,8 +641,8 @@
         "tests/viewer/graph.test.ts",
         "tests/viewer/subgraph.test.ts",
         "tests/viewer/highlight.test.ts",
-        "assets/concept.css",
-        "tests/viewer/copyPath.test.ts"
+        "tests/viewer/copyPath.test.ts",
+        "assets/concept.css"
       ]
     },
     {
@@ -1161,6 +1162,13 @@
         "type": "file",
         "href": "",
         "title": "assets/viewer.js"
+      },
+      {
+        "id": "p:assets/concept.css",
+        "label": "concept.css",
+        "type": "file",
+        "href": "",
+        "title": "assets/concept.css"
       },
       {
         "id": "p:tests/concept/aliases.test.ts",
@@ -2073,13 +2081,6 @@
         "title": "tests/viewer/featureRoute.test.ts"
       },
       {
-        "id": "p:assets/concept.css",
-        "label": "concept.css",
-        "type": "file",
-        "href": "",
-        "title": "assets/concept.css"
-      },
-      {
         "id": "p:tests/viewer/listLayout.test.ts",
         "label": "listLayout.test.ts",
         "type": "file",
@@ -2450,6 +2451,11 @@
       {
         "source": "c:concept-aliases",
         "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-aliases",
+        "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {
@@ -3769,12 +3775,12 @@
       },
       {
         "source": "c:feature-index-row",
-        "target": "p:assets/concept.css",
+        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:feature-index-row",
-        "target": "p:tests/viewer/listLayout.test.ts",
+        "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {
@@ -3829,12 +3835,12 @@
       },
       {
         "source": "c:knowledge-graph-view",
-        "target": "p:assets/concept.css",
+        "target": "p:tests/viewer/copyPath.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:knowledge-graph-view",
-        "target": "p:tests/viewer/copyPath.test.ts",
+        "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {

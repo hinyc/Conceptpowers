@@ -1,4 +1,4 @@
-/* @concept:viewer-readability @concept:feature-index-row @concept:knowledge-graph-view */
+/* @concept:viewer-readability @concept:feature-index-row @concept:knowledge-graph-view @concept:concept-aliases */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -15,6 +15,7 @@
   --restrict-bg: #fbeaea;
   --pending: #9a6b00;
   --feature-node: #8250df; /* 지식 그래프의 기능 점 */
+  --alias: #d1495b; /* 상세 화면의 별칭 줄 — 미승인 빨강(--restrict)과 구별되는 값 */
   --maxw: 1280px; /* 본문 최대폭 */
 }
 
@@ -33,6 +34,7 @@
     --restrict-bg: #2b1416;
     --pending: #d29922;
     --feature-node: #a371f7;
+    --alias: #e8798f;
   }
 }
 
@@ -403,6 +405,13 @@ p:last-child {
   color: var(--muted);
   font-size: 0.85rem;
   margin-top: 0.5rem;
+}
+/* 제목 아래 별칭 줄. 뜻을 나르는 것은 "별칭 :"이라는 글자이고 색은 거들 뿐이라,
+   색을 못 보아도 읽는 데 지장이 없다. 상태 신호등의 빨강과는 다른 값을 쓴다. */
+.aliases {
+  color: var(--alias);
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
 }
 
 /* 본문 섹션 */

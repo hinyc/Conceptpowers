@@ -302,18 +302,18 @@
     "tests/viewer/graph.test.ts",
     "tests/viewer/manifest.test.ts",
     "tests/viewer/featureRoute.test.ts",
-    "assets/concept.css",
     "tests/viewer/listLayout.test.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "assets/concept.css"
   ],
   "knowledge-graph-view": [
     "src/viewer/graph.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/subgraph.test.ts",
     "tests/viewer/highlight.test.ts",
-    "assets/concept.css",
     "tests/viewer/copyPath.test.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "assets/concept.css"
   ],
   "home-search": [
     "assets/sidebar.js",
@@ -331,14 +331,14 @@
   "viewer-readability": [
     "assets/sidebar.js",
     "assets/topnav.js",
-    "assets/concept.css",
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/detailTitle.test.ts",
     "tests/viewer/heroSummary.test.ts",
     "tests/store/conceptStore.test.ts",
     "src/schema/concept.ts",
     "src/store/conceptStore.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "assets/concept.css"
   ],
   "concept-aliases": [
     "tests/concept/aliases.test.ts",
@@ -346,6 +346,7 @@
     "src/schema/concept.ts",
     "src/store/conceptStore.ts",
     "src/viewer/manifest.ts",
-    "assets/viewer.js"
+    "assets/viewer.js",
+    "assets/concept.css"
   ]
 }
