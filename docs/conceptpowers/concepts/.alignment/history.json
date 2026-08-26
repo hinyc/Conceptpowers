@@ -1537,5 +1537,23 @@
     "at": "2026-08-26T02:11:43.175Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "concept-scope",
+    "hash": "2:46f995fe96e6",
+    "prevHash": "2:46f995fe96e6",
+    "reason": "개념 본문에 코드 표기(파일 경로·함수 이름·호출 방법)를 쓰지 않는다는 규칙을 명문화 — 자격 심사(정의 시점)만 다루던 기준에 본문 서술 규칙을 더해, 코드 지목은 코드 연결 목록·이름표로 이사시킨다",
+    "at": "2026-08-26T02:30:12.836Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "2:bddfe96cdfe4",
+    "prevHash": "2:bddfe96cdfe4",
+    "reason": "리뷰 반영: 이미 정착한 문서는 동반 요구 제외, 기준선은 정착한 내용의 지문으로만 이동(미정착 문서는 결산 유예)",
+    "at": "2026-08-26T02:30:12.836Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
