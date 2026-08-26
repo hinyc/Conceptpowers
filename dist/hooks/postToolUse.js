@@ -8,8 +8,8 @@ var __export = (target, all) => {
 };
 
 // src/hooks/postToolUse.ts
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { execFile as execFile2 } from "node:child_process";
+import { promisify as promisify2 } from "node:util";
 import { readFile as readFile7 } from "node:fs/promises";
 
 // src/init/scaffold.ts
@@ -4134,7 +4134,7 @@ function parseInitConfig(input) {
 
 // src/store/conceptStore.ts
 import { readFile, readdir } from "node:fs/promises";
-import { join as join2 } from "node:path";
+import { join as join2, relative } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -4199,6 +4199,21 @@ var ConceptSchema = external_exports.object({
 function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
+
+// src/concept/implementationLeak.ts
+var CODE_EXTENSIONS = "ts|tsx|js|jsx|mjs|cjs|json|md|css|scss|html|py|go|rs|java|kt|rb|php|sql|ya?ml|sh|toml";
+var PATTERNS = [
+  // 파일 경로 — 확장자로 끝난다 (앞에 폴더가 붙어도 통째로 잡는다)
+  new RegExp(`(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.(?:${CODE_EXTENSIONS})\\b`, "g"),
+  // 폴더 경로 — 확장자가 없으므로 슬래시 두 개 이상일 때만 경로로 본다
+  // ("허용/금지"처럼 슬래시 하나로 짝을 이루는 우리말 표기를 잘못 잡지 않기 위해서다)
+  /[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+){2,}/g,
+  // 함수 호출 표기 — 여는 괄호 바로 앞이 영문 이름이고, 괄호 안이 영문일 때만
+  // ("신호등(settled-status)"처럼 우리말 뒤에 붙은 괄호 설명은 호출 표기가 아니다)
+  /[A-Za-z_$][A-Za-z0-9_$]*\([A-Za-z0-9_$,.'"\s-]*\)/g,
+  // 붙여쓴 영문 이름 — 대문자 마디가 섞인 표기
+  /[a-z][a-z0-9]*(?:[A-Z][A-Za-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][A-Za-z0-9]*)+/g
+];
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4271,17 +4286,23 @@ async function walkJson(dir) {
   }
   return out;
 }
-async function listConcepts(root) {
+async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
-  const concepts = [];
+  const entries = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
+      entries.push({
+        concept: parseConcept(JSON.parse(await readFile(f, "utf8"))),
+        rel: relative(root, f)
+      });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
   }
-  return concepts;
+  return entries;
+}
+async function listConcepts(root) {
+  return (await listConceptEntries(root)).map((e) => e.concept);
 }
 
 // src/store/featureStore.ts
@@ -4580,7 +4601,7 @@ async function appendHistoryMany(root, inputs) {
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute, join as join6, relative, resolve } from "node:path";
+import { isAbsolute, join as join6, relative as relative2, resolve } from "node:path";
 
 // src/audit/gaps.ts
 import { join as join5, extname } from "node:path";
@@ -4623,8 +4644,15 @@ async function presentTagSlugs(root, present, ignoreGlobs) {
 function isFollowedWithTags(d, present, taggedSlugs) {
   return isFollowed(d.relatedPaths, present) || taggedSlugs.has(d.slug);
 }
+function hasFollowedCode(d, present, taggedSlugs) {
+  const paths = d.relatedPaths.map(normalizeRel);
+  return paths.some((p) => present.has(p)) || taggedSlugs.has(d.slug);
+}
+function isEngagedWithTags(d, present, taggedSlugs) {
+  return present.has(normalizeRel(d.docPath)) || hasFollowedCode(d, present, taggedSlugs);
+}
 function isInsideRoot(root, rel) {
-  const r = relative(resolve(root), resolve(root, rel));
+  const r = relative2(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute(r);
 }
 async function isRelatedFile(root, rel) {
@@ -4660,14 +4688,18 @@ function pickReason(history, slug3, currentHash, locked) {
   return (exact ?? later)?.reason ?? "";
 }
 async function computeDrift(root) {
-  const [concepts, features, mapping, lock, history] = await Promise.all([
-    listConcepts(root),
+  const [entries, features, mapping, lock, history] = await Promise.all([
+    listConceptEntries(root),
     listFeatures(root),
     readMappingCache(root),
     readLock(root),
     readHistory(root)
   ]);
-  const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
+  const drifted = entries.map(({ concept: c, rel }) => ({
+    c,
+    rel,
+    locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0
+  })).filter(
     (x) => x.locked !== void 0
   ).filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
   const unique = [...new Set(drifted.flatMap((x) => x.related))];
@@ -4677,8 +4709,32 @@ async function computeDrift(root) {
     currentHash: x.current,
     lockedHash: x.locked.hash,
     reason: pickReason(history, x.c.slug, x.current, x.locked),
-    relatedPaths: x.related.filter((p) => alive.has(p))
+    relatedPaths: x.related.filter((p) => alive.has(p)),
+    // 탐색이 찾은 실제 파일 위치 — group 필드로 재구성하지 않아, 손으로 옮겨진 문서도 정확히 가리킨다.
+    docPath: normalizeRel(x.rel)
   }));
+}
+
+// src/drift/pendingDocs.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { relative as relative3 } from "node:path";
+var execFileAsync = promisify(execFile);
+var MAX_BUFFER = 64 * 1024 * 1024;
+async function pendingConceptDocs(root) {
+  const dataRel = normalizeRel(relative3(root, cpPaths(root).conceptsData));
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-c", "core.quotePath=false", "--no-pager", "diff", "--name-only", "-z", "HEAD", "--", dataRel],
+      { cwd: root, maxBuffer: MAX_BUFFER }
+    );
+    return new Set(
+      stdout.split("\0").map((s) => s.trim()).filter(Boolean).map(normalizeRel)
+    );
+  } catch {
+    return null;
+  }
 }
 
 // src/drift/reconcile.ts
@@ -4693,6 +4749,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   ]);
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = drift.length === 0 ? /* @__PURE__ */ new Set() : await presentTagSlugs(root, committed, ignoreGlobs);
+  const pendingDocs = drift.length === 0 ? /* @__PURE__ */ new Set() : await pendingConceptDocs(root);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
   const aligned = [];
@@ -4701,6 +4758,8 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   for (const c of concepts) {
     const d = driftBySlug.get(c.slug);
     if (d) {
+      if (!isEngagedWithTags(d, committed, tagged)) continue;
+      if (pendingDocs !== null && pendingDocs.has(normalizeRel(d.docPath))) continue;
       if (isFollowedWithTags(d, committed, tagged)) {
         aligned.push(c.slug);
         entries.push({
@@ -4735,15 +4794,15 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
 }
 
 // src/hooks/postToolUse.ts
-var execFileAsync = promisify(execFile);
+var execFileAsync2 = promisify2(execFile2);
 var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
-var MAX_BUFFER = 64 * 1024 * 1024;
+var MAX_BUFFER2 = 64 * 1024 * 1024;
 async function git(root, args) {
   try {
-    const { stdout } = await execFileAsync(
+    const { stdout } = await execFileAsync2(
       "git",
       ["-c", "core.quotePath=false", "--no-pager", ...args],
-      { cwd: root, maxBuffer: MAX_BUFFER }
+      { cwd: root, maxBuffer: MAX_BUFFER2 }
     );
     return stdout;
   } catch {

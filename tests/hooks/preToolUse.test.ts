@@ -216,7 +216,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });
 
-  it('개념 drift인데 관련 코드가 스테이지에 없으면 ask로 경고한다', async () => {
+  it('개념 drift여도 무관한 커밋은 막지 않고, 정말 무관한지 검토하라는 안내를 컨텍스트에 넣는다(allow)', async () => {
     await scaffoldInit(root, {});
     touch('src/login.ts');
     await writeConcept(root, {
@@ -252,11 +252,104 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['README.md'],
     });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    const ctx = r!.hookSpecificOutput.additionalContext ?? '';
+    expect(ctx).toContain('DRIFT REVIEW');
+    expect(ctx).toContain('auth-token');
+  });
+
+  it('다른 게이트가 ask로 물을 때도 무관 drift의 검토 안내는 컨텍스트에 유지된다', async () => {
+    await scaffoldInit(root, {});
+    touch('src/login.ts');
+    // 무관한 drift: auth-token (이번 커밋과 맞물리지 않음)
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v1' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts'],
+    } as any);
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v2' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    } as any);
+    // ask를 유발하는 별개 게이트: 신선한 증빙 없는 개념 스테이징(consistency-attest)
+    await writeConcept(root, {
+      slug: 'gated',
+      category: ['behavior'],
+      title: 'T',
+      actions: {},
+      description: { definition: '정의' },
+      purpose: { reason: '이유' },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+    } as any);
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['docs/conceptpowers/concepts/data/gated.json'],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.additionalContext ?? '').toContain('DRIFT REVIEW');
+  });
+
+  it('개념 drift인데 개념 문서만 스테이징되고 관련 코드가 하나도 없으면 ask로 경고한다', async () => {
+    await scaffoldInit(root, {});
+    touch('src/login.ts');
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v1' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+    } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts'],
+    } as any);
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v2' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+    } as any);
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['docs/conceptpowers/concepts/data/auth-token.json'],
+    });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('DRIFT');
   });
 
-  it('drift여도 관련 코드가 스테이지에 함께 있으면 막지 않는다(allow)', async () => {
+  it('개념 drift인데 맵핑된 코드만 스테이징되고 개념 문서가 빠지면 ask로 잡는다 (규칙: 개념 문서 동반 필수)', async () => {
     await scaffoldInit(root, {});
     touch('src/login.ts');
     await writeConcept(root, {
@@ -287,20 +380,62 @@ describe('decidePreToolUse', () => {
       actions: {},
       principle: {},
     } as any);
-    // 이 시나리오가 보려는 것은 drift 게이트 하나다. 개념에 딸린 검사가 없으므로
-    // concept-test-follow가 따로 붙잡는데, 그 사실을 기록해 두 게이트를 분리한다.
-    await recordTestReview(root, (await readConcept(root, 'auth-token'))!, 'no-tests', {
-      note: 'drift 게이트 단독 시나리오 — 이 픽스처 개념에는 딸린 검사가 없다',
-    });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
       changedFiles: ['src/login.ts'],
     });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('개념 문서');
+  });
+
+  it('drift여도 관련 코드가 개념 문서와 함께 스테이지에 있으면 막지 않는다(allow)', async () => {
+    await scaffoldInit(root, {});
+    touch('src/login.ts');
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v1' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+    } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts'],
+    } as any);
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v2' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+    } as any);
+    const c2 = (await readConcept(root, 'auth-token'))!;
+    // 이 시나리오가 보려는 것은 drift 게이트 하나다. 개념 문서가 스테이징되므로 딸린
+    // 검사·증빙 게이트가 함께 붙잡는데, 기록을 남겨 게이트를 분리한다.
+    await recordTestReview(root, c2, 'no-tests', {
+      note: 'drift 게이트 단독 시나리오 — 이 픽스처 개념에는 딸린 검사가 없다',
+    });
+    await recordAttest(root, c2, 'pass');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['src/login.ts', 'docs/conceptpowers/concepts/data/auth-token.json'],
+    });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
   });
 
-  it('drift여도 연결 코드 가운데 하나라도 스테이지에 있으면 막지 않는다 (규칙: 문지기·결산 동일 잣대, 따라옴 = 하나라도)', async () => {
+  it('drift여도 연결 코드 하나와 개념 문서가 스테이지에 있으면 막지 않는다 (규칙: 따라옴 = 하나라도 + 문서 동반)', async () => {
     await scaffoldInit(root, {});
     ['src/login.ts', 'src/session.ts', 'tests/login.test.ts'].forEach((p) => touch(p));
     await writeConcept(root, {
@@ -311,7 +446,7 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v1' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -329,17 +464,20 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v2' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: {},
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
     } as any);
+    const c2 = (await readConcept(root, 'auth-token'))!;
     // drift 게이트의 '따라옴 = 하나라도'만 보려는 시나리오다 — 딸린 검사(tests/login.test.ts)가
-    // 이번 스테이지에 없어 concept-test-follow가 걸리므로, 검토 결과를 기록해 분리한다.
-    await recordTestReview(root, (await readConcept(root, 'auth-token'))!, 'no-impact', {
+    // 이번 스테이지에 없어 concept-test-follow가 걸리고, 문서 스테이징으로 증빙 게이트도
+    // 걸리므로, 기록을 남겨 게이트를 분리한다.
+    await recordTestReview(root, c2, 'no-impact', {
       note: 'drift 게이트 단독 시나리오 — 검사 변경이 필요 없는 픽스처',
     });
+    await recordAttest(root, c2, 'pass');
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
-      changedFiles: ['src/session.ts'],
+      changedFiles: ['src/session.ts', 'docs/conceptpowers/concepts/data/auth-token.json'],
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
   });
@@ -432,7 +570,8 @@ describe('decidePreToolUse', () => {
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
-      changedFiles: ['README.md'],
+      // 개념 문서만 스테이징해 drift 게이트(코드 미동반)를 발동시킨다 — reason이 문구에 실린다.
+      changedFiles: ['docs/conceptpowers/concepts/data/auth-token.json'],
     });
     const reason = r!.hookSpecificOutput.permissionDecisionReason!;
     expect(reason).not.toContain('<');

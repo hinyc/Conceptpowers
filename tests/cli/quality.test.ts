@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write
+// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:concept-scope
 // quality / attest-consistency 명령을 검증한다 — 초록 승격의 두 조건을 만드는 명령들이다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - settled-status 불변 "초록이 되려면 … 지킬 수 있는 규칙이 실제로 적혀 있을 것(품질 최소치)"
@@ -8,6 +8,10 @@
 //    → result가 pass|conflict 외면 exit 1 / --compared 누락·미존재 slug면 exit 1 (증빙이 헐거워지지 않게)
 //  - atomic-baseline-write 불변 "저장 도중 실패하면 남은 임시 파일을 정리하고 실패를 감추지 않는다"
 //    → --note가 1000자를 초과하면 exit 1이고 증빙 로그가 훼손되지 않는다
+//  - concept-scope 불변 "개념 본문은 코드 표기 없이 그대로 읽힌다 …"
+//    → quality를 slug 없이 부르면 전 개념을 훑어 코드 표기 후보를 warned로 센다
+//  - concept-scope 대응 "괄호 안 참고 표기까지 막지는 않는다"
+//    → 코드 표기 경고만 있는 개념은 exit 0 — 경고가 통과를 막지 않는다
 //  - "없는 slug는 exit 1"은 대응하는 개념 규칙이 없다 — 존재하지 않는 대상에 대한 방어다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';
@@ -194,5 +198,28 @@ describe('cli: quality / attest-consistency', () => {
     const log = await readAttestLog(root);
     expect(log['cli-target']?.result).toBe('pass');
     expect(log['cli-target']?.note).toBeUndefined();
+  });
+  it('slug 없이 부르면 전 개념을 훑고, 코드 표기 경고는 통과를 막지 않는다', async () => {
+    await writeConcept(root, {
+      ...conceptInput(['개념을 고치면 초록에서 내려온다']),
+      slug: 'clean-one',
+    });
+    await writeConcept(root, {
+      ...conceptInput(['저장은 src/store/conceptStore.ts를 거친다']),
+      slug: 'leaky-one',
+    });
+
+    const code = await runCli(['quality', '--root', root], out);
+
+    expect(code).toBe(0);
+    const r = JSON.parse(output);
+    expect(r.total).toBe(2);
+    expect(r.failed).toBe(0);
+    expect(r.warned).toBe(1);
+    const leaky = r.reports.find((x: { slug: string }) => x.slug === 'leaky-one');
+    expect(leaky.ok).toBe(true);
+    expect(leaky.warnings[0]).toContain('src/store/conceptStore.ts');
+    const clean = r.reports.find((x: { slug: string }) => x.slug === 'clean-one');
+    expect(clean.warnings).toEqual([]);
   });
 });

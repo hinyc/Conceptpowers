@@ -1,5 +1,5 @@
 // @concept:contract-hash @concept:drift-reconcile
-import { listConcepts } from '../store/conceptStore.js';
+import { listConceptEntries } from '../store/conceptStore.js';
 import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';
 import { readLock } from './lock.js';
@@ -17,6 +17,8 @@ export interface DriftItem {
   lockedHash: string;
   reason: string;
   relatedPaths: string[];
+  /** 개념 문서(JSON)의 루트 기준 상대 경로 — 맞물림 판정에 쓴다 */
+  docPath: string;
 }
 
 const hasOwn = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
@@ -62,17 +64,22 @@ function pickReason(
 
 // 개념이 마지막 정렬(lock) 이후 바뀌었는지 판정하고, 따라와야 할 관련 코드 경로를 모은다.
 export async function computeDrift(root: string): Promise<DriftItem[]> {
-  const [concepts, features, mapping, lock, history] = await Promise.all([
-    listConcepts(root),
+  const [entries, features, mapping, lock, history] = await Promise.all([
+    listConceptEntries(root),
     listFeatures(root),
     readMappingCache(root),
     readLock(root),
     readHistory(root),
   ]);
-  const drifted = concepts
-    .map((c: Concept) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : undefined }))
+  const drifted = entries
+    .map(({ concept: c, rel }) => ({
+      c,
+      rel,
+      locked: hasOwn(lock, c.slug) ? lock[c.slug] : undefined,
+    }))
     .filter(
-      (x): x is { c: Concept; locked: { hash: string; at: string } } => x.locked !== undefined
+      (x): x is { c: Concept; rel: string; locked: { hash: string; at: string } } =>
+        x.locked !== undefined
     ) // 신규: 첫 커밋에서 등록됨
     // 판이 다른 기준선과는 견주지 않는다 — 계산 규칙이 바뀐 것이지 개념이 바뀐 게 아니다.
     // 이런 항목은 어긋남이 아니라 재기준 대상이며, 다음 결산(reconcile)이 현재 판으로 다시 맞춘다.
@@ -90,5 +97,7 @@ export async function computeDrift(root: string): Promise<DriftItem[]> {
     lockedHash: x.locked.hash,
     reason: pickReason(history, x.c.slug, x.current, x.locked),
     relatedPaths: x.related.filter((p) => alive.has(p)),
+    // 탐색이 찾은 실제 파일 위치 — group 필드로 재구성하지 않아, 손으로 옮겨진 문서도 정확히 가리킨다.
+    docPath: normalizeRel(x.rel),
   }));
 }

@@ -8,7 +8,7 @@ import { auditIntegrity } from '../audit/audit.js';
 import { checkReferenceGate } from './gates/referenceGate.js';
 import { checkUnknownTags } from './gates/unknownTagsGate.js';
 import { checkConceptless } from './gates/conceptlessGate.js';
-import { checkDrift } from './gates/driftGate.js';
+import { checkDrift, driftReviewNote } from './gates/driftGate.js';
 import { checkTestFollow } from './gates/testFollowGate.js';
 import { checkTestScope } from './gates/testScopeGate.js';
 import { checkQualityFloor } from './gates/qualityGate.js';
@@ -101,6 +101,28 @@ function failedGatesNote(failedGates: string[]): string {
 // 불변 패턴: output을 변경하지 않고 새 객체를 반환한다.
 function appendFailedGatesNote(output: PreToolOutput, failedGates: string[]): PreToolOutput {
   const note = failedGatesNote(failedGates);
+  if (!note) return output;
+  return {
+    hookSpecificOutput: {
+      ...output.hookSpecificOutput,
+      additionalContext: (output.hookSpecificOutput.additionalContext ?? '') + note,
+    },
+  };
+}
+
+// 커밋이 진행될 수 있는 응답(allow·ask)에, 이번 커밋과 맞물리지 않은 어긋난 개념이 있으면
+// "정말 무관한지 한 번 더 검토하라"는 안내를 컨텍스트에 덧붙인다(drift-reconcile: 맞물리지
+// 않은 커밋은 막지 않는다). ask도 사용자가 승인하면 커밋이 진행되므로 안내를 잃지 않는다.
+// deny는 어차피 커밋이 막히므로 덧붙이지 않는다.
+// best-effort — 안내 계산 실패가 커밋을 막지 않는다. 불변 패턴: 새 객체를 반환한다.
+async function withDriftReviewNote(output: PreToolOutput, input: GateInput): Promise<PreToolOutput> {
+  if (output.hookSpecificOutput.permissionDecision === 'deny') return output;
+  let note: string | null = null;
+  try {
+    note = await driftReviewNote(input);
+  } catch {
+    note = null;
+  }
   if (!note) return output;
   return {
     hookSpecificOutput: {
@@ -212,11 +234,11 @@ export async function decidePreToolUse(
       const input: GateInput = { root, files, cfg, report };
       for (const { check } of GOVERNANCE_GATES) {
         const f = await check(input);
-        if (f) return askOutput(f);
+        if (f) return withDriftReviewNote(askOutput(f), input);
       }
       const stale = await checkStaleArtifacts(input);
-      if (stale) return askOutput(stale);
-      return ALLOW_DEFAULT;
+      if (stale) return withDriftReviewNote(askOutput(stale), input);
+      return withDriftReviewNote(ALLOW_DEFAULT, input);
     }
 
     const report = await auditIntegrity(root, files);
@@ -229,10 +251,11 @@ export async function decidePreToolUse(
       if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
       // 위반 없이 참조 문서만 있으면 현행대로 ask — 다만 실행 실패한 게이트가 있었다면
       // (findings가 비어 있어도!) 조용히 묻히지 않도록 light 분기와 동일하게 알린다(finding #2).
-      if (ref) return askOutput(ref, { warningsNote: failedGatesNote(failedGates) });
+      if (ref)
+        return withDriftReviewNote(askOutput(ref, { warningsNote: failedGatesNote(failedGates) }), input);
       const stale = await checkStaleArtifacts(input);
-      if (stale) return askOutput(stale); // 정리용 게이트는 strict에서도 차단하지 않는다
-      return appendFailedGatesNote(ALLOW_DEFAULT, failedGates);
+      if (stale) return withDriftReviewNote(askOutput(stale), input); // 정리용 게이트는 strict에서도 차단하지 않는다
+      return withDriftReviewNote(appendFailedGatesNote(ALLOW_DEFAULT, failedGates), input);
     }
 
     // enforcement === 'light'
@@ -247,10 +270,10 @@ export async function decidePreToolUse(
     if (ref) {
       // 기밀 확인은 light에서도 절대 allow로 내리지 않는다 — ask하되, 수집된 경고를
       // 같은 응답의 additionalContext에 실어 잃어버리지 않게 한다(finding #1).
-      return askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) });
+      return withDriftReviewNote(askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) }), input);
     }
-    if (all.length > 0) return lightOutput(all, failedGates);
-    return appendFailedGatesNote(ALLOW_DEFAULT, failedGates);
+    if (all.length > 0) return withDriftReviewNote(lightOutput(all, failedGates), input);
+    return withDriftReviewNote(appendFailedGatesNote(ALLOW_DEFAULT, failedGates), input);
   }
 
   if (ev.tool === 'Edit' || ev.tool === 'Write') {

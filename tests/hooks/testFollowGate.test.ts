@@ -139,6 +139,13 @@ describe('concept-test-follow 문지기', () => {
     expect(await checkTestFollow(await input(['src/pay.ts']))).toBeNull();
   });
 
+  it('바뀐 개념과 무관한 커밋은 붙잡지 않는다 — 맞물린 개념만 본다 (drift-reconcile의 맞물림 재료 재사용)', async () => {
+    await touch('src/pay.ts');
+    await touch('src/other.ts');
+    await makeDrift(['src/pay.ts']);
+    expect(await checkTestFollow(await input(['src/other.ts']))).toBeNull();
+  });
+
   it('스위치를 끄면(conceptDrivenTests: false) 문지기가 동작하지 않는다 [규칙: 스위치로 끌 수 있다]', async () => {
     await touch('src/pay.ts');
     await makeDrift(['src/pay.ts']);

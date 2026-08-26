@@ -22,7 +22,7 @@ import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
 import { noteChange } from './drift/note.js';
 import { setPendingConflict, clearPendingConflict } from './concept/pendingConflicts.js';
-import { readConcept, editConceptContent } from './store/conceptStore.js';
+import { readConcept, listConcepts, editConceptContent } from './store/conceptStore.js';
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
 import { recordTestReview } from './concept/testReview.js';
@@ -285,10 +285,20 @@ export async function runCli(
 
   program
     .command('quality')
-    .description('개념의 결정론적 품질 최소치 검사 (green 승격 전제조건)')
-    .argument('<slug>')
+    .description('개념의 결정론적 품질 최소치 검사 (green 승격 전제조건). slug를 빼면 전 개념 검사')
+    .argument('[slug]')
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (slug, o) => {
+      // slug 없이 부르면 전수 검사 — 경고(코드 표기)는 종료 코드를 바꾸지 않는다.
+      if (!slug) {
+        const concepts = await listConcepts(o.root);
+        const reports = concepts.map((c) => ({ slug: c.slug, ...checkConceptQuality(c) }));
+        const failed = reports.filter((r) => !r.ok).length;
+        const warned = reports.filter((r) => r.warnings.length > 0).length;
+        out(JSON.stringify({ total: reports.length, failed, warned, reports }));
+        if (failed > 0) code = 1;
+        return;
+      }
       const concept = await readConcept(o.root, slug);
       if (!concept) {
         out(JSON.stringify({ error: `Concept not found: ${slug}` }));

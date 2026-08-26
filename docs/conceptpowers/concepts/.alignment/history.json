@@ -1510,5 +1510,32 @@
     "at": "2026-08-25T03:37:24.928Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "2:e5e58127db93",
+    "prevHash": "9d8e1b91e744",
+    "reason": "결산·문지기 판정을 이번 커밋에 맞물린 개념으로 한정 — 맞물린 코드 커밋에는 개념 동반 요구, 무관 커밋은 검토 안내만 하고 통과 (사용자 승인)",
+    "at": "2026-08-26T01:43:39.215Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-scope",
+    "hash": "2:46f995fe96e6",
+    "prevHash": "",
+    "reason": "개념 본문에 코드 표기(파일 경로·함수 이름·호출 방법)를 쓰지 않는다는 규칙을 명문화 — 자격 심사(정의 시점)만 다루던 기준에 본문 서술 규칙을 더해, 코드 지목은 코드 연결 목록·이름표로 이사시킨다",
+    "at": "2026-08-26T01:54:16.852Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "2:bddfe96cdfe4",
+    "prevHash": "2:e5e58127db93",
+    "reason": "리뷰 반영: 이미 정착한 문서는 동반 요구 제외, 기준선은 정착한 내용의 지문으로만 이동(미정착 문서는 결산 유예)",
+    "at": "2026-08-26T02:11:43.175Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

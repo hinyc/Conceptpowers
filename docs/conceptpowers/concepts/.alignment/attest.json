@@ -237,39 +237,38 @@
     "note": "새 불변 2건(상호작용 규칙 금지·판 비교 금지)을 28개 전체 상호작용과 대조 — 규칙성 문장은 예외 없이 해당 개념의 restrict/불변에 중복 존재해 위반 0. drift-reconcile의 '기준선 재맞춤'과 재기준 동작 일치."
   },
   "drift-reconcile": {
-    "hash": "2:685eec3d03a2",
+    "hash": "2:bddfe96cdfe4",
     "result": "pass",
-    "at": "2026-08-25T03:44:01.524Z",
+    "at": "2026-08-26T02:14:05.417Z",
     "compared": [
+      "atomic-baseline-write",
       "audit-gap-detection",
       "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
+      "concept-inline-edit",
       "concept-scope",
       "contract-hash",
+      "feature-index-row",
       "feature-spec-bridge",
+      "generated-not-hand-edited",
       "globally-unique-slug",
       "governance-mode",
+      "home-search",
       "human-owns-contract",
+      "init-gate",
+      "knowledge-graph-view",
       "output-locale",
       "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
       "plugin-version-sync",
+      "reference-first-duty",
       "reference-privacy",
+      "settled-status",
       "untrusted-text-sanitization",
       "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "governance-mode와의 경계 재확인 — '커밋을 막지 않는다'는 커밋 뒤 결산의 제한이고 커밋 순간 차단은 문지기 강도 소관이라 비충돌. 판이 다른 기준선의 조용한 재기준은 '무시 기록' 대상이 아님(어긋남 자체가 아님)을 contract-hash 새 불변과 대조 확인."
+    ]
   },
   "audit-gap-detection": {
     "hash": "2:875c3d62d892",
@@ -910,9 +909,9 @@
     ]
   },
   "concept-scope": {
-    "hash": "2:f957e1ff4163",
+    "hash": "2:46f995fe96e6",
     "result": "pass",
-    "at": "2026-08-25T03:44:01.287Z",
+    "at": "2026-08-26T02:00:28.715Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
@@ -942,7 +941,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "platform 개념들의 정의문이 약속 서술임을 재확인(절충 조항 적용). settled-status와 검사 시점 분리 유지."
+    "note": "개념 본문의 코드 표기 금지 규칙 추가. 인접 개념 5건(concept-code-mapping/human-owns-contract/feature-spec-bridge/settled-status/governance-mode) 규칙 대조 + 전 개념 '본문·표기·코드 연결·이름표' 문장 전수 검색 — 충돌 0. 경고는 게이트 항목이 아니라 governance-mode 불변('검사 항목은 강도와 무관하게 동일')과 무관하고, ok 판정을 바꾸지 않아 settled-status 품질 최소치와도 독립. 참고자료: 세미나 pptx는 용어 혼용 사례로 이 규칙에 배치되는 내용 없음, 이론 PDF는 이 환경에 파서가 없어 미열람"
   },
   "viewer-readability": {
     "hash": "2:748895083ba6",

@@ -76,6 +76,28 @@ describe('computeDrift', () => {
     expect(drift[0].slug).toBe('auth-token');
     expect(drift[0].reason).toBe('만료 단축');
     expect(drift[0].relatedPaths).toContain('src/login.ts');
+    // 맞물림 판정(문지기·결산)이 쓸 개념 문서 경로 — 루트 기준 상대 경로로 보고한다.
+    expect(drift[0].docPath).toBe('docs/conceptpowers/concepts/data/auth-token.json');
+  });
+  it('group이 있는 개념의 docPath는 하위 폴더의 실제 위치를 가리킨다', async () => {
+    await writeConcept(root, concept({ group: 'behavior' }));
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeConcept(root, concept({ group: 'behavior', description: { definition: 'v2' } }));
+    const drift = await computeDrift(root);
+    expect(drift[0].docPath).toBe('docs/conceptpowers/concepts/data/behavior/auth-token.json');
+  });
+  it('문서가 손으로 옮겨져 group 필드와 어긋나도 docPath는 탐색이 찾은 실제 위치다', async () => {
+    // group 없는 개념 파일을 data/moved/ 하위에 직접 둔다 — 재구성 경로(data/auth-token.json)와 다르다.
+    const moved = 'docs/conceptpowers/concepts/data/moved/auth-token.json';
+    const p = join(root, moved);
+    mkdirSync(dirname(p), { recursive: true });
+    writeFileSync(p, JSON.stringify(concept(), null, 2));
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    writeFileSync(p, JSON.stringify(concept({ description: { definition: 'v2' } }), null, 2));
+    const drift = await computeDrift(root);
+    expect(drift[0].docPath).toBe(moved);
   });
   it('aligned 기록은 drift 사유로 쓰이지 않는다(가장 최근 실제 변경 사유를 쓴다)', async () => {
     await writeConcept(root, concept());

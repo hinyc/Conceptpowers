@@ -7,20 +7,14 @@
   "settled-status": [
     "src/concept/approve.ts",
     "src/concept/attest.ts",
-    "src/concept/quality.ts",
     "tests/audit/audit.test.ts",
     "tests/cli/cli.test.ts",
-    "tests/cli/quality.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/attest.test.ts",
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
-    "tests/concept/quality.test.ts",
-    "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
-    "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/alignment.test.ts",
     "tests/schema/concept.test.ts",
@@ -28,14 +22,19 @@
     "tests/viewer/serve.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
+    "assets/viewer.js",
+    "tests/drift/reconcile.test.ts",
+    "src/concept/quality.ts",
+    "tests/cli/quality.test.ts",
+    "tests/concept/quality.test.ts",
     "src/store/conceptStore.ts",
-    "assets/viewer.js"
+    "tests/drift/detect.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
     "scripts/release.mjs",
     "src/viewer/render.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/packageScript.test.ts",
     "tests/init/scaffold.test.ts",
@@ -44,12 +43,11 @@
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/manifest.test.ts",
     "tests/integration/smoke.test.ts",
-    "src/viewer/manifest.ts"
+    "src/viewer/manifest.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "plugin-version-sync": [
     "scripts/release.mjs",
-    "src/cli.ts",
-    "src/hooks/sessionStart.ts",
     "src/init/ensureConfigDefaults.ts",
     "src/init/packageScript.ts",
     "src/init/syncGenerated.ts",
@@ -64,7 +62,9 @@
     "tests/schema/initConfig.test.ts",
     "tests/version/autoSync.test.ts",
     "tests/version/checkUpdate.test.ts",
-    "tests/version/compareSemver.test.ts"
+    "tests/version/compareSemver.test.ts",
+    "src/hooks/sessionStart.ts",
+    "src/cli.ts"
   ],
   "audit-gap-detection": [
     "src/audit/audit.ts",
@@ -75,19 +75,17 @@
     "tests/audit/audit.test.ts",
     "tests/audit/gaps.test.ts",
     "tests/cli/audit.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/mapping/scan.test.ts",
     "tests/schema/initConfig.test.ts",
     "tests/util/glob.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "init-gate": [
-    "src/cli.ts",
     "src/init/scaffold.ts",
     "tests/cli/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
-    "tests/cli/quality.test.ts",
     "tests/cli/reference.test.ts",
     "tests/cli/requireInit.test.ts",
     "tests/cli/testReview.test.ts",
@@ -95,7 +93,6 @@
     "tests/concept/pendingConflicts.test.ts",
     "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/alignmentGitignore.test.ts",
     "tests/init/readConfig.test.ts",
@@ -104,15 +101,16 @@
     "tests/init/scaffold.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/version/autoSync.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "src/cli.ts",
+    "tests/cli/quality.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "governance-mode": [
-    "src/cli.ts",
     "src/hooks/gates/attestGate.ts",
     "src/hooks/gates/conceptSlugs.ts",
     "src/hooks/gates/conceptlessGate.ts",
     "src/hooks/gates/conflictedPendingGate.ts",
-    "src/hooks/gates/driftGate.ts",
     "src/hooks/gates/qualityGate.ts",
     "src/hooks/gates/referenceGate.ts",
     "src/hooks/gates/staleArtifactsGate.ts",
@@ -120,17 +118,19 @@
     "src/hooks/gates/unapprovedRedGate.ts",
     "src/hooks/gates/unknownTagsGate.ts",
     "src/hooks/postToolUse.ts",
-    "src/hooks/preToolUse.ts",
-    "src/hooks/sessionStart.ts",
     "src/init/scaffold.ts",
     "src/schema/initConfig.ts",
     "tests/cli/cli.test.ts",
     "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/initConfig.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "src/hooks/preToolUse.ts",
+    "src/hooks/sessionStart.ts",
+    "src/cli.ts",
+    "src/hooks/gates/driftGate.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "pending-conflict-tracking": [
     "src/concept/pendingConflicts.ts",
@@ -140,56 +140,58 @@
   ],
   "concept-driven-tests": [
     "src/concept/testReview.ts",
-    "src/hooks/gates/testFollowGate.ts",
     "src/hooks/gates/testScopeGate.ts",
-    "src/hooks/preToolUse.ts",
-    "src/hooks/sessionStart.ts",
     "src/schema/alignment.ts",
     "src/schema/initConfig.ts",
     "tests/cli/testReview.test.ts",
     "tests/concept/testReview.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/hooks/testFollowGate.test.ts",
     "tests/init/scaffold.test.ts",
     "tests/schema/initConfig.test.ts",
-    "tests/hooks/testScopeGate.test.ts"
+    "tests/hooks/testScopeGate.test.ts",
+    "src/hooks/preToolUse.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/testFollowGate.test.ts",
+    "src/hooks/gates/testFollowGate.ts"
   ],
   "contract-hash": [
-    "src/drift/detect.ts",
     "src/drift/lock.ts",
     "src/drift/note.ts",
-    "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
     "tests/drift/lock.test.ts",
-    "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/alignment.test.ts",
     "src/drift/hash.ts",
     "tests/drift/hash.test.ts",
-    "tests/concept/aliases.test.ts"
+    "tests/concept/aliases.test.ts",
+    "tests/drift/reconcile.test.ts",
+    "src/drift/detect.ts",
+    "tests/drift/detect.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "drift-reconcile": [
-    "src/drift/detect.ts",
-    "src/drift/follow.ts",
     "src/drift/history.ts",
-    "src/drift/reconcile.ts",
     "src/schema/alignment.ts",
     "tests/cli/cli.test.ts",
-    "tests/drift/detect.test.ts",
-    "tests/drift/follow.test.ts",
     "tests/drift/history.test.ts",
-    "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/schema/alignment.test.ts"
+    "tests/schema/alignment.test.ts",
+    "src/drift/follow.ts",
+    "tests/drift/reconcile.test.ts",
+    "src/drift/pendingDocs.ts",
+    "src/hooks/gates/driftGate.ts",
+    "src/drift/detect.ts",
+    "src/drift/reconcile.ts",
+    "tests/drift/follow.test.ts",
+    "tests/drift/detect.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
     "tests/drift/safe.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/testScopeGate.test.ts"
+    "tests/hooks/testScopeGate.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "reference-privacy": [
     "src/hooks/gates/referenceGate.ts",
@@ -198,14 +200,14 @@
     "src/init/referenceGitignore.ts",
     "src/init/referencePaths.ts",
     "tests/cli/reference.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/i18n/messages.test.ts",
     "tests/init/addReferencePath.test.ts",
     "tests/init/reference.test.ts",
     "tests/init/referenceGitignore.test.ts",
     "tests/init/referencePaths.test.ts",
-    "tests/init/scaffold.test.ts"
+    "tests/init/scaffold.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "output-locale": [
     "src/i18n/messages.ts",
@@ -234,16 +236,12 @@
     "src/util/atomicWrite.ts",
     "tests/audit/audit.test.ts",
     "tests/cli/cli.test.ts",
-    "tests/cli/quality.test.ts",
     "tests/cli/testReview.test.ts",
     "tests/concept/approve.test.ts",
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
-    "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
-    "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/alignmentGitignore.test.ts",
     "tests/init/ensureConfigDefaults.test.ts",
@@ -252,7 +250,11 @@
     "tests/viewer/serve.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/store/conceptStore.test.ts",
-    "src/store/conceptStore.ts"
+    "tests/drift/reconcile.test.ts",
+    "tests/cli/quality.test.ts",
+    "src/store/conceptStore.ts",
+    "tests/drift/detect.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "concept-code-mapping": [
     "src/mapping/leadingComment.ts",
@@ -278,16 +280,16 @@
     "src/schema/feature.ts",
     "src/store/featureStore.ts",
     "tests/cli/feature.test.ts",
-    "tests/drift/detect.test.ts",
-    "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/feature.test.ts",
     "tests/store/featureStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/graph.test.ts",
-    "tests/integration/smoke.test.ts"
+    "tests/integration/smoke.test.ts",
+    "tests/drift/reconcile.test.ts",
+    "tests/drift/detect.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "viewer-local-write-guard": [
     "src/viewer/serve.ts",
@@ -336,17 +338,22 @@
     "tests/viewer/heroSummary.test.ts",
     "tests/store/conceptStore.test.ts",
     "src/schema/concept.ts",
-    "src/store/conceptStore.ts",
     "assets/viewer.js",
-    "assets/concept.css"
+    "assets/concept.css",
+    "src/store/conceptStore.ts"
   ],
   "concept-aliases": [
     "tests/concept/aliases.test.ts",
     "tests/viewer/search.test.ts",
     "src/schema/concept.ts",
-    "src/store/conceptStore.ts",
     "src/viewer/manifest.ts",
     "assets/viewer.js",
-    "assets/concept.css"
+    "assets/concept.css",
+    "src/store/conceptStore.ts"
+  ],
+  "concept-scope": [
+    "src/concept/implementationLeak.ts",
+    "tests/concept/implementationLeak.test.ts",
+    "tests/cli/quality.test.ts"
   ]
 }

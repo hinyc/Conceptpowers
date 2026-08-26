@@ -2,7 +2,7 @@
 // src/store/conceptStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { cpPaths } from '../paths.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js';
@@ -76,17 +76,32 @@ async function walkJson(dir: string): Promise<string[]> {
   return out;
 }
 
-export async function listConcepts(root: string): Promise<Concept[]> {
+export interface ConceptEntry {
+  concept: Concept;
+  /** 문서 파일의 루트 기준 상대 경로 — 탐색이 찾은 실제 위치(group 필드로 재구성하지 않는다) */
+  rel: string;
+}
+
+// 개념과 문서의 실제 경로를 함께 돌려준다. 경로는 group/slug로 재구성하지 않고 디스크
+// 탐색 결과를 그대로 쓴다 — 손으로 옮겨져 group 필드와 어긋난 파일도 정확히 가리키기 위해서다.
+export async function listConceptEntries(root: string): Promise<ConceptEntry[]> {
   const files = await walkJson(cpPaths(root).conceptsData);
-  const concepts: Concept[] = [];
+  const entries: ConceptEntry[] = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile(f, 'utf8'))));
+      entries.push({
+        concept: parseConcept(JSON.parse(await readFile(f, 'utf8'))),
+        rel: relative(root, f),
+      });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} — ${(error as Error).message}`);
     }
   }
-  return concepts;
+  return entries;
+}
+
+export async function listConcepts(root: string): Promise<Concept[]> {
+  return (await listConceptEntries(root)).map((e) => e.concept);
 }
 
 export async function readConcept(root: string, slug: string): Promise<Concept | null> {

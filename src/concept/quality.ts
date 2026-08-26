@@ -3,10 +3,13 @@
 // green 승격의 결정론적 최소치. 규칙의 "의미적" 품질(위반 판별 가능한 문장인가)은
 // define-concept 스킬(LLM 루브릭)이 담당하고, 여기서는 기계 검증 가능한 결격만 거른다.
 import type { Concept } from '../schema/concept.js';
+import { findImplementationLeaks, describeLeak } from './implementationLeak.js';
 
 export interface QualityReport {
   ok: boolean;
   deficiencies: string[];
+  // 결격은 아니지만 사람이 한 번 봐야 하는 것들 — ok 판정에는 넣지 않는다.
+  warnings: string[];
 }
 
 const MIN_RULE_LENGTH = 10;
@@ -35,5 +38,7 @@ export function checkConceptQuality(c: Concept): QualityReport {
     }
   }
 
-  return { ok: deficiencies.length === 0, deficiencies };
+  const warnings = findImplementationLeaks(c).map(describeLeak);
+
+  return { ok: deficiencies.length === 0, deficiencies, warnings };
 }

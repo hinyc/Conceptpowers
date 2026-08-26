@@ -45,6 +45,28 @@ export function isFollowedWithTags(
   return isFollowed(d.relatedPaths, present) || taggedSlugs.has(d.slug);
 }
 
+// 연결 코드가 "실제로" 들어왔는가 — isFollowed와 달리 연결 코드가 없으면(빈 목록) 거짓이다.
+// 맞물림 판정의 재료: 따라올 것이 없는 상태를 '코드가 들어옴'으로 세지 않는다.
+export function hasFollowedCode(
+  d: { slug: string; relatedPaths: readonly string[] },
+  present: ReadonlySet<string>,
+  taggedSlugs: ReadonlySet<string>
+): boolean {
+  const paths = d.relatedPaths.map(normalizeRel);
+  return paths.some((p) => present.has(p)) || taggedSlugs.has(d.slug);
+}
+
+// 맞물림(drift-reconcile 구성요소): 어긋난 개념의 문서나 연결된 코드 가운데 하나라도
+// 이번 커밋(목록)에 들어온 경우. 맞물린 개념만 문지기 판정과 결산의 대상이 된다 —
+// 맞물리지 않은 개념은 막지도 결산하지도 않고 어긋난 채 남겨 둔다.
+export function isEngagedWithTags(
+  d: { slug: string; relatedPaths: readonly string[]; docPath: string },
+  present: ReadonlySet<string>,
+  taggedSlugs: ReadonlySet<string>
+): boolean {
+  return present.has(normalizeRel(d.docPath)) || hasFollowedCode(d, present, taggedSlugs);
+}
+
 // 목록(present)에 들어오지 않은 연결 코드 — 안내문에 쓴다.
 export function missingRelatedPaths(
   relatedPaths: readonly string[],

@@ -35,7 +35,7 @@ describe('checkConceptQuality', () => {
         principle: { immutableRules: ['결제 완료 후 price 필드는 변경 불가'] },
       })
     );
-    expect(r).toEqual({ ok: true, deficiencies: [] });
+    expect(r).toEqual({ ok: true, deficiencies: [], warnings: [] });
   });
 
   it('규칙이 있어도 trim 후 10자 미만이면 결격', () => {

@@ -7371,7 +7371,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 
 // src/store/conceptStore.ts
 import { readFile as readFile3, readdir } from "node:fs/promises";
-import { join as join2 } from "node:path";
+import { join as join2, relative } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -7461,6 +7461,66 @@ async function clearPendingConflict(root, slug3) {
   await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
 }
 
+// src/concept/implementationLeak.ts
+var CODE_EXTENSIONS = "ts|tsx|js|jsx|mjs|cjs|json|md|css|scss|html|py|go|rs|java|kt|rb|php|sql|ya?ml|sh|toml";
+var PATTERNS = [
+  // 파일 경로 — 확장자로 끝난다 (앞에 폴더가 붙어도 통째로 잡는다)
+  new RegExp(`(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.(?:${CODE_EXTENSIONS})\\b`, "g"),
+  // 폴더 경로 — 확장자가 없으므로 슬래시 두 개 이상일 때만 경로로 본다
+  // ("허용/금지"처럼 슬래시 하나로 짝을 이루는 우리말 표기를 잘못 잡지 않기 위해서다)
+  /[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+){2,}/g,
+  // 함수 호출 표기 — 여는 괄호 바로 앞이 영문 이름이고, 괄호 안이 영문일 때만
+  // ("신호등(settled-status)"처럼 우리말 뒤에 붙은 괄호 설명은 호출 표기가 아니다)
+  /[A-Za-z_$][A-Za-z0-9_$]*\([A-Za-z0-9_$,.'"\s-]*\)/g,
+  // 붙여쓴 영문 이름 — 대문자 마디가 섞인 표기
+  /[a-z][a-z0-9]*(?:[A-Z][A-Za-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][A-Za-z0-9]*)+/g
+];
+var NOT_CODE = /* @__PURE__ */ new Set(["JavaScript", "TypeScript", "GitHub", "GitLab", "YouTube", "iPhone"]);
+function overlaps(spans, start, end) {
+  return spans.some((s) => start < s.end && end > s.start);
+}
+function scanText(text) {
+  const spans = PATTERNS.reduce((claimed, pattern) => {
+    const found = [...text.matchAll(pattern)].reduce((acc, m) => {
+      const start = m.index ?? 0;
+      const end = start + m[0].length;
+      const taken = [...claimed, ...acc];
+      if (NOT_CODE.has(m[0]) || overlaps(taken, start, end)) return acc;
+      return [...acc, { start, end, token: m[0] }];
+    }, []);
+    return [...claimed, ...found];
+  }, []);
+  return [...spans].sort((a, b) => a.start - b.start).map((s) => s.token);
+}
+function scanField(field, text) {
+  return scanText(text).map((token) => ({ field, token }));
+}
+function scanList(field, items) {
+  return items.flatMap((text, i) => scanField(`${field}[${i}]`, text));
+}
+function findImplementationLeaks(concept) {
+  const { description: d, purpose: p, actions: a, principle: r } = concept;
+  return [
+    ...scanField("description.definition", d.definition),
+    ...scanField("description.analogy", d.analogy),
+    ...scanList("description.components", d.components),
+    ...scanField("description.example", d.example),
+    ...scanField("purpose.reason", p.reason),
+    ...scanList("purpose.benefits", p.benefits),
+    ...scanField("purpose.vision", p.vision),
+    ...scanList("purpose.painPoints", p.painPoints),
+    ...scanList("actions.allow", a.allow),
+    ...scanList("actions.restrict", a.restrict),
+    ...scanField("actions.interaction", a.interaction),
+    ...scanList("principle.immutableRules", r.immutableRules),
+    ...scanField("principle.tradeoffs", r.tradeoffs),
+    ...scanList("principle.lifecycle", r.lifecycle)
+  ];
+}
+function describeLeak(leak) {
+  return `\uAC1C\uB150 \uBCF8\uBB38\uC5D0 \uCF54\uB4DC \uD45C\uAE30\uB85C \uBCF4\uC774\uB294 \uB9D0\uC774 \uC788\uC2B5\uB2C8\uB2E4 \u2014 ${leak.field}: "${leak.token}" (\uAD04\uD638 \uC548 \uCC38\uACE0 \uD45C\uAE30\uB77C \uBB38\uC7A5\uC774 \uADF8\uB300\uB85C \uC131\uB9BD\uD55C\uB2E4\uBA74 \uADF8\uB300\uB85C \uB450\uC5B4\uB3C4 \uB429\uB2C8\uB2E4)`;
+}
+
 // src/concept/quality.ts
 var MIN_RULE_LENGTH = 10;
 function checkConceptQuality(c) {
@@ -7483,7 +7543,8 @@ function checkConceptQuality(c) {
       deficiencies.push(`rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`);
     }
   }
-  return { ok: deficiencies.length === 0, deficiencies };
+  const warnings = findImplementationLeaks(c).map(describeLeak);
+  return { ok: deficiencies.length === 0, deficiencies, warnings };
 }
 
 // src/concept/attest.ts
@@ -7623,17 +7684,23 @@ async function walkJson(dir) {
   }
   return out;
 }
-async function listConcepts(root) {
+async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
-  const concepts = [];
+  const entries = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile3(f, "utf8"))));
+      entries.push({
+        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
+        rel: relative(root, f)
+      });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
   }
-  return concepts;
+  return entries;
+}
+async function listConcepts(root) {
+  return (await listConceptEntries(root)).map((e) => e.concept);
 }
 async function readConcept(root, slug3) {
   return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
@@ -8066,7 +8133,7 @@ async function upsertViewerScript(root) {
 
 // src/init/reference.ts
 import { mkdir as mkdir5, writeFile as writeFile6, access, readdir as readdir3 } from "node:fs/promises";
-import { join as join8, relative } from "node:path";
+import { join as join8, relative as relative2 } from "node:path";
 var SEED_README = "README.md";
 async function ensureReference(root) {
   const dir = cpPaths(root).reference;
@@ -8095,7 +8162,7 @@ async function listReferenceFiles(root) {
     for (const e of entries) {
       const full = join8(d, e.name);
       if (e.isDirectory()) await walk(full);
-      else out.push(relative(dir, full));
+      else out.push(relative2(dir, full));
     }
   }
   await walk(dir);
@@ -8561,9 +8628,9 @@ async function appendHistory(root, input) {
 
 // src/drift/follow.ts
 import { stat as stat2 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join16, relative as relative2, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join16, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative2(resolve(root), resolve(root, rel));
+  const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
 }
 async function isRelatedFile(root, rel) {
@@ -8599,14 +8666,18 @@ function pickReason(history, slug3, currentHash, locked) {
   return (exact ?? later)?.reason ?? "";
 }
 async function computeDrift(root) {
-  const [concepts, features, mapping, lock, history] = await Promise.all([
-    listConcepts(root),
+  const [entries, features, mapping, lock, history] = await Promise.all([
+    listConceptEntries(root),
     listFeatures(root),
     readMappingCache(root),
     readLock(root),
     readHistory(root)
   ]);
-  const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
+  const drifted = entries.map(({ concept: c, rel }) => ({
+    c,
+    rel,
+    locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0
+  })).filter(
     (x) => x.locked !== void 0
   ).filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
   const unique = [...new Set(drifted.flatMap((x) => x.related))];
@@ -8616,7 +8687,9 @@ async function computeDrift(root) {
     currentHash: x.current,
     lockedHash: x.locked.hash,
     reason: pickReason(history, x.c.slug, x.current, x.locked),
-    relatedPaths: x.related.filter((p) => alive.has(p))
+    relatedPaths: x.related.filter((p) => alive.has(p)),
+    // 탐색이 찾은 실제 파일 위치 — group 필드로 재구성하지 않아, 손으로 옮겨진 문서도 정확히 가리킨다.
+    docPath: normalizeRel(x.rel)
   }));
 }
 
@@ -8849,7 +8922,16 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   program2.command("resolve-conflict").argument("<slug>").option("--root <root>", "\uD504\uB85C\uC81D\uD2B8 \uB8E8\uD2B8", process.cwd()).action(async (slug3, o) => {
     await clearPendingConflict(o.root, slug3);
   });
-  program2.command("quality").description("\uAC1C\uB150\uC758 \uACB0\uC815\uB860\uC801 \uD488\uC9C8 \uCD5C\uC18C\uCE58 \uAC80\uC0AC (green \uC2B9\uACA9 \uC804\uC81C\uC870\uAC74)").argument("<slug>").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+  program2.command("quality").description("\uAC1C\uB150\uC758 \uACB0\uC815\uB860\uC801 \uD488\uC9C8 \uCD5C\uC18C\uCE58 \uAC80\uC0AC (green \uC2B9\uACA9 \uC804\uC81C\uC870\uAC74). slug\uB97C \uBE7C\uBA74 \uC804 \uAC1C\uB150 \uAC80\uC0AC").argument("[slug]").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    if (!slug3) {
+      const concepts = await listConcepts(o.root);
+      const reports = concepts.map((c) => ({ slug: c.slug, ...checkConceptQuality(c) }));
+      const failed = reports.filter((r2) => !r2.ok).length;
+      const warned = reports.filter((r2) => r2.warnings.length > 0).length;
+      out(JSON.stringify({ total: reports.length, failed, warned, reports }));
+      if (failed > 0) code = 1;
+      return;
+    }
     const concept = await readConcept(o.root, slug3);
     if (!concept) {
       out(JSON.stringify({ error: `Concept not found: ${slug3}` }));

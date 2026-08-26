@@ -1,7 +1,10 @@
 // @concept:drift-reconcile @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
 // 커밋 뒤 결산(reconcileAfterCommit)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - drift-reconcile 구성요소 "따라옴 / 무시함" → aligned·ignored 분류, 하나만 들어와도 aligned
+//  - drift-reconcile 불변 "결산은 이번 커밋에 맞물린 개념만 한다 — 맞물리지 않은 개념은 어긋난 채
+//    남겨 둔다" → 무관한 커밋은 결산·기준선 갱신 없이 어긋남 유지
+//  - drift-reconcile 구성요소 "따라옴 / 무시함" → 맞물린 개념의 aligned·ignored 분류,
+//    하나만 들어와도 aligned / 문서만 들어오면 ignored
 //  - drift-reconcile 불변 "따라옴이든 무시함이든, 결산한 개념의 기준선은 반드시 현재 지문으로 다시
 //    맞춘다" → aligned·ignored 양쪽에서 lock을 현재 해시로 갱신
 //  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
@@ -9,7 +12,7 @@
 //  - drift-reconcile 허용 "새로 생긴 개념을 기준선에 등록하고, 사라진 개념의 낡은 기록을 지우는 것"
 //    → 신규 개념을 현재 해시로 등록 / 삭제된 개념의 stale lock 정리
 //  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
-//    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 aligned
+//    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 문서 커밋에서 aligned
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -36,6 +39,9 @@ const concept = (over: Record<string, unknown> = {}) => ({
   principle: {},
   ...over,
 });
+
+// 픽스처 개념(auth-token, group 없음)의 문서 경로 — 맞물림 판정에 쓴다.
+const DOC = 'docs/conceptpowers/concepts/data/auth-token.json';
 
 function touch(rel: string) {
   const p = join(root, rel);
@@ -93,14 +99,15 @@ describe('reconcileAfterCommit', () => {
       concepts: ['auth-token'],
       codePaths: ['src/login.ts', 'src/removed.ts'],
     });
-    const r = await reconcileAfterCommit(root, ['README.md'], 't2');
+    // 개념 문서만 커밋 — 사라진 src/removed.ts는 빼고, 남은 src/login.ts가 안 들어왔으므로 ignored.
+    const r = await reconcileAfterCommit(root, [DOC], 't2');
     expect(r.ignored).toContain('auth-token');
     const r2 = await reconcileAfterCommit(root, ['src/login.ts'], 't3');
     // 이미 결산돼 drift가 아니므로 aligned/ignored 어디에도 없어야 정상(기준선 재조정 확인)
     expect(r2.aligned).toEqual([]);
     expect(r2.ignored).toEqual([]);
   });
-  it('연결 경로가 전부 사라졌으면 따라올 것이 없으므로 aligned로 결산한다', async () => {
+  it('연결 경로가 전부 사라졌으면 따라올 것이 없으므로 개념 문서 커밋에서 aligned로 결산한다', async () => {
     await makeDrift([]);
     await writeFeature(root, {
       slug: 'login',
@@ -108,15 +115,26 @@ describe('reconcileAfterCommit', () => {
       concepts: ['auth-token'],
       codePaths: ['src/gone.ts'],
     });
-    const r = await reconcileAfterCommit(root, ['README.md'], 't2');
+    const r = await reconcileAfterCommit(root, [DOC], 't2');
     expect(r.aligned).toContain('auth-token');
   });
-  it('관련 코드가 하나도 안 들어오면 ignored로 분류하고 history에 ignored 기록 + lock 갱신', async () => {
+  it('무관한 커밋은 결산하지 않는다 — 기준선·이력을 건드리지 않고 어긋남을 유지한다 (규칙: 맞물린 개념만 결산)', async () => {
     await makeDrift();
+    const c1Hash = (await readLock(root))['auth-token'].hash;
     const r = await reconcileAfterCommit(root, ['README.md'], 't2');
+    expect(r.aligned).toEqual([]);
+    expect(r.ignored).toEqual([]);
+    expect((await readLock(root))['auth-token'].hash).toBe(c1Hash); // 기준선 유지 = 어긋남 유지
+    expect((await readHistory(root)).filter((e) => e.aligned || e.ignored)).toEqual([]);
+  });
+  it('개념 문서만 커밋되고 관련 코드가 하나도 안 들어오면 ignored로 분류하고 history 기록 + lock 갱신', async () => {
+    await makeDrift();
+    const r = await reconcileAfterCommit(root, [DOC], 't2');
     expect(r.ignored).toContain('auth-token');
     const h = await readHistory(root);
     expect(h.some((e) => e.slug === 'auth-token' && e.ignored)).toBe(true);
+    const c2 = await readConcept(root, 'auth-token');
+    expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
   });
   it('lock에 없던 신규 개념은 현재 해시로 등록한다', async () => {
     await writeConcept(root, concept());
@@ -127,6 +145,7 @@ describe('reconcileAfterCommit', () => {
     expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c!));
   });
   it('경로 표기가 달라도(./ 접두) 정규화해 aligned로 본다 (H1)', async () => {
+    touch('src/login.ts'); // 실제 파일이 있어야 프루닝을 지나 정규화 비교가 이뤄진다
     await writeConcept(root, concept());
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });

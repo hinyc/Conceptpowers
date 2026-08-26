@@ -4287,7 +4287,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 
 // src/store/conceptStore.ts
 import { readFile, readdir } from "node:fs/promises";
-import { join as join2 } from "node:path";
+import { join as join2, relative } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -4352,6 +4352,21 @@ var ConceptSchema = external_exports.object({
 function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
+
+// src/concept/implementationLeak.ts
+var CODE_EXTENSIONS = "ts|tsx|js|jsx|mjs|cjs|json|md|css|scss|html|py|go|rs|java|kt|rb|php|sql|ya?ml|sh|toml";
+var PATTERNS = [
+  // 파일 경로 — 확장자로 끝난다 (앞에 폴더가 붙어도 통째로 잡는다)
+  new RegExp(`(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.(?:${CODE_EXTENSIONS})\\b`, "g"),
+  // 폴더 경로 — 확장자가 없으므로 슬래시 두 개 이상일 때만 경로로 본다
+  // ("허용/금지"처럼 슬래시 하나로 짝을 이루는 우리말 표기를 잘못 잡지 않기 위해서다)
+  /[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+){2,}/g,
+  // 함수 호출 표기 — 여는 괄호 바로 앞이 영문 이름이고, 괄호 안이 영문일 때만
+  // ("신호등(settled-status)"처럼 우리말 뒤에 붙은 괄호 설명은 호출 표기가 아니다)
+  /[A-Za-z_$][A-Za-z0-9_$]*\([A-Za-z0-9_$,.'"\s-]*\)/g,
+  // 붙여쓴 영문 이름 — 대문자 마디가 섞인 표기
+  /[a-z][a-z0-9]*(?:[A-Z][A-Za-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][A-Za-z0-9]*)+/g
+];
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4424,17 +4439,23 @@ async function walkJson(dir) {
   }
   return out;
 }
-async function listConcepts(root) {
+async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
-  const concepts = [];
+  const entries = [];
   for (const f of files) {
     try {
-      concepts.push(parseConcept(JSON.parse(await readFile(f, "utf8"))));
+      entries.push({
+        concept: parseConcept(JSON.parse(await readFile(f, "utf8"))),
+        rel: relative(root, f)
+      });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
     }
   }
-  return concepts;
+  return entries;
+}
+async function listConcepts(root) {
+  return (await listConceptEntries(root)).map((e) => e.concept);
 }
 
 // src/store/featureStore.ts
@@ -4736,7 +4757,7 @@ async function upsertViewerScript(root) {
 
 // src/init/reference.ts
 import { mkdir as mkdir5, writeFile as writeFile6, access, readdir as readdir3 } from "node:fs/promises";
-import { join as join7, relative } from "node:path";
+import { join as join7, relative as relative2 } from "node:path";
 var SEED_README = "README.md";
 async function ensureReference(root) {
   const dir = cpPaths(root).reference;
@@ -4765,7 +4786,7 @@ async function listReferenceFiles(root) {
     for (const e of entries) {
       const full = join7(d, e.name);
       if (e.isDirectory()) await walk(full);
-      else out.push(relative(dir, full));
+      else out.push(relative2(dir, full));
     }
   }
   await walk(dir);
@@ -5065,9 +5086,9 @@ async function readHistory(root) {
 
 // src/drift/follow.ts
 import { stat as stat2 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join13, relative as relative2, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join13, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative2(resolve(root), resolve(root, rel));
+  const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
 }
 async function isRelatedFile(root, rel) {
@@ -5103,14 +5124,18 @@ function pickReason(history, slug3, currentHash, locked) {
   return (exact ?? later)?.reason ?? "";
 }
 async function computeDrift(root) {
-  const [concepts, features, mapping, lock, history] = await Promise.all([
-    listConcepts(root),
+  const [entries, features, mapping, lock, history] = await Promise.all([
+    listConceptEntries(root),
     listFeatures(root),
     readMappingCache(root),
     readLock(root),
     readHistory(root)
   ]);
-  const drifted = concepts.map((c) => ({ c, locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0 })).filter(
+  const drifted = entries.map(({ concept: c, rel }) => ({
+    c,
+    rel,
+    locked: hasOwn(lock, c.slug) ? lock[c.slug] : void 0
+  })).filter(
     (x) => x.locked !== void 0
   ).filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
   const unique = [...new Set(drifted.flatMap((x) => x.related))];
@@ -5120,7 +5145,9 @@ async function computeDrift(root) {
     currentHash: x.current,
     lockedHash: x.locked.hash,
     reason: pickReason(history, x.c.slug, x.current, x.locked),
-    relatedPaths: x.related.filter((p) => alive.has(p))
+    relatedPaths: x.related.filter((p) => alive.has(p)),
+    // 탐색이 찾은 실제 파일 위치 — group 필드로 재구성하지 않아, 손으로 옮겨진 문서도 정확히 가리킨다.
+    docPath: normalizeRel(x.rel)
   }));
 }
 
@@ -5173,7 +5200,9 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     ...enforcementLine,
     "Commit packaging (the commit gate inspects ONLY the currently staged list \u2014 `git diff --cached --diff-filter=ACMR`; code already landed in earlier commits does NOT count):",
     "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the code you changed for them AND the fresh consistency attestation (docs/conceptpowers/concepts/.alignment/attest.json) in the SAME commit. The alignment lock/history are rewritten by the post-commit reconcile \u2014 include those files in your next commit; a lock-only follow-up commit is expected, not drift.",
-    "- A drifted concept counts as followed when at least one of its related paths (@concept-tagged files + feature codePaths) is staged \u2014 stage the files you actually changed for the concept; you do not need every related file. A staged file whose leading comment block carries the @concept:<slug> tag also counts even if the mapping cache is stale. If NONE is staged the gate asks (standard) / blocks (strict) / warns (light).",
+    "- A drifted concept is judged ONLY when this commit engages it \u2014 its concept doc (docs/conceptpowers/concepts/data/**) or at least one of its related paths (@concept-tagged files + feature codePaths) is staged. A staged file whose leading comment block carries the @concept:<slug> tag also counts even if the mapping cache is stale.",
+    "- Staging mapped code for a drifted concept WITHOUT its edited concept doc is caught by the gate \u2014 stage the doc in the same commit (not required when the doc has no uncommitted changes, e.g. it already landed via a merge). Staging the doc without any related code is also caught (override only when the concept change genuinely needs no code change \u2192 recorded as Drift Ignored).",
+    "- A commit unrelated to every drifted concept passes with a [DRIFT REVIEW] note \u2014 double-check the staged files are truly unrelated; the drift obligation stays open (baseline untouched) for a later engaged commit.",
     "- When moving or deleting files, migrate the @concept tags and refresh the mapping (conceptpowers:update-mapping) in the SAME commit. Paths that no longer exist on disk are excluded from the follow judgment, so a stale deleted path cannot block the gate \u2014 but it does leave the mapping inaccurate until refreshed.",
     "- Editing only a path string inside a concept body still changes its hash and counts as drift; update path wording in the same commit that moves the path.",
     "- Never routinely force past the gate (Drift Ignored). Force only when the concept change genuinely needs no code change (say so to the user); otherwise fix the code and stage it. Each `ignored: true` entry in history.json is a recorded exception \u2014 accumulated unexplained ones void the concept\u2013code alignment guarantee.",

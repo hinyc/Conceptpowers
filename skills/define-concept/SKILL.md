@@ -90,9 +90,29 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
      `price` field must not change through any path" (decidable).
    - If a rule is vague or a section is empty, **do not fill it in yourself** — ask the user
      a concrete question and let them author it (the human owns the contract).
+   - **구현 독립성 (개념 `concept-scope`):** 개념 본문(description/purpose/actions/principle)에는
+     파일 경로·함수 이름·호출 방법을 규칙 문장의 주어나 서술어로 쓰지 않는다. 개념은 코드보다
+     오래 살아야 하므로, 함수 이름이 규칙에 박히면 이름만 바꿔도 개념이 어긋난 것으로 잡히고
+     정합성 재검증까지 끌려온다. 또 규칙이 이미 코드를 서술하면 코드 검증이 동어반복이 되어
+     위반을 잡아낼 힘을 잃는다.
+
+     | 개념 본문에 남긴다 (약속) | 옮긴다 (코드를 가리키는 자리) |
+     |---|---|
+     | "결제 실행은 단일 진입점 하나로만 이뤄진다" | 그 진입점의 실제 함수 이름 → `codeLinks` |
+     | "취소는 실행 이력을 지우지 않고 새 기록을 남긴다" | 함수 시그니처·인자 → `codeLinks` |
+     | "외부 호출 실패는 호출한 쪽으로 전달된다" | 파일 경로·구현 위치 → feature의 `codePaths` |
+
+     판별 기준은 **이름이냐 제약이냐**다. 이름·시그니처·호출 절차는 코드가 바뀌면 같이 바뀌므로
+     개념이 아니고, "무엇이 항상 참이어야 하는가"만 개념이다. 정보를 버리는 것이 아니라 자리를
+     옮기는 것이다 — 코드 지목은 `codeLinks`, feature의 `codePaths`, 코드 첫머리 `@concept` 태그가 맡는다.
+     괄호 안 참고 표기까지 막지는 않는다 — 다만 **그 표기를 지워도 문장이 그대로 성립해야** 한다.
+     기계 점검: `node "<cli>" quality <slug> --root .`의 `warnings`(slug를 빼면 전 개념 전수 검사).
+     경고는 커밋을 막지 않는다 — 사람이 판단할 후보를 모아줄 뿐이다.
    - The engine enforces a deterministic floor at green promotion (≥1 rule overall — or a
      non-empty `description.example` for a term-only concept — and ≥10 chars per rule);
-     check it anytime with `node "<cli>" quality <slug> --root .`.
+     check it anytime with `node "<cli>" quality <slug> --root .` (omit the slug to scan every
+     concept). The same command's `warnings` list flags implementation notation left in the body —
+     warnings never block a commit.
 5. Decide the slug (kebab-case, globally unique) and group (domain).
 6. **Consistency check**: run the `conceptpowers:check-consistency` skill to confirm no conflict or
    violation against existing concepts.

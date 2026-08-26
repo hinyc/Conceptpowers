@@ -449,5 +449,15 @@
       "tests/viewer/heroAliases.test.ts"
     ],
     "note": "넓힌 규칙에 맞춰 개념 안 같은 별칭 반복을 거절하는 시나리오를 추가하고 헤더 인용을 새 문구로 맞춤. 나머지 규칙은 그대로라 기존 시나리오 변경 없음."
+  },
+  "concept-scope": {
+    "hash": "2:46f995fe96e6",
+    "result": "updated",
+    "at": "2026-08-26T02:00:42.592Z",
+    "tests": [
+      "tests/concept/implementationLeak.test.ts",
+      "tests/cli/quality.test.ts"
+    ],
+    "note": "확장된 규칙(개념 본문의 코드 표기 금지, 코드 연결 목록으로의 이사, 괄호 참고 표기 허용)에서 시나리오를 새로 도출해 테스트 10건 신규 작성 + CLI 전수검사 1건 추가. 이전에는 concept-scope에 테스트가 없었다"
   }
 }
