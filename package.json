@@ -1,6 +1,6 @@
 {
   "name": "conceptpowers",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Concept-driven development governance for Claude Code",
   "type": "module",
   "packageManager": "pnpm@10.12.1",
