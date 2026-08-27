@@ -401,11 +401,6 @@ p:last-child {
 .hero__points li::marker {
   color: var(--link);
 }
-.cats {
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-}
 /* 제목 아래 별칭 줄. 뜻을 나르는 것은 "별칭 :"이라는 글자이고 색은 거들 뿐이라,
    색을 못 보아도 읽는 데 지장이 없다. 상태 신호등의 빨강과는 다른 값을 쓴다. */
 .aliases {

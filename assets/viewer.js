@@ -1025,7 +1025,6 @@ function conceptHero(slug, c) {
       ? h('p', { class: 'aliases' }, state.t.aliases + ' : ' + aliases.join(', '))
       : null,
     heroSummary(c.description.definition),
-    h('p', { class: 'cats' }, (c.category || []).join(' · ')),
   ]);
 }
 
