@@ -1825,5 +1825,86 @@
     "at": "2026-08-28T04:06:28.806Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "2:887d3406cbd6",
+    "prevHash": "3:69b2b52f6545",
+    "reason": "개념 없는 코드 감사(audit-gap-detection)를 흡수 — 둘 다 '코드 첫머리 표식'이라는 한 대상을 관리하며, 지도 만들기와 격차 찾기는 같은 상태의 두 동작이다",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "2:d788bc62db07",
+    "prevHash": "3:fa94f94b8f0f",
+    "reason": "어긋남 판정 기준(contract-hash)을 흡수 — 판정 기준과 결산 절차가 같은 관리 대상(기준선 지문)을 나눠 가지고 있었다",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "2:c238aa84a035",
+    "prevHash": "3:70491ad40129",
+    "reason": "기능 목록 표시 규칙(feature-index-row)에서 약속에 해당하는 부분(기능은 전용 화면을 갖지 않는다, 줄에 개념이 빠짐없이 붙는다)을 흡수하고, 화면 배치·표기 규칙은 상위 기준 문서로 내림",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "globally-unique-slug",
+    "hash": "2:daa37e106cce",
+    "prevHash": "3:26e0204fc772",
+    "reason": "개념 별칭(concept-aliases)을 흡수 — 이름표와 별칭은 '개념을 가리키는 이름'이라는 한 대상을 필드로만 나눠 가지고 있었다",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "settled-status",
+    "hash": "2:fc493ec574f9",
+    "prevHash": "3:40d543866df8",
+    "reason": "충돌 기록(pending-conflict-tracking)을 흡수 — 충돌 기록의 불변 규칙 셋이 모두 상태 전이 규칙이라 개념 상태의 일부였다",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "2:952efb6e6931",
+    "prevHash": "3:f98dcbf5e830",
+    "reason": "뷰어 서버 보호(viewer-local-write-guard)를 흡수 — 보호 규칙 전체가 '고치는 통로'의 접근 조건이라 편집 화면이 없으면 존재 이유가 없다",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "home-search",
+    "hash": "2:5a9f016fb40e",
+    "prevHash": "3:0a8841576155",
+    "reason": "두 목적(없던 것을 찾아오기 / 있던 것을 좁히기)이 한 개념에 들어 있어 찾아오기만 남기고, 좁히기는 목록 좁히기(list-filter)로 분리",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "viewer-navigation",
+    "hash": "2:93948bb43352",
+    "prevHash": "3:e239a31dbfe7",
+    "reason": "묶음 줄·펼침 목록 같은 화면 배치 규칙은 상위 기준 문서로 내리고, '목록에 닿는 길은 사라지지 않는다'는 누구나 같은 품으로 읽기로 옮긴 뒤, 남은 하나의 약속(사람이 직접 정한 선택을 도구가 뒤집지 않는다)으로 좁힘",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "viewer-readability",
+    "hash": "2:890b0f5d763e",
+    "prevHash": "3:5fcfb1164bbf",
+    "reason": "화면 배치·표기 규칙은 상위 기준 문서로 내리고, 약속에 해당하는 부분(항목이 늘어도 품이 늘지 않음·색에 기대지 않음·도구가 내용을 바꾸지 않음)만 남겨 하나의 목적으로 좁힘. 화면 사이 이동(viewer-navigation)의 '어느 너비에서든 목록에 닿는 길은 사라지지 않는다'도 같은 약속이라 여기로 옮김",
+    "at": "2026-08-28T04:10:12.059Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
