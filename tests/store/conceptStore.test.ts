@@ -87,7 +87,8 @@ describe('conceptStore', () => {
   it('setConceptStatus가 status를 불변으로 갱신한다', async () => {
     const qualified = {
       ...base,
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     };
     await writeConcept(root, qualified as any);
     expect((await readConcept(root, 'admin-role'))?.status).toBe('red');
@@ -115,7 +116,8 @@ describe('conceptStore', () => {
     const qualified = {
       ...base,
       status: 'pending',
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     };
     await writeConcept(root, qualified as any);
     await recordAttest(root, parseConcept(qualified), 'pass');

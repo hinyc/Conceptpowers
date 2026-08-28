@@ -10,6 +10,7 @@ var I18N = {
     appTitle: '개념 목록',
     description: '설명',
     purpose: '목적',
+    managedState: '관리 대상',
     allow: '허용 행동',
     restrict: '제한 행동',
     principle: '운영 원칙',
@@ -74,6 +75,7 @@ var I18N = {
     painPoints: '문제점',
     interaction: '상호작용',
     immutableRules: '불변 규칙',
+    operationalPrinciple: '작동 원리',
     tradeoffs: '트레이드오프',
     lifecycle: '생명주기',
     relatedSlugs: '관련 개념(slug)',
@@ -90,6 +92,7 @@ var I18N = {
     appTitle: 'Concepts',
     description: 'Description',
     purpose: 'Purpose',
+    managedState: 'Managed state',
     allow: 'Allowed',
     restrict: 'Restricted',
     principle: 'Operating Principles',
@@ -154,6 +157,7 @@ var I18N = {
     painPoints: 'Pain points',
     interaction: 'Interaction',
     immutableRules: 'Immutable rules',
+    operationalPrinciple: 'Operational principle',
     tradeoffs: 'Trade-offs',
     lifecycle: 'Lifecycle',
     relatedSlugs: 'Related concepts (slug)',
@@ -1070,9 +1074,18 @@ function renderConceptRead(slug) {
       h('p', null, c.purpose.reason),
       ul(c.purpose.benefits),
     ]),
+    (c.state && (c.state.managed || []).length)
+      ? h('section', { class: 'section' }, [
+          h('h2', null, t.managedState),
+          ul(c.state.managed),
+        ])
+      : null,
     actionsSection(t, c.actions),
     h('section', { class: 'section' }, [
       h('h2', null, t.principle),
+      c.principle.operationalPrinciple
+        ? h('p', { class: 'op-principle' }, c.principle.operationalPrinciple)
+        : null,
       ul(c.principle.immutableRules),
       c.principle.tradeoffs ? h('p', null, c.principle.tradeoffs) : null,
     ]),
@@ -1164,6 +1177,7 @@ function renderConceptEdit(slug) {
   f.analogy = area(c.description.analogy, 2);
   f.components = area(linesOf(c.description.components), 3);
   f.example = area(c.description.example, 2);
+  f.managed = area(linesOf((c.state || {}).managed || []), 3);
   f.reason = area(c.purpose.reason, 3);
   f.benefits = area(linesOf(c.purpose.benefits), 3);
   f.vision = area(c.purpose.vision, 2);
@@ -1172,6 +1186,7 @@ function renderConceptEdit(slug) {
   f.restrict = area(linesOf(c.actions.restrict), 3);
   f.interaction = area(c.actions.interaction, 2);
   f.immutableRules = area(linesOf(c.principle.immutableRules), 3);
+  f.operationalPrinciple = area(c.principle.operationalPrinciple || '', 2);
   f.tradeoffs = area(c.principle.tradeoffs, 2);
   f.lifecycle = area(linesOf(c.principle.lifecycle), 3);
   f.prev = input(c.relations.prev);
@@ -1192,6 +1207,9 @@ function renderConceptEdit(slug) {
         components: toLines(f.components.value),
         example: f.example.value.trim(),
       },
+      state: {
+        managed: toLines(f.managed.value),
+      },
       purpose: {
         reason: f.reason.value.trim(),
         benefits: toLines(f.benefits.value),
@@ -1205,6 +1223,7 @@ function renderConceptEdit(slug) {
       },
       principle: {
         immutableRules: toLines(f.immutableRules.value),
+        operationalPrinciple: f.operationalPrinciple.value.trim(),
         tradeoffs: f.tradeoffs.value.trim(),
         lifecycle: toLines(f.lifecycle.value),
       },
@@ -1277,6 +1296,8 @@ function renderConceptEdit(slug) {
           field(t.analogy, f.analogy),
           field(t.components, f.components, t.linesHint),
           field(t.example, f.example),
+          h('h2', null, t.managedState),
+          field(t.managedState, f.managed, t.linesHint),
           h('h2', null, t.purpose),
           field(t.reason, f.reason),
           field(t.benefits, f.benefits, t.linesHint),
@@ -1287,6 +1308,7 @@ function renderConceptEdit(slug) {
           field(t.restrict, f.restrict, t.linesHint),
           field(t.interaction, f.interaction),
           h('h2', null, t.principle),
+          field(t.operationalPrinciple, f.operationalPrinciple),
           field(t.immutableRules, f.immutableRules, t.linesHint),
           field(t.tradeoffs, f.tradeoffs),
           field(t.lifecycle, f.lifecycle, t.linesHint),

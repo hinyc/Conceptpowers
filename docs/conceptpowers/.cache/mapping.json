@@ -24,12 +24,12 @@
     "tests/store/conceptStore.test.ts",
     "assets/viewer.js",
     "tests/drift/reconcile.test.ts",
-    "src/concept/quality.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/quality.test.ts",
     "src/store/conceptStore.ts",
     "tests/drift/detect.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "src/concept/quality.ts"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
@@ -162,13 +162,13 @@
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/alignment.test.ts",
-    "src/drift/hash.ts",
     "tests/drift/hash.test.ts",
     "tests/concept/aliases.test.ts",
     "tests/drift/reconcile.test.ts",
     "src/drift/detect.ts",
     "tests/drift/detect.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "src/drift/hash.ts"
   ],
   "drift-reconcile": [
     "src/drift/history.ts",
@@ -337,23 +337,27 @@
     "tests/viewer/detailTitle.test.ts",
     "tests/viewer/heroSummary.test.ts",
     "tests/store/conceptStore.test.ts",
-    "src/schema/concept.ts",
     "assets/viewer.js",
     "assets/concept.css",
-    "src/store/conceptStore.ts"
+    "src/store/conceptStore.ts",
+    "src/schema/concept.ts"
   ],
   "concept-aliases": [
     "tests/concept/aliases.test.ts",
     "tests/viewer/search.test.ts",
-    "src/schema/concept.ts",
     "src/viewer/manifest.ts",
     "assets/viewer.js",
     "assets/concept.css",
-    "src/store/conceptStore.ts"
+    "src/store/conceptStore.ts",
+    "src/schema/concept.ts"
   ],
   "concept-scope": [
-    "src/concept/implementationLeak.ts",
     "tests/concept/implementationLeak.test.ts",
-    "tests/cli/quality.test.ts"
+    "tests/cli/quality.test.ts",
+    "src/concept/conceptReference.ts",
+    "src/concept/quality.ts",
+    "src/schema/concept.ts",
+    "src/concept/implementationLeak.ts",
+    "tests/concept/conceptReference.test.ts"
   ]
 }

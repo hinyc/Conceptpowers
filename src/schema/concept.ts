@@ -1,4 +1,4 @@
-// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-aliases
+// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-aliases @concept:concept-scope
 import { z } from 'zod';
 
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term']);
@@ -36,6 +36,13 @@ export const ConceptSchema = z.object({
     components: z.array(z.string()).default([]),
     example: z.string().default(''),
   }),
+  // 이 개념이 스스로 관리하는 대상. 개념이 사라지면 함께 사라지는 것들이며,
+  // 허용·제한 행동이 바꾸는 것이 바로 이 대상이다. 옛 본문에는 없던 칸이라 기본값은 비어 있다.
+  state: z
+    .object({
+      managed: z.array(z.string()).default([]),
+    })
+    .default({}),
   purpose: z.object({
     reason: z.string().min(1).max(2000),
     benefits: z.array(z.string()).default([]),
@@ -49,6 +56,9 @@ export const ConceptSchema = z.object({
   }),
   principle: z.object({
     immutableRules: z.array(z.string()).default([]),
+    // 작동 원리 — 이 개념이 목적을 이루는 전형적인 한 장면("이렇게 하면 이렇게 된다").
+    // 규칙 목록이 아니라 시나리오 한 문장이다. 옛 본문에는 없던 칸이라 기본값은 빈 문자열이다.
+    operationalPrinciple: z.string().default(''),
     tradeoffs: z.string().default(''),
     lifecycle: z.array(z.string()).default([]),
   }),

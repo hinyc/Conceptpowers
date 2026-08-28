@@ -444,6 +444,14 @@ li::marker {
   margin: 0.6rem 0;
 }
 
+/* 작동 원리 — 개념이 목적을 이루는 전형적인 한 장면. 규칙 목록보다 먼저 읽히게 둔다. */
+.op-principle {
+  border-left: 3px solid var(--link);
+  padding-left: 0.9rem;
+  margin: 0.2rem 0 0.9rem;
+  font-weight: 600;
+}
+
 /* allow / restrict 대비 카드 */
 .cols {
   display: flex;

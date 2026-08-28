@@ -109,10 +109,13 @@
       "url": "../data/governance/concept-scope.json",
       "codeLinks": [
         "skills/define-concept/SKILL.md",
+        "src/schema/concept.ts",
         "src/concept/quality.ts",
+        "src/concept/conceptReference.ts",
         "src/concept/implementationLeak.ts",
         "tests/concept/implementationLeak.test.ts",
-        "tests/cli/quality.test.ts"
+        "tests/cli/quality.test.ts",
+        "tests/concept/conceptReference.test.ts"
       ]
     },
     {
@@ -1337,6 +1340,13 @@
         "title": "src/concept/quality.ts"
       },
       {
+        "id": "p:src/concept/conceptReference.ts",
+        "label": "conceptReference.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/conceptReference.ts"
+      },
+      {
         "id": "p:src/concept/implementationLeak.ts",
         "label": "implementationLeak.ts",
         "type": "file",
@@ -1356,6 +1366,13 @@
         "type": "file",
         "href": "",
         "title": "tests/cli/quality.test.ts"
+      },
+      {
+        "id": "p:tests/concept/conceptReference.test.ts",
+        "label": "conceptReference.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/conceptReference.test.ts"
       },
       {
         "id": "c:contract-hash",
@@ -2601,7 +2618,17 @@
       },
       {
         "source": "c:concept-scope",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
         "target": "p:src/concept/quality.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
+        "target": "p:src/concept/conceptReference.ts",
         "kind": "concept-file"
       },
       {
@@ -2617,6 +2644,11 @@
       {
         "source": "c:concept-scope",
         "target": "p:tests/cli/quality.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
+        "target": "p:tests/concept/conceptReference.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3966,5 +3998,5 @@
       }
     ]
   },
-  "generatorVersion": "1.9.2"
+  "generatorVersion": "1.9.3"
 }

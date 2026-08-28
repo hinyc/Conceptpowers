@@ -77,11 +77,22 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
    - **Aliases (개념 `concept-aliases`):** 정식 이름은 하나다. `aliases`에는 **이미 다르게
      부르고 있는 말**만 적는다 — 새 이름을 지어 넣지 않는다(수집이지 발명이 아니다). 어떤 개념의
      slug나 다른 개념의 별칭과 겹치면 저장이 거절된다. 혼용이 없으면 비워 둔다 — 빈 목록이 정상이다.
-3. Fill in the following structure together with the user:
+3. Fill in the following structure together with the user. A concept stands on four legs —
+   **purpose, managed state, actions, operational principle** — and the engine refuses green
+   promotion when the state or the operational principle is missing:
    - **Description** (`description`): core definition, analogy, components, example
    - **Purpose** (`purpose`): reason for existence, benefits, vision, pain points
+   - **Managed state** (`state.managed`): what this concept owns and its actions change
    - **Core actions** (`actions`): allow / restrict / interaction
-   - **Operating principles** (`principle`): immutable rules, tradeoffs, lifecycle
+   - **Operating principles** (`principle`): operational principle, immutable rules, tradeoffs, lifecycle
+   - **관리 대상 (개념 `concept-scope`):** `state.managed`에는 **이 개념이 사라지면 함께
+     사라지는 것**을 적는다 — 허용·제한 행동이 바꾸는 바로 그 대상이다. 화면 위젯이나 파일이
+     아니라 개념이 쥐고 있는 정보다 (예: "개념마다 마지막으로 맞춰둔 지문", "부여된 역할 목록").
+     관리 대상을 말할 수 없으면 그것은 개념이 아니라 규칙 한 줄이다 — 상위 기준 문서로 내린다.
+   - **작동 원리 (개념 `concept-scope`):** `principle.operationalPrinciple`에는 규칙 목록이
+     아니라 **전형적인 한 장면**을 한 문장으로 적는다 — "이렇게 하면 이렇게 된다"의 꼴이다
+     (예: "개념 본문을 고치면 지문이 달라지고, 커밋 뒤 결산이 코드가 따라왔는지 판정한다").
+     이 한 문장이 개념의 목적이 실제로 이루어지는 방식이고, 읽는 사람이 개념을 이해하는 입구다.
 4. **Quality self-check (before saving anything):** for each rule in
    `actions.allow` / `actions.restrict` / `principle.immutableRules`, verify it is a
    **violation-decidable sentence** — a reviewer reading code could answer "does this code
@@ -108,8 +119,24 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
      괄호 안 참고 표기까지 막지는 않는다 — 다만 **그 표기를 지워도 문장이 그대로 성립해야** 한다.
      기계 점검: `node "<cli>" quality <slug> --root .`의 `warnings`(slug를 빼면 전 개념 전수 검사).
      경고는 커밋을 막지 않는다 — 사람이 판단할 후보를 모아줄 뿐이다.
-   - The engine enforces a deterministic floor at green promotion (≥1 rule overall — or a
-     non-empty `description.example` for a term-only concept — and ≥10 chars per rule);
+   - **개념 독립성 (개념 `concept-scope`):** 규칙 칸(`state.managed` / `actions.allow` /
+     `actions.restrict` / `principle.immutableRules` / `principle.operationalPrinciple`)에는
+     **다른 개념의 이름표를 적지 않는다**. 규칙이 다른 개념을 불러야 판별된다면 그 개념은 혼자
+     서지 못하고, 한쪽을 고치면 다른 쪽이 따라 흔들린다. 개념 사이의 맞물림을 적는 자리는
+     `actions.interaction`이고, 그 자리는 계약 지문에서 빠져 있어 상대 개념이 바뀌어도 이 개념을
+     어긋남으로 끌고 가지 않는다.
+
+     | 규칙 칸에 적는다 (혼자 서는 문장) | 상호작용으로 옮긴다 (맞물림) |
+     |---|---|
+     | "검사 증빙이 없으면 초록으로 올리지 않는다" | "신호등(settled-status)과는 검사 시점이 다르다" |
+     | "확정된 상태는 시스템 경로로 되돌리지 않는다" | "문지기 강도(governance-mode)와 무관하게 동작한다" |
+
+     기계 점검: `node "<cli>" quality <slug> --root .`의 `deficiencies` — 경고가 아니라 **결격**이라
+     green 승격과 커밋 게이트에서 막힌다.
+   - The engine enforces a deterministic floor at green promotion (≥1 item in `state.managed`,
+     ≥1 rule overall, a `principle.operationalPrinciple` of ≥10 chars, no other concept's slug
+     inside a rule field — or, for a term-only concept, just a non-empty `description.example`
+     — and ≥10 chars per rule);
      check it anytime with `node "<cli>" quality <slug> --root .` (omit the slug to scan every
      concept). The same command's `warnings` list flags implementation notation left in the body —
      warnings never block a commit.

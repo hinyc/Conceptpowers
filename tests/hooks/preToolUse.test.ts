@@ -298,7 +298,8 @@ describe('decidePreToolUse', () => {
       actions: {},
       description: { definition: '정의' },
       purpose: { reason: '이유' },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -320,7 +321,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v1' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -338,7 +340,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v2' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -400,7 +403,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v1' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -418,7 +422,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v2' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
     // 이 시나리오가 보려는 것은 drift 게이트 하나다. 개념 문서가 스테이징되므로 딸린
@@ -446,7 +451,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v1' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -464,7 +470,8 @@ describe('decidePreToolUse', () => {
       description: { definition: 'v2' },
       purpose: { reason: 'r' },
       actions: {},
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
     // drift 게이트의 '따라옴 = 하나라도'만 보려는 시나리오다 — 딸린 검사(tests/login.test.ts)가
@@ -587,7 +594,8 @@ describe('decidePreToolUse', () => {
       actions: {},
       description: { definition: '정의' },
       purpose: { reason: '이유' },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const out = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -607,7 +615,8 @@ describe('decidePreToolUse', () => {
       actions: {},
       description: { definition: '정의' },
       purpose: { reason: '이유' },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     });
     await writeConcept(root, c);
     await recordAttest(root, c, 'pass');
@@ -634,7 +643,8 @@ describe('decidePreToolUse', () => {
       actions: {},
       description: { definition: '정의' },
       purpose: { reason: '이유' },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'] },
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
     } as any);
     const out = await decidePreToolUse(root, {
       tool: 'Bash',

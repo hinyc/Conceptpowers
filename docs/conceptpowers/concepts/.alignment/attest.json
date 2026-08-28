@@ -35,9 +35,9 @@
     "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "settled-status": {
-    "hash": "2:aa2204a72120",
+    "hash": "2:687f158be70e",
     "result": "pass",
-    "at": "2026-08-25T03:44:02.416Z",
+    "at": "2026-08-28T03:22:20.035Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
@@ -53,6 +53,7 @@
       "output-locale",
       "pending-conflict-tracking",
       "reference-first-duty",
+      "settled-status",
       "atomic-baseline-write",
       "generated-not-hand-edited",
       "init-gate",
@@ -66,8 +67,7 @@
       "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
+    ]
   },
   "home-search": {
     "hash": "2:723c2454a924",
@@ -202,15 +202,16 @@
     ]
   },
   "contract-hash": {
-    "hash": "2:5d978bfa169c",
+    "hash": "2:a207e322b900",
     "result": "pass",
-    "at": "2026-08-25T03:44:01.411Z",
+    "at": "2026-08-28T03:22:19.922Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
       "concept-scope",
+      "contract-hash",
       "drift-reconcile",
       "feature-spec-bridge",
       "globally-unique-slug",
@@ -233,8 +234,7 @@
       "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "새 불변 2건(상호작용 규칙 금지·판 비교 금지)을 28개 전체 상호작용과 대조 — 규칙성 문장은 예외 없이 해당 개념의 restrict/불변에 중복 존재해 위반 0. drift-reconcile의 '기준선 재맞춤'과 재기준 동작 일치."
+    ]
   },
   "drift-reconcile": {
     "hash": "2:bddfe96cdfe4",
@@ -909,14 +909,15 @@
     ]
   },
   "concept-scope": {
-    "hash": "2:46f995fe96e6",
+    "hash": "2:52cd5b3424ee",
     "result": "pass",
-    "at": "2026-08-26T02:00:28.715Z",
+    "at": "2026-08-28T03:22:19.805Z",
     "compared": [
       "audit-gap-detection",
       "concept-aliases",
       "concept-code-mapping",
       "concept-driven-tests",
+      "concept-scope",
       "contract-hash",
       "drift-reconcile",
       "feature-spec-bridge",
@@ -940,8 +941,7 @@
       "knowledge-graph-view",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "개념 본문의 코드 표기 금지 규칙 추가. 인접 개념 5건(concept-code-mapping/human-owns-contract/feature-spec-bridge/settled-status/governance-mode) 규칙 대조 + 전 개념 '본문·표기·코드 연결·이름표' 문장 전수 검색 — 충돌 0. 경고는 게이트 항목이 아니라 governance-mode 불변('검사 항목은 강도와 무관하게 동일')과 무관하고, ok 판정을 바꾸지 않아 settled-status 품질 최소치와도 독립. 참고자료: 세미나 pptx는 용어 혼용 사례로 이 규칙에 배치되는 내용 없음, 이론 PDF는 이 환경에 파서가 없어 미열람"
+    ]
   },
   "viewer-readability": {
     "hash": "2:748895083ba6",

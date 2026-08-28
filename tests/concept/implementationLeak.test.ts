@@ -23,8 +23,9 @@ function makeConcept(over: Record<string, unknown> = {}) {
     title: 'T',
     description: { definition: '개념은 사용자에게 하는 약속이다' },
     purpose: { reason: '약속을 분명히 하기 위해서다' },
+    state: { managed: ['사용자에게 한 약속의 목록'] },
     actions: { allow: ['사용자에게 한 약속을 그대로 지키는 것'], restrict: [] },
-    principle: { immutableRules: [] },
+    principle: { immutableRules: [], operationalPrinciple: '약속을 적어두면 그대로 지켜진다' },
     ...over,
   });
 }
@@ -99,7 +100,10 @@ describe('findImplementationLeaks', () => {
 
   it('찾아낸 것은 경고일 뿐 품질 통과 여부를 바꾸지 않는다', () => {
     const c = makeConcept({
-      principle: { immutableRules: ['저장은 src/store/conceptStore.ts를 거친다'] },
+      principle: {
+        immutableRules: ['저장은 src/store/conceptStore.ts를 거친다'],
+        operationalPrinciple: '약속을 적어두면 그대로 지켜진다',
+      },
     });
     const r = checkConceptQuality(c);
     expect(r.ok).toBe(true);
@@ -110,5 +114,21 @@ describe('findImplementationLeaks', () => {
 
   it('경고가 없으면 빈 목록이다', () => {
     expect(checkConceptQuality(makeConcept()).warnings).toEqual([]);
+  });
+
+  it('관리 대상과 작동 원리도 본문이므로 함께 훑는다', () => {
+    const leaks = findImplementationLeaks(
+      makeConcept({
+        state: { managed: ['src/store/conceptStore.ts가 들고 있는 목록'] },
+        principle: {
+          immutableRules: [],
+          operationalPrinciple: 'writeConcept()를 부르면 저장된다',
+        },
+      })
+    );
+    expect(leaks.map((l) => l.field)).toEqual([
+      'state.managed[0]',
+      'principle.operationalPrinciple',
+    ]);
   });
 });

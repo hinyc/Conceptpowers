@@ -72,12 +72,13 @@ function scanList(field: string, items: readonly string[]): readonly LeakFinding
  * 코드 연결 목록·이름표·제목·별칭·관계는 코드를 가리키라고 있는 자리이므로 검사하지 않는다.
  */
 export function findImplementationLeaks(concept: Concept): readonly LeakFinding[] {
-  const { description: d, purpose: p, actions: a, principle: r } = concept;
+  const { description: d, purpose: p, actions: a, principle: r, state: s } = concept;
   return [
     ...scanField('description.definition', d.definition),
     ...scanField('description.analogy', d.analogy),
     ...scanList('description.components', d.components),
     ...scanField('description.example', d.example),
+    ...scanList('state.managed', s.managed),
     ...scanField('purpose.reason', p.reason),
     ...scanList('purpose.benefits', p.benefits),
     ...scanField('purpose.vision', p.vision),
@@ -86,6 +87,7 @@ export function findImplementationLeaks(concept: Concept): readonly LeakFinding[
     ...scanList('actions.restrict', a.restrict),
     ...scanField('actions.interaction', a.interaction),
     ...scanList('principle.immutableRules', r.immutableRules),
+    ...scanField('principle.operationalPrinciple', r.operationalPrinciple),
     ...scanField('principle.tradeoffs', r.tradeoffs),
     ...scanList('principle.lifecycle', r.lifecycle),
   ];

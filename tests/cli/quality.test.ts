@@ -30,7 +30,8 @@ function conceptInput(rules: string[]) {
     description: { definition: '정의' },
     purpose: { reason: '이유' },
     actions: {},
-    principle: { immutableRules: rules },
+    state: { managed: ['이 개념이 관리하는 대상'] },
+    principle: { immutableRules: rules, operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
   };
 }
 

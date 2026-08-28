@@ -7410,6 +7410,11 @@ var ConceptSchema = external_exports.object({
     components: external_exports.array(external_exports.string()).default([]),
     example: external_exports.string().default("")
   }),
+  // 이 개념이 스스로 관리하는 대상. 개념이 사라지면 함께 사라지는 것들이며,
+  // 허용·제한 행동이 바꾸는 것이 바로 이 대상이다. 옛 본문에는 없던 칸이라 기본값은 비어 있다.
+  state: external_exports.object({
+    managed: external_exports.array(external_exports.string()).default([])
+  }).default({}),
   purpose: external_exports.object({
     reason: external_exports.string().min(1).max(2e3),
     benefits: external_exports.array(external_exports.string()).default([]),
@@ -7423,6 +7428,9 @@ var ConceptSchema = external_exports.object({
   }),
   principle: external_exports.object({
     immutableRules: external_exports.array(external_exports.string()).default([]),
+    // 작동 원리 — 이 개념이 목적을 이루는 전형적인 한 장면("이렇게 하면 이렇게 된다").
+    // 규칙 목록이 아니라 시나리오 한 문장이다. 옛 본문에는 없던 칸이라 기본값은 빈 문자열이다.
+    operationalPrinciple: external_exports.string().default(""),
     tradeoffs: external_exports.string().default(""),
     lifecycle: external_exports.array(external_exports.string()).default([])
   }),
@@ -7499,12 +7507,13 @@ function scanList(field, items) {
   return items.flatMap((text, i) => scanField(`${field}[${i}]`, text));
 }
 function findImplementationLeaks(concept) {
-  const { description: d, purpose: p, actions: a, principle: r } = concept;
+  const { description: d, purpose: p, actions: a, principle: r, state: s } = concept;
   return [
     ...scanField("description.definition", d.definition),
     ...scanField("description.analogy", d.analogy),
     ...scanList("description.components", d.components),
     ...scanField("description.example", d.example),
+    ...scanList("state.managed", s.managed),
     ...scanField("purpose.reason", p.reason),
     ...scanList("purpose.benefits", p.benefits),
     ...scanField("purpose.vision", p.vision),
@@ -7513,6 +7522,7 @@ function findImplementationLeaks(concept) {
     ...scanList("actions.restrict", a.restrict),
     ...scanField("actions.interaction", a.interaction),
     ...scanList("principle.immutableRules", r.immutableRules),
+    ...scanField("principle.operationalPrinciple", r.operationalPrinciple),
     ...scanField("principle.tradeoffs", r.tradeoffs),
     ...scanList("principle.lifecycle", r.lifecycle)
   ];
@@ -7521,28 +7531,69 @@ function describeLeak(leak) {
   return `\uAC1C\uB150 \uBCF8\uBB38\uC5D0 \uCF54\uB4DC \uD45C\uAE30\uB85C \uBCF4\uC774\uB294 \uB9D0\uC774 \uC788\uC2B5\uB2C8\uB2E4 \u2014 ${leak.field}: "${leak.token}" (\uAD04\uD638 \uC548 \uCC38\uACE0 \uD45C\uAE30\uB77C \uBB38\uC7A5\uC774 \uADF8\uB300\uB85C \uC131\uB9BD\uD55C\uB2E4\uBA74 \uADF8\uB300\uB85C \uB450\uC5B4\uB3C4 \uB429\uB2C8\uB2E4)`;
 }
 
+// src/concept/conceptReference.ts
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function slugPattern(slug3) {
+  return new RegExp(`(?<![A-Za-z0-9-])${escapeRegExp(slug3)}(?![A-Za-z0-9-])`);
+}
+function scanText2(field, text, slugs) {
+  return slugs.filter((s) => slugPattern(s).test(text)).map((slug3) => ({ field, slug: slug3 }));
+}
+function scanList2(field, items, slugs) {
+  return items.flatMap((text, i) => scanText2(`${field}[${i}]`, text, slugs));
+}
+function findConceptReferences(concept, knownSlugs) {
+  const others = [...knownSlugs].filter((s) => s !== concept.slug).sort((a, b) => b.length - a.length);
+  if (others.length === 0) return [];
+  return [
+    ...scanList2("state.managed", concept.state.managed, others),
+    ...scanList2("actions.allow", concept.actions.allow, others),
+    ...scanList2("actions.restrict", concept.actions.restrict, others),
+    ...scanList2("principle.immutableRules", concept.principle.immutableRules, others),
+    ...scanText2(
+      "principle.operationalPrinciple",
+      concept.principle.operationalPrinciple,
+      others
+    )
+  ];
+}
+function describeConceptReference(f) {
+  return `rule depends on another concept's slug \u2014 ${f.field}: "${f.slug}" (concept independence: move the cross-concept coordination to actions.interaction and state the rule so it stands alone)`;
+}
+
 // src/concept/quality.ts
 var MIN_RULE_LENGTH = 10;
-function checkConceptQuality(c) {
-  const deficiencies = [];
+function checkTermConcept(c) {
+  return c.description.example.trim() === "" ? [
+    "term concept requires a non-empty description.example (a term's contract is definition + example)"
+  ] : [];
+}
+function checkFullConcept(c, rules) {
+  const managed = c.state.managed.filter((m) => m.trim() !== "");
+  const principle = c.principle.operationalPrinciple.trim();
+  return [
+    ...managed.length === 0 ? [
+      "no managed state: state.managed must name at least 1 thing this concept owns and its actions change"
+    ] : [],
+    ...rules.length === 0 ? [
+      "no enforceable rule: actions.allow / actions.restrict / principle.immutableRules must contain at least 1 item in total"
+    ] : [],
+    ...principle.length < MIN_RULE_LENGTH ? [
+      `no operational principle: principle.operationalPrinciple must describe one archetypal scenario (>= ${MIN_RULE_LENGTH} chars after trim)`
+    ] : []
+  ];
+}
+function checkConceptQuality(c, knownSlugs = []) {
   const rules = [...c.actions.allow, ...c.actions.restrict, ...c.principle.immutableRules];
   const termOnly = c.category.length === 1 && c.category[0] === "term";
-  if (termOnly) {
-    if (c.description.example.trim() === "") {
-      deficiencies.push(
-        "term concept requires a non-empty description.example (a term's contract is definition + example)"
-      );
-    }
-  } else if (rules.length === 0) {
-    deficiencies.push(
-      "no enforceable rule: actions.allow / actions.restrict / principle.immutableRules must contain at least 1 item in total"
-    );
-  }
-  for (const rule of rules) {
-    if (rule.trim().length < MIN_RULE_LENGTH) {
-      deficiencies.push(`rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`);
-    }
-  }
+  const deficiencies = [
+    ...termOnly ? checkTermConcept(c) : checkFullConcept(c, rules),
+    ...rules.filter((rule) => rule.trim().length < MIN_RULE_LENGTH).map((rule) => `rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`),
+    // 개념 독립성 — 규칙이 다른 개념의 이름을 불러야 판별된다면 혼자 서지 못하는 개념이다.
+    ...findConceptReferences(c, knownSlugs).map(describeConceptReference)
+  ];
   const warnings = findImplementationLeaks(c).map(describeLeak);
   return { ok: deficiencies.length === 0, deficiencies, warnings };
 }
@@ -7586,14 +7637,16 @@ var TestReviewLog = external_exports.record(external_exports.string(), TestRevie
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
-var CONTRACT_HASH_VERSION = 2;
+var CONTRACT_HASH_VERSION = 3;
 function contractHash(c) {
   const contract = {
     definition: c.description.definition,
     components: c.description.components,
+    managed: c.state.managed,
     allow: c.actions.allow,
     restrict: c.actions.restrict,
     immutableRules: c.principle.immutableRules,
+    operationalPrinciple: c.principle.operationalPrinciple,
     lifecycle: c.principle.lifecycle,
     reason: c.purpose.reason
   };
@@ -7720,7 +7773,8 @@ async function setConceptStatus(root, slug3, status) {
     );
   }
   if (status === "green" && from !== "green") {
-    const quality = checkConceptQuality(concept);
+    const knownSlugs = (await listConcepts(root)).map((c) => c.slug);
+    const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
         `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
@@ -7741,6 +7795,7 @@ var EDITABLE_FIELDS = [
   "number",
   "title",
   "description",
+  "state",
   "purpose",
   "actions",
   "principle",
@@ -8925,7 +8980,11 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   program2.command("quality").description("\uAC1C\uB150\uC758 \uACB0\uC815\uB860\uC801 \uD488\uC9C8 \uCD5C\uC18C\uCE58 \uAC80\uC0AC (green \uC2B9\uACA9 \uC804\uC81C\uC870\uAC74). slug\uB97C \uBE7C\uBA74 \uC804 \uAC1C\uB150 \uAC80\uC0AC").argument("[slug]").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (!slug3) {
       const concepts = await listConcepts(o.root);
-      const reports = concepts.map((c) => ({ slug: c.slug, ...checkConceptQuality(c) }));
+      const allSlugs = concepts.map((c) => c.slug);
+      const reports = concepts.map((c) => ({
+        slug: c.slug,
+        ...checkConceptQuality(c, allSlugs)
+      }));
       const failed = reports.filter((r2) => !r2.ok).length;
       const warned = reports.filter((r2) => r2.warnings.length > 0).length;
       out(JSON.stringify({ total: reports.length, failed, warned, reports }));
@@ -8938,7 +8997,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       code = 1;
       return;
     }
-    const r = checkConceptQuality(concept);
+    const r = checkConceptQuality(
+      concept,
+      (await listConcepts(o.root)).map((c) => c.slug)
+    );
     out(JSON.stringify(r));
     if (!r.ok) code = 1;
   });

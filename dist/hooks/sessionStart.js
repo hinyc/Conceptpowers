@@ -4326,6 +4326,11 @@ var ConceptSchema = external_exports.object({
     components: external_exports.array(external_exports.string()).default([]),
     example: external_exports.string().default("")
   }),
+  // 이 개념이 스스로 관리하는 대상. 개념이 사라지면 함께 사라지는 것들이며,
+  // 허용·제한 행동이 바꾸는 것이 바로 이 대상이다. 옛 본문에는 없던 칸이라 기본값은 비어 있다.
+  state: external_exports.object({
+    managed: external_exports.array(external_exports.string()).default([])
+  }).default({}),
   purpose: external_exports.object({
     reason: external_exports.string().min(1).max(2e3),
     benefits: external_exports.array(external_exports.string()).default([]),
@@ -4339,6 +4344,9 @@ var ConceptSchema = external_exports.object({
   }),
   principle: external_exports.object({
     immutableRules: external_exports.array(external_exports.string()).default([]),
+    // 작동 원리 — 이 개념이 목적을 이루는 전형적인 한 장면("이렇게 하면 이렇게 된다").
+    // 규칙 목록이 아니라 시나리오 한 문장이다. 옛 본문에는 없던 칸이라 기본값은 빈 문자열이다.
+    operationalPrinciple: external_exports.string().default(""),
     tradeoffs: external_exports.string().default(""),
     lifecycle: external_exports.array(external_exports.string()).default([])
   }),
@@ -4404,14 +4412,16 @@ var TestReviewLog = external_exports.record(external_exports.string(), TestRevie
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
-var CONTRACT_HASH_VERSION = 2;
+var CONTRACT_HASH_VERSION = 3;
 function contractHash(c) {
   const contract = {
     definition: c.description.definition,
     components: c.description.components,
+    managed: c.state.managed,
     allow: c.actions.allow,
     restrict: c.actions.restrict,
     immutableRules: c.principle.immutableRules,
+    operationalPrinciple: c.principle.operationalPrinciple,
     lifecycle: c.principle.lifecycle,
     reason: c.purpose.reason
   };

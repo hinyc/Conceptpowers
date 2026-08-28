@@ -4,6 +4,8 @@
 //  - contract-hash 구성요소 "지문: 약속 부분만 모아 만든 짧은 표식" → 동일 계약이면 동일 해시(결정론적)
 //  - contract-hash 불변 "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다"
 //    → 계약 필드(definition)가 바뀌면 해시가 바뀐다
+//    → 계약 필드(관리 대상)가 바뀌면 해시가 바뀐다
+//    → 계약 필드(작동 원리)가 바뀌면 해시가 바뀐다
 //  - contract-hash 불변 "약속 밖 항목만 바뀐 경우에는 지문이 달라지지 않는다"
 //    → 비계약 필드(title/status/analogy)가 바뀌어도 해시는 불변
 //  - contract-hash 불변 "상호작용 항목은 개념 사이의 역할 경계만 서술한다 — 코드가 지켜야 할 판정
@@ -34,6 +36,21 @@ describe('contractHash', () => {
     const a = contractHash(parseConcept(base));
     const b = contractHash(
       parseConcept({ ...base, description: { ...base.description, definition: '바뀐 정의' } })
+    );
+    expect(a).not.toBe(b);
+  });
+  it('계약 필드(관리 대상)가 바뀌면 해시가 바뀐다', () => {
+    const a = contractHash(parseConcept(base));
+    const b = contractHash(parseConcept({ ...base, state: { managed: ['발급된 토큰 목록'] } }));
+    expect(a).not.toBe(b);
+  });
+  it('계약 필드(작동 원리)가 바뀌면 해시가 바뀐다', () => {
+    const a = contractHash(parseConcept(base));
+    const b = contractHash(
+      parseConcept({
+        ...base,
+        principle: { ...base.principle, operationalPrinciple: '로그인하면 토큰이 나온다' },
+      })
     );
     expect(a).not.toBe(b);
   });

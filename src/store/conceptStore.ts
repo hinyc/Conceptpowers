@@ -140,7 +140,8 @@ export async function setConceptStatus(
   // green 승격 전제조건: 결정론적 품질 최소치 + 신선한 충돌 검사 증빙.
   // (증빙은 자기신고 — 검사의 성실성까지 보증하지 않고, 단계 생략만 막는다.)
   if (status === 'green' && from !== 'green') {
-    const quality = checkConceptQuality(concept);
+    const knownSlugs = (await listConcepts(root)).map((c) => c.slug);
+    const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
         `Cannot promote to green — quality deficiencies for ${slug}: ` +
@@ -168,6 +169,7 @@ const EDITABLE_FIELDS = [
   'number',
   'title',
   'description',
+  'state',
   'purpose',
   'actions',
   'principle',

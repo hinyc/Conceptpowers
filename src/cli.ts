@@ -292,7 +292,11 @@ export async function runCli(
       // slug 없이 부르면 전수 검사 — 경고(코드 표기)는 종료 코드를 바꾸지 않는다.
       if (!slug) {
         const concepts = await listConcepts(o.root);
-        const reports = concepts.map((c) => ({ slug: c.slug, ...checkConceptQuality(c) }));
+        const allSlugs = concepts.map((c) => c.slug);
+        const reports = concepts.map((c) => ({
+          slug: c.slug,
+          ...checkConceptQuality(c, allSlugs),
+        }));
         const failed = reports.filter((r) => !r.ok).length;
         const warned = reports.filter((r) => r.warnings.length > 0).length;
         out(JSON.stringify({ total: reports.length, failed, warned, reports }));
@@ -305,7 +309,10 @@ export async function runCli(
         code = 1;
         return;
       }
-      const r = checkConceptQuality(concept);
+      const r = checkConceptQuality(
+        concept,
+        (await listConcepts(o.root)).map((c) => c.slug)
+      );
       out(JSON.stringify(r));
       if (!r.ok) code = 1;
     });
