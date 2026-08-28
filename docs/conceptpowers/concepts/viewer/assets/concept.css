@@ -1,4 +1,4 @@
-/* @concept:viewer-readability @concept:feature-index-row @concept:knowledge-graph-view @concept:concept-aliases */
+/* @concept:viewer-readability @concept:feature-spec-bridge @concept:knowledge-graph-view @concept:globally-unique-slug */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -695,7 +695,7 @@ li::marker {
   color: var(--muted);
   font-size: 0.82rem;
 }
-/* 기능 색인 줄(feature-index-row): 제목 아래 한 줄 설명, 오른쪽에 따르는 개념 딱지.
+/* 기능 색인 줄(feature-spec-bridge): 제목 아래 한 줄 설명, 오른쪽에 따르는 개념 딱지.
    줄 자체는 갈 곳이 없어 링크가 아니고, 눌러 나가는 곳은 딱지뿐이다. */
 .ctable--feature td.ctable__code {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;

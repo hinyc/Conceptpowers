@@ -1,4 +1,4 @@
-// @concept:contract-hash @concept:drift-reconcile
+// @concept:drift-reconcile
 import { listConceptEntries } from '../store/conceptStore.js';
 import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';

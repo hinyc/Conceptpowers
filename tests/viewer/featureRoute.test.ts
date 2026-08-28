@@ -1,15 +1,15 @@
-// @concept:feature-index-row
+// @concept:feature-spec-bridge
 // tests/viewer/featureRoute.test.ts
 // 기능 주소 처리(assets/viewer.js의 route/featureRowHref/indexScrollTarget)를 node:vm으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - feature-index-row 불변 "옛 기능 주소로 들어오면 빈 화면을 두지 않고 목록의 그 줄로 데려간다"
+//  - feature-spec-bridge 불변 "옛 기능 주소로 들어오면 빈 화면을 두지 않고 목록의 그 줄로 데려간다"
 //    → #/feature/:slug는 색인 줄 주소로 자리바꿈(replace)하고, 히스토리에 남기지 않는다
 //    → 자리바꿈 주소는 해시가 하나뿐이다 — '#'가 든 이름표도 인코딩돼 라우트가 읽을 수 있다
 //    → 인코딩된 이름표는 색인 라우트에서 원래 이름표로 되돌아온다(왕복 대칭)
 //    → 기능이 이미 삭제돼 그 줄이 없으면 기능 구역으로라도 데려간다 — 꼭대기에 떨구지 않는다
-//  - feature-index-row 허용 "개념 화면에서 그 개념이 속한 기능을 눌러 목록의 그 줄로 돌아오는 것"
+//  - feature-spec-bridge 허용 "개념 화면에서 그 개념이 속한 기능을 눌러 목록의 그 줄로 돌아오는 것"
 //    → 색인 줄 주소는 기능 묶음 아래 그 이름표를 가리킨다
-//  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 — 기능은 목록의 줄과 지식 그래프의 점으로만 나타난다"
+//  - feature-spec-bridge 불변 "기능은 자기만 펼쳐 보는 전용 자리를 갖지 않는다 — 훑는 자리의 한 줄과 지식 지도의 점으로만 나타난다"
 //    → 기능 묶음이 아닌 묶음 주소(#/group/core/…)에서는 세 번째 조각을 초점으로 삼지 않는다
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';

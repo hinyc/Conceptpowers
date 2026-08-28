@@ -1,4 +1,4 @@
-// @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // src/util/glob.ts
 // 의존성 없는 미니 글롭 매처. `**`(슬래시 포함 임의 경로)와 `*`(단일 세그먼트)만 지원한다.
 // init.json의 ignoreGlobs로 거버넌스 제외 경로를 판정하는 용도.

@@ -1,12 +1,12 @@
-// @concept:concept-aliases @concept:home-search
+// @concept:globally-unique-slug @concept:home-search
 // tests/viewer/search.test.ts
 // 첫 화면 찾기(assets/viewer.js searchData)를 node:vm으로 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - concept-aliases 불변 "별칭으로 찾아도 이름표로 찾은 것과 같은 개념에 닿는다"
+//  - globally-unique-slug 불변 "별칭으로 찾아도 이름표로 찾은 것과 같은 개념에 닿는다"
 //    → 별칭으로 친 검색어가 그 개념을 결과에 올린다
-//  - concept-aliases 허용 "별칭으로 찾아온 결과를 그 개념의 정식 이름으로 보여주는 것"
+//  - globally-unique-slug 허용 "별칭으로 찾아온 결과를 그 개념의 정식 이름으로 보여주는 것"
 //    → 결과에 실려 오는 것은 별칭이 아니라 그 개념 자체다(이름표·정식 이름 그대로)
-//  - concept-aliases 불변 "별칭이 하나도 없는 것이 정상이다 — 별칭은 혼용이 있을 때만 생기고,
+//  - globally-unique-slug 불변 "별칭이 하나도 없는 것이 정상이다 — 별칭은 혼용이 있을 때만 생기고,
 //    정리되면 사라진다" → 별칭이 없는 개념도 이름표·제목으로 그대로 찾힌다
 //  - home-search 불변 "대소문자를 가리지 않고, 검색어가 일부만 맞아도 걸린다"
 //    → 별칭도 같은 규칙으로 걸린다

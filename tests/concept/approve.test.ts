@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write
+// @concept:init-gate @concept:settled-status
 // tests/concept/approve.test.ts
 // 빨강 → 초록 승인(approveConcept)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:

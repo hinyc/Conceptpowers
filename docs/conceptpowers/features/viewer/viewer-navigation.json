@@ -5,8 +5,8 @@
   "description": "상단 묶음 메뉴와 곁 목록으로 어느 화면 너비에서든 항목에 닿게 하고, 사람이 손댄 여닫이 선택을 기억한다.",
   "concepts": [
     "viewer-navigation",
-    "home-search",
-    "viewer-readability"
+    "viewer-readability",
+    "list-filter"
   ],
   "codePaths": [
     "assets/topnav.js",

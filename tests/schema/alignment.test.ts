@@ -1,7 +1,7 @@
-// @concept:drift-reconcile @concept:contract-hash @concept:settled-status
+// @concept:drift-reconcile @concept:settled-status
 // 정렬 기록(lock·history·attest)의 스키마를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - contract-hash 구성요소 "지문: 약속 부분만 모아 만든 짧은 표식"
+//  - drift-reconcile 구성요소 "지문: 약속 부분만 모아 만든 짧은 표식"
 //    → AlignmentLock은 slug→{hash,at} 레코드를 파싱한다 (기준선이 지문과 시각을 함께 담는다)
 //  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
 //    → HistoryEntry가 prevHash/reason/ignored 기본값을 채운다 / History는 엔트리 배열을 파싱한다

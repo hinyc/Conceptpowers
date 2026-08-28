@@ -1,11 +1,11 @@
-// @concept:contract-hash @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:drift-reconcile
+// @concept:drift-reconcile @concept:settled-status @concept:feature-spec-bridge
 // 개념이 바뀌었는지(어긋남) 판정하는 computeDrift를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - contract-hash 불변 "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다"
+//  - drift-reconcile 불변 "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다"
 //    → 개념이 바뀌면 drift로 보고한다 / lock 해시와 현재 해시가 같으면 drift가 아니다
-//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//  - drift-reconcile 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → lock에 없는 개념은 drift가 아니다 (견줄 기준선이 아직 없다)
-//  - contract-hash 불변 "판이 다른 지문끼리는 견주지 않는다 — 계산 규칙이 바뀌어 판이 달라진
+//  - drift-reconcile 불변 "판이 다른 지문끼리는 견주지 않는다 — 계산 규칙이 바뀌어 판이 달라진
 //    기준선은 어긋남이 아니라 재기준 대상이다" → 옛 판 기준선은 drift로 보고하지 않는다
 //  - feature-spec-bridge 불변 "개념과 코드의 연결은 기능 기록 한 곳에만 적고, 반대 방향은 그것에서
 //    파생시킨다" → feature codePaths를 relatedPaths로 모은다

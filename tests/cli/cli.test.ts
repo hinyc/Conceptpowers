@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:drift-reconcile @concept:governance-mode @concept:human-owns-contract @concept:pending-conflict-tracking @concept:concept-code-mapping @concept:plugin-version-sync @concept:output-locale
+// @concept:init-gate @concept:settled-status @concept:drift-reconcile @concept:governance-mode @concept:human-owns-contract @concept:concept-code-mapping @concept:plugin-version-sync @concept:output-locale
 // tests/cli/cli.test.ts
 // CLI 서브커맨드 전반을 검증한다. 명령마다 다스리는 개념이 달라 아래에 갈라 적는다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -12,11 +12,11 @@
 //    → approve가 red 개념을 green으로 승인한다
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
 //    → edit-concept는 green 개념을 수정하면 pending으로 내린다 / red·pending의 상태는 유지한다
-//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//  - drift-reconcile 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → status가 drift 개수를 포함한다 / drift가 JSON 배열을 출력한다
 //  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
 //    → note-change는 history에 이유를 기록한다
-//  - pending-conflict-tracking 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다" /
+//  - settled-status 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다" /
 //    "확정되는 순간 남아 있던 충돌 사유 기록을 지운다" → note-conflict/resolve-conflict
 //  - concept-code-mapping 불변 "코드의 표식을 고쳤으면 같은 작업에서 보관본도 함께 갱신한다"
 //    → map은 증분 실행 시 전달되지 않은 파일의 캐시를 보존한다 / map --full은 전달된 파일만으로 재생성

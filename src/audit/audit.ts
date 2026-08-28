@@ -1,4 +1,4 @@
-// @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // src/audit/audit.ts
 import { listConcepts } from '../store/conceptStore.js';
 import { scanTags } from '../mapping/scan.js';

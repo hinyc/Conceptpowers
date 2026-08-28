@@ -1,4 +1,4 @@
-// @concept:feature-spec-bridge @concept:atomic-baseline-write
+// @concept:feature-spec-bridge
 // src/store/featureStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';

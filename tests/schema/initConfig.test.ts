@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:governance-mode @concept:output-locale @concept:audit-gap-detection @concept:plugin-version-sync
+// @concept:concept-driven-tests @concept:governance-mode @concept:output-locale @concept:concept-code-mapping @concept:plugin-version-sync
 // 시작 설정(InitConfig)의 스키마와 기본값을 검증한다 — 여러 개념의 스위치가 여기 모여 있다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
@@ -9,7 +9,7 @@
 //    쓰는 기본 규칙을 쓴다" → testGlobs 누락 시 기본 규칙 / 사용자 지정 목록으로 덮어쓴다
 //  - output-locale 정의 "프로젝트마다 산출물의 언어를 하나로 정해 둔다"
 //    → 기본 locale은 ko / en 허용 / 알 수 없는 locale 거부
-//  - audit-gap-detection 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 누락 시 합리적 기본값 / 스캐폴드 산출물 경로를 제외 / 사용자 지정 목록으로 덮어쓴다
 //  - plugin-version-sync 허용 "버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
 //    → versionCheck 누락 시 true / false로 명시하면 false

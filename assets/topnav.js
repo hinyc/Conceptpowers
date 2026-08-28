@@ -10,7 +10,7 @@ var CPTopnav = (function () {
   var bound = false;
 
   // manifest → [{key, items:[{slug, title, status}]}] — 개념 묶음 순서대로.
-  // 기능은 펼쳐 볼 화면이 없어(feature-index-row) 이 줄에 묶음으로 들어오지 않는다.
+  // 기능은 펼쳐 볼 화면이 없어(feature-spec-bridge) 이 줄에 묶음으로 들어오지 않는다.
   // 순수 함수라 DOM 없이 검증할 수 있다.
   function groupsOf(manifest) {
     var order = [];

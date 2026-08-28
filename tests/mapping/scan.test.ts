@@ -1,16 +1,16 @@
-// @concept:concept-code-mapping @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // tests/mapping/scan.test.ts
 // 표식 스캔과 지도 보관본(mapping)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - concept-code-mapping 허용 "코드의 표식을 훑어 지도를 만들고 보관본으로 저장하는 것"
 //    → @concept 태그를 추출한다 / slug → 파일 매핑을 만든다 / 쓰고 다시 읽으면 동일하다
-//  - audit-gap-detection 구성요소 "표식: … 따를 개념이 없다는 뜻의 \"없음\"도 표식으로 친다"
-//    → @concept:none은 표식으로 치되 개념으로는 취급하지 않는다 / 실제 개념과 함께면 none만 뺀다
-//  - audit-gap-detection 불변 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 —
+//  - concept-code-mapping 구성요소 "표식: … 따를 개념이 없다는 뜻의 \"없음\"도 표식으로 친다"
+//    → @concept:none 은 표식으로 치되 개념으로는 취급하지 않는다 / 실제 개념과 함께면 none만 뺀다
+//  - concept-code-mapping 불변 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 —
 //    본문 속 문자열이나 예시에 등장하는 표식 모양 글자는 표식이 아니다"
 //    → 선행 블록 스캔 전부: 1행·복수 줄·shebang 뒤·/* */ 블록·<!-- --> 블록·닫히지 않은 블록은 인정,
 //      코드 줄 뒤·본문 문자열 속·*/ 뒤 같은 줄 코드·잔여 종료 토큰 뒤 코드의 표식은 인정하지 않는다
-//  - audit-gap-detection 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 매칭 파일은 스캔·매핑에서 빠지고, 캐시에 남아 있던 항목도 제거된다
 //  - concept-code-mapping 불변 "코드의 표식을 고쳤으면 같은 작업에서 보관본도 함께 갱신한다"
 //    → updateMappingCache 증분 병합: 전달 안 된 파일은 보존 / 전달된 파일은 교체 / 삭제된 파일은 제거
@@ -144,7 +144,7 @@ describe('선행 주석 블록 스캔 (Task 5b)', () => {
   });
 });
 
-describe('선행 블록 주석 상태 추적 (Task 5b-2, audit-gap-detection: 주석 블록도 첫머리다)', () => {
+describe('선행 블록 주석 상태 추적 (Task 5b-2, concept-code-mapping: 주석 블록도 첫머리다)', () => {
   it('별표 접두 없는 여러 줄 /* … */ 블록 안의 표식은 인식된다 [규칙: 첫머리 주석 블록 표식 인정]', async () => {
     writeFileSync(
       root + '/src/q1.ts',
@@ -184,7 +184,7 @@ describe('선행 블록 주석 상태 추적 (Task 5b-2, audit-gap-detection: �
   });
 });
 
-describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰 후속, concept-code-mapping: 첫머리에서만)', () => {
   it('*/ 뒤 같은 줄에 이어지는 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
     writeFileSync(
       root + '/src/r1.ts',
@@ -206,7 +206,7 @@ describe('블록 주석 종료 이후 같은 줄 코드 배제 (Task 5b-2 리뷰
   });
 });
 
-describe('잔여 종료 토큰이 주석 재시작으로 오인되지 않음 (Task 5b-2 2차 리뷰 후속, audit-gap-detection: 첫머리에서만)', () => {
+describe('잔여 종료 토큰이 주석 재시작으로 오인되지 않음 (Task 5b-2 2차 리뷰 후속, concept-code-mapping: 첫머리에서만)', () => {
   it('닫힘 직후 잔여 */ 토큰 뒤 코드 속 표식은 인식되지 않는다 [규칙: 첫머리에서만]', async () => {
     writeFileSync(root + '/src/s1.ts', '/*\ncomment\n*/ */ code // @concept:x\n');
     expect(await scanTags(root, ['src/s1.ts'])).toEqual({});

@@ -1,4 +1,4 @@
-// @concept:drift-reconcile @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash
+// @concept:drift-reconcile @concept:settled-status @concept:feature-spec-bridge
 // 커밋 뒤 결산(reconcileAfterCommit)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - drift-reconcile 불변 "결산은 이번 커밋에 맞물린 개념만 한다 — 맞물리지 않은 개념은 어긋난 채

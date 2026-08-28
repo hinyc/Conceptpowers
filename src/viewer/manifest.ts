@@ -1,4 +1,4 @@
-// @concept:generated-not-hand-edited @concept:concept-aliases
+// @concept:generated-not-hand-edited @concept:globally-unique-slug
 // src/viewer/manifest.ts
 // 뷰어가 부팅 시 읽는 매니페스트를 만든다. 개념/기능의 "원본 JSON 위치(URL)"와
 // 목록 렌더에 필요한 최소 메타, 그리고 지식 그래프 데이터를 담는다.
@@ -14,13 +14,13 @@ export interface ConceptEntry {
   title: string;
   status: ConceptStatus;
   category: ConceptCategory[];
-  // 찾아오는 길을 넓히는 다른 이름들(concept-aliases). 가리키는 열쇠는 언제나 slug다.
+  // 찾아오는 길을 넓히는 다른 이름들(globally-unique-slug). 가리키는 열쇠는 언제나 slug다.
   aliases: string[];
   url: string;
   codeLinks: string[];
 }
 
-// 기능은 목록의 색인 줄로만 나타난다(feature-index-row) — 줄에 필요한 것만 담고,
+// 기능은 목록의 색인 줄로만 나타난다(feature-spec-bridge) — 줄에 필요한 것만 담고,
 // 코드 경로는 담지 않는다(경로는 개념 화면이 보여준다).
 export interface FeatureEntry {
   slug: string;

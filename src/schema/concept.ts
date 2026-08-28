@@ -1,10 +1,10 @@
-// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-aliases @concept:concept-scope
+// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-scope
 import { z } from 'zod';
 
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term']);
 export type ConceptCategory = z.infer<typeof ConceptCategory>;
 
-// 'none'은 `@concept:none`(개념 없음 명시) 예약 마커라 실제 개념 slug로 쓸 수 없다.
+// 'none'은 `@concept:none `(개념 없음 명시) 예약 마커라 실제 개념 slug로 쓸 수 없다.
 const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__', 'none']);
 const slug = z
   .string()

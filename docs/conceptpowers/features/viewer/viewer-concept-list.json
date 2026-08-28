@@ -6,7 +6,7 @@
   "concepts": [
     "viewer-readability",
     "settled-status",
-    "feature-index-row"
+    "feature-spec-bridge"
   ],
   "codePaths": [
     "assets/viewer.js",

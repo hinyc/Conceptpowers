@@ -1,4 +1,4 @@
-// @concept:reference-first-duty @concept:reference-privacy @concept:atomic-baseline-write
+// @concept:reference-first-duty @concept:reference-privacy
 // src/init/addReferencePath.ts
 // reference/paths.md에 외부 참고자료 경로를 등록한다(추가 전용 — 삭제/수정은 사용자가 직접 편집).
 // 기존 내용과 주석은 그대로 두고 끝에 덧붙이며, 경로의 내용은 읽지 않는다(읽기는 개념 정의 시점의

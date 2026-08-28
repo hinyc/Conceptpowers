@@ -16,31 +16,37 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "concept-code-mapping": {
-    "hash": "536ce7b7e677",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.294Z",
+    "hash": "2:887d3406cbd6",
+    "result": "updated",
+    "at": "2026-08-28T04:09:29.022Z",
     "tests": [
-      "tests/mapping/scan.test.ts",
-      "tests/integration/smoke.test.ts",
+      "tests/audit/audit.test.ts",
+      "tests/audit/gaps.test.ts",
+      "tests/cli/audit.test.ts",
       "tests/cli/cli.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/mapping/scan.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/util/glob.test.ts",
       "tests/viewer/renderDisk.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "concept-driven-tests": {
-    "hash": "9a0b83e53882",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.351Z",
+    "hash": "2:c9bd2ec63943",
+    "result": "updated",
+    "at": "2026-08-28T04:09:29.161Z",
     "tests": [
-      "tests/init/scaffold.test.ts",
       "tests/cli/testReview.test.ts",
-      "tests/schema/initConfig.test.ts",
       "tests/concept/testReview.test.ts",
-      "tests/hooks/testScopeGate.test.ts",
+      "tests/hooks/sessionStart.test.ts",
       "tests/hooks/testFollowGate.test.ts",
-      "tests/hooks/sessionStart.test.ts"
+      "tests/hooks/testScopeGate.test.ts",
+      "tests/init/scaffold.test.ts",
+      "tests/schema/initConfig.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "contract-hash": {
     "hash": "2:a207e322b900",
@@ -52,95 +58,104 @@
     "note": "약속에 관리 대상·작동 원리가 들어왔으므로 두 칸이 바뀌면 지문이 달라진다는 시나리오를 추가"
   },
   "drift-reconcile": {
-    "hash": "9d8e1b91e744",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.466Z",
+    "hash": "2:d788bc62db07",
+    "result": "updated",
+    "at": "2026-08-28T04:09:29.704Z",
     "tests": [
-      "tests/drift/history.test.ts",
       "tests/cli/cli.test.ts",
+      "tests/concept/aliases.test.ts",
       "tests/drift/detect.test.ts",
-      "tests/drift/reconcile.test.ts",
-      "tests/schema/alignment.test.ts",
       "tests/drift/follow.test.ts",
+      "tests/drift/hash.test.ts",
+      "tests/drift/history.test.ts",
+      "tests/drift/lock.test.ts",
+      "tests/drift/reconcile.test.ts",
       "tests/hooks/postToolUse.test.ts",
-      "tests/hooks/preToolUse.test.ts"
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/schema/alignment.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "feature-spec-bridge": {
-    "hash": "cd3d76946053",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.523Z",
+    "hash": "2:c238aa84a035",
+    "result": "updated",
+    "at": "2026-08-28T04:09:29.855Z",
     "tests": [
-      "tests/integration/smoke.test.ts",
       "tests/cli/feature.test.ts",
       "tests/drift/detect.test.ts",
-      "tests/schema/feature.test.ts",
       "tests/drift/reconcile.test.ts",
-      "tests/viewer/renderDisk.test.ts",
       "tests/hooks/postToolUse.test.ts",
       "tests/hooks/preToolUse.test.ts",
       "tests/hooks/sessionStart.test.ts",
-      "tests/store/featureStore.test.ts"
+      "tests/integration/smoke.test.ts",
+      "tests/schema/feature.test.ts",
+      "tests/store/featureStore.test.ts",
+      "tests/viewer/featureRoute.test.ts",
+      "tests/viewer/graph.test.ts",
+      "tests/viewer/listLayout.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "globally-unique-slug": {
-    "hash": "a74530aeb70f",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.619Z",
+    "hash": "2:daa37e106cce",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.153Z",
     "tests": [
       "tests/cli/feature.test.ts",
-      "tests/schema/feature.test.ts",
+      "tests/concept/aliases.test.ts",
       "tests/schema/concept.test.ts",
-      "tests/viewer/manifest.test.ts",
-      "tests/viewer/graph.test.ts",
-      "tests/viewer/subgraph.test.ts",
+      "tests/schema/feature.test.ts",
       "tests/store/conceptStore.test.ts",
-      "tests/store/featureStore.test.ts"
+      "tests/store/featureStore.test.ts",
+      "tests/viewer/graph.test.ts",
+      "tests/viewer/heroAliases.test.ts",
+      "tests/viewer/manifest.test.ts",
+      "tests/viewer/search.test.ts",
+      "tests/viewer/subgraph.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "governance-mode": {
-    "hash": "026fadf4878b",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.692Z",
+    "hash": "2:cc4be4a2a118",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.294Z",
     "tests": [
       "tests/cli/cli.test.ts",
-      "tests/integration/smoke.test.ts",
-      "tests/schema/initConfig.test.ts",
-      "tests/hooks/postToolUse.test.ts",
       "tests/hooks/gates.modes.test.ts",
+      "tests/hooks/postToolUse.test.ts",
       "tests/hooks/preToolUse.test.ts",
-      "tests/hooks/sessionStart.test.ts"
+      "tests/hooks/sessionStart.test.ts",
+      "tests/integration/smoke.test.ts",
+      "tests/schema/initConfig.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "human-owns-contract": {
-    "hash": "24eca08d0a21",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.766Z",
+    "hash": "2:88f8d023dcc3",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.564Z",
     "tests": [
       "tests/cli/cli.test.ts",
-      "tests/viewer/serve.test.ts",
-      "tests/store/conceptStore.test.ts"
+      "tests/store/conceptStore.test.ts",
+      "tests/viewer/serve.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "output-locale": {
-    "hash": "582e42ab52d1",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.841Z",
+    "hash": "2:6bda9b859b20",
+    "result": "updated",
+    "at": "2026-08-28T04:09:31.103Z",
     "tests": [
-      "tests/init/scaffold.test.ts",
       "tests/cli/cli.test.ts",
-      "tests/init/readConfig.test.ts",
-      "tests/viewer/sidebarState.test.ts",
-      "tests/schema/initConfig.test.ts",
       "tests/hooks/sessionStart.test.ts",
-      "tests/i18n/messages.test.ts"
+      "tests/i18n/messages.test.ts",
+      "tests/init/readConfig.test.ts",
+      "tests/init/scaffold.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/viewer/sidebarState.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "pending-conflict-tracking": {
     "hash": "bf1404011a90",
@@ -154,27 +169,36 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "reference-first-duty": {
-    "hash": "9673a3dbd422",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.956Z",
+    "hash": "2:5eab59d9c8b2",
+    "result": "updated",
+    "at": "2026-08-28T04:09:31.367Z",
     "tests": [
-      "tests/init/referencePaths.test.ts",
       "tests/cli/reference.test.ts",
+      "tests/hooks/sessionStart.test.ts",
       "tests/init/reference.test.ts",
-      "tests/hooks/sessionStart.test.ts"
+      "tests/init/referencePaths.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "settled-status": {
-    "hash": "2:687f158be70e",
+    "hash": "2:fc493ec574f9",
     "result": "updated",
-    "at": "2026-08-28T03:22:28.821Z",
+    "at": "2026-08-28T04:09:31.631Z",
     "tests": [
-      "tests/concept/quality.test.ts",
+      "tests/audit/audit.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/cli/quality.test.ts",
+      "tests/concept/approve.test.ts",
+      "tests/concept/attest.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
       "tests/concept/quality-gate.test.ts",
-      "tests/store/conceptStore.test.ts"
+      "tests/concept/quality.test.ts",
+      "tests/drift/detect.test.ts",
+      "tests/drift/history.test.ts",
+      "tests/drift/reconcile.test.ts",
+      "tests/hooks/postToolUse.test.ts"
     ],
-    "note": "초록 승격 조건에 관리 대상·작동 원리가 더해져 각각의 결격 시나리오를 추가하고 승격 픽스처를 새 최소치에 맞춤"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "atomic-baseline-write": {
     "hash": "9f8c6ae2b554",
@@ -205,95 +229,86 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "generated-not-hand-edited": {
-    "hash": "34e7fa7b82a9",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.116Z",
+    "hash": "2:3044eb9c9e1c",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.003Z",
     "tests": [
-      "tests/init/scaffold.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
       "tests/init/packageScript.test.ts",
+      "tests/init/scaffold.test.ts",
       "tests/init/syncGenerated.test.ts",
       "tests/integration/smoke.test.ts",
-      "tests/viewer/manifest.test.ts",
-      "tests/viewer/renderDisk.test.ts",
       "tests/version/autoSync.test.ts",
-      "tests/hooks/preToolUse.test.ts",
-      "tests/hooks/sessionStart.test.ts"
+      "tests/viewer/manifest.test.ts",
+      "tests/viewer/renderDisk.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "init-gate": {
-    "hash": "99ea56612c8d",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.171Z",
+    "hash": "2:0960f7466875",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.703Z",
     "tests": [
-      "tests/init/scaffold.test.ts",
-      "tests/init/reference.test.ts",
-      "tests/init/referenceGitignore.test.ts",
-      "tests/init/syncGenerated.test.ts",
-      "tests/init/alignmentGitignore.test.ts",
-      "tests/init/readConfig.test.ts",
-      "tests/integration/smoke.test.ts",
-      "tests/cli/requireInit.test.ts",
+      "tests/cli/audit.test.ts",
+      "tests/cli/cli.test.ts",
+      "tests/cli/feature.test.ts",
       "tests/cli/quality.test.ts",
       "tests/cli/reference.test.ts",
+      "tests/cli/requireInit.test.ts",
       "tests/cli/testReview.test.ts",
-      "tests/cli/audit.test.ts",
-      "tests/cli/feature.test.ts",
-      "tests/cli/cli.test.ts",
-      "tests/version/autoSync.test.ts",
-      "tests/concept/pendingConflicts.test.ts",
       "tests/concept/approve.test.ts",
-      "tests/hooks/postToolUse.test.ts",
-      "tests/hooks/preToolUse.test.ts",
+      "tests/concept/pendingConflicts.test.ts",
       "tests/hooks/gates.modes.test.ts",
-      "tests/hooks/sessionStart.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "plugin-version-sync": {
-    "hash": "dbb458bc5169",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.231Z",
-    "tests": [
-      "tests/init/ensureConfigDefaults.test.ts",
-      "tests/init/syncGenerated.test.ts",
-      "tests/cli/cli.test.ts",
-      "tests/init/packageScript.test.ts",
-      "tests/schema/initConfig.test.ts",
-      "tests/version/checkUpdate.test.ts",
-      "tests/version/compareSemver.test.ts",
-      "tests/version/autoSync.test.ts",
-      "tests/hooks/sessionStart.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "reference-privacy": {
-    "hash": "842610b39e5c",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.311Z",
-    "tests": [
-      "tests/init/addReferencePath.test.ts",
-      "tests/init/reference.test.ts",
-      "tests/init/scaffold.test.ts",
-      "tests/init/referencePaths.test.ts",
-      "tests/init/referenceGitignore.test.ts",
-      "tests/cli/reference.test.ts",
-      "tests/hooks/sessionStart.test.ts",
-      "tests/i18n/messages.test.ts",
+      "tests/hooks/postToolUse.test.ts",
       "tests/hooks/preToolUse.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+  },
+  "plugin-version-sync": {
+    "hash": "2:0a2db8dbcdcc",
+    "result": "updated",
+    "at": "2026-08-28T04:09:31.234Z",
+    "tests": [
+      "tests/cli/cli.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/init/ensureConfigDefaults.test.ts",
+      "tests/init/packageScript.test.ts",
+      "tests/init/syncGenerated.test.ts",
+      "tests/schema/initConfig.test.ts",
+      "tests/version/autoSync.test.ts",
+      "tests/version/checkUpdate.test.ts",
+      "tests/version/compareSemver.test.ts"
+    ],
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+  },
+  "reference-privacy": {
+    "hash": "2:ca7eda0da323",
+    "result": "updated",
+    "at": "2026-08-28T04:09:31.499Z",
+    "tests": [
+      "tests/cli/reference.test.ts",
+      "tests/hooks/preToolUse.test.ts",
+      "tests/hooks/sessionStart.test.ts",
+      "tests/i18n/messages.test.ts",
+      "tests/init/addReferencePath.test.ts",
+      "tests/init/reference.test.ts",
+      "tests/init/referenceGitignore.test.ts",
+      "tests/init/referencePaths.test.ts",
+      "tests/init/scaffold.test.ts"
+    ],
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "untrusted-text-sanitization": {
-    "hash": "bace9ae001de",
+    "hash": "2:f3baa3c0db16",
     "result": "updated",
-    "at": "2026-08-25T01:12:36.758Z",
+    "at": "2026-08-28T04:09:31.761Z",
     "tests": [
       "tests/drift/safe.test.ts",
       "tests/hooks/preToolUse.test.ts",
       "tests/hooks/testScopeGate.test.ts"
     ],
-    "note": "규칙은 그대로. 새 정의문에 맞춰 검사 이름의 표현('무장해제한다' → '명령이 아니다')만 고침."
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "viewer-local-write-guard": {
     "hash": "cfaae826426f",
@@ -305,14 +320,14 @@
     "note": "새 정의문(약속 서술)을 파일 머리에 인용해 불변 규칙 전체가 그 약속의 검증임을 명시. 검사 내용 변경 없음."
   },
   "concept-inline-edit": {
-    "hash": "6edf6d4c3f51",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.490Z",
+    "hash": "2:952efb6e6931",
+    "result": "updated",
+    "at": "2026-08-28T04:09:29.308Z",
     "tests": [
-      "tests/viewer/serve.test.ts",
-      "tests/store/conceptStore.test.ts"
+      "tests/store/conceptStore.test.ts",
+      "tests/viewer/serve.test.ts"
     ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "copy-code-path": {
     "hash": "7fe96cb97576",
@@ -354,23 +369,26 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "home-search": {
-    "hash": "dc23149ed876",
+    "hash": "2:5a9f016fb40e",
     "result": "updated",
-    "at": "2026-08-25T00:57:06.542Z",
+    "at": "2026-08-28T04:09:30.431Z",
     "tests": [
       "tests/viewer/listLayout.test.ts",
-      "tests/viewer/sidebarState.test.ts"
+      "tests/viewer/search.test.ts"
     ],
-    "note": "sidebar-search 정의를 인용하던 시나리오를 home-search의 새 불변 규칙('첫 화면 찾기는 코드 파일 경로까지, 곁 목록 찾기는 이미 떠 있는 것만')으로 다시 묶음."
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "knowledge-graph-view": {
-    "hash": "b7f3b225de3a",
+    "hash": "2:d69cbcb5d09d",
     "result": "updated",
-    "at": "2026-08-25T00:57:06.615Z",
+    "at": "2026-08-28T04:09:30.838Z",
     "tests": [
-      "tests/viewer/copyPath.test.ts"
+      "tests/viewer/copyPath.test.ts",
+      "tests/viewer/graph.test.ts",
+      "tests/viewer/highlight.test.ts",
+      "tests/viewer/subgraph.test.ts"
     ],
-    "note": "copy-code-path 인용을 knowledge-graph-view의 허용·불변·구성요소로 옮김. 복사 성공·실패 표시 검사는 그대로 유지."
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "list-item-readout": {
     "hash": "f5776b2ee4cd",
@@ -401,23 +419,26 @@
     "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "viewer-readability": {
-    "hash": "c6ee62a4f000",
+    "hash": "2:890b0f5d763e",
     "result": "updated",
-    "at": "2026-08-25T03:36:57.425Z",
+    "at": "2026-08-28T04:09:32.029Z",
     "tests": [
-      "tests/viewer/heroSummary.test.ts"
+      "tests/store/conceptStore.test.ts",
+      "tests/viewer/detailTitle.test.ts",
+      "tests/viewer/heroSummary.test.ts",
+      "tests/viewer/listLayout.test.ts"
     ],
-    "note": "규칙이 상호작용에서 불변으로 옮겨져 인용 표기(맞물림→불변)만 갱신. 검사 내용 변경 없음."
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "viewer-navigation": {
-    "hash": "4d01ab24e550",
+    "hash": "2:93948bb43352",
     "result": "updated",
-    "at": "2026-08-25T00:57:06.461Z",
+    "at": "2026-08-28T04:09:31.897Z",
     "tests": [
-      "tests/viewer/topnav.test.ts",
-      "tests/viewer/sidebarState.test.ts"
+      "tests/viewer/sidebarState.test.ts",
+      "tests/viewer/topnav.test.ts"
     ],
-    "note": "group-navbar·sidebar-toggle 규칙이 문구 그대로 살아남아 인용 출처만 옮기고, '곁 목록의' 한정어가 붙은 두 규칙은 인용문을 새 문구에 맞춤."
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "concept-aliases": {
     "hash": "5e985044fbf4",
@@ -433,12 +454,22 @@
   "concept-scope": {
     "hash": "2:52cd5b3424ee",
     "result": "updated",
-    "at": "2026-08-28T03:22:28.731Z",
+    "at": "2026-08-28T04:09:29.534Z",
     "tests": [
+      "tests/cli/quality.test.ts",
       "tests/concept/conceptReference.test.ts",
-      "tests/concept/implementationLeak.test.ts",
-      "tests/schema/concept.test.ts"
+      "tests/concept/implementationLeak.test.ts"
     ],
-    "note": "관리 대상·작동 원리 칸을 본문으로 인정하는 시나리오와, 규칙이 다른 개념 이름에 기대는지 판정하는 시나리오를 새 규칙에서 다시 도출해 추가"
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+  },
+  "list-filter": {
+    "hash": "2:347c76ece767",
+    "result": "updated",
+    "at": "2026-08-28T04:09:30.970Z",
+    "tests": [
+      "tests/viewer/listLayout.test.ts",
+      "tests/viewer/sidebarState.test.ts"
+    ],
+    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   }
 }

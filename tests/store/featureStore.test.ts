@@ -1,4 +1,4 @@
-// @concept:feature-spec-bridge @concept:atomic-baseline-write @concept:globally-unique-slug
+// @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/store/featureStore.test.ts
 // 기능 기록의 저장·읽기를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -6,7 +6,7 @@
 //    파생시킨다" → 기능을 그룹 폴더에 쓰고 다시 읽는다 / 그룹 하위까지 재귀로 나열한다 / 없으면 빈 배열
 //  - globally-unique-slug 불변 "기능 이름표는 기능들 사이에서 유일하다 — 묶음이 달라도 같은 벌 안에서는
 //    두 번 쓸 수 없다" → 다른 그룹에 동일 slug 쓰기를 거부한다 / 동일 경로 덮어쓰기는 허용한다
-//  - atomic-baseline-write 불변 "대상 기록은 갈아 끼우기 방식으로만 저장한다" + "임시 파일 이름이 이미
+//  - 상위 기준 문서 "갈아 끼우기 방식"의 불변 "대상 기록은 갈아 끼우기 방식으로만 저장한다" + "임시 파일 이름이 이미
 //    있으면 그것을 따라가지 않고 실패시킨다"
 //    → 덮어쓸 때 원자적 저장을 쓰고, 심볼릭 링크를 따라가 다른 파일을 오염시키지 않는다
 import { describe, it, expect, beforeEach } from 'vitest';

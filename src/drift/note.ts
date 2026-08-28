@@ -1,4 +1,4 @@
-// @concept:contract-hash
+// @concept:drift-reconcile
 import { readConcept } from '../store/conceptStore.js';
 import { contractHash } from './hash.js';
 import { appendHistory } from './history.js';

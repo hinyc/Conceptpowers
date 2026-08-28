@@ -1,4 +1,4 @@
-// @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // src/audit/tracked.ts
 // 전체 스캔용: git이 추적하는 파일 전체 목록. git 저장소가 아니면 throw
 // (전체 스캔은 git 없이는 성립하지 않으므로 CLI 최상위 catch가 error로 변환).

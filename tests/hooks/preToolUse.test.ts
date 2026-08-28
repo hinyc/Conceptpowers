@@ -1,4 +1,4 @@
-// @concept:governance-mode @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:drift-reconcile @concept:audit-gap-detection @concept:pending-conflict-tracking @concept:reference-privacy @concept:untrusted-text-sanitization @concept:generated-not-hand-edited
+// @concept:governance-mode @concept:init-gate @concept:settled-status @concept:feature-spec-bridge @concept:drift-reconcile @concept:concept-code-mapping @concept:reference-privacy @concept:untrusted-text-sanitization @concept:generated-not-hand-edited
 // tests/hooks/preToolUse.test.ts
 // 커밋 전 문지기(decidePreToolUse)를 검증한다 — 여러 개념의 게이트가 여기 모인다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -6,17 +6,17 @@
 //    → init 안 된 프로젝트는 무동작(null)
 //  - concept-driven-tests 불변 "테스트를 새로 만들거나 고칠 때는 먼저 대상의 개념을 찾는다"
 //    → init 프로젝트의 Edit는 개념 검증 리마인더를 주입한다
-//  - audit-gap-detection 정의 "사람이 손으로 쓴 코드 파일은 예외 없이 자기가 따르는 개념을 첫머리에
+//  - concept-code-mapping 정의 "사람이 손으로 쓴 코드 파일은 예외 없이 자기가 따르는 개념을 첫머리에
 //    밝혀야 한다" + 구성요소 "표식 / 대상"
-//    → 태그 없는 신규 코드 파일은 경고(ask) / 손으로 쓴 util도 마커 없으면 경고 / @concept:none이면
+//    → 태그 없는 신규 코드 파일은 경고(ask) / 손으로 쓴 util도 마커 없으면 경고 / @concept:none 이면
 //      경고 없음 / 재생성물 경로(dist/**)는 대상이 아니라 경고 없음 / 태그가 있으면 경고 없음
-//  - audit-gap-detection 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 표식 없음은 deny가 아니라 ask다
+//  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 표식 없음은 deny가 아니라 ask다
 //  - settled-status 구성요소 "빨강(red): AI 추측 또는 미승인"
 //    → staged가 미승인(red) 개념을 참조하면 ask / unknownTag가 있으면 ask (changedFiles 유무 양쪽)
 //  - drift-reconcile 불변 "커밋 전 문지기의 어긋남 경고와 커밋 뒤 결산은 같은 잣대로 따라옴을 판정한다"
 //    + 구성요소 "따라옴 = 하나라도"
 //    → 관련 코드가 스테이지에 없으면 ask / 있으면 allow / 여럿 중 하나라도 있으면 allow
-//  - pending-conflict-tracking 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다"
+//  - settled-status 불변 "충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다"
 //    → 충돌 기록이 있는 pending 참조는 강한 ask / 기록 없는 pending 참조는 소프트 통과
 //  - settled-status 불변 "초록이 되려면 두 가지 — 품질 최소치, 검사 증빙"
 //    → 개념 변경에 신선한 pass 증빙이 없으면 ask / 있으면 통과 / group 하위 경로도 slug를 뽑아 증빙 요구

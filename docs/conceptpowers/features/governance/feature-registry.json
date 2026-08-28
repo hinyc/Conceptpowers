@@ -5,8 +5,7 @@
   "description": "기능을 1급 기록으로 두어 따르는 개념과 구현 코드를 한곳에 적고, 개념·기능 이름표가 프로젝트 전체에서 유일하도록 강제한다. 화면에서는 전용 페이지 없이 목록의 색인 줄로 나타난다.",
   "concepts": [
     "feature-spec-bridge",
-    "globally-unique-slug",
-    "feature-index-row"
+    "globally-unique-slug"
   ],
   "codePaths": [
     "src/schema/feature.ts",

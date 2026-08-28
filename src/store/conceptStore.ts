@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:atomic-baseline-write @concept:viewer-readability @concept:concept-aliases
+// @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug
 // src/store/conceptStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
@@ -15,7 +15,7 @@ function fileFor(root: string, c: Concept): string {
   return c.group ? join(dataDir, c.group, `${c.slug}.json`) : join(dataDir, `${c.slug}.json`);
 }
 
-// 별칭은 찾아오는 길일 뿐 가리키는 열쇠가 아니다(concept-aliases). 그래서 별칭이
+// 별칭은 찾아오는 길일 뿐 가리키는 열쇠가 아니다(globally-unique-slug). 그래서 별칭이
 // 어떤 이름표와도, 다른 개념의 별칭과도 겹치지 않아야 무엇을 가리키는지가 갈리지 않는다.
 // 자기 자신(같은 파일)의 별칭은 겹침으로 보지 않는다 — 다시 저장하는 경우다.
 function assertAliasesFree(

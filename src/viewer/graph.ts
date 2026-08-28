@@ -27,7 +27,7 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
-// 노드 클릭 시 이동할 SPA 해시 라우트. 기능 주소는 색인 줄로 돌려보내진다(feature-index-row).
+// 노드 클릭 시 이동할 SPA 해시 라우트. 기능 주소는 색인 줄로 돌려보내진다(feature-spec-bridge).
 // 파일 노드는 이동 대상이 없다.
 const conceptHref = (c: Concept) => `#/concept/${c.slug}`;
 const featureHref = (f: Feature) => `#/feature/${f.slug}`;

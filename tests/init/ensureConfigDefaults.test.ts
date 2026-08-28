@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:atomic-baseline-write
+// @concept:plugin-version-sync
 // tests/init/ensureConfigDefaults.test.ts
 // 설정 보충(ensureInitConfigDefaults)을 검증한다 — 자동 갱신이 어디까지 손대는지를 가르는 자리다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -9,7 +9,7 @@
 //  - plugin-version-sync 불변 "채울 항목이 하나도 없으면 설정 파일을 다시 쓰지 않는다"
 //    → 채울 항목이 없으면 파일을 한 글자도 건드리지 않는다
 //    → init.json이 없으면 아무것도 만들지 않는다 / JSON이 깨졌거나 검증을 통과 못 하면 손대지 않는다
-//  - atomic-baseline-write 불변 "저장 도중 실패하면 남은 임시 파일을 정리한다" → 임시파일 잔여물을 남기지 않는다
+//  - 상위 기준 문서 "갈아 끼우기 방식"의 불변 "저장 도중 실패하면 남은 임시 파일을 정리한다" → 임시파일 잔여물을 남기지 않는다
 // 시나리오는 plugin-version-sync 개념의 규칙에서 도출했다(conceptDrivenTests).
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -77,7 +77,7 @@ describe('ensureInitConfigDefaults', () => {
     expect(readFileSync(initPath, 'utf8')).toBe(before);
   });
 
-  // 규칙 검증: 원자적 저장으로 깨진 설정이 남지 않는다 (atomic-baseline-write 연계)
+  // 규칙 검증: 원자적 저장으로 깨진 설정이 남지 않는다 (상위 기준 문서: 갈아 끼우기 방식)
   it('임시파일 잔여물을 남기지 않는다', async () => {
     writeConfig(minimal);
     await ensureInitConfigDefaults(root);

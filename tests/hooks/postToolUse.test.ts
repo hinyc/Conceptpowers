@@ -1,4 +1,4 @@
-// @concept:governance-mode @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:drift-reconcile
+// @concept:governance-mode @concept:init-gate @concept:settled-status @concept:feature-spec-bridge @concept:drift-reconcile
 // 커밋 직후 훅(runPostToolUse)이 결산을 부르는 조건을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - drift-reconcile 불변 "결산은 커밋이 성공한 뒤에만 한다"

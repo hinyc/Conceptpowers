@@ -1,20 +1,20 @@
-// @concept:viewer-local-write-guard @concept:settled-status @concept:atomic-baseline-write @concept:concept-inline-edit @concept:human-owns-contract
+// @concept:concept-inline-edit @concept:settled-status @concept:human-owns-contract
 // tests/viewer/serve.test.ts
 // 뷰어 서버의 파일 서빙과 편집 통로(/api)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - viewer-local-write-guard 정의 "브라우저를 켜 둔 것만으로 프로젝트의 약속이 바뀌지는 않는다 —
+//  - concept-inline-edit 정의 "브라우저를 켜 둔 것만으로 프로젝트의 약속이 바뀌지는 않는다 —
 //    뷰어에서 개념을 고칠 수 있는 사람은 그 컴퓨터 앞에 앉은 사람뿐이다" → 아래 불변 규칙 전체가
 //    이 약속의 검증이다:
-//  - viewer-local-write-guard 불변 "읽기가 아닌 모든 요청은 내 컴퓨터에서 온 것인지 확인하고, 아니면
+//  - concept-inline-edit 불변 "읽기가 아닌 모든 요청은 내 컴퓨터에서 온 것인지 확인하고, 아니면
 //    거절한다" → localhost/127.0.0.1만 허용 / 비로컬 Host의 변경 요청은 403
-//  - viewer-local-write-guard 불변 "출처를 알 수 없는 빈 요청은 안전한 쪽으로 보아 거절한다"
+//  - concept-inline-edit 불변 "출처를 알 수 없는 빈 요청은 안전한 쪽으로 보아 거절한다"
 //    → 빈·누락 Host는 거부한다
-//  - viewer-local-write-guard 불변 "서버가 내주는 파일은 정해진 폴더 안으로 제한하며, 상위로 거슬러
+//  - concept-inline-edit 불변 "서버가 내주는 파일은 정해진 폴더 안으로 제한하며, 상위로 거슬러
 //    올라가는 경로와 숨김 폴더는 거절한다"
 //    → 디렉터리 탈출은 null / 잘못된 인코딩·널바이트·닷파일은 null(throw 금지) / 쿼리·해시 제거
-//  - viewer-local-write-guard 구성요소 "읽기 전용 모드: 프로젝트 위치를 모른 채 띄운 뷰어 — 고치는
+//  - concept-inline-edit 구성요소 "읽기 전용 모드: 프로젝트 위치를 모른 채 띄운 뷰어 — 고치는
 //    통로가 아예 없다" → projectRoot 없이는 /api/* 가 비활성(404)이다
-//  - viewer-local-write-guard 허용 "읽기 요청은 누구에게나 응답하는 것" → 파일을 http로 서빙한다
+//  - concept-inline-edit 허용 "읽기 요청은 누구에게나 응답하는 것" → 파일을 http로 서빙한다
 //  - settled-status 불변 "빨강을 초록으로 올리는 것은 사람이 명시적으로 요청했을 때만 한다" / "한 번
 //    확정된 초록·빨강은 시스템 경로로는 되돌리지 않는다"
 //    → POST status: red→green 승인 + 디스크 반영 / 가드 위반(green→red)은 400

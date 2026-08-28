@@ -63,8 +63,8 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
   (violation-decidable sentence, per the quality self-check below). Do not broaden scope beyond
   the ambiguity unless the user asks.
 - This is a redefinition → single-flow step 10 applies: record why via
-  `node "<cli>" note-change <slug> --reason "<ambiguity fixed>" --root .`, and the contract-hash
-  change auto-invalidates the old attestation (re-run check-consistency + attest).
+  `node "<cli>" note-change <slug> --reason "<ambiguity fixed>" --root .`; the contract
+  fingerprint changes and auto-invalidates the old attestation (re-run check-consistency + attest).
 
 1. Check the related feature spec in `features/`. If none exists, create it with
    `conceptpowers:define-feature` (agree on a one-line spec with the user first). Once this concept's
@@ -74,7 +74,7 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
    - **Title 표기 (개념 `viewer-readability`):** `title`은 짧고 평이한 한국어 이름표로 쓴다
      (예: "개념 없는 코드 감사"). 은유적 부제를 따로 만들어 얹지 않는다 — 부제를 담을 항목 자체가
      없다. 뷰어 제목은 `slug + " | " + title`로 조합되므로 title 하나면 충분하다.
-   - **Aliases (개념 `concept-aliases`):** 정식 이름은 하나다. `aliases`에는 **이미 다르게
+   - **Aliases (개념 `globally-unique-slug`):** 정식 이름은 하나다. `aliases`에는 **이미 다르게
      부르고 있는 말**만 적는다 — 새 이름을 지어 넣지 않는다(수집이지 발명이 아니다). 어떤 개념의
      slug나 다른 개념의 별칭과 겹치면 저장이 거절된다. 혼용이 없으면 비워 둔다 — 빈 목록이 정상이다.
 3. Fill in the following structure together with the user. A concept stands on four legs —

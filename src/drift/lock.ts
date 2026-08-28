@@ -1,4 +1,4 @@
-// @concept:contract-hash
+// @concept:drift-reconcile
 import { readFile } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';
 import { AlignmentLock } from '../schema/alignment.js';

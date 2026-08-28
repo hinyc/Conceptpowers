@@ -3,53 +3,6 @@
   "locale": "ko",
   "concepts": [
     {
-      "slug": "audit-gap-detection",
-      "group": "governance",
-      "title": "개념 없는 코드 감사",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/governance/audit-gap-detection.json",
-      "codeLinks": [
-        "src/audit/gaps.ts",
-        "src/audit/audit.ts",
-        "src/util/glob.ts",
-        "src/audit/tracked.ts",
-        "src/mapping/leadingComment.ts",
-        "tests/audit/audit.test.ts",
-        "tests/audit/gaps.test.ts",
-        "tests/cli/audit.test.ts",
-        "tests/mapping/scan.test.ts",
-        "tests/schema/initConfig.test.ts",
-        "tests/util/glob.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/hooks/preToolUse.test.ts"
-      ]
-    },
-    {
-      "slug": "concept-aliases",
-      "group": "governance",
-      "title": "개념 별칭",
-      "status": "green",
-      "category": [
-        "term",
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/governance/concept-aliases.json",
-      "codeLinks": [
-        "src/schema/concept.ts",
-        "src/store/conceptStore.ts",
-        "src/viewer/manifest.ts",
-        "assets/viewer.js",
-        "assets/concept.css",
-        "tests/concept/aliases.test.ts",
-        "tests/viewer/search.test.ts"
-      ]
-    },
-    {
       "slug": "concept-code-mapping",
       "group": "governance",
       "title": "개념↔코드 연결",
@@ -63,10 +16,20 @@
       "codeLinks": [
         "src/mapping/scan.ts",
         "src/mapping/leadingComment.ts",
-        "tests/cli/cli.test.ts",
+        "src/audit/gaps.ts",
+        "src/audit/audit.ts",
+        "src/util/glob.ts",
+        "src/audit/tracked.ts",
         "tests/mapping/scan.test.ts",
+        "tests/util/glob.test.ts",
+        "tests/integration/smoke.test.ts",
+        "tests/cli/audit.test.ts",
+        "tests/audit/gaps.test.ts",
+        "tests/cli/cli.test.ts",
+        "tests/schema/initConfig.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/integration/smoke.test.ts"
+        "tests/audit/audit.test.ts",
+        "tests/hooks/preToolUse.test.ts"
       ]
     },
     {
@@ -86,13 +49,13 @@
         "src/hooks/gates/testFollowGate.ts",
         "src/hooks/gates/testScopeGate.ts",
         "src/concept/testReview.ts",
-        "tests/cli/testReview.test.ts",
-        "tests/concept/testReview.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/init/scaffold.test.ts",
-        "tests/schema/initConfig.test.ts",
-        "tests/hooks/testScopeGate.test.ts",
         "src/hooks/preToolUse.ts",
+        "tests/init/scaffold.test.ts",
+        "tests/cli/testReview.test.ts",
+        "tests/hooks/testScopeGate.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/schema/initConfig.test.ts",
+        "tests/concept/testReview.test.ts",
         "tests/hooks/testFollowGate.test.ts"
       ]
     },
@@ -113,64 +76,44 @@
         "src/concept/quality.ts",
         "src/concept/conceptReference.ts",
         "src/concept/implementationLeak.ts",
-        "tests/concept/implementationLeak.test.ts",
         "tests/cli/quality.test.ts",
-        "tests/concept/conceptReference.test.ts"
-      ]
-    },
-    {
-      "slug": "contract-hash",
-      "group": "governance",
-      "title": "어긋남 판정 기준",
-      "status": "green",
-      "category": [
-        "term",
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/governance/contract-hash.json",
-      "codeLinks": [
-        "src/drift/hash.ts",
-        "src/drift/detect.ts",
-        "src/drift/lock.ts",
-        "src/drift/note.ts",
-        "tests/drift/history.test.ts",
-        "tests/drift/lock.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/schema/alignment.test.ts",
-        "tests/drift/hash.test.ts",
-        "tests/concept/aliases.test.ts",
-        "tests/drift/reconcile.test.ts",
-        "tests/drift/detect.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/concept/conceptReference.test.ts",
+        "tests/concept/implementationLeak.test.ts"
       ]
     },
     {
       "slug": "drift-reconcile",
       "group": "governance",
-      "title": "어긋남 결산",
+      "title": "개념·코드 어긋남",
       "status": "green",
       "category": [
-        "behavior"
+        "behavior",
+        "term"
       ],
       "aliases": [],
       "url": "../data/governance/drift-reconcile.json",
       "codeLinks": [
+        "src/drift/hash.ts",
+        "src/drift/detect.ts",
+        "src/drift/lock.ts",
+        "src/drift/note.ts",
         "src/drift/reconcile.ts",
         "src/drift/history.ts",
-        "src/drift/detect.ts",
         "src/schema/alignment.ts",
-        "tests/cli/cli.test.ts",
-        "tests/drift/history.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/schema/alignment.test.ts",
-        "src/drift/follow.ts",
-        "tests/drift/reconcile.test.ts",
         "src/drift/pendingDocs.ts",
+        "src/drift/follow.ts",
         "src/hooks/gates/driftGate.ts",
-        "tests/drift/follow.test.ts",
         "tests/drift/detect.test.ts",
+        "tests/drift/reconcile.test.ts",
+        "tests/cli/cli.test.ts",
+        "tests/drift/lock.test.ts",
+        "tests/concept/aliases.test.ts",
+        "tests/drift/history.test.ts",
+        "tests/drift/follow.test.ts",
+        "tests/drift/hash.test.ts",
+        "tests/schema/alignment.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts"
       ]
     },
@@ -189,25 +132,31 @@
         "src/schema/feature.ts",
         "src/store/featureStore.ts",
         "tests/cli/feature.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
+        "tests/drift/detect.test.ts",
+        "tests/drift/reconcile.test.ts",
+        "tests/integration/smoke.test.ts",
+        "tests/viewer/featureRoute.test.ts",
+        "tests/viewer/manifest.test.ts",
         "tests/schema/feature.test.ts",
-        "tests/store/featureStore.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/viewer/listLayout.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/graph.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/drift/reconcile.test.ts",
-        "tests/drift/detect.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/store/featureStore.test.ts",
+        "assets/viewer.js",
+        "assets/concept.css"
       ]
     },
     {
       "slug": "globally-unique-slug",
       "group": "governance",
-      "title": "이름표 규칙",
+      "title": "개념 이름",
       "status": "green",
       "category": [
-        "term"
+        "term",
+        "behavior"
       ],
       "aliases": [],
       "url": "../data/governance/globally-unique-slug.json",
@@ -215,13 +164,19 @@
         "src/schema/concept.ts",
         "src/schema/feature.ts",
         "src/store/conceptStore.ts",
+        "src/viewer/manifest.ts",
+        "assets/viewer.js",
+        "assets/concept.css",
         "tests/cli/feature.test.ts",
-        "tests/schema/concept.test.ts",
-        "tests/schema/feature.test.ts",
-        "tests/store/featureStore.test.ts",
-        "tests/viewer/graph.test.ts",
         "tests/viewer/subgraph.test.ts",
+        "tests/concept/aliases.test.ts",
+        "tests/schema/concept.test.ts",
         "tests/viewer/manifest.test.ts",
+        "tests/schema/feature.test.ts",
+        "tests/viewer/search.test.ts",
+        "tests/viewer/heroAliases.test.ts",
+        "tests/viewer/graph.test.ts",
+        "tests/store/featureStore.test.ts",
         "tests/store/conceptStore.test.ts"
       ]
     },
@@ -239,26 +194,26 @@
         "src/hooks/preToolUse.ts",
         "src/hooks/postToolUse.ts",
         "src/schema/initConfig.ts",
-        "src/hooks/gates/attestGate.ts",
+        "src/cli.ts",
+        "src/init/scaffold.ts",
+        "src/hooks/sessionStart.ts",
         "src/hooks/gates/conceptSlugs.ts",
-        "src/hooks/gates/conceptlessGate.ts",
         "src/hooks/gates/conflictedPendingGate.ts",
         "src/hooks/gates/qualityGate.ts",
-        "src/hooks/gates/referenceGate.ts",
+        "src/hooks/gates/attestGate.ts",
         "src/hooks/gates/staleArtifactsGate.ts",
         "src/hooks/gates/types.ts",
-        "src/hooks/gates/unapprovedRedGate.ts",
         "src/hooks/gates/unknownTagsGate.ts",
-        "src/init/scaffold.ts",
+        "src/hooks/gates/conceptlessGate.ts",
+        "src/hooks/gates/driftGate.ts",
+        "src/hooks/gates/referenceGate.ts",
+        "src/hooks/gates/unapprovedRedGate.ts",
+        "tests/integration/smoke.test.ts",
         "tests/cli/cli.test.ts",
-        "tests/hooks/gates.modes.test.ts",
-        "tests/hooks/postToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/integration/smoke.test.ts",
-        "src/hooks/sessionStart.ts",
-        "src/cli.ts",
-        "src/hooks/gates/driftGate.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/gates.modes.test.ts",
         "tests/hooks/preToolUse.test.ts"
       ]
     },
@@ -296,30 +251,13 @@
         "src/i18n/messages.ts",
         "src/schema/initConfig.ts",
         "src/init/readConfig.ts",
+        "tests/viewer/sidebarState.test.ts",
+        "tests/init/scaffold.test.ts",
+        "tests/init/readConfig.test.ts",
         "tests/cli/cli.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/i18n/messages.test.ts",
-        "tests/init/readConfig.test.ts",
-        "tests/init/scaffold.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/viewer/sidebarState.test.ts"
-      ]
-    },
-    {
-      "slug": "pending-conflict-tracking",
-      "group": "governance",
-      "title": "충돌 기록",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/governance/pending-conflict-tracking.json",
-      "codeLinks": [
-        "src/concept/pendingConflicts.ts",
-        "tests/cli/cli.test.ts",
-        "tests/concept/pendingConflicts.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/i18n/messages.test.ts"
       ]
     },
     {
@@ -336,16 +274,16 @@
         "src/init/reference.ts",
         "src/init/referencePaths.ts",
         "src/init/addReferencePath.ts",
-        "tests/cli/reference.test.ts",
-        "tests/hooks/sessionStart.test.ts",
+        "tests/init/referencePaths.test.ts",
         "tests/init/reference.test.ts",
-        "tests/init/referencePaths.test.ts"
+        "tests/cli/reference.test.ts",
+        "tests/hooks/sessionStart.test.ts"
       ]
     },
     {
       "slug": "settled-status",
       "group": "governance",
-      "title": "상태 관리 원칙",
+      "title": "개념 상태",
       "status": "green",
       "category": [
         "behavior",
@@ -358,70 +296,28 @@
         "src/concept/approve.ts",
         "src/concept/quality.ts",
         "src/concept/attest.ts",
-        "tests/audit/audit.test.ts",
-        "tests/cli/cli.test.ts",
-        "tests/concept/approve.test.ts",
-        "tests/concept/attest.test.ts",
-        "tests/concept/pendingConflicts.test.ts",
-        "tests/concept/quality-gate.test.ts",
-        "tests/drift/history.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/schema/alignment.test.ts",
-        "tests/schema/concept.test.ts",
-        "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "assets/viewer.js",
-        "tests/drift/reconcile.test.ts",
-        "tests/cli/quality.test.ts",
-        "tests/concept/quality.test.ts",
-        "tests/drift/detect.test.ts",
-        "tests/hooks/preToolUse.test.ts"
-      ]
-    },
-    {
-      "slug": "atomic-baseline-write",
-      "group": "platform",
-      "title": "안전한 저장",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/platform/atomic-baseline-write.json",
-      "codeLinks": [
-        "src/util/atomicWrite.ts",
-        "src/store/conceptStore.ts",
-        "src/store/featureStore.ts",
-        "src/drift/lock.ts",
-        "src/drift/history.ts",
         "src/concept/pendingConflicts.ts",
-        "src/concept/attest.ts",
-        "src/hooks/postToolUse.ts",
-        "src/init/addReferencePath.ts",
-        "src/init/ensureConfigDefaults.ts",
-        "tests/audit/audit.test.ts",
-        "tests/cli/cli.test.ts",
-        "tests/cli/testReview.test.ts",
-        "tests/concept/approve.test.ts",
-        "tests/concept/pendingConflicts.test.ts",
-        "tests/concept/quality-gate.test.ts",
-        "tests/drift/history.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/init/alignmentGitignore.test.ts",
-        "tests/init/ensureConfigDefaults.test.ts",
-        "tests/store/featureStore.test.ts",
-        "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/drift/reconcile.test.ts",
         "tests/cli/quality.test.ts",
         "tests/drift/detect.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/drift/reconcile.test.ts",
+        "tests/integration/smoke.test.ts",
+        "tests/cli/cli.test.ts",
+        "tests/concept/quality.test.ts",
+        "tests/drift/history.test.ts",
+        "tests/schema/concept.test.ts",
+        "tests/concept/quality-gate.test.ts",
+        "tests/schema/alignment.test.ts",
+        "tests/viewer/serve.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/viewer/renderDisk.test.ts",
+        "tests/audit/audit.test.ts",
+        "tests/concept/pendingConflicts.test.ts",
+        "tests/concept/attest.test.ts",
+        "tests/concept/approve.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/store/conceptStore.test.ts",
+        "assets/viewer.js"
       ]
     },
     {
@@ -437,17 +333,17 @@
       "codeLinks": [
         "src/viewer/render.ts",
         "src/viewer/manifest.ts",
-        "scripts/build.mjs",
-        "scripts/release.mjs",
-        "tests/hooks/sessionStart.test.ts",
         "tests/init/packageScript.test.ts",
         "tests/init/scaffold.test.ts",
-        "tests/init/syncGenerated.test.ts",
-        "tests/version/autoSync.test.ts",
-        "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/manifest.test.ts",
         "tests/integration/smoke.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/init/syncGenerated.test.ts",
+        "tests/viewer/manifest.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/viewer/renderDisk.test.ts",
+        "tests/version/autoSync.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "scripts/release.mjs",
+        "scripts/build.mjs"
       ]
     },
     {
@@ -463,26 +359,26 @@
       "codeLinks": [
         "src/cli.ts",
         "src/init/scaffold.ts",
-        "tests/cli/audit.test.ts",
-        "tests/cli/cli.test.ts",
-        "tests/cli/feature.test.ts",
-        "tests/cli/reference.test.ts",
-        "tests/cli/requireInit.test.ts",
-        "tests/cli/testReview.test.ts",
-        "tests/concept/approve.test.ts",
-        "tests/concept/pendingConflicts.test.ts",
-        "tests/hooks/gates.modes.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/init/alignmentGitignore.test.ts",
-        "tests/init/readConfig.test.ts",
-        "tests/init/reference.test.ts",
         "tests/init/referenceGitignore.test.ts",
-        "tests/init/scaffold.test.ts",
-        "tests/init/syncGenerated.test.ts",
-        "tests/version/autoSync.test.ts",
-        "tests/integration/smoke.test.ts",
         "tests/cli/quality.test.ts",
+        "tests/cli/feature.test.ts",
+        "tests/init/reference.test.ts",
+        "tests/init/alignmentGitignore.test.ts",
+        "tests/init/scaffold.test.ts",
+        "tests/integration/smoke.test.ts",
+        "tests/init/syncGenerated.test.ts",
+        "tests/cli/audit.test.ts",
+        "tests/cli/requireInit.test.ts",
+        "tests/init/readConfig.test.ts",
+        "tests/cli/cli.test.ts",
+        "tests/cli/testReview.test.ts",
+        "tests/cli/reference.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/concept/pendingConflicts.test.ts",
+        "tests/version/autoSync.test.ts",
+        "tests/concept/approve.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/gates.modes.test.ts",
         "tests/hooks/preToolUse.test.ts"
       ]
     },
@@ -502,19 +398,19 @@
         "src/version/checkUpdate.ts",
         "src/version/compareSemver.ts",
         "src/hooks/sessionStart.ts",
-        "scripts/release.mjs",
+        "src/cli.ts",
         "src/init/packageScript.ts",
         "src/version/autoSync.ts",
-        "tests/cli/cli.test.ts",
-        "tests/hooks/sessionStart.test.ts",
         "tests/init/ensureConfigDefaults.test.ts",
         "tests/init/packageScript.test.ts",
         "tests/init/syncGenerated.test.ts",
+        "tests/cli/cli.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/version/autoSync.test.ts",
         "tests/version/checkUpdate.test.ts",
         "tests/version/compareSemver.test.ts",
-        "src/cli.ts"
+        "tests/version/autoSync.test.ts",
+        "scripts/release.mjs"
       ]
     },
     {
@@ -532,16 +428,16 @@
         "src/init/reference.ts",
         "src/init/referenceGitignore.ts",
         "src/init/referencePaths.ts",
-        "src/hooks/gates/referenceGate.ts",
         "src/init/addReferencePath.ts",
+        "src/hooks/gates/referenceGate.ts",
+        "tests/init/addReferencePath.test.ts",
+        "tests/init/referenceGitignore.test.ts",
+        "tests/init/referencePaths.test.ts",
+        "tests/init/reference.test.ts",
+        "tests/init/scaffold.test.ts",
         "tests/cli/reference.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/i18n/messages.test.ts",
-        "tests/init/addReferencePath.test.ts",
-        "tests/init/reference.test.ts",
-        "tests/init/referenceGitignore.test.ts",
-        "tests/init/referencePaths.test.ts",
-        "tests/init/scaffold.test.ts",
         "tests/hooks/preToolUse.test.ts"
       ]
     },
@@ -563,25 +459,9 @@
       ]
     },
     {
-      "slug": "viewer-local-write-guard",
-      "group": "platform",
-      "title": "뷰어 서버 보호",
-      "status": "green",
-      "category": [
-        "permission",
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/platform/viewer-local-write-guard.json",
-      "codeLinks": [
-        "src/viewer/serve.ts",
-        "tests/viewer/serve.test.ts"
-      ]
-    },
-    {
       "slug": "concept-inline-edit",
       "group": "viewer",
-      "title": "개념 편집 화면",
+      "title": "뷰어에서 개념 고치기",
       "status": "green",
       "category": [
         "feature",
@@ -592,33 +472,15 @@
       "codeLinks": [
         "assets/viewer.js",
         "src/store/conceptStore.ts",
+        "src/viewer/serve.ts",
         "tests/viewer/serve.test.ts",
         "tests/store/conceptStore.test.ts"
       ]
     },
     {
-      "slug": "feature-index-row",
-      "group": "viewer",
-      "title": "기능 목록 표시 규칙",
-      "status": "green",
-      "category": [
-        "behavior"
-      ],
-      "aliases": [],
-      "url": "../data/viewer/feature-index-row.json",
-      "codeLinks": [
-        "assets/viewer.js",
-        "tests/viewer/graph.test.ts",
-        "tests/viewer/manifest.test.ts",
-        "tests/viewer/featureRoute.test.ts",
-        "tests/viewer/listLayout.test.ts",
-        "assets/concept.css"
-      ]
-    },
-    {
       "slug": "home-search",
       "group": "viewer",
-      "title": "찾기",
+      "title": "찾아오기",
       "status": "green",
       "category": [
         "feature"
@@ -627,10 +489,9 @@
       "url": "../data/viewer/home-search.json",
       "codeLinks": [
         "assets/viewer.js",
-        "assets/sidebar.js",
+        "tests/viewer/search.test.ts",
         "tests/viewer/listLayout.test.ts",
-        "tests/viewer/sidebarState.test.ts",
-        "tests/viewer/search.test.ts"
+        "assets/sidebar.js"
       ]
     },
     {
@@ -646,27 +507,44 @@
       "codeLinks": [
         "assets/viewer.js",
         "src/viewer/graph.ts",
-        "tests/viewer/graph.test.ts",
         "tests/viewer/subgraph.test.ts",
-        "tests/viewer/highlight.test.ts",
+        "tests/viewer/graph.test.ts",
         "tests/viewer/copyPath.test.ts",
+        "tests/viewer/highlight.test.ts",
         "assets/concept.css"
+      ]
+    },
+    {
+      "slug": "list-filter",
+      "group": "viewer",
+      "title": "목록 좁히기",
+      "status": "green",
+      "category": [
+        "feature"
+      ],
+      "aliases": [],
+      "url": "../data/viewer/list-filter.json",
+      "codeLinks": [
+        "assets/sidebar.js",
+        "assets/viewer.js",
+        "tests/viewer/sidebarState.test.ts",
+        "tests/viewer/listLayout.test.ts"
       ]
     },
     {
       "slug": "viewer-navigation",
       "group": "viewer",
-      "title": "화면 사이 이동",
+      "title": "사람 선택 우선",
       "status": "green",
       "category": [
-        "behavior",
-        "feature"
+        "behavior"
       ],
       "aliases": [],
       "url": "../data/viewer/viewer-navigation.json",
       "codeLinks": [
-        "assets/topnav.js",
         "assets/sidebar.js",
+        "assets/topnav.js",
+        "assets/viewer.js",
         "tests/viewer/sidebarState.test.ts",
         "tests/viewer/topnav.test.ts"
       ]
@@ -674,7 +552,7 @@
     {
       "slug": "viewer-readability",
       "group": "viewer",
-      "title": "훑기와 읽기",
+      "title": "누구나 같은 품으로 읽기",
       "status": "green",
       "category": [
         "behavior"
@@ -684,13 +562,13 @@
       "codeLinks": [
         "assets/viewer.js",
         "assets/sidebar.js",
+        "assets/topnav.js",
         "assets/concept.css",
         "src/schema/concept.ts",
         "src/store/conceptStore.ts",
-        "assets/topnav.js",
-        "tests/viewer/listLayout.test.ts",
-        "tests/viewer/detailTitle.test.ts",
         "tests/viewer/heroSummary.test.ts",
+        "tests/viewer/detailTitle.test.ts",
+        "tests/viewer/listLayout.test.ts",
         "tests/store/conceptStore.test.ts"
       ]
     }
@@ -721,7 +599,6 @@
       "title": "개념 없는 코드 감사와 매핑",
       "description": "표식이 없는 코드 파일을 격차로 찾아내고, 코드에 달린 개념 표식을 훑어 개념→코드 역방향 지도를 만든다.",
       "concepts": [
-        "audit-gap-detection",
         "concept-code-mapping"
       ]
     },
@@ -732,7 +609,7 @@
       "description": "새 개념을 정의하는 자리. 무엇이 개념이 될 수 있는지 자격을 따지고, 정식 이름과 별칭을 사람이 적는다.",
       "concepts": [
         "concept-scope",
-        "concept-aliases",
+        "globally-unique-slug",
         "human-owns-contract"
       ]
     },
@@ -761,7 +638,7 @@
       "title": "개념 간 충돌 검사",
       "description": "새 개념이 기존 개념과 부딪히는지 검사하고, 부딪히면 확정을 미룬 채 사유를 남긴다. 검사 시점에만 참고자료를 읽는다.",
       "concepts": [
-        "pending-conflict-tracking",
+        "settled-status",
         "reference-first-duty"
       ]
     },
@@ -771,7 +648,6 @@
       "title": "개념 어긋남 탐지와 결산",
       "description": "개념의 계약 부분만 지문으로 비교해 어긋남을 판정하고, 커밋 뒤 코드가 따라왔는지 결산해 기준선을 다시 맞춘다.",
       "concepts": [
-        "contract-hash",
         "drift-reconcile"
       ]
     },
@@ -782,8 +658,7 @@
       "description": "기능을 1급 기록으로 두어 따르는 개념과 구현 코드를 한곳에 적고, 개념·기능 이름표가 프로젝트 전체에서 유일하도록 강제한다. 화면에서는 전용 페이지 없이 목록의 색인 줄로 나타난다.",
       "concepts": [
         "feature-spec-bridge",
-        "globally-unique-slug",
-        "feature-index-row"
+        "globally-unique-slug"
       ]
     },
     {
@@ -826,15 +701,6 @@
       ]
     },
     {
-      "slug": "safe-storage",
-      "group": "platform",
-      "title": "안전한 기록 저장",
-      "description": "기록 파일을 임시 파일에 쓴 뒤 교체해, 저장 도중 멈춰도 깨진 파일이 남지 않게 한다.",
-      "concepts": [
-        "atomic-baseline-write"
-      ]
-    },
-    {
       "slug": "viewer-concept-detail",
       "group": "viewer",
       "title": "개념 상세 화면",
@@ -849,8 +715,7 @@
       "title": "뷰어에서 개념 편집",
       "description": "브라우저에서 개념 본문을 고쳐 저장한다. 확정 개념은 저장과 동시에 보류로 내려가며, 쓰기 요청은 로컬에서만 받는다.",
       "concepts": [
-        "concept-inline-edit",
-        "viewer-local-write-guard"
+        "concept-inline-edit"
       ]
     },
     {
@@ -861,7 +726,7 @@
       "concepts": [
         "viewer-readability",
         "settled-status",
-        "feature-index-row"
+        "feature-spec-bridge"
       ]
     },
     {
@@ -880,8 +745,8 @@
       "description": "상단 묶음 메뉴와 곁 목록으로 어느 화면 너비에서든 항목에 닿게 하고, 사람이 손댄 여닫이 선택을 기억한다.",
       "concepts": [
         "viewer-navigation",
-        "home-search",
-        "viewer-readability"
+        "viewer-readability",
+        "list-filter"
       ]
     },
     {
@@ -891,7 +756,8 @@
       "description": "첫 화면에서는 개념·기능·코드 파일을 넓게 찾아오고, 곁 목록에서는 이미 떠 있는 것을 좁힌다. 정식 이름뿐 아니라 별칭으로도 닿는다.",
       "concepts": [
         "home-search",
-        "concept-aliases",
+        "list-filter",
+        "globally-unique-slug",
         "viewer-readability"
       ]
     }
@@ -990,13 +856,6 @@
         "title": "reference-materials"
       },
       {
-        "id": "f:safe-storage",
-        "label": "안전한 기록 저장",
-        "type": "feature",
-        "href": "#/feature/safe-storage",
-        "title": "safe-storage"
-      },
-      {
         "id": "f:viewer-concept-detail",
         "label": "개념 상세 화면",
         "type": "feature",
@@ -1039,11 +898,25 @@
         "title": "viewer-search"
       },
       {
-        "id": "c:audit-gap-detection",
-        "label": "개념 없는 코드 감사",
+        "id": "c:concept-code-mapping",
+        "label": "개념↔코드 연결",
         "type": "concept",
-        "href": "#/concept/audit-gap-detection",
-        "title": "audit-gap-detection"
+        "href": "#/concept/concept-code-mapping",
+        "title": "concept-code-mapping"
+      },
+      {
+        "id": "p:src/mapping/scan.ts",
+        "label": "scan.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/mapping/scan.ts"
+      },
+      {
+        "id": "p:src/mapping/leadingComment.ts",
+        "label": "leadingComment.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/mapping/leadingComment.ts"
       },
       {
         "id": "p:src/audit/gaps.ts",
@@ -1074,46 +947,11 @@
         "title": "src/audit/tracked.ts"
       },
       {
-        "id": "p:src/mapping/leadingComment.ts",
-        "label": "leadingComment.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/mapping/leadingComment.ts"
-      },
-      {
-        "id": "p:tests/audit/audit.test.ts",
-        "label": "audit.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/audit/audit.test.ts"
-      },
-      {
-        "id": "p:tests/audit/gaps.test.ts",
-        "label": "gaps.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/audit/gaps.test.ts"
-      },
-      {
-        "id": "p:tests/cli/audit.test.ts",
-        "label": "audit.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/cli/audit.test.ts"
-      },
-      {
         "id": "p:tests/mapping/scan.test.ts",
         "label": "scan.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/mapping/scan.test.ts"
-      },
-      {
-        "id": "p:tests/schema/initConfig.test.ts",
-        "label": "initConfig.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/schema/initConfig.test.ts"
       },
       {
         "id": "p:tests/util/glob.test.ts",
@@ -1130,81 +968,18 @@
         "title": "tests/integration/smoke.test.ts"
       },
       {
-        "id": "p:tests/hooks/preToolUse.test.ts",
-        "label": "preToolUse.test.ts",
+        "id": "p:tests/cli/audit.test.ts",
+        "label": "audit.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/hooks/preToolUse.test.ts"
+        "title": "tests/cli/audit.test.ts"
       },
       {
-        "id": "c:concept-aliases",
-        "label": "개념 별칭",
-        "type": "concept",
-        "href": "#/concept/concept-aliases",
-        "title": "concept-aliases"
-      },
-      {
-        "id": "p:src/schema/concept.ts",
-        "label": "concept.ts",
+        "id": "p:tests/audit/gaps.test.ts",
+        "label": "gaps.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/schema/concept.ts"
-      },
-      {
-        "id": "p:src/store/conceptStore.ts",
-        "label": "conceptStore.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/store/conceptStore.ts"
-      },
-      {
-        "id": "p:src/viewer/manifest.ts",
-        "label": "manifest.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/viewer/manifest.ts"
-      },
-      {
-        "id": "p:assets/viewer.js",
-        "label": "viewer.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/viewer.js"
-      },
-      {
-        "id": "p:assets/concept.css",
-        "label": "concept.css",
-        "type": "file",
-        "href": "",
-        "title": "assets/concept.css"
-      },
-      {
-        "id": "p:tests/concept/aliases.test.ts",
-        "label": "aliases.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/aliases.test.ts"
-      },
-      {
-        "id": "p:tests/viewer/search.test.ts",
-        "label": "search.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/search.test.ts"
-      },
-      {
-        "id": "c:concept-code-mapping",
-        "label": "개념↔코드 연결",
-        "type": "concept",
-        "href": "#/concept/concept-code-mapping",
-        "title": "concept-code-mapping"
-      },
-      {
-        "id": "p:src/mapping/scan.ts",
-        "label": "scan.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/mapping/scan.ts"
+        "title": "tests/audit/gaps.test.ts"
       },
       {
         "id": "p:tests/cli/cli.test.ts",
@@ -1214,11 +989,32 @@
         "title": "tests/cli/cli.test.ts"
       },
       {
+        "id": "p:tests/schema/initConfig.test.ts",
+        "label": "initConfig.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/schema/initConfig.test.ts"
+      },
+      {
         "id": "p:tests/viewer/renderDisk.test.ts",
         "label": "renderDisk.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/viewer/renderDisk.test.ts"
+      },
+      {
+        "id": "p:tests/audit/audit.test.ts",
+        "label": "audit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/audit/audit.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/preToolUse.test.ts",
+        "label": "preToolUse.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/preToolUse.test.ts"
       },
       {
         "id": "c:concept-driven-tests",
@@ -1270,25 +1066,11 @@
         "title": "src/concept/testReview.ts"
       },
       {
-        "id": "p:tests/cli/testReview.test.ts",
-        "label": "testReview.test.ts",
+        "id": "p:src/hooks/preToolUse.ts",
+        "label": "preToolUse.ts",
         "type": "file",
         "href": "",
-        "title": "tests/cli/testReview.test.ts"
-      },
-      {
-        "id": "p:tests/concept/testReview.test.ts",
-        "label": "testReview.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/testReview.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/sessionStart.test.ts",
-        "label": "sessionStart.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/sessionStart.test.ts"
+        "title": "src/hooks/preToolUse.ts"
       },
       {
         "id": "p:tests/init/scaffold.test.ts",
@@ -1298,6 +1080,13 @@
         "title": "tests/init/scaffold.test.ts"
       },
       {
+        "id": "p:tests/cli/testReview.test.ts",
+        "label": "testReview.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/testReview.test.ts"
+      },
+      {
         "id": "p:tests/hooks/testScopeGate.test.ts",
         "label": "testScopeGate.test.ts",
         "type": "file",
@@ -1305,11 +1094,18 @@
         "title": "tests/hooks/testScopeGate.test.ts"
       },
       {
-        "id": "p:src/hooks/preToolUse.ts",
-        "label": "preToolUse.ts",
+        "id": "p:tests/hooks/sessionStart.test.ts",
+        "label": "sessionStart.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/preToolUse.ts"
+        "title": "tests/hooks/sessionStart.test.ts"
+      },
+      {
+        "id": "p:tests/concept/testReview.test.ts",
+        "label": "testReview.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/testReview.test.ts"
       },
       {
         "id": "p:tests/hooks/testFollowGate.test.ts",
@@ -1333,6 +1129,13 @@
         "title": "skills/define-concept/SKILL.md"
       },
       {
+        "id": "p:src/schema/concept.ts",
+        "label": "concept.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/concept.ts"
+      },
+      {
         "id": "p:src/concept/quality.ts",
         "label": "quality.ts",
         "type": "file",
@@ -1354,13 +1157,6 @@
         "title": "src/concept/implementationLeak.ts"
       },
       {
-        "id": "p:tests/concept/implementationLeak.test.ts",
-        "label": "implementationLeak.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/implementationLeak.test.ts"
-      },
-      {
         "id": "p:tests/cli/quality.test.ts",
         "label": "quality.test.ts",
         "type": "file",
@@ -1375,11 +1171,18 @@
         "title": "tests/concept/conceptReference.test.ts"
       },
       {
-        "id": "c:contract-hash",
-        "label": "어긋남 판정 기준",
+        "id": "p:tests/concept/implementationLeak.test.ts",
+        "label": "implementationLeak.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/implementationLeak.test.ts"
+      },
+      {
+        "id": "c:drift-reconcile",
+        "label": "개념·코드 어긋남",
         "type": "concept",
-        "href": "#/concept/contract-hash",
-        "title": "contract-hash"
+        "href": "#/concept/drift-reconcile",
+        "title": "drift-reconcile"
       },
       {
         "id": "p:src/drift/hash.ts",
@@ -1410,62 +1213,6 @@
         "title": "src/drift/note.ts"
       },
       {
-        "id": "p:tests/drift/history.test.ts",
-        "label": "history.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/history.test.ts"
-      },
-      {
-        "id": "p:tests/drift/lock.test.ts",
-        "label": "lock.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/lock.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/postToolUse.test.ts",
-        "label": "postToolUse.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/postToolUse.test.ts"
-      },
-      {
-        "id": "p:tests/schema/alignment.test.ts",
-        "label": "alignment.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/schema/alignment.test.ts"
-      },
-      {
-        "id": "p:tests/drift/hash.test.ts",
-        "label": "hash.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/hash.test.ts"
-      },
-      {
-        "id": "p:tests/drift/reconcile.test.ts",
-        "label": "reconcile.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/reconcile.test.ts"
-      },
-      {
-        "id": "p:tests/drift/detect.test.ts",
-        "label": "detect.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/detect.test.ts"
-      },
-      {
-        "id": "c:drift-reconcile",
-        "label": "어긋남 결산",
-        "type": "concept",
-        "href": "#/concept/drift-reconcile",
-        "title": "drift-reconcile"
-      },
-      {
         "id": "p:src/drift/reconcile.ts",
         "label": "reconcile.ts",
         "type": "file",
@@ -1480,18 +1227,18 @@
         "title": "src/drift/history.ts"
       },
       {
-        "id": "p:src/drift/follow.ts",
-        "label": "follow.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/drift/follow.ts"
-      },
-      {
         "id": "p:src/drift/pendingDocs.ts",
         "label": "pendingDocs.ts",
         "type": "file",
         "href": "",
         "title": "src/drift/pendingDocs.ts"
+      },
+      {
+        "id": "p:src/drift/follow.ts",
+        "label": "follow.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/follow.ts"
       },
       {
         "id": "p:src/hooks/gates/driftGate.ts",
@@ -1501,11 +1248,67 @@
         "title": "src/hooks/gates/driftGate.ts"
       },
       {
+        "id": "p:tests/drift/detect.test.ts",
+        "label": "detect.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/detect.test.ts"
+      },
+      {
+        "id": "p:tests/drift/reconcile.test.ts",
+        "label": "reconcile.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/reconcile.test.ts"
+      },
+      {
+        "id": "p:tests/drift/lock.test.ts",
+        "label": "lock.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/lock.test.ts"
+      },
+      {
+        "id": "p:tests/concept/aliases.test.ts",
+        "label": "aliases.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/aliases.test.ts"
+      },
+      {
+        "id": "p:tests/drift/history.test.ts",
+        "label": "history.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/history.test.ts"
+      },
+      {
         "id": "p:tests/drift/follow.test.ts",
         "label": "follow.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/drift/follow.test.ts"
+      },
+      {
+        "id": "p:tests/drift/hash.test.ts",
+        "label": "hash.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/hash.test.ts"
+      },
+      {
+        "id": "p:tests/schema/alignment.test.ts",
+        "label": "alignment.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/schema/alignment.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/postToolUse.test.ts",
+        "label": "postToolUse.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/postToolUse.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -1536,6 +1339,20 @@
         "title": "tests/cli/feature.test.ts"
       },
       {
+        "id": "p:tests/viewer/featureRoute.test.ts",
+        "label": "featureRoute.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/featureRoute.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/manifest.test.ts",
+        "label": "manifest.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/manifest.test.ts"
+      },
+      {
         "id": "p:tests/schema/feature.test.ts",
         "label": "feature.test.ts",
         "type": "file",
@@ -1543,11 +1360,11 @@
         "title": "tests/schema/feature.test.ts"
       },
       {
-        "id": "p:tests/store/featureStore.test.ts",
-        "label": "featureStore.test.ts",
+        "id": "p:tests/viewer/listLayout.test.ts",
+        "label": "listLayout.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/store/featureStore.test.ts"
+        "title": "tests/viewer/listLayout.test.ts"
       },
       {
         "id": "p:tests/viewer/graph.test.ts",
@@ -1557,18 +1374,46 @@
         "title": "tests/viewer/graph.test.ts"
       },
       {
+        "id": "p:tests/store/featureStore.test.ts",
+        "label": "featureStore.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/store/featureStore.test.ts"
+      },
+      {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
+      },
+      {
+        "id": "p:assets/concept.css",
+        "label": "concept.css",
+        "type": "file",
+        "href": "",
+        "title": "assets/concept.css"
+      },
+      {
         "id": "c:globally-unique-slug",
-        "label": "이름표 규칙",
+        "label": "개념 이름",
         "type": "concept",
         "href": "#/concept/globally-unique-slug",
         "title": "globally-unique-slug"
       },
       {
-        "id": "p:tests/schema/concept.test.ts",
-        "label": "concept.test.ts",
+        "id": "p:src/store/conceptStore.ts",
+        "label": "conceptStore.ts",
         "type": "file",
         "href": "",
-        "title": "tests/schema/concept.test.ts"
+        "title": "src/store/conceptStore.ts"
+      },
+      {
+        "id": "p:src/viewer/manifest.ts",
+        "label": "manifest.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/viewer/manifest.ts"
       },
       {
         "id": "p:tests/viewer/subgraph.test.ts",
@@ -1578,11 +1423,25 @@
         "title": "tests/viewer/subgraph.test.ts"
       },
       {
-        "id": "p:tests/viewer/manifest.test.ts",
-        "label": "manifest.test.ts",
+        "id": "p:tests/schema/concept.test.ts",
+        "label": "concept.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/viewer/manifest.test.ts"
+        "title": "tests/schema/concept.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/search.test.ts",
+        "label": "search.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/search.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/heroAliases.test.ts",
+        "label": "heroAliases.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/heroAliases.test.ts"
       },
       {
         "id": "p:tests/store/conceptStore.test.ts",
@@ -1606,11 +1465,18 @@
         "title": "src/hooks/postToolUse.ts"
       },
       {
-        "id": "p:src/hooks/gates/attestGate.ts",
-        "label": "attestGate.ts",
+        "id": "p:src/cli.ts",
+        "label": "cli.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/gates/attestGate.ts"
+        "title": "src/cli.ts"
+      },
+      {
+        "id": "p:src/init/scaffold.ts",
+        "label": "scaffold.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/scaffold.ts"
       },
       {
         "id": "p:src/hooks/gates/conceptSlugs.ts",
@@ -1618,13 +1484,6 @@
         "type": "file",
         "href": "",
         "title": "src/hooks/gates/conceptSlugs.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/conceptlessGate.ts",
-        "label": "conceptlessGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/conceptlessGate.ts"
       },
       {
         "id": "p:src/hooks/gates/conflictedPendingGate.ts",
@@ -1641,11 +1500,11 @@
         "title": "src/hooks/gates/qualityGate.ts"
       },
       {
-        "id": "p:src/hooks/gates/referenceGate.ts",
-        "label": "referenceGate.ts",
+        "id": "p:src/hooks/gates/attestGate.ts",
+        "label": "attestGate.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/gates/referenceGate.ts"
+        "title": "src/hooks/gates/attestGate.ts"
       },
       {
         "id": "p:src/hooks/gates/staleArtifactsGate.ts",
@@ -1662,13 +1521,6 @@
         "title": "src/hooks/gates/types.ts"
       },
       {
-        "id": "p:src/hooks/gates/unapprovedRedGate.ts",
-        "label": "unapprovedRedGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/unapprovedRedGate.ts"
-      },
-      {
         "id": "p:src/hooks/gates/unknownTagsGate.ts",
         "label": "unknownTagsGate.ts",
         "type": "file",
@@ -1676,11 +1528,25 @@
         "title": "src/hooks/gates/unknownTagsGate.ts"
       },
       {
-        "id": "p:src/init/scaffold.ts",
-        "label": "scaffold.ts",
+        "id": "p:src/hooks/gates/conceptlessGate.ts",
+        "label": "conceptlessGate.ts",
         "type": "file",
         "href": "",
-        "title": "src/init/scaffold.ts"
+        "title": "src/hooks/gates/conceptlessGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/referenceGate.ts",
+        "label": "referenceGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/referenceGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/unapprovedRedGate.ts",
+        "label": "unapprovedRedGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/unapprovedRedGate.ts"
       },
       {
         "id": "p:tests/hooks/gates.modes.test.ts",
@@ -1688,13 +1554,6 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/gates.modes.test.ts"
-      },
-      {
-        "id": "p:src/cli.ts",
-        "label": "cli.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/cli.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -1746,11 +1605,11 @@
         "title": "src/init/readConfig.ts"
       },
       {
-        "id": "p:tests/i18n/messages.test.ts",
-        "label": "messages.test.ts",
+        "id": "p:tests/viewer/sidebarState.test.ts",
+        "label": "sidebarState.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/i18n/messages.test.ts"
+        "title": "tests/viewer/sidebarState.test.ts"
       },
       {
         "id": "p:tests/init/readConfig.test.ts",
@@ -1760,32 +1619,11 @@
         "title": "tests/init/readConfig.test.ts"
       },
       {
-        "id": "p:tests/viewer/sidebarState.test.ts",
-        "label": "sidebarState.test.ts",
+        "id": "p:tests/i18n/messages.test.ts",
+        "label": "messages.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/viewer/sidebarState.test.ts"
-      },
-      {
-        "id": "c:pending-conflict-tracking",
-        "label": "충돌 기록",
-        "type": "concept",
-        "href": "#/concept/pending-conflict-tracking",
-        "title": "pending-conflict-tracking"
-      },
-      {
-        "id": "p:src/concept/pendingConflicts.ts",
-        "label": "pendingConflicts.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/concept/pendingConflicts.ts"
-      },
-      {
-        "id": "p:tests/concept/pendingConflicts.test.ts",
-        "label": "pendingConflicts.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/pendingConflicts.test.ts"
+        "title": "tests/i18n/messages.test.ts"
       },
       {
         "id": "c:reference-first-duty",
@@ -1816,11 +1654,11 @@
         "title": "src/init/addReferencePath.ts"
       },
       {
-        "id": "p:tests/cli/reference.test.ts",
-        "label": "reference.test.ts",
+        "id": "p:tests/init/referencePaths.test.ts",
+        "label": "referencePaths.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/cli/reference.test.ts"
+        "title": "tests/init/referencePaths.test.ts"
       },
       {
         "id": "p:tests/init/reference.test.ts",
@@ -1830,15 +1668,15 @@
         "title": "tests/init/reference.test.ts"
       },
       {
-        "id": "p:tests/init/referencePaths.test.ts",
-        "label": "referencePaths.test.ts",
+        "id": "p:tests/cli/reference.test.ts",
+        "label": "reference.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/init/referencePaths.test.ts"
+        "title": "tests/cli/reference.test.ts"
       },
       {
         "id": "c:settled-status",
-        "label": "상태 관리 원칙",
+        "label": "개념 상태",
         "type": "concept",
         "href": "#/concept/settled-status",
         "title": "settled-status"
@@ -1858,25 +1696,11 @@
         "title": "src/concept/attest.ts"
       },
       {
-        "id": "p:tests/concept/approve.test.ts",
-        "label": "approve.test.ts",
+        "id": "p:src/concept/pendingConflicts.ts",
+        "label": "pendingConflicts.ts",
         "type": "file",
         "href": "",
-        "title": "tests/concept/approve.test.ts"
-      },
-      {
-        "id": "p:tests/concept/attest.test.ts",
-        "label": "attest.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/attest.test.ts"
-      },
-      {
-        "id": "p:tests/concept/quality-gate.test.ts",
-        "label": "quality-gate.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/quality-gate.test.ts"
+        "title": "src/concept/pendingConflicts.ts"
       },
       {
         "id": "p:tests/concept/quality.test.ts",
@@ -1886,39 +1710,32 @@
         "title": "tests/concept/quality.test.ts"
       },
       {
-        "id": "c:atomic-baseline-write",
-        "label": "안전한 저장",
-        "type": "concept",
-        "href": "#/concept/atomic-baseline-write",
-        "title": "atomic-baseline-write"
-      },
-      {
-        "id": "p:src/util/atomicWrite.ts",
-        "label": "atomicWrite.ts",
+        "id": "p:tests/concept/quality-gate.test.ts",
+        "label": "quality-gate.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/util/atomicWrite.ts"
+        "title": "tests/concept/quality-gate.test.ts"
       },
       {
-        "id": "p:src/init/ensureConfigDefaults.ts",
-        "label": "ensureConfigDefaults.ts",
+        "id": "p:tests/concept/pendingConflicts.test.ts",
+        "label": "pendingConflicts.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/init/ensureConfigDefaults.ts"
+        "title": "tests/concept/pendingConflicts.test.ts"
       },
       {
-        "id": "p:tests/init/alignmentGitignore.test.ts",
-        "label": "alignmentGitignore.test.ts",
+        "id": "p:tests/concept/attest.test.ts",
+        "label": "attest.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/init/alignmentGitignore.test.ts"
+        "title": "tests/concept/attest.test.ts"
       },
       {
-        "id": "p:tests/init/ensureConfigDefaults.test.ts",
-        "label": "ensureConfigDefaults.test.ts",
+        "id": "p:tests/concept/approve.test.ts",
+        "label": "approve.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/init/ensureConfigDefaults.test.ts"
+        "title": "tests/concept/approve.test.ts"
       },
       {
         "id": "c:generated-not-hand-edited",
@@ -1933,20 +1750,6 @@
         "type": "file",
         "href": "",
         "title": "src/viewer/render.ts"
-      },
-      {
-        "id": "p:scripts/build.mjs",
-        "label": "build.mjs",
-        "type": "file",
-        "href": "",
-        "title": "scripts/build.mjs"
-      },
-      {
-        "id": "p:scripts/release.mjs",
-        "label": "release.mjs",
-        "type": "file",
-        "href": "",
-        "title": "scripts/release.mjs"
       },
       {
         "id": "p:tests/init/packageScript.test.ts",
@@ -1970,6 +1773,20 @@
         "title": "tests/version/autoSync.test.ts"
       },
       {
+        "id": "p:scripts/release.mjs",
+        "label": "release.mjs",
+        "type": "file",
+        "href": "",
+        "title": "scripts/release.mjs"
+      },
+      {
+        "id": "p:scripts/build.mjs",
+        "label": "build.mjs",
+        "type": "file",
+        "href": "",
+        "title": "scripts/build.mjs"
+      },
+      {
         "id": "c:init-gate",
         "label": "초기화 관문",
         "type": "concept",
@@ -1977,18 +1794,25 @@
         "title": "init-gate"
       },
       {
-        "id": "p:tests/cli/requireInit.test.ts",
-        "label": "requireInit.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/cli/requireInit.test.ts"
-      },
-      {
         "id": "p:tests/init/referenceGitignore.test.ts",
         "label": "referenceGitignore.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/init/referenceGitignore.test.ts"
+      },
+      {
+        "id": "p:tests/init/alignmentGitignore.test.ts",
+        "label": "alignmentGitignore.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/init/alignmentGitignore.test.ts"
+      },
+      {
+        "id": "p:tests/cli/requireInit.test.ts",
+        "label": "requireInit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/requireInit.test.ts"
       },
       {
         "id": "c:plugin-version-sync",
@@ -2003,6 +1827,13 @@
         "type": "file",
         "href": "",
         "title": "src/init/syncGenerated.ts"
+      },
+      {
+        "id": "p:src/init/ensureConfigDefaults.ts",
+        "label": "ensureConfigDefaults.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/ensureConfigDefaults.ts"
       },
       {
         "id": "p:src/version/checkUpdate.ts",
@@ -2031,6 +1862,13 @@
         "type": "file",
         "href": "",
         "title": "src/version/autoSync.ts"
+      },
+      {
+        "id": "p:tests/init/ensureConfigDefaults.test.ts",
+        "label": "ensureConfigDefaults.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/init/ensureConfigDefaults.test.ts"
       },
       {
         "id": "p:tests/version/checkUpdate.test.ts",
@@ -2089,11 +1927,11 @@
         "title": "tests/drift/safe.test.ts"
       },
       {
-        "id": "c:viewer-local-write-guard",
-        "label": "뷰어 서버 보호",
+        "id": "c:concept-inline-edit",
+        "label": "뷰어에서 개념 고치기",
         "type": "concept",
-        "href": "#/concept/viewer-local-write-guard",
-        "title": "viewer-local-write-guard"
+        "href": "#/concept/concept-inline-edit",
+        "title": "concept-inline-edit"
       },
       {
         "id": "p:src/viewer/serve.ts",
@@ -2103,36 +1941,8 @@
         "title": "src/viewer/serve.ts"
       },
       {
-        "id": "c:concept-inline-edit",
-        "label": "개념 편집 화면",
-        "type": "concept",
-        "href": "#/concept/concept-inline-edit",
-        "title": "concept-inline-edit"
-      },
-      {
-        "id": "c:feature-index-row",
-        "label": "기능 목록 표시 규칙",
-        "type": "concept",
-        "href": "#/concept/feature-index-row",
-        "title": "feature-index-row"
-      },
-      {
-        "id": "p:tests/viewer/featureRoute.test.ts",
-        "label": "featureRoute.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/featureRoute.test.ts"
-      },
-      {
-        "id": "p:tests/viewer/listLayout.test.ts",
-        "label": "listLayout.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/listLayout.test.ts"
-      },
-      {
         "id": "c:home-search",
-        "label": "찾기",
+        "label": "찾아오기",
         "type": "concept",
         "href": "#/concept/home-search",
         "title": "home-search"
@@ -2159,13 +1969,6 @@
         "title": "src/viewer/graph.ts"
       },
       {
-        "id": "p:tests/viewer/highlight.test.ts",
-        "label": "highlight.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/highlight.test.ts"
-      },
-      {
         "id": "p:tests/viewer/copyPath.test.ts",
         "label": "copyPath.test.ts",
         "type": "file",
@@ -2173,8 +1976,22 @@
         "title": "tests/viewer/copyPath.test.ts"
       },
       {
+        "id": "p:tests/viewer/highlight.test.ts",
+        "label": "highlight.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/highlight.test.ts"
+      },
+      {
+        "id": "c:list-filter",
+        "label": "목록 좁히기",
+        "type": "concept",
+        "href": "#/concept/list-filter",
+        "title": "list-filter"
+      },
+      {
         "id": "c:viewer-navigation",
-        "label": "화면 사이 이동",
+        "label": "사람 선택 우선",
         "type": "concept",
         "href": "#/concept/viewer-navigation",
         "title": "viewer-navigation"
@@ -2195,17 +2012,10 @@
       },
       {
         "id": "c:viewer-readability",
-        "label": "훑기와 읽기",
+        "label": "누구나 같은 품으로 읽기",
         "type": "concept",
         "href": "#/concept/viewer-readability",
         "title": "viewer-readability"
-      },
-      {
-        "id": "p:tests/viewer/detailTitle.test.ts",
-        "label": "detailTitle.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/detailTitle.test.ts"
       },
       {
         "id": "p:tests/viewer/heroSummary.test.ts",
@@ -2213,6 +2023,13 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/heroSummary.test.ts"
+      },
+      {
+        "id": "p:tests/viewer/detailTitle.test.ts",
+        "label": "detailTitle.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/detailTitle.test.ts"
       }
     ],
     "edges": [
@@ -2233,11 +2050,6 @@
       },
       {
         "source": "f:concept-audit",
-        "target": "c:audit-gap-detection",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:concept-audit",
         "target": "c:concept-code-mapping",
         "kind": "feature-concept"
       },
@@ -2248,7 +2060,7 @@
       },
       {
         "source": "f:concept-definition",
-        "target": "c:concept-aliases",
+        "target": "c:globally-unique-slug",
         "kind": "feature-concept"
       },
       {
@@ -2273,17 +2085,12 @@
       },
       {
         "source": "f:consistency-check",
-        "target": "c:pending-conflict-tracking",
+        "target": "c:settled-status",
         "kind": "feature-concept"
       },
       {
         "source": "f:consistency-check",
         "target": "c:reference-first-duty",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:drift-detection",
-        "target": "c:contract-hash",
         "kind": "feature-concept"
       },
       {
@@ -2299,11 +2106,6 @@
       {
         "source": "f:feature-registry",
         "target": "c:globally-unique-slug",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:feature-registry",
-        "target": "c:feature-index-row",
         "kind": "feature-concept"
       },
       {
@@ -2342,11 +2144,6 @@
         "kind": "feature-concept"
       },
       {
-        "source": "f:safe-storage",
-        "target": "c:atomic-baseline-write",
-        "kind": "feature-concept"
-      },
-      {
         "source": "f:viewer-concept-detail",
         "target": "c:viewer-readability",
         "kind": "feature-concept"
@@ -2354,11 +2151,6 @@
       {
         "source": "f:viewer-concept-editing",
         "target": "c:concept-inline-edit",
-        "kind": "feature-concept"
-      },
-      {
-        "source": "f:viewer-concept-editing",
-        "target": "c:viewer-local-write-guard",
         "kind": "feature-concept"
       },
       {
@@ -2373,7 +2165,7 @@
       },
       {
         "source": "f:viewer-concept-list",
-        "target": "c:feature-index-row",
+        "target": "c:feature-spec-bridge",
         "kind": "feature-concept"
       },
       {
@@ -2388,12 +2180,12 @@
       },
       {
         "source": "f:viewer-navigation",
-        "target": "c:home-search",
+        "target": "c:viewer-readability",
         "kind": "feature-concept"
       },
       {
         "source": "f:viewer-navigation",
-        "target": "c:viewer-readability",
+        "target": "c:list-filter",
         "kind": "feature-concept"
       },
       {
@@ -2403,113 +2195,18 @@
       },
       {
         "source": "f:viewer-search",
-        "target": "c:concept-aliases",
+        "target": "c:list-filter",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:viewer-search",
+        "target": "c:globally-unique-slug",
         "kind": "feature-concept"
       },
       {
         "source": "f:viewer-search",
         "target": "c:viewer-readability",
         "kind": "feature-concept"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:src/audit/gaps.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:src/audit/audit.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:src/util/glob.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:src/audit/tracked.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:src/mapping/leadingComment.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/audit/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/audit/gaps.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/cli/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/mapping/scan.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/util/glob.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:audit-gap-detection",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:src/schema/concept.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:src/store/conceptStore.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:src/viewer/manifest.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:tests/concept/aliases.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-aliases",
-        "target": "p:tests/viewer/search.test.ts",
-        "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
@@ -2523,7 +2220,22 @@
       },
       {
         "source": "c:concept-code-mapping",
-        "target": "p:tests/cli/cli.test.ts",
+        "target": "p:src/audit/gaps.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/audit/audit.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/util/glob.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/audit/tracked.ts",
         "kind": "concept-file"
       },
       {
@@ -2533,12 +2245,47 @@
       },
       {
         "source": "c:concept-code-mapping",
-        "target": "p:tests/viewer/renderDisk.test.ts",
+        "target": "p:tests/util/glob.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
         "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/cli/audit.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/audit/gaps.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/schema/initConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/viewer/renderDisk.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/audit/audit.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2573,17 +2320,7 @@
       },
       {
         "source": "c:concept-driven-tests",
-        "target": "p:tests/cli/testReview.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
-        "target": "p:tests/concept/testReview.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:src/hooks/preToolUse.ts",
         "kind": "concept-file"
       },
       {
@@ -2593,7 +2330,7 @@
       },
       {
         "source": "c:concept-driven-tests",
-        "target": "p:tests/schema/initConfig.test.ts",
+        "target": "p:tests/cli/testReview.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2603,7 +2340,17 @@
       },
       {
         "source": "c:concept-driven-tests",
-        "target": "p:src/hooks/preToolUse.ts",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/schema/initConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/concept/testReview.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2638,11 +2385,6 @@
       },
       {
         "source": "c:concept-scope",
-        "target": "p:tests/concept/implementationLeak.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-scope",
         "target": "p:tests/cli/quality.test.ts",
         "kind": "concept-file"
       },
@@ -2652,73 +2394,28 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:contract-hash",
+        "source": "c:concept-scope",
+        "target": "p:tests/concept/implementationLeak.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:src/drift/hash.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:contract-hash",
+        "source": "c:drift-reconcile",
         "target": "p:src/drift/detect.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:contract-hash",
+        "source": "c:drift-reconcile",
         "target": "p:src/drift/lock.ts",
         "kind": "concept-file"
       },
       {
-        "source": "c:contract-hash",
+        "source": "c:drift-reconcile",
         "target": "p:src/drift/note.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/drift/history.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/drift/lock.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/schema/alignment.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/drift/hash.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/concept/aliases.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/drift/detect.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:contract-hash",
-        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2733,42 +2430,7 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:src/drift/detect.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:src/schema/alignment.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/drift/history.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/schema/alignment.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:src/drift/follow.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/drift/reconcile.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2778,7 +2440,42 @@
       },
       {
         "source": "c:drift-reconcile",
+        "target": "p:src/drift/follow.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:src/hooks/gates/driftGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/detect.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/reconcile.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/lock.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/concept/aliases.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/history.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2788,7 +2485,22 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/drift/detect.test.ts",
+        "target": "p:tests/drift/hash.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/schema/alignment.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2813,12 +2525,27 @@
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/postToolUse.test.ts",
+        "target": "p:tests/drift/detect.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/drift/reconcile.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/viewer/featureRoute.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/viewer/manifest.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2828,7 +2555,12 @@
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/store/featureStore.test.ts",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2843,22 +2575,27 @@
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/drift/detect.test.ts",
+        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:feature-spec-bridge",
         "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/store/featureStore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
       {
@@ -2878,27 +2615,22 @@
       },
       {
         "source": "c:globally-unique-slug",
+        "target": "p:src/viewer/manifest.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
         "target": "p:tests/cli/feature.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:globally-unique-slug",
-        "target": "p:tests/schema/concept.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:globally-unique-slug",
-        "target": "p:tests/schema/feature.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:globally-unique-slug",
-        "target": "p:tests/store/featureStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:globally-unique-slug",
-        "target": "p:tests/viewer/graph.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2908,7 +2640,42 @@
       },
       {
         "source": "c:globally-unique-slug",
+        "target": "p:tests/concept/aliases.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/schema/concept.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
         "target": "p:tests/viewer/manifest.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/schema/feature.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/viewer/search.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/viewer/heroAliases.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/viewer/graph.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/store/featureStore.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2933,17 +2700,22 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/attestGate.ts",
+        "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/init/scaffold.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/sessionStart.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
         "target": "p:src/hooks/gates/conceptSlugs.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/conceptlessGate.ts",
         "kind": "concept-file"
       },
       {
@@ -2958,7 +2730,7 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/referenceGate.ts",
+        "target": "p:src/hooks/gates/attestGate.ts",
         "kind": "concept-file"
       },
       {
@@ -2973,32 +2745,37 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/unapprovedRedGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/hooks/gates/unknownTagsGate.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/init/scaffold.ts",
+        "target": "p:src/hooks/gates/conceptlessGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/driftGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/referenceGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/unapprovedRedGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
         "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/gates.modes.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3013,22 +2790,12 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/sessionStart.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/cli.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/driftGate.ts",
+        "target": "p:tests/hooks/gates.modes.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3083,6 +2850,21 @@
       },
       {
         "source": "c:output-locale",
+        "target": "p:tests/viewer/sidebarState.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:tests/init/scaffold.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:tests/init/readConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -3093,47 +2875,12 @@
       },
       {
         "source": "c:output-locale",
-        "target": "p:tests/i18n/messages.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:output-locale",
-        "target": "p:tests/init/readConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:output-locale",
-        "target": "p:tests/init/scaffold.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:output-locale",
         "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:output-locale",
-        "target": "p:tests/viewer/sidebarState.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:pending-conflict-tracking",
-        "target": "p:src/concept/pendingConflicts.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:pending-conflict-tracking",
-        "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:pending-conflict-tracking",
-        "target": "p:tests/concept/pendingConflicts.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:pending-conflict-tracking",
-        "target": "p:tests/hooks/preToolUse.test.ts",
+        "target": "p:tests/i18n/messages.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3153,12 +2900,7 @@
       },
       {
         "source": "c:reference-first-duty",
-        "target": "p:tests/cli/reference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-first-duty",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/init/referencePaths.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3168,7 +2910,12 @@
       },
       {
         "source": "c:reference-first-duty",
-        "target": "p:tests/init/referencePaths.test.ts",
+        "target": "p:tests/cli/reference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3193,7 +2940,27 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/audit/audit.test.ts",
+        "target": "p:src/concept/pendingConflicts.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/cli/quality.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/drift/detect.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/drift/reconcile.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3203,22 +2970,7 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/concept/approve.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/concept/attest.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/concept/pendingConflicts.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/concept/quality-gate.test.ts",
+        "target": "p:tests/concept/quality.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3228,12 +2980,12 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/hooks/postToolUse.test.ts",
+        "target": "p:tests/schema/concept.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/concept/quality-gate.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3243,7 +2995,12 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/schema/concept.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3253,12 +3010,32 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/viewer/serve.test.ts",
+        "target": "p:tests/audit/audit.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/concept/pendingConflicts.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/concept/attest.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/concept/approve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3269,181 +3046,6 @@
       {
         "source": "c:settled-status",
         "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/cli/quality.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/concept/quality.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/drift/detect.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/util/atomicWrite.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/store/conceptStore.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/store/featureStore.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/drift/lock.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/drift/history.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/concept/pendingConflicts.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/concept/attest.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/hooks/postToolUse.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/init/addReferencePath.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:src/init/ensureConfigDefaults.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/audit/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/cli/testReview.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/concept/approve.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/concept/pendingConflicts.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/concept/quality-gate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/drift/history.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/init/alignmentGitignore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/init/ensureConfigDefaults.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/store/featureStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/viewer/renderDisk.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/viewer/serve.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/store/conceptStore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/cli/quality.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/drift/detect.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:atomic-baseline-write",
-        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3458,21 +3060,6 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:scripts/build.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:scripts/release.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
         "target": "p:tests/init/packageScript.test.ts",
         "kind": "concept-file"
       },
@@ -3483,17 +3070,12 @@
       },
       {
         "source": "c:generated-not-hand-edited",
+        "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
         "target": "p:tests/init/syncGenerated.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/version/autoSync.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/viewer/renderDisk.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3503,12 +3085,32 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:tests/integration/smoke.test.ts",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/viewer/renderDisk.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/version/autoSync.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:generated-not-hand-edited",
         "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/release.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/build.mjs",
         "kind": "concept-file"
       },
       {
@@ -3523,12 +3125,12 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/audit.test.ts",
+        "target": "p:tests/init/referenceGitignore.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/cli.test.ts",
+        "target": "p:tests/cli/quality.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3538,42 +3140,7 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/reference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/cli/requireInit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/cli/testReview.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/concept/approve.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/concept/pendingConflicts.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/gates.modes.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/init/reference.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3583,32 +3150,7 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/init/readConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/init/reference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/init/referenceGitignore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
         "target": "p:tests/init/scaffold.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/init/syncGenerated.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/version/autoSync.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3618,7 +3160,67 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/quality.test.ts",
+        "target": "p:tests/init/syncGenerated.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/audit.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/requireInit.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/init/readConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/testReview.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/reference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/concept/pendingConflicts.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/version/autoSync.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/concept/approve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/gates.modes.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3653,7 +3255,7 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:scripts/release.mjs",
+        "target": "p:src/cli.ts",
         "kind": "concept-file"
       },
       {
@@ -3664,16 +3266,6 @@
       {
         "source": "c:plugin-version-sync",
         "target": "p:src/version/autoSync.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3693,12 +3285,17 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:tests/schema/initConfig.test.ts",
+        "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:tests/version/autoSync.test.ts",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3713,7 +3310,12 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:src/cli.ts",
+        "target": "p:tests/version/autoSync.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:scripts/release.mjs",
         "kind": "concept-file"
       },
       {
@@ -3733,12 +3335,37 @@
       },
       {
         "source": "c:reference-privacy",
+        "target": "p:src/init/addReferencePath.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
         "target": "p:src/hooks/gates/referenceGate.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:reference-privacy",
-        "target": "p:src/init/addReferencePath.ts",
+        "target": "p:tests/init/addReferencePath.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/init/referenceGitignore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/init/referencePaths.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/init/reference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/init/scaffold.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3754,31 +3381,6 @@
       {
         "source": "c:reference-privacy",
         "target": "p:tests/i18n/messages.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/addReferencePath.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/reference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/referenceGitignore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/referencePaths.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/scaffold.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3807,16 +3409,6 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:viewer-local-write-guard",
-        "target": "p:src/viewer/serve.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:viewer-local-write-guard",
-        "target": "p:tests/viewer/serve.test.ts",
-        "kind": "concept-file"
-      },
-      {
         "source": "c:concept-inline-edit",
         "target": "p:assets/viewer.js",
         "kind": "concept-file"
@@ -3824,6 +3416,11 @@
       {
         "source": "c:concept-inline-edit",
         "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-inline-edit",
+        "target": "p:src/viewer/serve.ts",
         "kind": "concept-file"
       },
       {
@@ -3837,58 +3434,23 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:feature-index-row",
-        "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:tests/viewer/graph.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:tests/viewer/manifest.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:tests/viewer/featureRoute.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:tests/viewer/listLayout.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-index-row",
-        "target": "p:assets/concept.css",
-        "kind": "concept-file"
-      },
-      {
         "source": "c:home-search",
         "target": "p:assets/viewer.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:home-search",
-        "target": "p:assets/sidebar.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:home-search",
-        "target": "p:tests/viewer/listLayout.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:home-search",
-        "target": "p:tests/viewer/sidebarState.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:home-search",
         "target": "p:tests/viewer/search.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
+        "target": "p:tests/viewer/listLayout.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:home-search",
+        "target": "p:assets/sidebar.js",
         "kind": "concept-file"
       },
       {
@@ -3903,17 +3465,12 @@
       },
       {
         "source": "c:knowledge-graph-view",
-        "target": "p:tests/viewer/graph.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:knowledge-graph-view",
         "target": "p:tests/viewer/subgraph.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:knowledge-graph-view",
-        "target": "p:tests/viewer/highlight.test.ts",
+        "target": "p:tests/viewer/graph.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3923,7 +3480,37 @@
       },
       {
         "source": "c:knowledge-graph-view",
+        "target": "p:tests/viewer/highlight.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:knowledge-graph-view",
         "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:list-filter",
+        "target": "p:assets/sidebar.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:list-filter",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:list-filter",
+        "target": "p:tests/viewer/sidebarState.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:list-filter",
+        "target": "p:tests/viewer/listLayout.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-navigation",
+        "target": "p:assets/sidebar.js",
         "kind": "concept-file"
       },
       {
@@ -3933,7 +3520,7 @@
       },
       {
         "source": "c:viewer-navigation",
-        "target": "p:assets/sidebar.js",
+        "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
@@ -3958,6 +3545,11 @@
       },
       {
         "source": "c:viewer-readability",
+        "target": "p:assets/topnav.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
         "target": "p:assets/concept.css",
         "kind": "concept-file"
       },
@@ -3973,12 +3565,7 @@
       },
       {
         "source": "c:viewer-readability",
-        "target": "p:assets/topnav.js",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:viewer-readability",
-        "target": "p:tests/viewer/listLayout.test.ts",
+        "target": "p:tests/viewer/heroSummary.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3988,7 +3575,7 @@
       },
       {
         "source": "c:viewer-readability",
-        "target": "p:tests/viewer/heroSummary.test.ts",
+        "target": "p:tests/viewer/listLayout.test.ts",
         "kind": "concept-file"
       },
       {

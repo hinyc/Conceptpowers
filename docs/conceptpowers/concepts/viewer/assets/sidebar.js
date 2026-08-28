@@ -69,7 +69,7 @@ var CPSidebar = (function () {
   // 곁 목록에는 지금 보고 있는 항목이 속한 묶음만 담는다 — 다른 묶음은 상단 묶음 메뉴로 간다.
   function sidebarListNode(activeSlug) {
     var t = state.t;
-    // 곁 목록에 서는 것은 개념뿐이다(feature-index-row) — 종류는 여기서 정한다.
+    // 곁 목록에 서는 것은 개념뿐이다(feature-spec-bridge) — 종류는 여기서 정한다.
     var active = { kind: 'concept', slug: activeSlug };
     var activeGroup = CPTopnav.activeGroupKey(state.manifest, active);
     var sections = conceptListSections(active, true, activeGroup);

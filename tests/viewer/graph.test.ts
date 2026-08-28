@@ -1,4 +1,4 @@
-// @concept:knowledge-graph-view @concept:feature-index-row @concept:feature-spec-bridge @concept:globally-unique-slug
+// @concept:knowledge-graph-view @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/graph.test.ts
 // 지식 그래프 데이터(buildGraphData)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -9,7 +9,7 @@
 //  - feature-spec-bridge interaction "지식 그래프는 이 기록이 적은 연결을 뿌리로 삼아 그린다"
 //    → 기능 기록의 concepts 목록이 기능→개념 엣지가 된다
 //    → 정의되지 않은 개념을 가리키는 항목은 매달 곳이 없으므로 선을 만들지 않는다
-//  - feature-index-row 불변 "기능 하나만 펼쳐 보는 전용 화면은 만들지 않는다 — 기능은 목록의
+//  - feature-spec-bridge 불변 "기능은 자기만 펼쳐 보는 전용 자리를 갖지 않는다 — 훑는 자리의
 //    줄과 지식 그래프의 점으로만 나타난다"
 //    → 기능 노드의 href는 색인 줄로 돌려보내는 기능 주소(#/feature/:slug)를 가리킨다
 //  - concept-code-mapping 정의 "개념 하나가 어느 파일들에 구현돼 있는지는, 코드에 붙은 표식을

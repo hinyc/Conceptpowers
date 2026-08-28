@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:init-gate @concept:atomic-baseline-write
+// @concept:concept-driven-tests @concept:init-gate
 // tests/cli/testReview.test.ts
 // attest-test-review 명령을 검증한다 — 개념 변경에 딸린 검사를 어떻게 처리했는지 남기는 기록.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -7,7 +7,7 @@
 //  - concept-driven-tests 불변 "검사를 함께 고쳤거나, 고칠 필요가 없다는 사유를 기록으로 남겼거나"
 //    → 고치지 않기로 한 판단(no-impact·no-tests)은 --note 없이 기록할 수 없다
 //    → 고쳤다(updated)는 기록은 어떤 검사를 고쳤는지 --tests 없이 남길 수 없다
-//  - atomic-baseline-write 불변 "실패를 감추지 않는다" → 상한을 넘는 --note는 exit 1이고 기존
+//  - 상위 기준 문서 "갈아 끼우기 방식"의 불변 "실패를 감추지 않는다" → 상한을 넘는 --note는 exit 1이고 기존
 //    기록이 훼손되지 않는다
 //  - "없는 slug·잘못된 --result는 exit 1"은 존재하지 않는 대상에 대한 방어다.
 import { describe, it, expect, beforeEach } from 'vitest';

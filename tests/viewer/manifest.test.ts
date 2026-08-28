@@ -1,4 +1,4 @@
-// @concept:generated-not-hand-edited @concept:feature-index-row @concept:globally-unique-slug
+// @concept:generated-not-hand-edited @concept:feature-spec-bridge @concept:globally-unique-slug
 // tests/viewer/manifest.test.ts
 // 뷰어 색인(buildManifest)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -8,11 +8,11 @@
 //    → 그룹 없는 개념 URL은 ../data/<slug>.json
 //  - concept-code-mapping 정의 "개념 하나가 어느 파일들에 구현돼 있는지는, 코드에 붙은 표식을 거꾸로
 //    모아 알아낸다" → 개념 엔트리의 codeLinks는 concept.codeLinks ∪ mapping이다 / mapping이 없으면 codeLinks만
-//  - feature-index-row 불변 "기능 줄에는 그 기능이 따르는 개념이 하나도 빠짐없이 붙는다"
+//  - feature-spec-bridge 불변 "기능이 나타나는 줄에는 그 기능이 따르는 개념이 하나도 빠짐없이 함께 드러난다"
 //    → 기능 엔트리가 따르는 개념 이름표를 전부 담는다
-//  - feature-index-row 허용 "한 줄에 붙은 개념 딱지를 눌러 그 개념 화면으로 가는 것"
+//  - feature-spec-bridge 허용 "한 줄에 붙은 개념 딱지를 눌러 그 개념 화면으로 가는 것"
 //    → 갈 곳이 없는(정의되지 않은) 개념 참조는 딱지로 담지 않는다
-//  - feature-index-row 제한 "기능 줄에 코드 경로를 늘어놓는 것" → 기능 엔트리는 코드 경로를 담지 않는다
+//  - feature-spec-bridge 제한 "기능 줄에 코드 경로를 늘어놓는 것" → 기능 엔트리는 코드 경로를 담지 않는다
 //  - output-locale 구성요소 "적용 대상: … 사용자에게 보이는 안내" → manifest가 locale을 담아 화면 언어의 근거가 된다
 import { describe, it, expect } from 'vitest';
 import { buildManifest } from '../../src/viewer/manifest.js';

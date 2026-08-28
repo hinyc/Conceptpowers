@@ -13,7 +13,7 @@
 //    → 기밀 reference 문서는 strict여도, light여도 ask다
 //  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
 //    → init.json이 깨져도 첫 위반에서 ask한다
-//  - "게이트 실행 실패는 findings가 비어 있어도 알린다"는 atomic-baseline-write 불변 "실패를 감추지
+//  - "게이트 실행 실패는 findings가 비어 있어도 알린다"는 상위 기준 문서 "갈아 끼우기 방식"의 불변 "실패를 감추지
 //    않는다"와 같은 태도를 문지기에 적용한 것이다.
 // governance-mode 개념의 불변 규칙에서 도출한 시나리오들. 각 테스트 이름 끝에 검증 규칙을 명시한다.
 import { describe, it, expect, beforeEach, vi } from 'vitest';

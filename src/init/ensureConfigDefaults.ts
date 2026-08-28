@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:atomic-baseline-write
+// @concept:plugin-version-sync
 // src/init/ensureConfigDefaults.ts
 // 새 플러그인 버전에서 생긴 설정 항목을 init.json에 기본값으로 보충한다.
 // 사람이 적어둔 값과 도구가 모르는 항목은 그대로 두고 빠진 항목만 덧붙인다.

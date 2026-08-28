@@ -1,9 +1,9 @@
-// @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // tests/audit/gaps.test.ts
-// 표식 없는 코드 찾아내기(audit-gap-detection)의 격차 판정을 임시 디렉터리 위에서 검증한다.
+// 표식 없는 코드 찾아내기(concept-code-mapping)의 격차 판정을 임시 디렉터리 위에서 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - 구성요소 "표식: 파일 첫머리에 적는 개념 이름표 — 따를 개념이 없다는 뜻의 \"없음\"도 표식으로 친다"
-//    → 태그 있는 파일 통과 / @concept:none도 통과 / 다중 태그도 통과
+//    → 태그 있는 파일 통과 / @concept:none 도 통과 / 다중 태그도 통과
 //  - 구성요소 "격차: 대상 파일 가운데 표식이 하나도 없는 것" + 허용 "격차로 잡힌 파일을 모아 사용자에게 알리는 것"
 //    → 태그 없는 코드 파일만 검출 / 섞여 있으면 없는 것만 반환
 //  - 구성요소 "대상: … 코드가 아닌 파일과 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
@@ -12,7 +12,7 @@
 //    → 삭제/부재 파일은 격차로 세지 않는다
 //  - 불변규칙 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 — 본문 속 문자열이나
 //    예시에 등장하는 표식 모양 글자는 표식이 아니다"
-//    → 선행 블록의 @concept:none은 인정 / 코드 줄 뒤 본문의 @concept:none은 인정 안 함
+//    → 선행 블록의 @concept:none 은 인정 안 함
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:contract-hash @concept:governance-mode @concept:output-locale @concept:reference-privacy @concept:reference-first-duty @concept:generated-not-hand-edited
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:feature-spec-bridge @concept:drift-reconcile @concept:governance-mode @concept:output-locale @concept:reference-privacy @concept:reference-first-duty @concept:generated-not-hand-edited
 // tests/hooks/sessionStart.test.ts
 // 세션 시작 컨텍스트(buildSessionStartOutput)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -6,7 +6,7 @@
 //    → init 안 된 프로젝트면 빈 출력 / init 되면 활성화 컨텍스트와 CLI 경로를 담는다
 //  - drift-reconcile 구성요소 "따라옴: … 하나라도 커밋에 함께 들어온 경우"
 //    → 활성화 컨텍스트에 커밋 패키징 규칙(스테이징 단위 게이트)을 담는다
-//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//  - drift-reconcile 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → drift가 있으면 <CONCEPT-DRIFT> 블록과 이유를 주입한다 / 없으면 블록이 없다
 //  - reference-first-duty 구성요소 "읽는 곳: 참고자료 폴더 안의 파일과, 경로 목록에 등록된 바깥 위치"
 //    → 사용자 자료가 있으면 참고자료 블록 / seed README만이면 블록 없음 / 등록 0이면 블록 없음

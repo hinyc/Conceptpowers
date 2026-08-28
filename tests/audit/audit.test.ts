@@ -1,13 +1,13 @@
-// @concept:audit-gap-detection @concept:settled-status @concept:atomic-baseline-write
+// @concept:concept-code-mapping @concept:settled-status
 // tests/audit/audit.test.ts
 // 개념↔코드 연결의 무결성(auditIntegrity)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - audit-gap-detection 구성요소 "표식: 파일 첫머리에 적는 개념 이름표 — 따를 개념이 없다는 뜻의
+//  - concept-code-mapping 구성요소 "표식: 파일 첫머리에 적는 개념 이름표 — 따를 개념이 없다는 뜻의
 //    \"없음\"도 표식으로 친다"
-//    → 존재하는 개념을 가리키는 태그는 통과 / 없는 개념을 가리키면 unknownTags / @concept:none은 미지 태그가 아니다
+//    → 존재하는 개념을 가리키는 태그는 통과 / 없는 개념을 가리키면 unknownTags / @concept:none 은 미지 태그가 아니다
 //  - settled-status 구성요소 "빨강(red): AI 추측 또는 미승인 / 노랑(pending): 사람이 쓴 초안"
 //    → red는 unapproved로, pending은 pending으로 갈라 보고한다 / 스테이징이 참조하는 red는 unapprovedRefs
-//  - audit-gap-detection 제한 "표식이 없다는 이유만으로 커밋을 막는 것"
+//  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것"
 //    → 미승인(red)을 보고하되 ok는 막지 않는다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';

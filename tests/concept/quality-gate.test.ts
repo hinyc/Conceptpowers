@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:atomic-baseline-write
+// @concept:settled-status
 // 초록 승격 가드(setConceptStatus)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - settled-status 불변 "초록이 되려면 두 가지가 갖춰져야 한다 — 지킬 수 있는 규칙이 실제로 적혀

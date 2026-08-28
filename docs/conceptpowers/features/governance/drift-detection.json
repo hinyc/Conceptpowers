@@ -4,7 +4,6 @@
   "title": "개념 어긋남 탐지와 결산",
   "description": "개념의 계약 부분만 지문으로 비교해 어긋남을 판정하고, 커밋 뒤 코드가 따라왔는지 결산해 기준선을 다시 맞춘다.",
   "concepts": [
-    "contract-hash",
     "drift-reconcile"
   ],
   "codePaths": [

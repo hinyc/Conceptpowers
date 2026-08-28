@@ -1,4 +1,4 @@
-// @concept:contract-hash
+// @concept:drift-reconcile
 import { createHash } from 'node:crypto';
 import type { Concept } from '../schema/concept.js';
 

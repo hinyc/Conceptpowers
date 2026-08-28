@@ -1609,5 +1609,221 @@
     "at": "2026-08-28T03:22:48.171Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "globally-unique-slug",
+    "hash": "3:26e0204fc772",
+    "prevHash": "a74530aeb70f",
+    "reason": "개념 별칭(concept-aliases)을 흡수 — 이름표와 별칭은 '개념을 가리키는 이름'이라는 한 대상을 필드로만 나눠 가지고 있었다",
+    "at": "2026-08-28T03:52:37.369Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "3:69b2b52f6545",
+    "prevHash": "536ce7b7e677",
+    "reason": "개념 없는 코드 감사(audit-gap-detection)를 흡수 — 둘 다 '코드 첫머리 표식'이라는 한 대상을 관리하며, 지도 만들기와 격차 찾기는 같은 상태의 두 동작이다",
+    "at": "2026-08-28T03:53:20.069Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "settled-status",
+    "hash": "3:40d543866df8",
+    "prevHash": "2:687f158be70e",
+    "reason": "충돌 기록(pending-conflict-tracking)을 흡수 — 충돌 기록의 불변 규칙 셋이 모두 상태 전이 규칙이라 개념 상태의 일부였다",
+    "at": "2026-08-28T03:53:56.246Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "3:f98dcbf5e830",
+    "prevHash": "6edf6d4c3f51",
+    "reason": "뷰어 서버 보호(viewer-local-write-guard)를 흡수 — 보호 규칙 전체가 '고치는 통로'의 접근 조건이라 편집 화면이 없으면 존재 이유가 없다",
+    "at": "2026-08-28T03:54:28.925Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "3:fa94f94b8f0f",
+    "prevHash": "2:bddfe96cdfe4",
+    "reason": "어긋남 판정 기준(contract-hash)을 흡수 — 판정 기준과 결산 절차가 같은 관리 대상(기준선 지문)을 나눠 가지고 있었다",
+    "at": "2026-08-28T03:55:33.735Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "feature-spec-bridge",
+    "hash": "3:70491ad40129",
+    "prevHash": "606b7250dfb4",
+    "reason": "기능 목록 표시 규칙(feature-index-row)에서 약속에 해당하는 부분(기능은 전용 화면을 갖지 않는다, 줄에 개념이 빠짐없이 붙는다)을 흡수하고, 화면 배치·표기 규칙은 상위 기준 문서로 내림",
+    "at": "2026-08-28T03:56:22.092Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-readability",
+    "hash": "3:5fcfb1164bbf",
+    "prevHash": "c6ee62a4f000",
+    "reason": "화면 배치·표기 규칙은 상위 기준 문서로 내리고, 약속에 해당하는 부분(항목이 늘어도 품이 늘지 않음·색에 기대지 않음·도구가 내용을 바꾸지 않음)만 남겨 하나의 목적으로 좁힘. 화면 사이 이동(viewer-navigation)의 '어느 너비에서든 목록에 닿는 길은 사라지지 않는다'도 같은 약속이라 여기로 옮김",
+    "at": "2026-08-28T03:57:57.056Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "viewer-navigation",
+    "hash": "3:e239a31dbfe7",
+    "prevHash": "",
+    "reason": "묶음 줄·펼침 목록 같은 화면 배치 규칙은 상위 기준 문서로 내리고, '목록에 닿는 길은 사라지지 않는다'는 누구나 같은 품으로 읽기로 옮긴 뒤, 남은 하나의 약속(사람이 직접 정한 선택을 도구가 뒤집지 않는다)으로 좁힘",
+    "at": "2026-08-28T03:58:28.406Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "home-search",
+    "hash": "3:0a8841576155",
+    "prevHash": "dc23149ed876",
+    "reason": "두 목적(없던 것을 찾아오기 / 있던 것을 좁히기)이 한 개념에 들어 있어 찾아오기만 남기고, 좁히기는 목록 좁히기(list-filter)로 분리",
+    "at": "2026-08-28T03:59:32.952Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "3:51b20a4a6f7a",
+    "prevHash": "bace9ae001de",
+    "reason": "병합·내림으로 사라진 개념 이름을 상호작용·관계에서 정리 (약속 밖 항목이라 계약 지문은 그대로)",
+    "at": "2026-08-28T04:03:24.863Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "3:d5ea0ae24fd6",
+    "prevHash": "dbb458bc5169",
+    "reason": "병합·내림으로 사라진 개념 이름을 상호작용·관계에서 정리 (약속 밖 항목이라 계약 지문은 그대로)",
+    "at": "2026-08-28T04:03:24.939Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-scope",
+    "hash": "3:fad8db1c941f",
+    "prevHash": "2:52cd5b3424ee",
+    "reason": "병합·내림으로 사라진 개념 이름을 상호작용·관계에서 정리 (약속 밖 항목이라 계약 지문은 그대로)",
+    "at": "2026-08-28T04:03:25.009Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "3:4e7b1ebfd691",
+    "prevHash": "b7f3b225de3a",
+    "reason": "병합·내림으로 사라진 개념 이름을 상호작용·관계에서 정리 (약속 밖 항목이라 계약 지문은 그대로)",
+    "at": "2026-08-28T04:03:25.085Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "3:73b980042e49",
+    "prevHash": "9a0b83e53882",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.126Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "3:be0910589a5f",
+    "prevHash": "026fadf4878b",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.202Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "3:0d9c99edb8ba",
+    "prevHash": "24eca08d0a21",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.265Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "output-locale",
+    "hash": "3:54f53b177430",
+    "prevHash": "582e42ab52d1",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.327Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-first-duty",
+    "hash": "3:02792f6ccd4e",
+    "prevHash": "9673a3dbd422",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.389Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "generated-not-hand-edited",
+    "hash": "3:0aab1909a951",
+    "prevHash": "34e7fa7b82a9",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.456Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "init-gate",
+    "hash": "3:92782ff28dd3",
+    "prevHash": "99ea56612c8d",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.542Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "plugin-version-sync",
+    "hash": "3:87dd40f97056",
+    "prevHash": "3:d5ea0ae24fd6",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.608Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "reference-privacy",
+    "hash": "3:371e2b04dacf",
+    "prevHash": "842610b39e5c",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.679Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "untrusted-text-sanitization",
+    "hash": "3:8785e24cdf6c",
+    "prevHash": "3:51b20a4a6f7a",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.743Z",
+    "ignored": false,
+    "aligned": false
+  },
+  {
+    "slug": "knowledge-graph-view",
+    "hash": "3:060f2ceca012",
+    "prevHash": "3:4e7b1ebfd691",
+    "reason": "개념 자격 기준이 요구하는 관리 대상과 작동 원리를 본문에 이미 있던 내용에서 옮겨 적음 (새 규칙 추가 아님)",
+    "at": "2026-08-28T04:06:28.806Z",
+    "ignored": false,
+    "aligned": false
   }
 ]

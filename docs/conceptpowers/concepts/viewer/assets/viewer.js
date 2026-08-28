@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-index-row @concept:concept-aliases
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-spec-bridge @concept:globally-unique-slug
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -411,7 +411,7 @@ function relatedFeatures(slug) {
     return (f.concepts || []).indexOf(slug) !== -1;
   });
 }
-// 기능 색인 줄의 주소. 기능은 전용 화면 없이 목록의 줄로만 산다(feature-index-row).
+// 기능 색인 줄의 주소. 기능은 전용 화면 없이 목록의 줄로만 산다(feature-spec-bridge).
 // 라우트가 decodeURIComponent로 되읽으므로 인코딩해 넣어야 왕복이 대칭이다.
 function featureRowHref(slug) {
   return '#/group/__features/' + encodeURIComponent(slug);
@@ -618,7 +618,7 @@ function searchData(q) {
   q = q.toLowerCase();
   var m = state.manifest;
   var concepts = (m.concepts || []).filter(function (c) {
-    // 별칭도 함께 훑는다(concept-aliases) — 쓰던 말로 쳐도 같은 개념에 닿아야 한다.
+    // 별칭도 함께 훑는다(globally-unique-slug) — 쓰던 말로 쳐도 같은 개념에 닿아야 한다.
     // 걸리는 것은 별칭이지만 결과에 실리는 것은 개념 자체라 정식 이름으로 보인다.
     return (
       (
@@ -760,7 +760,7 @@ function conceptTable(items, showGroup) {
     ])
   );
 }
-// 기능 색인 줄(feature-index-row): 전용 화면 없이 줄 하나로만 보여준다.
+// 기능 색인 줄(feature-spec-bridge): 전용 화면 없이 줄 하나로만 보여준다.
 // 이름표·제목은 독립 칸을 지킨다(viewer-readability). 나가는 길은 둘 — 개념 딱지는 그 개념
 // 화면으로, 이름표는 그 기능에 초점을 맞춘 지식 그래프로. 코드 경로는 여기 늘어놓지 않는다.
 function featureRowId(slug) {
@@ -884,7 +884,7 @@ function featureListSection(focusSlug) {
   ]);
 }
 // 색인에서 스크롤할 곳: 초점 줄 → (기능이 삭제돼 줄이 없으면) 기능 구역 → 묶음 제목.
-// 옛 주소의 기능이 사라졌어도 아무 안내 없이 꼭대기에 떨구지 않는다(feature-index-row).
+// 옛 주소의 기능이 사라졌어도 아무 안내 없이 꼭대기에 떨구지 않는다(feature-spec-bridge).
 function indexScrollTarget(scrollTo, focusFeature) {
   if (focusFeature) {
     return (
@@ -1019,7 +1019,7 @@ function statusControl(slug, c) {
 // 펼쳐 본 화면의 제목 자리(viewer-readability). 제목은 이름표와 이름 하나로만 이루어지고,
 // 그 위나 옆에 부제 자리를 두지 않는다 — 옛 기록에 부제 값이 남아 있어도 되살리지 않는다.
 function conceptHero(slug, c) {
-  // 별칭은 있을 때만 자리를 만든다(concept-aliases) — 없으면 제목 아래가 바로 요약으로 이어져
+  // 별칭은 있을 때만 자리를 만든다(globally-unique-slug) — 없으면 제목 아래가 바로 요약으로 이어져
   // 항목마다 제목 아래 줄 수가 달라지지 않는다. 정식 이름보다 뒤에, "별칭"이라고 밝힌 채 낸다.
   var aliases = c.aliases || [];
   return h('header', { class: 'hero' }, [
@@ -1934,7 +1934,7 @@ function route() {
   var hash = window.location.hash.replace(/^#/, '') || '/';
   var parts = hash.split('/').filter(Boolean); // ['concept','slug'] 등
   if (parts[0] === 'concept' && parts[1]) return viewConcept(decodeURIComponent(parts[1]));
-  // 옛 기능 주소는 빈 화면을 두지 않고 색인 줄로 데려간다(feature-index-row).
+  // 옛 기능 주소는 빈 화면을 두지 않고 색인 줄로 데려간다(feature-spec-bridge).
   if (parts[0] === 'feature' && parts[1]) {
     window.location.replace(featureRowHref(decodeURIComponent(parts[1])));
     return;

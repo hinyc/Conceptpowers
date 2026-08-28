@@ -10,7 +10,7 @@
 //    → 사용자 커스텀 값은 보존하고 kept를 반환한다 / 기존 스크립트를 건드리지 않는다
 //  - plugin-version-sync 불변 "이미 존재하는 파일의 내용은 지우거나 바꾸지 않는다"
 //    → package.json이 없으면 no-package를 반환하고 파일을 만들지 않는다
-//  - "잘못된 JSON이면 에러를 던진다"는 atomic-baseline-write 불변 "실패를 감추지 않는다"와 같은 태도다.
+//  - "잘못된 JSON이면 에러를 던진다"는 상위 기준 문서 "갈아 끼우기 방식"의 불변 "실패를 감추지 않는다"와 같은 태도다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';

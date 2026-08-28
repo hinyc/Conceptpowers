@@ -1,4 +1,6 @@
-// @concept:atomic-baseline-write
+// @concept:none
+// 저장 방식(갈아 끼우기)은 약속이 아니라 약속을 지키는 방법이라 개념이 아니다 —
+// 규칙은 상위 기준 문서(architecture.md, "갈아 끼우기 방식")에 적혀 있다.
 import { writeFile, rename, mkdir, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 

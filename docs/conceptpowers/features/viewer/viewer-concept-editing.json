@@ -4,8 +4,7 @@
   "title": "뷰어에서 개념 편집",
   "description": "브라우저에서 개념 본문을 고쳐 저장한다. 확정 개념은 저장과 동시에 보류로 내려가며, 쓰기 요청은 로컬에서만 받는다.",
   "concepts": [
-    "concept-inline-edit",
-    "viewer-local-write-guard"
+    "concept-inline-edit"
   ],
   "codePaths": [
     "assets/viewer.js",

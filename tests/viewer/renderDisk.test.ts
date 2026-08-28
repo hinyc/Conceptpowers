@@ -1,4 +1,4 @@
-// @concept:generated-not-hand-edited @concept:settled-status @concept:atomic-baseline-write @concept:feature-spec-bridge @concept:concept-code-mapping
+// @concept:generated-not-hand-edited @concept:settled-status @concept:feature-spec-bridge @concept:concept-code-mapping
 // tests/viewer/renderDisk.test.ts
 // 뷰어 생성물을 디스크에 쓰는 render를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -72,7 +72,7 @@ it('manifest.json에 개념의 원본 JSON URL과 기능 색인 줄, 그래프�
   await renderViewerToDisk(root);
   const m = JSON.parse(readFileSync(viewer('manifest.json'), 'utf8'));
   expect(m.concepts[0].url).toBe('../data/auth/admin-role.json');
-  // 기능은 색인 줄로만 나타나므로(feature-index-row) 본문 URL 없이 따르는 개념만 담는다.
+  // 기능은 색인 줄로만 나타나므로(feature-spec-bridge) 본문 URL 없이 따르는 개념만 담는다.
   expect(m.features[0]).toMatchObject({ slug: 'login', concepts: ['admin-role'] });
   expect(m.features[0].url).toBeUndefined();
   expect(m.graph.nodes.some((n: { id: string }) => n.id === 'c:admin-role')).toBe(true);

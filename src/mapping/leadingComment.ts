@@ -1,4 +1,4 @@
-// @concept:concept-code-mapping @concept:audit-gap-detection
+// @concept:concept-code-mapping
 // src/mapping/leadingComment.ts
 // 파일의 선행 주석 블록(leading comment block)만 잘라낸다.
 // @concept 표식은 이 블록 안에서만 표식으로 인정된다 — 본문 속 문자열이나 예시에

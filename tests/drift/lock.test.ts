@@ -1,7 +1,7 @@
-// @concept:contract-hash
+// @concept:drift-reconcile
 // 정렬 기준선(lock) 읽기·쓰기를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - contract-hash 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
+//  - drift-reconcile 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → 쓰고 다시 읽으면 동일하다 (견줄 기준선이 그대로 보존된다) / 없으면 빈 객체
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
