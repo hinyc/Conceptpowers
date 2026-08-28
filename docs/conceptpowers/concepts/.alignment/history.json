@@ -1582,5 +1582,32 @@
     "at": "2026-08-28T02:23:29.450Z",
     "ignored": false,
     "aligned": false
+  },
+  {
+    "slug": "concept-scope",
+    "hash": "2:52cd5b3424ee",
+    "prevHash": "3:fad8db1c941f",
+    "reason": "개념의 네 요소(목적·관리 대상·행동·작동 원리)를 자격 기준에 명시하고, 규칙이 다른 개념 이름에 기대지 않도록 독립 기준을 추가",
+    "at": "2026-08-28T03:22:48.171Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "contract-hash",
+    "hash": "2:a207e322b900",
+    "prevHash": "3:e1c2cd7877a6",
+    "reason": "관리 대상·작동 원리를 약속(계약)에 포함하고, 약속 항목이 바뀌면 계산 규칙의 판을 함께 올린다는 규칙을 명시",
+    "at": "2026-08-28T03:22:48.171Z",
+    "ignored": false,
+    "aligned": true
+  },
+  {
+    "slug": "settled-status",
+    "hash": "2:687f158be70e",
+    "prevHash": "3:6104abdb24f5",
+    "reason": "품질 최소치가 관리 대상·작동 원리까지 요구하게 되어 초록 승격 조건 문구를 그에 맞춤",
+    "at": "2026-08-28T03:22:48.171Z",
+    "ignored": false,
+    "aligned": true
   }
 ]
