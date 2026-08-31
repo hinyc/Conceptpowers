@@ -320,5 +320,11 @@
       "tests/viewer/sidebarState.test.ts"
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+  },
+  "concept-code-binding": {
+    "hash": "3:833eb6e346a2",
+    "result": "no-tests",
+    "at": "2026-08-31T09:39:50.236Z",
+    "note": "신규 개념 — 에이전트 판단 규칙(코드 결속 갈래)이라 아직 딸린 테스트 없음, 사용자 커밋 승인"
   }
 }

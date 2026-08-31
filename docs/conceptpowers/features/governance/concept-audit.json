@@ -4,7 +4,8 @@
   "title": "개념 없는 코드 감사와 매핑",
   "description": "표식이 없는 코드 파일을 격차로 찾아내고, 코드에 달린 개념 표식을 훑어 개념→코드 역방향 지도를 만든다.",
   "concepts": [
-    "concept-code-mapping"
+    "concept-code-mapping",
+    "concept-code-binding"
   ],
   "codePaths": [
     "src/audit/gaps.ts",

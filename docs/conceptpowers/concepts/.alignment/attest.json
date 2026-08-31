@@ -635,5 +635,34 @@
       "viewer-navigation",
       "viewer-readability"
     ]
+  },
+  "concept-code-binding": {
+    "hash": "3:833eb6e346a2",
+    "result": "pass",
+    "at": "2026-08-31T09:37:45.933Z",
+    "compared": [
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
+    ]
   }
 }

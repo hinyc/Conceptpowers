@@ -3,6 +3,23 @@
   "locale": "ko",
   "concepts": [
     {
+      "slug": "concept-code-binding",
+      "group": "governance",
+      "title": "개념별 코드 자리",
+      "status": "green",
+      "category": [
+        "behavior",
+        "term"
+      ],
+      "aliases": [],
+      "url": "../data/governance/concept-code-binding.json",
+      "codeLinks": [
+        "skills/check-concept/SKILL.md",
+        "skills/update-mapping/SKILL.md",
+        "skills/audit/SKILL.md"
+      ]
+    },
+    {
       "slug": "concept-code-mapping",
       "group": "governance",
       "title": "개념↔코드 연결",
@@ -599,7 +616,8 @@
       "title": "개념 없는 코드 감사와 매핑",
       "description": "표식이 없는 코드 파일을 격차로 찾아내고, 코드에 달린 개념 표식을 훑어 개념→코드 역방향 지도를 만든다.",
       "concepts": [
-        "concept-code-mapping"
+        "concept-code-mapping",
+        "concept-code-binding"
       ]
     },
     {
@@ -896,6 +914,34 @@
         "type": "feature",
         "href": "#/feature/viewer-search",
         "title": "viewer-search"
+      },
+      {
+        "id": "c:concept-code-binding",
+        "label": "개념별 코드 자리",
+        "type": "concept",
+        "href": "#/concept/concept-code-binding",
+        "title": "concept-code-binding"
+      },
+      {
+        "id": "p:skills/check-concept/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/check-concept/SKILL.md"
+      },
+      {
+        "id": "p:skills/update-mapping/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-mapping/SKILL.md"
+      },
+      {
+        "id": "p:skills/audit/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/audit/SKILL.md"
       },
       {
         "id": "c:concept-code-mapping",
@@ -2054,6 +2100,11 @@
         "kind": "feature-concept"
       },
       {
+        "source": "f:concept-audit",
+        "target": "c:concept-code-binding",
+        "kind": "feature-concept"
+      },
+      {
         "source": "f:concept-definition",
         "target": "c:concept-scope",
         "kind": "feature-concept"
@@ -2207,6 +2258,21 @@
         "source": "f:viewer-search",
         "target": "c:viewer-readability",
         "kind": "feature-concept"
+      },
+      {
+        "source": "c:concept-code-binding",
+        "target": "p:skills/check-concept/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-binding",
+        "target": "p:skills/update-mapping/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-binding",
+        "target": "p:skills/audit/SKILL.md",
+        "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
@@ -3585,5 +3651,5 @@
       }
     ]
   },
-  "generatorVersion": "1.10.3"
+  "generatorVersion": "1.10.0"
 }

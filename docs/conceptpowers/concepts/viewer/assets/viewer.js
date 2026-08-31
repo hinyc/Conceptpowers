@@ -925,11 +925,11 @@ function viewIndex(scrollTo, focusFeature) {
       h('header', { class: 'hero' }, [
         h('div', { class: 'hero__top' }, [h('h1', null, t.appTitle), statusLegend()]),
         h('nav', { class: 'pagenav' }, [
+          h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'),
+          ' · ',
           h('a', { href: '#/architecture' }, t.architecture),
           ' · ',
           h('a', { href: '#/infra' }, t.infra),
-          ' · ',
-          h('a', { class: 'graph-link', href: '#/graph' }, t.openGraph + ' →'),
         ]),
         searchIn,
       ]),
