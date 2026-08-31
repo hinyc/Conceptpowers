@@ -9,7 +9,7 @@ description: Use after init when the user wants guided setup ("auto", "다음 �
 > until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
 Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된다 — 기준 문서(baseline, 상위 기준) 없이
-개념을 정의하거나, reference 없이 후보를 뽑거나, 매핑 없이 감사하면 결과가 부실해진다.
+개념을 정의하거나, reference 없이 후보를 뽑거나, 감사 없이 매핑하면 결과가 부실해진다.
 이 스킬은 그 순서를 대신 기억한다: 현재 단계를 진단하고, **기준 문서(baseline) → define → audit →
 mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사용자에게 진행 여부를 묻는다.
 
@@ -33,7 +33,9 @@ mapping** 순서로 기존 스킬을 호출하며, 매 단계 경계에서 사�
 2. **reference**: `reference/`가 비었는지 확인 — 파일 없음(스캐폴드 `README.md`뿐)이고 `paths.md`의 외부 경로 항목도 없으면 빈 것으로 본다. **존재 확인만 한다(디렉터리 목록·paths.md 항목 유무) — 내용은 읽지 않는다.** reference 내용은 오직 개념 정의·업그레이드 시점(define-concept/check-consistency)에만 읽는다. 비었으면 Stage 2에서 파일 추가 또는 **외부 로컬 경로 등록(paths.md, 여러 개 가능)**을 제안한다.
 3. **개념**: `concepts/data/` 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red).
 4. **feature**: `features/` 스펙 개수.
-5. **integrity**: `node "<cli>" audit --root . <source files...>` — unknownTags·미태깅 gap.
+5. **integrity**: `node "<cli>" audit --root .` — **파일 인자 없이** 호출해야 전체 스캔 모드로
+   unknownTags와 미태깅 gap(conceptless)이 모두 나온다(파일 인자를 주면 태그 정합성만 검사하고
+   gap 탐지는 건너뛴다). gap·오류가 있으면 exit 1을 반환하는데, 이는 진단 데이터이지 실행 실패가 아니다.
    (CLI 경로는 `CONCEPTPOWERS-ACTIVE` 세션 컨텍스트 또는 플러그인 dist.)
 
 결과를 **단계 지도**로 보고한다 — 각 단계가 완료/부분/미시작인지, auto가 어디서부터
