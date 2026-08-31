@@ -228,7 +228,7 @@ surfaced them.
 
 ### Full project scan (mid-project adoption)
 
-Adopting Conceptpowers on an existing project? `init` **strict** mode runs a _full scan_: it enumerates features by walking every button/action **and** analyzing on-screen content, then infers a (red) concept for each uncovered feature. This is thorough but **time- and token-intensive on large projects** — the init skill warns you before running it, and incremental backfill remains the default.
+Adopting Conceptpowers on an existing project? `init` **strict** mode runs a _full scan_: it enumerates features by walking every button/action **and** analyzing on-screen content, then infers a (red) concept for each **promise** those features make that no existing concept covers — one concept can serve many features. This is thorough but **time- and token-intensive on large projects** — the init skill warns you before running it, and incremental backfill remains the default.
 
 ### init.json settings
 

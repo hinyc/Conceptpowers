@@ -62,5 +62,5 @@ User-authored concepts do NOT come here — they go pending → green via `conce
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
 After `render`, always end with a clickable viewer link (render prints the path + serve command).
-Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/feature/<slug>` / `#/architecture` —
+Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/group/__features/<slug>` / `#/architecture` —
 otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.

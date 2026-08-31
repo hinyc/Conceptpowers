@@ -5,6 +5,9 @@ description: Use when the user wants to register reference material located outs
 
 # Conceptpowers: Add Reference Path
 
+> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
+> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
+
 Register local folders or files that the agent should consult **when authoring, upgrading, or
 verifying a concept** (define-concept / check-consistency). Paths are recorded in
 `docs/conceptpowers/reference/paths.md`; the material itself is never copied into the repo.

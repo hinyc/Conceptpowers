@@ -143,19 +143,19 @@
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "output-locale": {
-    "hash": "2:6bda9b859b20",
-    "result": "updated",
-    "at": "2026-08-28T04:09:31.103Z",
+    "hash": "3:dc3ce369ff7d",
+    "result": "no-impact",
+    "at": "2026-08-31T05:07:25.848Z",
     "tests": [
-      "tests/cli/cli.test.ts",
-      "tests/hooks/sessionStart.test.ts",
       "tests/i18n/messages.test.ts",
       "tests/init/readConfig.test.ts",
+      "tests/cli/cli.test.ts",
       "tests/init/scaffold.test.ts",
       "tests/schema/initConfig.test.ts",
+      "tests/hooks/sessionStart.test.ts",
       "tests/viewer/sidebarState.test.ts"
     ],
-    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+    "note": "적용 범위를 덜어내는 변경 — 기존 시나리오는 불변 규칙 1·2를 그대로 검사하고 유효하며, 신설 규칙 3은 의무를 더하지 않고 범위를 축소하는 조항이라 엔진에 검사할 코드 경로가 없다(도구는 자기 지시문을 생성하거나 번역하지 않음). 사용자 확인 완료."
   },
   "pending-conflict-tracking": {
     "hash": "bf1404011a90",

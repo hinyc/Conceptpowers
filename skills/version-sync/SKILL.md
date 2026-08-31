@@ -20,8 +20,9 @@ skill brings them current.
 - Any time — it is safe to re-run: when the stamped artifacts already match the installed plugin,
   the command **does nothing** and reports `{"skipped": true, "reason": "up-to-date"}`.
 
-> **Same version → no-op (concept `plugin-version-sync`).** Re-generating at an equal version is a
-> `restrict`. It matters in projects whose generation _source_ is ahead of the installed release —
+> **Same version → no-op (concept `plugin-version-sync`).** 그 개념이 허용하는 것은
+> "버전 도장이 깔린 도구와 **다를 때만** 생성물을 다시 만드는 것"이다 — 같은 버전에서의 재생성은
+> 허용 범위 밖이다. It matters in projects whose generation _source_ is ahead of the installed release —
 > notably the Conceptpowers repository itself, where a same-version re-render silently reverts local
 > `assets/` edits. Pass `--force` only when you deliberately want to overwrite the artifacts from
 > the installed release.
