@@ -104,7 +104,6 @@
         "src/drift/follow.ts",
         "src/hooks/gates/driftGate.ts",
         "tests/drift/detect.test.ts",
-        "tests/drift/reconcile.test.ts",
         "tests/cli/cli.test.ts",
         "tests/drift/lock.test.ts",
         "tests/concept/aliases.test.ts",
@@ -114,7 +113,8 @@
         "tests/schema/alignment.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/drift/reconcile.test.ts"
       ]
     },
     {
@@ -133,7 +133,6 @@
         "src/store/featureStore.ts",
         "tests/cli/feature.test.ts",
         "tests/drift/detect.test.ts",
-        "tests/drift/reconcile.test.ts",
         "tests/integration/smoke.test.ts",
         "tests/viewer/featureRoute.test.ts",
         "tests/viewer/manifest.test.ts",
@@ -146,7 +145,8 @@
         "tests/hooks/preToolUse.test.ts",
         "tests/store/featureStore.test.ts",
         "assets/viewer.js",
-        "assets/concept.css"
+        "assets/concept.css",
+        "tests/drift/reconcile.test.ts"
       ]
     },
     {
@@ -299,7 +299,6 @@
         "src/concept/pendingConflicts.ts",
         "tests/cli/quality.test.ts",
         "tests/drift/detect.test.ts",
-        "tests/drift/reconcile.test.ts",
         "tests/integration/smoke.test.ts",
         "tests/cli/cli.test.ts",
         "tests/concept/quality.test.ts",
@@ -317,7 +316,8 @@
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/store/conceptStore.test.ts",
-        "assets/viewer.js"
+        "assets/viewer.js",
+        "tests/drift/reconcile.test.ts"
       ]
     },
     {
@@ -1255,13 +1255,6 @@
         "title": "tests/drift/detect.test.ts"
       },
       {
-        "id": "p:tests/drift/reconcile.test.ts",
-        "label": "reconcile.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/reconcile.test.ts"
-      },
-      {
         "id": "p:tests/drift/lock.test.ts",
         "label": "lock.test.ts",
         "type": "file",
@@ -1309,6 +1302,13 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/postToolUse.test.ts"
+      },
+      {
+        "id": "p:tests/drift/reconcile.test.ts",
+        "label": "reconcile.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/reconcile.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -2455,11 +2455,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -2509,6 +2504,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/reconcile.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:feature-spec-bridge",
         "target": "p:src/schema/feature.ts",
         "kind": "concept-file"
@@ -2526,11 +2526,6 @@
       {
         "source": "c:feature-spec-bridge",
         "target": "p:tests/drift/detect.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/drift/reconcile.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2596,6 +2591,11 @@
       {
         "source": "c:feature-spec-bridge",
         "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/drift/reconcile.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2955,11 +2955,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/drift/reconcile.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
@@ -3046,6 +3041,11 @@
       {
         "source": "c:settled-status",
         "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/drift/reconcile.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3585,5 +3585,5 @@
       }
     ]
   },
-  "generatorVersion": "1.9.3"
+  "generatorVersion": "1.10.0"
 }
