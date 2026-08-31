@@ -8,17 +8,23 @@ import { normalizeRel } from './safe.js';
 import { isEngagedWithTags, isFollowedWithTags, presentTagSlugs } from './follow.js';
 import { pendingConceptDocs } from './pendingDocs.js';
 import { readInitConfig } from '../init/readConfig.js';
+import { pruneAttestLog } from '../concept/attest.js';
+import { pruneTestReviewLog } from '../concept/testReview.js';
+import { prunePendingConflicts } from '../concept/pendingConflicts.js';
 import { defaultIgnoreGlobs } from '../schema/initConfig.js';
 import type { AlignmentLock } from '../schema/alignment.js';
 
 export interface ReconcileResult {
   aligned: string[];
   ignored: string[];
+  /** 사라진 개념이라 낡은 기록에서 지워진 slug 목록(중복 없음) */
+  pruned: string[];
 }
 
 // 커밋 성공 후 호출. drift였던 개념을 "코드가 따라옴(aligned)" 또는 "override(ignored)"로
 // 분류하고, 어느 쪽이든 lock을 현재 해시로 재조정한다. 신규 개념은 등록하고,
-// 삭제된 개념의 stale lock 항목은 정리한다.
+// 삭제된 개념의 낡은 기록(기준선·검사 증빙·테스트 검토·충돌 사유)은 모두 정리한다 —
+// 어느 한 곳만 지우면 사라진 개념의 흔적이 남아 "낡은 기록이 쌓이지 않는다"는 약속이 깨진다.
 export async function reconcileAfterCommit(
   root: string,
   committedFiles: string[],
@@ -92,5 +98,15 @@ export async function reconcileAfterCommit(
   );
   await appendHistoryMany(root, entries);
   await writeLock(root, cleaned);
-  return { aligned, ignored };
+  // 기준선 밖의 기록도 같은 잣대로 정리한다. 각 정리는 지울 것이 없으면 파일에 손대지 않는다.
+  const pruned = new Set(
+    (
+      await Promise.all([
+        pruneAttestLog(root, slugs),
+        pruneTestReviewLog(root, slugs),
+        prunePendingConflicts(root, slugs),
+      ])
+    ).flat()
+  );
+  return { aligned, ignored, pruned: [...pruned] };
 }

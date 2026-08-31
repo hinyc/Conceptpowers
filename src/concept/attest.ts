@@ -44,6 +44,21 @@ export async function recordAttest(
   return entry;
 }
 
+// 사라진 개념의 낡은 증빙을 지운다. 지운 slug를 돌려주고, 지울 것이 없으면 파일에 손대지 않는다.
+export async function pruneAttestLog(
+  root: string,
+  liveSlugs: ReadonlySet<string>
+): Promise<string[]> {
+  const log = await readAttestLog(root);
+  const dead = Object.keys(log).filter((slug) => !liveSlugs.has(slug));
+  if (dead.length === 0) return [];
+  const next: AttestLog = Object.fromEntries(
+    Object.entries(log).filter(([slug]) => liveSlugs.has(slug))
+  );
+  await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + '\n');
+  return dead;
+}
+
 export function freshPassAttest(log: AttestLog, concept: Concept): boolean {
   const entry = log[concept.slug];
   return !!entry && entry.result === 'pass' && entry.hash === contractHash(concept);

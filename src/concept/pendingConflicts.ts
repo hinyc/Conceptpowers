@@ -33,3 +33,18 @@ export async function clearPendingConflict(root: string, slug: string): Promise<
   delete next[slug];
   await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + '\n');
 }
+
+// 사라진 개념의 낡은 충돌 사유를 지운다. 증빙·검토 기록과 같은 규칙이다.
+export async function prunePendingConflicts(
+  root: string,
+  liveSlugs: ReadonlySet<string>
+): Promise<string[]> {
+  const current = await readPendingConflicts(root);
+  const dead = Object.keys(current).filter((slug) => !liveSlugs.has(slug));
+  if (dead.length === 0) return [];
+  const next: PendingConflicts = Object.fromEntries(
+    Object.entries(current).filter(([slug]) => liveSlugs.has(slug))
+  );
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + '\n');
+  return dead;
+}

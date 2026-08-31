@@ -46,6 +46,21 @@ export async function recordTestReview(
   return entry;
 }
 
+// 사라진 개념의 낡은 검토 기록을 지운다. 증빙(attest)과 같은 규칙이다.
+export async function pruneTestReviewLog(
+  root: string,
+  liveSlugs: ReadonlySet<string>
+): Promise<string[]> {
+  const log = await readTestReviewLog(root);
+  const dead = Object.keys(log).filter((slug) => !liveSlugs.has(slug));
+  if (dead.length === 0) return [];
+  const next: TestReviewLog = Object.fromEntries(
+    Object.entries(log).filter(([slug]) => liveSlugs.has(slug))
+  );
+  await writeFileAtomic(cpPaths(root).testReviewFile, JSON.stringify(next, null, 2) + '\n');
+  return dead;
+}
+
 // 지금의 개념 계약에 붙은 기록만 유효하다 — 개념을 다시 고치면 지난 기록은 효력을 잃는다.
 export function freshTestReview(log: TestReviewLog, concept: Concept): boolean {
   const entry = log[concept.slug];

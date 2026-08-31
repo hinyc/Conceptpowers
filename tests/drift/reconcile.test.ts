@@ -11,6 +11,10 @@
 //    → history에 ignored 기록
 //  - drift-reconcile 허용 "새로 생긴 개념을 기준선에 등록하고, 사라진 개념의 낡은 기록을 지우는 것"
 //    → 신규 개념을 현재 해시로 등록 / 삭제된 개념의 stale lock 정리
+//    → 삭제된 개념의 검사 증빙·테스트 검토·충돌 사유 기록도 함께 정리한다
+//    → 살아 있는 개념의 기록은 건드리지 않는다
+//  - drift-reconcile 이점 "삭제된 개념의 낡은 기록이 쌓이지 않는다"
+//    → 결산 뒤 어느 기록에도 사라진 개념의 항목이 남지 않는다
 //  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
 //    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 문서 커밋에서 aligned
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -23,6 +27,9 @@ import { writeFeature } from '../../src/store/featureStore.js';
 import { writeLock, readLock } from '../../src/drift/lock.js';
 import { readHistory } from '../../src/drift/history.js';
 import { contractHash } from '../../src/drift/hash.js';
+import { readAttestLog } from '../../src/concept/attest.js';
+import { readTestReviewLog } from '../../src/concept/testReview.js';
+import { readPendingConflicts } from '../../src/concept/pendingConflicts.js';
 
 let root: string;
 beforeEach(() => {
@@ -181,5 +188,59 @@ describe('reconcileAfterCommit', () => {
     const lock = await readLock(root);
     expect(lock['deleted-one']).toBeUndefined();
     expect(lock['auth-token']).toBeDefined();
+  });
+
+  describe('사라진 개념의 낡은 기록 정리', () => {
+    // .alignment의 세 기록에 "살아 있는 개념 1 + 사라진 개념 2"를 심어 둔다.
+    function seedLogs() {
+      const dir = join(root, 'docs/conceptpowers/concepts/.alignment');
+      mkdirSync(dir, { recursive: true });
+      const entry = (r: string) => ({ hash: '3:deadbeef0000', result: r, at: 't' });
+      writeFileSync(
+        join(dir, 'attest.json'),
+        JSON.stringify({
+          'auth-token': entry('pass'),
+          'gone-one': entry('pass'),
+          'gone-two': entry('conflict'),
+        })
+      );
+      writeFileSync(
+        join(dir, 'test-review.json'),
+        JSON.stringify({
+          'auth-token': entry('updated'),
+          'gone-one': entry('updated'),
+          'gone-two': entry('no-tests'),
+        })
+      );
+      writeFileSync(
+        join(dir, 'pending-conflicts.json'),
+        JSON.stringify({ 'auth-token': '살아있음', 'gone-one': '사라짐' })
+      );
+    }
+
+    it('삭제된 개념의 검사 증빙·테스트 검토·충돌 사유를 함께 지운다', async () => {
+      await writeConcept(root, concept());
+      seedLogs();
+      const res = await reconcileAfterCommit(root, [DOC]);
+      expect(Object.keys(await readAttestLog(root)).sort()).toEqual(['auth-token']);
+      expect(Object.keys(await readTestReviewLog(root)).sort()).toEqual(['auth-token']);
+      expect(Object.keys(await readPendingConflicts(root)).sort()).toEqual(['auth-token']);
+      expect(res.pruned.sort()).toEqual(['gone-one', 'gone-two']);
+    });
+
+    it('살아 있는 개념의 기록은 그대로 둔다', async () => {
+      await writeConcept(root, concept());
+      seedLogs();
+      await reconcileAfterCommit(root, [DOC]);
+      expect((await readAttestLog(root))['auth-token']?.result).toBe('pass');
+      expect((await readTestReviewLog(root))['auth-token']?.result).toBe('updated');
+      expect((await readPendingConflicts(root))['auth-token']).toBe('살아있음');
+    });
+
+    it('지울 것이 없으면 pruned는 비어 있다', async () => {
+      await writeConcept(root, concept());
+      const res = await reconcileAfterCommit(root, [DOC]);
+      expect(res.pruned).toEqual([]);
+    });
   });
 });

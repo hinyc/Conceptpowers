@@ -10,7 +10,7 @@ var __export = (target, all) => {
 // src/hooks/postToolUse.ts
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
-import { readFile as readFile7 } from "node:fs/promises";
+import { readFile as readFile10 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -4133,7 +4133,7 @@ function parseInitConfig(input) {
 }
 
 // src/store/conceptStore.ts
-import { readFile, readdir } from "node:fs/promises";
+import { readFile as readFile3, readdir } from "node:fs/promises";
 import { join as join2, relative } from "node:path";
 
 // src/util/atomicWrite.ts
@@ -4208,6 +4208,28 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
+// src/concept/pendingConflicts.ts
+import { readFile } from "node:fs/promises";
+async function readPendingConflicts(root) {
+  try {
+    const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+async function prunePendingConflicts(root, liveSlugs) {
+  const current = await readPendingConflicts(root);
+  const dead = Object.keys(current).filter((slug3) => !liveSlugs.has(slug3));
+  if (dead.length === 0) return [];
+  const next = Object.fromEntries(
+    Object.entries(current).filter(([slug3]) => liveSlugs.has(slug3))
+  );
+  await writeFileAtomic(cpPaths(root).pendingConflicts, JSON.stringify(next, null, 2) + "\n");
+  return dead;
+}
+
 // src/concept/implementationLeak.ts
 var CODE_EXTENSIONS = "ts|tsx|js|jsx|mjs|cjs|json|md|css|scss|html|py|go|rs|java|kt|rb|php|sql|ya?ml|sh|toml";
 var PATTERNS = [
@@ -4222,6 +4244,9 @@ var PATTERNS = [
   // 붙여쓴 영문 이름 — 대문자 마디가 섞인 표기
   /[a-z][a-z0-9]*(?:[A-Z][A-Za-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][A-Za-z0-9]*)+/g
 ];
+
+// src/concept/attest.ts
+import { readFile as readFile2 } from "node:fs/promises";
 
 // src/schema/alignment.ts
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
@@ -4280,6 +4305,25 @@ function hashVersion(hash) {
   return m ? Number(m[1]) : 1;
 }
 
+// src/concept/attest.ts
+async function readAttestLog(root) {
+  try {
+    return AttestLog.parse(JSON.parse(await readFile2(cpPaths(root).attestFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function pruneAttestLog(root, liveSlugs) {
+  const log = await readAttestLog(root);
+  const dead = Object.keys(log).filter((slug3) => !liveSlugs.has(slug3));
+  if (dead.length === 0) return [];
+  const next = Object.fromEntries(
+    Object.entries(log).filter(([slug3]) => liveSlugs.has(slug3))
+  );
+  await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + "\n");
+  return dead;
+}
+
 // src/store/conceptStore.ts
 async function walkJson(dir) {
   let entries;
@@ -4302,7 +4346,7 @@ async function listConceptEntries(root) {
   for (const f of files) {
     try {
       entries.push({
-        concept: parseConcept(JSON.parse(await readFile(f, "utf8"))),
+        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
         rel: relative(root, f)
       });
     } catch (error) {
@@ -4316,7 +4360,7 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile2, readdir as readdir2 } from "node:fs/promises";
+import { readFile as readFile4, readdir as readdir2 } from "node:fs/promises";
 import { join as join3 } from "node:path";
 
 // src/schema/feature.ts
@@ -4356,7 +4400,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile2(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4365,7 +4409,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
 import { join as join4, dirname as dirname2 } from "node:path";
 
 // src/mapping/leadingComment.ts
@@ -4470,7 +4514,7 @@ async function scanTags(root, files, ignoreGlobs = []) {
     if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
-      content = await readFile3(join4(root, rel), "utf8");
+      content = await readFile5(join4(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -4492,17 +4536,17 @@ async function buildMapping(root, files, ignoreGlobs = []) {
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile3(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile4 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile4(cpPaths(root).initFile, "utf8");
+    const raw = await readFile6(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -4563,10 +4607,10 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile7 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile5(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile7(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -4576,10 +4620,10 @@ async function writeLock(root, lock) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile8 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile6(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile8(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4747,6 +4791,26 @@ async function pendingConceptDocs(root) {
   }
 }
 
+// src/concept/testReview.ts
+import { readFile as readFile9 } from "node:fs/promises";
+async function readTestReviewLog(root) {
+  try {
+    return TestReviewLog.parse(JSON.parse(await readFile9(cpPaths(root).testReviewFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function pruneTestReviewLog(root, liveSlugs) {
+  const log = await readTestReviewLog(root);
+  const dead = Object.keys(log).filter((slug3) => !liveSlugs.has(slug3));
+  if (dead.length === 0) return [];
+  const next = Object.fromEntries(
+    Object.entries(log).filter(([slug3]) => liveSlugs.has(slug3))
+  );
+  await writeFileAtomic(cpPaths(root).testReviewFile, JSON.stringify(next, null, 2) + "\n");
+  return dead;
+}
+
 // src/drift/reconcile.ts
 async function reconcileAfterCommit(root, committedFiles2, at) {
   const stamp = at ?? (/* @__PURE__ */ new Date()).toISOString();
@@ -4800,7 +4864,14 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   );
   await appendHistoryMany(root, entries);
   await writeLock(root, cleaned);
-  return { aligned, ignored };
+  const pruned = new Set(
+    (await Promise.all([
+      pruneAttestLog(root, slugs),
+      pruneTestReviewLog(root, slugs),
+      prunePendingConflicts(root, slugs)
+    ])).flat()
+  );
+  return { aligned, ignored, pruned: [...pruned] };
 }
 
 // src/hooks/postToolUse.ts
@@ -4843,7 +4914,7 @@ async function committedFiles(root) {
 }
 async function readLastCommit(root) {
   try {
-    return (await readFile7(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile10(cpPaths(root).alignmentLastCommit, "utf8")).trim();
   } catch {
     return "";
   }
