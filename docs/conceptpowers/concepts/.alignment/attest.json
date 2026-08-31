@@ -86,24 +86,6 @@
       "viewer-readability"
     ]
   },
-  "sidebar-search": {
-    "hash": "9255705e4426",
-    "result": "pass",
-    "at": "2026-08-24T05:35:01.260Z",
-    "compared": [
-      "home-search",
-      "sidebar-toggle"
-    ]
-  },
-  "sidebar-toggle": {
-    "hash": "bc23a4f7755d",
-    "result": "pass",
-    "at": "2026-08-24T05:35:01.318Z",
-    "compared": [
-      "sidebar-search",
-      "group-navbar"
-    ]
-  },
   "concept-inline-edit": {
     "hash": "2:952efb6e6931",
     "result": "pass",
@@ -162,50 +144,6 @@
       "viewer-readability"
     ]
   },
-  "copy-code-path": {
-    "hash": "7fe96cb97576",
-    "result": "pass",
-    "at": "2026-08-24T05:34:46.700Z",
-    "compared": [
-      "detail-summary-outline",
-      "list-item-readout"
-    ]
-  },
-  "contract-hash": {
-    "hash": "2:a207e322b900",
-    "result": "pass",
-    "at": "2026-08-28T03:22:19.922Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ]
-  },
   "drift-reconcile": {
     "hash": "2:d788bc62db07",
     "result": "pass",
@@ -234,41 +172,6 @@
       "viewer-navigation",
       "viewer-readability"
     ]
-  },
-  "audit-gap-detection": {
-    "hash": "2:875c3d62d892",
-    "result": "pass",
-    "at": "2026-08-25T03:44:00.804Z",
-    "compared": [
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "concept-code-mapping": {
     "hash": "2:887d3406cbd6",
@@ -357,41 +260,6 @@
       "viewer-readability"
     ]
   },
-  "pending-conflict-tracking": {
-    "hash": "2:8cc343e68cfe",
-    "result": "pass",
-    "at": "2026-08-25T03:44:02.196Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
-  },
   "reference-first-duty": {
     "hash": "2:5eab59d9c8b2",
     "result": "pass",
@@ -449,41 +317,6 @@
       "viewer-readability"
     ]
   },
-  "viewer-local-write-guard": {
-    "hash": "2:6ca3f6a0f0a8",
-    "result": "pass",
-    "at": "2026-08-25T03:44:03.217Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "untrusted-text-sanitization과 두 겹 방어 역할 분리 유지. settled-status 전이 규칙과 비충돌."
-  },
   "untrusted-text-sanitization": {
     "hash": "2:f3baa3c0db16",
     "result": "pass",
@@ -512,41 +345,6 @@
       "viewer-navigation",
       "viewer-readability"
     ]
-  },
-  "atomic-baseline-write": {
-    "hash": "2:c6fde2d59eef",
-    "result": "pass",
-    "at": "2026-08-25T03:44:02.524Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
   },
   "generated-not-hand-edited": {
     "hash": "2:3044eb9c9e1c",
@@ -722,84 +520,6 @@
       "viewer-readability"
     ]
   },
-  "list-item-readout": {
-    "hash": "f5776b2ee4cd",
-    "result": "pass",
-    "at": "2026-08-24T05:35:01.207Z",
-    "compared": [
-      "settled-status",
-      "home-search",
-      "sidebar-search"
-    ]
-  },
-  "group-navbar": {
-    "hash": "e8e0fd6752f5",
-    "result": "pass",
-    "at": "2026-08-24T05:35:01.043Z",
-    "compared": [
-      "sidebar-toggle",
-      "list-item-readout"
-    ]
-  },
-  "detail-summary-outline": {
-    "hash": "4df06921425d",
-    "result": "pass",
-    "at": "2026-08-24T05:35:00.926Z",
-    "compared": [
-      "list-item-readout",
-      "settled-status"
-    ]
-  },
-  "feature-index-row": {
-    "hash": "2:564e53ced1c8",
-    "result": "pass",
-    "at": "2026-08-25T03:44:03.439Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-aliases",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "전수 재검사(1.9.0) — 권한·용어·불변·상호작용 4개 축에서 나머지 27개와 대조, 충돌 0. 상호작용은 역할 경계 서술만 담음(contract-hash 새 불변 준수) 확인."
-  },
-  "detail-title-single": {
-    "hash": "1b3de3fe7f2a",
-    "result": "pass",
-    "at": "2026-08-24T08:21:30.271Z",
-    "compared": [
-      "detail-summary-outline",
-      "list-item-readout",
-      "concept-inline-edit",
-      "contract-hash",
-      "globally-unique-slug",
-      "feature-index-row",
-      "plugin-version-sync",
-      "generated-not-hand-edited"
-    ]
-  },
   "concept-scope": {
     "hash": "2:52cd5b3424ee",
     "result": "pass",
@@ -886,41 +606,6 @@
       "viewer-navigation",
       "viewer-readability"
     ]
-  },
-  "concept-aliases": {
-    "hash": "2:d7e50943f2f9",
-    "result": "pass",
-    "at": "2026-08-25T03:44:00.922Z",
-    "compared": [
-      "audit-gap-detection",
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-scope",
-      "contract-hash",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "globally-unique-slug",
-      "governance-mode",
-      "human-owns-contract",
-      "output-locale",
-      "pending-conflict-tracking",
-      "reference-first-duty",
-      "settled-status",
-      "atomic-baseline-write",
-      "generated-not-hand-edited",
-      "init-gate",
-      "plugin-version-sync",
-      "reference-privacy",
-      "untrusted-text-sanitization",
-      "viewer-local-write-guard",
-      "concept-inline-edit",
-      "feature-index-row",
-      "home-search",
-      "knowledge-graph-view",
-      "viewer-navigation",
-      "viewer-readability"
-    ],
-    "note": "viewer-readability의 부제 금지(제목 위·옆)와 별칭 줄(제목 아래·별칭 명시)이 비충돌. globally-unique-slug(열쇠 유일)와 역할 분리. home-search 검색 규칙과 일치."
   },
   "list-filter": {
     "hash": "2:347c76ece767",

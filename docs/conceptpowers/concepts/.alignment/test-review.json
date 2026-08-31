@@ -1,20 +1,4 @@
 {
-  "audit-gap-detection": {
-    "hash": "98df6e993653",
-    "result": "no-impact",
-    "at": "2026-08-24T05:30:07.550Z",
-    "tests": [
-      "tests/mapping/scan.test.ts",
-      "tests/integration/smoke.test.ts",
-      "tests/util/glob.test.ts",
-      "tests/cli/audit.test.ts",
-      "tests/schema/initConfig.test.ts",
-      "tests/audit/gaps.test.ts",
-      "tests/audit/audit.test.ts",
-      "tests/hooks/preToolUse.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
   "concept-code-mapping": {
     "hash": "2:887d3406cbd6",
     "result": "updated",
@@ -47,15 +31,6 @@
       "tests/schema/initConfig.test.ts"
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
-  },
-  "contract-hash": {
-    "hash": "2:a207e322b900",
-    "result": "updated",
-    "at": "2026-08-28T03:22:28.779Z",
-    "tests": [
-      "tests/drift/hash.test.ts"
-    ],
-    "note": "약속에 관리 대상·작동 원리가 들어왔으므로 두 칸이 바뀌면 지문이 달라진다는 시나리오를 추가"
   },
   "drift-reconcile": {
     "hash": "2:d788bc62db07",
@@ -157,17 +132,6 @@
     ],
     "note": "적용 범위를 덜어내는 변경 — 기존 시나리오는 불변 규칙 1·2를 그대로 검사하고 유효하며, 신설 규칙 3은 의무를 더하지 않고 범위를 축소하는 조항이라 엔진에 검사할 코드 경로가 없다(도구는 자기 지시문을 생성하거나 번역하지 않음). 사용자 확인 완료."
   },
-  "pending-conflict-tracking": {
-    "hash": "bf1404011a90",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:09.902Z",
-    "tests": [
-      "tests/cli/cli.test.ts",
-      "tests/concept/pendingConflicts.test.ts",
-      "tests/hooks/preToolUse.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
   "reference-first-duty": {
     "hash": "2:5eab59d9c8b2",
     "result": "updated",
@@ -199,34 +163,6 @@
       "tests/hooks/postToolUse.test.ts"
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
-  },
-  "atomic-baseline-write": {
-    "hash": "9f8c6ae2b554",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.063Z",
-    "tests": [
-      "tests/init/ensureConfigDefaults.test.ts",
-      "tests/init/alignmentGitignore.test.ts",
-      "tests/integration/smoke.test.ts",
-      "tests/cli/quality.test.ts",
-      "tests/cli/testReview.test.ts",
-      "tests/drift/history.test.ts",
-      "tests/cli/cli.test.ts",
-      "tests/drift/detect.test.ts",
-      "tests/drift/reconcile.test.ts",
-      "tests/viewer/serve.test.ts",
-      "tests/viewer/renderDisk.test.ts",
-      "tests/audit/audit.test.ts",
-      "tests/concept/approve.test.ts",
-      "tests/concept/pendingConflicts.test.ts",
-      "tests/hooks/postToolUse.test.ts",
-      "tests/concept/quality-gate.test.ts",
-      "tests/hooks/preToolUse.test.ts",
-      "tests/hooks/sessionStart.test.ts",
-      "tests/store/conceptStore.test.ts",
-      "tests/store/featureStore.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "generated-not-hand-edited": {
     "hash": "2:3044eb9c9e1c",
@@ -310,15 +246,6 @@
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
-  "viewer-local-write-guard": {
-    "hash": "cfaae826426f",
-    "result": "updated",
-    "at": "2026-08-25T03:36:57.515Z",
-    "tests": [
-      "tests/viewer/serve.test.ts"
-    ],
-    "note": "새 정의문(약속 서술)을 파일 머리에 인용해 불변 규칙 전체가 그 약속의 검증임을 명시. 검사 내용 변경 없음."
-  },
   "concept-inline-edit": {
     "hash": "2:952efb6e6931",
     "result": "updated",
@@ -328,45 +255,6 @@
       "tests/viewer/serve.test.ts"
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
-  },
-  "copy-code-path": {
-    "hash": "7fe96cb97576",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.550Z",
-    "tests": [
-      "tests/viewer/copyPath.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "detail-summary-outline": {
-    "hash": "4df06921425d",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.624Z",
-    "tests": [
-      "tests/viewer/heroSummary.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "feature-index-row": {
-    "hash": "8f7432e081fb",
-    "result": "no-impact",
-    "at": "2026-08-25T00:57:06.697Z",
-    "tests": [
-      "tests/viewer/listLayout.test.ts",
-      "tests/viewer/topnav.test.ts",
-      "tests/viewer/featureRoute.test.ts",
-      "tests/viewer/manifest.test.ts"
-    ],
-    "note": "사라진 개념을 가리키던 참조만 옮긴 변경이라 규칙 내용이 그대로여서 검사 시나리오에 영향 없음."
-  },
-  "group-navbar": {
-    "hash": "e8e0fd6752f5",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.756Z",
-    "tests": [
-      "tests/viewer/topnav.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
   },
   "home-search": {
     "hash": "2:5a9f016fb40e",
@@ -390,34 +278,6 @@
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
-  "list-item-readout": {
-    "hash": "f5776b2ee4cd",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:10.960Z",
-    "tests": [
-      "tests/viewer/listLayout.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "sidebar-search": {
-    "hash": "9255705e4426",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:11.018Z",
-    "tests": [
-      "tests/viewer/sidebarState.test.ts",
-      "tests/viewer/listLayout.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
-  "sidebar-toggle": {
-    "hash": "bc23a4f7755d",
-    "result": "no-impact",
-    "at": "2026-08-24T05:35:11.129Z",
-    "tests": [
-      "tests/viewer/sidebarState.test.ts"
-    ],
-    "note": "뷰어 표시용 title/eyebrow 문구만 변경, 규칙(actions/principle) 불변 — 테스트 영향 없음"
-  },
   "viewer-readability": {
     "hash": "2:890b0f5d763e",
     "result": "updated",
@@ -439,17 +299,6 @@
       "tests/viewer/topnav.test.ts"
     ],
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
-  },
-  "concept-aliases": {
-    "hash": "5e985044fbf4",
-    "result": "updated",
-    "at": "2026-08-25T02:25:44.462Z",
-    "tests": [
-      "tests/concept/aliases.test.ts",
-      "tests/viewer/search.test.ts",
-      "tests/viewer/heroAliases.test.ts"
-    ],
-    "note": "넓힌 규칙에 맞춰 개념 안 같은 별칭 반복을 거절하는 시나리오를 추가하고 헤더 인용을 새 문구로 맞춤. 나머지 규칙은 그대로라 기존 시나리오 변경 없음."
   },
   "concept-scope": {
     "hash": "2:52cd5b3424ee",
