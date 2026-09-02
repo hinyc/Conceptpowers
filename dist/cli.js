@@ -8542,12 +8542,12 @@ async function syncIfStale(root, pluginRoot) {
 }
 
 // src/audit/audit.ts
-async function auditIntegrity(root, files) {
+async function auditIntegrity(root, files, ignoreGlobs = []) {
   const concepts = await listConcepts(root);
   const known = new Set(concepts.map((c) => c.slug));
   const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
   const pending = new Set(concepts.filter((c) => c.status === "pending").map((c) => c.slug));
-  const tags = await scanTags(root, files);
+  const tags = await scanTags(root, files, ignoreGlobs);
   const unknownTags = [];
   const refRed = /* @__PURE__ */ new Set();
   const refPending = /* @__PURE__ */ new Set();

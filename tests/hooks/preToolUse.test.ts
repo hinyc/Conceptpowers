@@ -11,6 +11,8 @@
 //    → 태그 없는 신규 코드 파일은 경고(ask) / 손으로 쓴 util도 마커 없으면 경고 / @concept:none 이면
 //      경고 없음 / 재생성물 경로(dist/**)는 대상이 아니라 경고 없음 / 태그가 있으면 경고 없음
 //  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 표식 없음은 deny가 아니라 ask다
+//  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//    → ignoreGlobs 경로(docs/conceptpowers/** 등)에 실려 온 태그는 unknown으로 잡지 않는다
 //  - settled-status 구성요소 "빨강(red): AI 추측 또는 미승인"
 //    → staged가 미승인(red) 개념을 참조하면 ask / unknownTag가 있으면 ask (changedFiles 유무 양쪽)
 //  - drift-reconcile 불변 "커밋 전 문지기의 어긋남 경고와 커밋 뒤 결산은 같은 잣대로 따라옴을 판정한다"
@@ -85,6 +87,20 @@ describe('decidePreToolUse', () => {
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
+  });
+
+  it('무시 목록 경로의 생성물 태그는 미지 개념으로 잡지 않는다 (docs/conceptpowers/**)', async () => {
+    await scaffoldInit(root, {});
+    const rel = 'docs/conceptpowers/concepts/viewer/assets/viewer.js';
+    mkdirSync(join(root, 'docs/conceptpowers/concepts/viewer/assets'), { recursive: true });
+    writeFileSync(join(root, rel), '// @concept:home-search\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: [rel],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('home-search');
   });
   it('git commit이고 정합성 OK면 검증 리마인더만 주입(allow 유지)', async () => {
     await scaffoldInit(root, {});

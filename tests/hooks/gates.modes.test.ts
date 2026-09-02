@@ -1,4 +1,4 @@
-// @concept:governance-mode @concept:init-gate
+// @concept:governance-mode @concept:init-gate @concept:concept-code-mapping
 // tests/hooks/gates.modes.test.ts
 // 문지기 강도(strict·light·폴백)에 따른 대응을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -9,6 +9,8 @@
 //  - governance-mode 불변 "강도가 무엇이든 지키는 대상(검사 항목)은 같다 — 바뀌는 것은 대응뿐이다"
 //    → 위반이 없으면 allow / 참조 문서와 위반이 함께 있어도 위반이 가려지지 않는다(strict·light 양쪽)
 //    → stale 산출물만 있으면 strict에서도 deny가 아니라 ask (대응만 다르다)
+//  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
+//    → strict에서도 ignoreGlobs 경로에 실려 온 미지 태그는 deny 사유가 되지 않는다
 //  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
 //    → 기밀 reference 문서는 strict여도, light여도 ask다
 //  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
@@ -220,6 +222,16 @@ describe('검사 관련 문지기의 강도별 대응', () => {
     const r = await decidePreToolUse(root, commitEvent(['tests/pay.test.ts']));
     expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
     expect(r!.hookSpecificOutput.additionalContext).toContain('TEST SCOPE');
+  });
+
+  it('strict: 무시 목록 경로 생성물의 미지 태그는 deny 사유가 되지 않는다', async () => {
+    setEnforcement(root, 'strict');
+    const rel = 'docs/conceptpowers/concepts/viewer/assets/viewer.js';
+    mkdirSync(join(root, 'docs/conceptpowers/concepts/viewer/assets'), { recursive: true });
+    writeFileSync(join(root, rel), '// @concept:home-search\n');
+    const r = await decidePreToolUse(root, commitEvent([rel]));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('home-search');
   });
 
   it('이름표가 있는 검사 파일은 strict에서도 통과한다', async () => {

@@ -4,6 +4,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { isInitialized } from '../init/scaffold.js';
 import { readInitConfig } from '../init/readConfig.js';
+import { defaultIgnoreGlobs } from '../schema/initConfig.js';
 import { auditIntegrity } from '../audit/audit.js';
 import { checkReferenceGate } from './gates/referenceGate.js';
 import { checkUnknownTags } from './gates/unknownTagsGate.js';
@@ -227,10 +228,14 @@ export async function decidePreToolUse(
 
     const cfg = await readInitConfig(root);
     const enforcement = cfg?.enforcement ?? 'standard';
+    // 무시 목록의 생성물(docs/conceptpowers/** 등)에 실려 온 태그는 정합성 검사 대상이 아니다 —
+    // 무시 목록 기준은 CLI 전체 스캔과 동일. (코드 파일 한정 필터는 훅에 없다 — 스테이징 전량을 본다.)
+    // 필터는 audit 입력에만 적용한다(드리프트·기밀 게이트는 원본 files를 봐야 한다).
+    const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
 
     if (enforcement === 'standard') {
       if (ref) return askOutput(ref);
-      const report = await auditIntegrity(root, files);
+      const report = await auditIntegrity(root, files, ignoreGlobs);
       const input: GateInput = { root, files, cfg, report };
       for (const { check } of GOVERNANCE_GATES) {
         const f = await check(input);
@@ -241,7 +246,7 @@ export async function decidePreToolUse(
       return withDriftReviewNote(ALLOW_DEFAULT, input);
     }
 
-    const report = await auditIntegrity(root, files);
+    const report = await auditIntegrity(root, files, ignoreGlobs);
     const input: GateInput = { root, files, cfg, report };
 
     if (enforcement === 'strict') {

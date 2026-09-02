@@ -15,7 +15,8 @@
     "tests/schema/initConfig.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/audit/audit.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "init-gate": [
     "src/cli.ts",
@@ -39,8 +40,8 @@
     "tests/version/autoSync.test.ts",
     "tests/concept/approve.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/gates.modes.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "plugin-version-sync": [
     "src/cli.ts",
@@ -85,8 +86,8 @@
     "tests/hooks/sessionStart.test.ts",
     "tests/schema/initConfig.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/gates.modes.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/gates.modes.test.ts"
   ],
   "reference-first-duty": [
     "src/init/referencePaths.ts",

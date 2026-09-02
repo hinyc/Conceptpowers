@@ -4710,12 +4710,12 @@ async function isInitialized(root) {
 }
 
 // src/audit/audit.ts
-async function auditIntegrity(root, files) {
+async function auditIntegrity(root, files, ignoreGlobs = []) {
   const concepts = await listConcepts(root);
   const known = new Set(concepts.map((c) => c.slug));
   const red = new Set(concepts.filter((c) => (c.status ?? "red") === "red").map((c) => c.slug));
   const pending = new Set(concepts.filter((c) => c.status === "pending").map((c) => c.slug));
-  const tags = await scanTags(root, files);
+  const tags = await scanTags(root, files, ignoreGlobs);
   const unknownTags = [];
   const refRed = /* @__PURE__ */ new Set();
   const refPending = /* @__PURE__ */ new Set();
@@ -5368,9 +5368,10 @@ async function decidePreToolUse(root, ev) {
     const ref = checkReferenceGate(files);
     const cfg = await readInitConfig(root);
     const enforcement = cfg?.enforcement ?? "standard";
+    const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
     if (enforcement === "standard") {
       if (ref) return askOutput(ref);
-      const report2 = await auditIntegrity(root, files);
+      const report2 = await auditIntegrity(root, files, ignoreGlobs);
       const input2 = { root, files, cfg, report: report2 };
       for (const { check } of GOVERNANCE_GATES) {
         const f = await check(input2);
@@ -5380,7 +5381,7 @@ async function decidePreToolUse(root, ev) {
       if (stale2) return withDriftReviewNote(askOutput(stale2), input2);
       return withDriftReviewNote(ALLOW_DEFAULT, input2);
     }
-    const report = await auditIntegrity(root, files);
+    const report = await auditIntegrity(root, files, ignoreGlobs);
     const input = { root, files, cfg, report };
     if (enforcement === "strict") {
       const { findings: findings2, failedGates: failedGates2 } = await runAllGates(input);
