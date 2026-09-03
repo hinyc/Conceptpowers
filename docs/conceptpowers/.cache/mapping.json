@@ -41,7 +41,8 @@
     "tests/concept/approve.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/gates.modes.test.ts"
+    "tests/hooks/gates.modes.test.ts",
+    "tests/cli/noCode.test.ts"
   ],
   "plugin-version-sync": [
     "src/cli.ts",
@@ -147,7 +148,10 @@
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "src/drift/reconcile.ts",
-    "tests/drift/reconcile.test.ts"
+    "tests/drift/reconcile.test.ts",
+    "src/drift/noCode.ts",
+    "tests/drift/noCode.test.ts",
+    "tests/cli/noCode.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",

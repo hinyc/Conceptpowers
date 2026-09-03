@@ -3048,7 +3048,7 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile18 } from "node:fs/promises";
+import { readFile as readFile19 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
@@ -3078,7 +3078,8 @@ function cpPaths(root) {
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
-    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
   };
 }
 
@@ -7611,7 +7612,10 @@ var HistoryEntry = external_exports.object({
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
+  aligned: external_exports.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: external_exports.boolean().default(false),
+  note: external_exports.string().max(1e3).default("")
 });
 var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
@@ -7634,6 +7638,12 @@ var TestReviewEntry = external_exports.object({
   // 판단 요약
 });
 var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
+var NoCodeEntry = external_exports.object({
+  hash: external_exports.string(),
+  note: external_exports.string().min(1).max(1e3),
+  at: external_exports.string()
+});
+var NoCodeLog = external_exports.record(external_exports.string(), NoCodeEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -8661,6 +8671,8 @@ function toEntry(input, prevHash) {
     reason: input.reason ?? "",
     ignored: input.ignored ?? false,
     aligned: input.aligned ?? false,
+    noCode: input.noCode ?? false,
+    note: input.note ?? "",
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
@@ -8778,8 +8790,28 @@ async function recordTestReview(root, concept, result, evidence = {}) {
   return entry;
 }
 
-// src/init/addReferencePath.ts
+// src/drift/noCode.ts
 import { readFile as readFile17 } from "node:fs/promises";
+async function readNoCodeLog(root) {
+  try {
+    return NoCodeLog.parse(JSON.parse(await readFile17(cpPaths(root).noCodeFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function recordNoCode(root, concept, note) {
+  const entry = NoCodeEntry.parse({
+    hash: contractHash(concept),
+    note,
+    at: (/* @__PURE__ */ new Date()).toISOString()
+  });
+  const next = { ...await readNoCodeLog(root), [concept.slug]: entry };
+  await writeFileAtomic(cpPaths(root).noCodeFile, JSON.stringify(next, null, 2) + "\n");
+  return entry;
+}
+
+// src/init/addReferencePath.ts
+import { readFile as readFile18 } from "node:fs/promises";
 import { join as join17 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
@@ -8791,7 +8823,7 @@ async function addReferencePath(root, raws) {
   const target = join17(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile17(target, "utf8");
+    existing = await readFile18(target, "utf8");
   } catch (error) {
     throw new Error(
       `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
@@ -8924,7 +8956,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile18(o.file, "utf8"));
+    const patch = JSON.parse(await readFile19(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8939,7 +8971,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile18(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile19(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -9061,6 +9093,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       throw new Error(`--note is required when --result ${o.result}`);
     }
     const entry = await recordTestReview(o.root, concept, o.result, { tests, note: o.note });
+    out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
+  });
+  program2.command("attest-no-code").description("\uAC1C\uB150 \uC218\uC815\uC774 \uCF54\uB4DC \uBCC0\uACBD\uC744 \uD544\uC694\uB85C \uD558\uC9C0 \uC54A\uB294\uB2E4\uB294 \uD310\uB2E8\uC744 \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uCF54\uB4DC\uBB34\uAD00 \uAE30\uB85D)").argument("<slug>").requiredOption("--note <text>", "\uC0AC\uC720 (\uD544\uC218 \u2014 \uAE30\uB85D\uC758 \uBAA9\uC801\uC774 \uC0AC\uC720 \uBCF4\uC874\uC774\uB2E4)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    const concept = await readConcept(o.root, slug3);
+    if (!concept) throw new Error(`Concept not found: ${slug3}`);
+    const entry = await recordNoCode(o.root, concept, o.note);
     out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
   });
   try {

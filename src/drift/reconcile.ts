@@ -10,6 +10,7 @@ import { pendingConceptDocs } from './pendingDocs.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { pruneAttestLog } from '../concept/attest.js';
 import { pruneTestReviewLog } from '../concept/testReview.js';
+import { readNoCodeLog, freshNoCode, pruneNoCodeLog } from './noCode.js';
 import { prunePendingConflicts } from '../concept/pendingConflicts.js';
 import { defaultIgnoreGlobs } from '../schema/initConfig.js';
 import type { AlignmentLock } from '../schema/alignment.js';
@@ -23,7 +24,7 @@ export interface ReconcileResult {
 
 // 커밋 성공 후 호출. drift였던 개념을 "코드가 따라옴(aligned)" 또는 "override(ignored)"로
 // 분류하고, 어느 쪽이든 lock을 현재 해시로 재조정한다. 신규 개념은 등록하고,
-// 삭제된 개념의 낡은 기록(기준선·검사 증빙·테스트 검토·충돌 사유)은 모두 정리한다 —
+// 삭제된 개념의 낡은 기록(기준선·검사 증빙·테스트 검토·충돌 사유·코드무관 기록)은 모두 정리한다 —
 // 어느 한 곳만 지우면 사라진 개념의 흔적이 남아 "낡은 기록이 쌓이지 않는다"는 약속이 깨진다.
 export async function reconcileAfterCommit(
   root: string,
@@ -46,6 +47,8 @@ export async function reconcileAfterCommit(
   // 미커밋 문서의 지문으로 기준선을 올리지 않기 위한 정착 여부(HEAD와 다른 문서 목록).
   // git 정보를 얻을 수 없으면 전부 정착으로 기울인다 — 결산을 조용히 멈추지 않는 방향이다.
   const pendingDocs = drift.length === 0 ? new Set<string>() : await pendingConceptDocs(root);
+  // 코드무관 기록: 신선한 기록이 있으면 무시함 이력에 그 사유를 함께 남긴다(문지기와 같은 잣대).
+  const noCodeLog = drift.length === 0 ? {} : await readNoCodeLog(root);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock: AlignmentLock = { ...lock };
   const aligned: string[] = [];
@@ -74,11 +77,14 @@ export async function reconcileAfterCommit(
         });
       } else {
         ignored.push(c.slug);
+        const noCode = freshNoCode(noCodeLog, c.slug, d.currentHash);
         entries.push({
           slug: c.slug,
           hash: d.currentHash,
           reason: d.reason,
           ignored: true,
+          noCode,
+          note: noCode ? noCodeLog[c.slug].note : '',
           at: stamp,
         });
       }
@@ -105,6 +111,7 @@ export async function reconcileAfterCommit(
         pruneAttestLog(root, slugs),
         pruneTestReviewLog(root, slugs),
         prunePendingConflicts(root, slugs),
+        pruneNoCodeLog(root, slugs),
       ])
     ).flat()
   );

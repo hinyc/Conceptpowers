@@ -10,7 +10,7 @@ var __export = (target, all) => {
 // src/hooks/postToolUse.ts
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -37,7 +37,8 @@ function cpPaths(root) {
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
-    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
   };
 }
 
@@ -4258,7 +4259,10 @@ var HistoryEntry = external_exports.object({
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
+  aligned: external_exports.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: external_exports.boolean().default(false),
+  note: external_exports.string().max(1e3).default("")
 });
 var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
@@ -4281,6 +4285,12 @@ var TestReviewEntry = external_exports.object({
   // 판단 요약
 });
 var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
+var NoCodeEntry = external_exports.object({
+  hash: external_exports.string(),
+  note: external_exports.string().min(1).max(1e3),
+  at: external_exports.string()
+});
+var NoCodeLog = external_exports.record(external_exports.string(), NoCodeEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -4636,6 +4646,8 @@ function toEntry(input, prevHash) {
     reason: input.reason ?? "",
     ignored: input.ignored ?? false,
     aligned: input.aligned ?? false,
+    noCode: input.noCode ?? false,
+    note: input.note ?? "",
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
@@ -4811,6 +4823,30 @@ async function pruneTestReviewLog(root, liveSlugs) {
   return dead;
 }
 
+// src/drift/noCode.ts
+import { readFile as readFile10 } from "node:fs/promises";
+async function readNoCodeLog(root) {
+  try {
+    return NoCodeLog.parse(JSON.parse(await readFile10(cpPaths(root).noCodeFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+async function pruneNoCodeLog(root, liveSlugs) {
+  const log = await readNoCodeLog(root);
+  const dead = Object.keys(log).filter((slug3) => !liveSlugs.has(slug3));
+  if (dead.length === 0) return [];
+  const next = Object.fromEntries(
+    Object.entries(log).filter(([slug3]) => liveSlugs.has(slug3))
+  );
+  await writeFileAtomic(cpPaths(root).noCodeFile, JSON.stringify(next, null, 2) + "\n");
+  return dead;
+}
+function freshNoCode(log, slug3, currentHash) {
+  const entry = log[slug3];
+  return !!entry && entry.hash === currentHash;
+}
+
 // src/drift/reconcile.ts
 async function reconcileAfterCommit(root, committedFiles2, at) {
   const stamp = at ?? (/* @__PURE__ */ new Date()).toISOString();
@@ -4824,6 +4860,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = drift.length === 0 ? /* @__PURE__ */ new Set() : await presentTagSlugs(root, committed, ignoreGlobs);
   const pendingDocs = drift.length === 0 ? /* @__PURE__ */ new Set() : await pendingConceptDocs(root);
+  const noCodeLog = drift.length === 0 ? {} : await readNoCodeLog(root);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
   const aligned = [];
@@ -4845,11 +4882,14 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
         });
       } else {
         ignored.push(c.slug);
+        const noCode = freshNoCode(noCodeLog, c.slug, d.currentHash);
         entries.push({
           slug: c.slug,
           hash: d.currentHash,
           reason: d.reason,
           ignored: true,
+          noCode,
+          note: noCode ? noCodeLog[c.slug].note : "",
           at: stamp
         });
       }
@@ -4868,7 +4908,8 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
     (await Promise.all([
       pruneAttestLog(root, slugs),
       pruneTestReviewLog(root, slugs),
-      prunePendingConflicts(root, slugs)
+      prunePendingConflicts(root, slugs),
+      pruneNoCodeLog(root, slugs)
     ])).flat()
   );
   return { aligned, ignored, pruned: [...pruned] };
@@ -4914,7 +4955,7 @@ async function committedFiles(root) {
 }
 async function readLastCommit(root) {
   try {
-    return (await readFile10(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile11(cpPaths(root).alignmentLastCommit, "utf8")).trim();
   } catch {
     return "";
   }

@@ -145,33 +145,18 @@
     ]
   },
   "drift-reconcile": {
-    "hash": "2:d788bc62db07",
+    "hash": "3:999d889b5d9a",
     "result": "pass",
-    "at": "2026-08-28T04:09:29.631Z",
+    "at": "2026-09-02T09:12:37.066Z",
     "compared": [
-      "concept-code-mapping",
-      "concept-driven-tests",
-      "concept-inline-edit",
-      "concept-scope",
-      "drift-reconcile",
-      "feature-spec-bridge",
-      "generated-not-hand-edited",
-      "globally-unique-slug",
       "governance-mode",
-      "home-search",
       "human-owns-contract",
-      "init-gate",
-      "knowledge-graph-view",
-      "list-filter",
-      "output-locale",
-      "plugin-version-sync",
-      "reference-first-duty",
-      "reference-privacy",
-      "settled-status",
-      "untrusted-text-sanitization",
-      "viewer-navigation",
-      "viewer-readability"
-    ]
+      "concept-driven-tests",
+      "concept-code-mapping",
+      "concept-code-binding",
+      "settled-status"
+    ],
+    "note": "코드무관 기록(attest-no-code) 도입: 사람 확인 규칙(human-owns-contract)과 모드 공통 검사·이력 보존(governance-mode)을 유지하며 충돌 없음"
   },
   "concept-code-mapping": {
     "hash": "2:887d3406cbd6",

@@ -18,6 +18,8 @@ export interface HistoryInput {
   reason?: string;
   ignored?: boolean;
   aligned?: boolean;
+  noCode?: boolean;
+  note?: string;
   at?: string;
 }
 
@@ -29,6 +31,8 @@ function toEntry(input: HistoryInput, prevHash: string): HistoryEntry {
     reason: input.reason ?? '',
     ignored: input.ignored ?? false,
     aligned: input.aligned ?? false,
+    noCode: input.noCode ?? false,
+    note: input.note ?? '',
     at: input.at ?? new Date().toISOString(),
   });
 }

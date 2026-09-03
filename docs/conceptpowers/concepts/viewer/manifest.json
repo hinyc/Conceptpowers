@@ -46,7 +46,8 @@
         "tests/schema/initConfig.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/audit/audit.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/gates.modes.test.ts"
       ]
     },
     {
@@ -116,6 +117,7 @@
         "src/drift/note.ts",
         "src/drift/reconcile.ts",
         "src/drift/history.ts",
+        "src/drift/noCode.ts",
         "src/schema/alignment.ts",
         "src/drift/pendingDocs.ts",
         "src/drift/follow.ts",
@@ -131,7 +133,9 @@
         "tests/hooks/sessionStart.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/drift/reconcile.test.ts"
+        "tests/drift/reconcile.test.ts",
+        "tests/drift/noCode.test.ts",
+        "tests/cli/noCode.test.ts"
       ]
     },
     {
@@ -230,8 +234,8 @@
         "tests/hooks/sessionStart.test.ts",
         "tests/schema/initConfig.test.ts",
         "tests/hooks/postToolUse.test.ts",
-        "tests/hooks/gates.modes.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/gates.modes.test.ts"
       ]
     },
     {
@@ -395,8 +399,9 @@
         "tests/version/autoSync.test.ts",
         "tests/concept/approve.test.ts",
         "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/gates.modes.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/cli/noCode.test.ts"
       ]
     },
     {
@@ -1063,6 +1068,13 @@
         "title": "tests/hooks/preToolUse.test.ts"
       },
       {
+        "id": "p:tests/hooks/gates.modes.test.ts",
+        "label": "gates.modes.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/gates.modes.test.ts"
+      },
+      {
         "id": "c:concept-driven-tests",
         "label": "개념 기반 테스트",
         "type": "concept",
@@ -1273,6 +1285,13 @@
         "title": "src/drift/history.ts"
       },
       {
+        "id": "p:src/drift/noCode.ts",
+        "label": "noCode.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/drift/noCode.ts"
+      },
+      {
         "id": "p:src/drift/pendingDocs.ts",
         "label": "pendingDocs.ts",
         "type": "file",
@@ -1355,6 +1374,20 @@
         "type": "file",
         "href": "",
         "title": "tests/drift/reconcile.test.ts"
+      },
+      {
+        "id": "p:tests/drift/noCode.test.ts",
+        "label": "noCode.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/noCode.test.ts"
+      },
+      {
+        "id": "p:tests/cli/noCode.test.ts",
+        "label": "noCode.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/noCode.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -1593,13 +1626,6 @@
         "type": "file",
         "href": "",
         "title": "src/hooks/gates/unapprovedRedGate.ts"
-      },
-      {
-        "id": "p:tests/hooks/gates.modes.test.ts",
-        "label": "gates.modes.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/gates.modes.test.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -2355,6 +2381,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/hooks/gates.modes.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:concept-driven-tests",
         "target": "p:src/schema/initConfig.ts",
         "kind": "concept-file"
@@ -2496,6 +2527,11 @@
       },
       {
         "source": "c:drift-reconcile",
+        "target": "p:src/drift/noCode.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:src/schema/alignment.ts",
         "kind": "concept-file"
       },
@@ -2572,6 +2608,16 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/drift/reconcile.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/noCode.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/cli/noCode.test.ts",
         "kind": "concept-file"
       },
       {
@@ -2861,12 +2907,12 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/gates.modes.test.ts",
+        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/preToolUse.test.ts",
+        "target": "p:tests/hooks/gates.modes.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3286,12 +3332,17 @@
       },
       {
         "source": "c:init-gate",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
         "target": "p:tests/hooks/gates.modes.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/hooks/preToolUse.test.ts",
+        "target": "p:tests/cli/noCode.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3651,5 +3702,5 @@
       }
     ]
   },
-  "generatorVersion": "1.11.0"
+  "generatorVersion": "1.11.1"
 }

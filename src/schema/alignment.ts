@@ -13,6 +13,9 @@ export const HistoryEntry = z.object({
   at: z.string(),
   ignored: z.boolean().default(false),
   aligned: z.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: z.boolean().default(false),
+  note: z.string().max(1000).default(''),
 });
 export type HistoryEntry = z.infer<typeof HistoryEntry>;
 
@@ -49,3 +52,16 @@ export type TestReviewEntry = z.infer<typeof TestReviewEntry>;
 
 export const TestReviewLog = z.record(z.string(), TestReviewEntry);
 export type TestReviewLog = z.infer<typeof TestReviewLog>;
+
+// 코드무관 기록: 개념 수정이 코드 변경을 필요로 하지 않는다는 사람의 판단을 계약 해시에 묶어
+// 남긴다. 해시가 현재 개념과 다르면 자동 실효(신선도 보장) — 증빙(AttestEntry)과 같은 규칙이다.
+// 사유(note)는 비울 수 없다 — 기록의 목적이 사유 보존이다.
+export const NoCodeEntry = z.object({
+  hash: z.string(),
+  note: z.string().min(1).max(1000),
+  at: z.string(),
+});
+export type NoCodeEntry = z.infer<typeof NoCodeEntry>;
+
+export const NoCodeLog = z.record(z.string(), NoCodeEntry);
+export type NoCodeLog = z.infer<typeof NoCodeLog>;

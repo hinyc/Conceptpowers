@@ -38,7 +38,8 @@ function cpPaths(root) {
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
-    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
   };
 }
 
@@ -4316,7 +4317,10 @@ var HistoryEntry = external_exports.object({
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
+  aligned: external_exports.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: external_exports.boolean().default(false),
+  note: external_exports.string().max(1e3).default("")
 });
 var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
@@ -4339,6 +4343,12 @@ var TestReviewEntry = external_exports.object({
   // 판단 요약
 });
 var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
+var NoCodeEntry = external_exports.object({
+  hash: external_exports.string(),
+  note: external_exports.string().min(1).max(1e3),
+  at: external_exports.string()
+});
+var NoCodeLog = external_exports.record(external_exports.string(), NoCodeEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";

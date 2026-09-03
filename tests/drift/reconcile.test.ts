@@ -30,6 +30,8 @@ import { contractHash } from '../../src/drift/hash.js';
 import { readAttestLog } from '../../src/concept/attest.js';
 import { readTestReviewLog } from '../../src/concept/testReview.js';
 import { readPendingConflicts } from '../../src/concept/pendingConflicts.js';
+import { recordNoCode, readNoCodeLog } from '../../src/drift/noCode.js';
+import { parseConcept } from '../../src/schema/concept.js';
 
 let root: string;
 beforeEach(() => {
@@ -143,6 +145,29 @@ describe('reconcileAfterCommit', () => {
     const c2 = await readConcept(root, 'auth-token');
     expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
   });
+  it('신선한 코드무관 기록이 있는 문서만 커밋은 무시함으로 결산하되 사유를 함께 남긴다 [규칙: 통과한 커밋도 무시함으로 결산하되 사유를 남긴다]', async () => {
+    await makeDrift();
+    const c2 = await readConcept(root, 'auth-token');
+    await recordNoCode(root, c2!, '문구 정리만 — 코드 영향 없음');
+    const r = await reconcileAfterCommit(root, [DOC], 't2');
+    expect(r.ignored).toContain('auth-token');
+    const e = (await readHistory(root)).find((x) => x.slug === 'auth-token');
+    expect(e?.ignored).toBe(true);
+    expect(e?.noCode).toBe(true);
+    expect(e?.note).toBe('문구 정리만 — 코드 영향 없음');
+    expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
+  });
+  it('실효된(해시 불일치) 코드무관 기록은 사유 없는 무시함으로만 남는다 [규칙: 개념이 다시 바뀌면 효력을 잃는다]', async () => {
+    await makeDrift();
+    const stale = parseConcept(concept({ description: { definition: 'v0' } }));
+    await recordNoCode(root, stale, '옛 계약에 붙은 사유');
+    const r = await reconcileAfterCommit(root, [DOC], 't2');
+    expect(r.ignored).toContain('auth-token');
+    const e = (await readHistory(root)).find((x) => x.slug === 'auth-token');
+    expect(e?.ignored).toBe(true);
+    expect(e?.noCode).toBe(false);
+    expect(e?.note).toBe('');
+  });
   it('lock에 없던 신규 개념은 현재 해시로 등록한다', async () => {
     await writeConcept(root, concept());
     const c = await readConcept(root, 'auth-token');
@@ -216,15 +241,23 @@ describe('reconcileAfterCommit', () => {
         join(dir, 'pending-conflicts.json'),
         JSON.stringify({ 'auth-token': '살아있음', 'gone-one': '사라짐' })
       );
+      writeFileSync(
+        join(dir, 'no-code.json'),
+        JSON.stringify({
+          'auth-token': { hash: '3:deadbeef0000', note: '살아있음', at: 't' },
+          'gone-one': { hash: '3:deadbeef0000', note: '사라짐', at: 't' },
+        })
+      );
     }
 
-    it('삭제된 개념의 검사 증빙·테스트 검토·충돌 사유를 함께 지운다', async () => {
+    it('삭제된 개념의 검사 증빙·테스트 검토·충돌 사유·코드무관 기록을 함께 지운다', async () => {
       await writeConcept(root, concept());
       seedLogs();
       const res = await reconcileAfterCommit(root, [DOC]);
       expect(Object.keys(await readAttestLog(root)).sort()).toEqual(['auth-token']);
       expect(Object.keys(await readTestReviewLog(root)).sort()).toEqual(['auth-token']);
       expect(Object.keys(await readPendingConflicts(root)).sort()).toEqual(['auth-token']);
+      expect(Object.keys(await readNoCodeLog(root)).sort()).toEqual(['auth-token']);
       expect(res.pruned.sort()).toEqual(['gone-one', 'gone-two']);
     });
 

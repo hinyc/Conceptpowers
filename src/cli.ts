@@ -26,6 +26,7 @@ import { readConcept, listConcepts, editConceptContent } from './store/conceptSt
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
 import { recordTestReview } from './concept/testReview.js';
+import { recordNoCode } from './drift/noCode.js';
 import { listReferenceFiles } from './init/reference.js';
 import { checkReferencePaths } from './init/referencePaths.js';
 import { addReferencePath } from './init/addReferencePath.js';
@@ -411,6 +412,19 @@ export async function runCli(
         throw new Error(`--note is required when --result ${o.result}`);
       }
       const entry = await recordTestReview(o.root, concept, o.result, { tests, note: o.note });
+      out(JSON.stringify({ ok: true, slug, ...entry }));
+    });
+
+  program
+    .command('attest-no-code')
+    .description('개념 수정이 코드 변경을 필요로 하지 않는다는 판단을 계약 해시에 묶어 기록 (코드무관 기록)')
+    .argument('<slug>')
+    .requiredOption('--note <text>', '사유 (필수 — 기록의 목적이 사유 보존이다)')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (slug, o) => {
+      const concept = await readConcept(o.root, slug);
+      if (!concept) throw new Error(`Concept not found: ${slug}`);
+      const entry = await recordNoCode(o.root, concept, o.note);
       out(JSON.stringify({ ok: true, slug, ...entry }));
     });
 

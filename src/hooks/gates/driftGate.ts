@@ -2,6 +2,7 @@
 // src/hooks/gates/driftGate.ts
 import { computeDrift, type DriftItem } from '../../drift/detect.js';
 import { hasFollowedCode, missingRelatedPaths, presentTagSlugs } from '../../drift/follow.js';
+import { readNoCodeLog, freshNoCode } from '../../drift/noCode.js';
 import { pendingConceptDocs } from '../../drift/pendingDocs.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { defaultIgnoreGlobs } from '../../schema/initConfig.js';
@@ -51,6 +52,9 @@ async function computeSplit({ root, files, cfg }: GateInput): Promise<DriftSplit
   const tagged = await presentTagSlugs(root, staged, ignoreGlobs);
   // git 정보를 얻을 수 없으면 전부 미정착으로 기울인다 — 조용히 문서 동반 요구를 끄지 않는다.
   const pendingDocs = await pendingConceptDocs(root);
+  // 코드무관 기록: 신선한(현재 지문에 묶인) 기록이 있는 개념은 문서만 커밋해도 정식 통과다.
+  // 읽기 실패는 빈 기록 — 기록이 없던 것과 같으므로 조용히 열리는 쪽으로 기울지 않는다.
+  const noCodeLog = await readNoCodeLog(root);
   const missingDoc: DriftSplit['missingDoc'] = [];
   const missingCode: DriftItem[] = [];
   const untouched: DriftItem[] = [];
@@ -64,7 +68,12 @@ async function computeSplit({ root, files, cfg }: GateInput): Promise<DriftSplit
     if (codeStaged && !docStaged && docPending) {
       const stagedRelated = d.relatedPaths.map(normalizeRel).filter((p) => staged.has(p));
       missingDoc.push({ d, stagedRelated });
-    } else if (docStaged && !codeStaged && d.relatedPaths.length > 0) {
+    } else if (
+      docStaged &&
+      !codeStaged &&
+      d.relatedPaths.length > 0 &&
+      !freshNoCode(noCodeLog, d.slug, d.currentHash)
+    ) {
       // 연결 코드가 아예 없는 개념은 따라올 것이 없으므로 문서만 커밋해도 통과다.
       missingCode.push(d);
     } else if (!docStaged && !codeStaged) {
@@ -122,10 +131,10 @@ export const checkDrift: GateCheck = async (input) => {
       })
       .join(' / ');
     reasons.push(
-      `[CONCEPT DRIFT] ${detail}${more}. 개념 문서가 커밋에 들어왔는데 연결된 코드가 하나도 안 따라왔습니다. 개념 변경에 맞춰 고친 코드를 함께 스테이징하세요 — 연결 코드 전부가 아니라 실제로 고친 파일이면 됩니다(코드 변경이 필요 없는 개념 수정이면 강행 가능, [Drift Ignored]로 기록됨).`
+      `[CONCEPT DRIFT] ${detail}${more}. 개념 문서가 커밋에 들어왔는데 연결된 코드가 하나도 안 따라왔습니다. 개념 변경에 맞춰 고친 코드를 함께 스테이징하세요 — 연결 코드 전부가 아니라 실제로 고친 파일이면 됩니다. 코드 변경이 정말 필요 없는 개념 수정이면 사용자 확인 후 기록하고 다시 커밋하세요: attest-no-code 슬러그 --note "사유" (개념의 현재 지문에 묶이며, 결산 이력에 사유가 함께 남습니다).`
     );
     contexts.push(
-      'The staged concept doc(s) changed but NONE of their related code is staged (any one related file staged counts as followed; a staged file whose leading comment block carries the @concept:<slug> tag also counts, even if the mapping cache is stale). If you did change code for this concept, add the @concept:<slug> tag to it and stage it (then run conceptpowers:update-mapping). Otherwise run conceptpowers:check-concept to update the code, or override when the concept change genuinely needs no code change (the commit will be allowed and recorded as drift-ignored on the next reconcile).'
+      'The staged concept doc(s) changed but NONE of their related code is staged (any one related file staged counts as followed; a staged file whose leading comment block carries the @concept:<slug> tag also counts, even if the mapping cache is stale). If you did change code for this concept, add the @concept:<slug> tag to it and stage it (then run conceptpowers:update-mapping). Otherwise run conceptpowers:check-concept to update the code. When the concept change genuinely needs no code change, confirm with the user and record it — attest-no-code <slug> --note "<why>" — then retry the commit; the record is bound to the concept hash and the gate passes in every enforcement mode, with the reason kept in the reconcile history.'
     );
   }
   return {

@@ -36,7 +36,8 @@ function cpPaths(root) {
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
-    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
   };
 }
 
@@ -4345,7 +4346,10 @@ var HistoryEntry = external_exports.object({
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
+  aligned: external_exports.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: external_exports.boolean().default(false),
+  note: external_exports.string().max(1e3).default("")
 });
 var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
@@ -4368,6 +4372,12 @@ var TestReviewEntry = external_exports.object({
   // 판단 요약
 });
 var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
+var NoCodeEntry = external_exports.object({
+  hash: external_exports.string(),
+  note: external_exports.string().min(1).max(1e3),
+  at: external_exports.string()
+});
+var NoCodeLog = external_exports.record(external_exports.string(), NoCodeEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -4919,6 +4929,20 @@ async function computeDrift(root) {
   }));
 }
 
+// src/drift/noCode.ts
+import { readFile as readFile10 } from "node:fs/promises";
+async function readNoCodeLog(root) {
+  try {
+    return NoCodeLog.parse(JSON.parse(await readFile10(cpPaths(root).noCodeFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+function freshNoCode(log, slug3, currentHash) {
+  const entry = log[slug3];
+  return !!entry && entry.hash === currentHash;
+}
+
 // src/drift/pendingDocs.ts
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -4963,6 +4987,7 @@ async function computeSplit({ root, files, cfg }) {
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = await presentTagSlugs(root, staged, ignoreGlobs);
   const pendingDocs = await pendingConceptDocs(root);
+  const noCodeLog = await readNoCodeLog(root);
   const missingDoc = [];
   const missingCode = [];
   const untouched = [];
@@ -4976,7 +5001,7 @@ async function computeSplit({ root, files, cfg }) {
     if (codeStaged && !docStaged && docPending) {
       const stagedRelated = d.relatedPaths.map(normalizeRel).filter((p) => staged.has(p));
       missingDoc.push({ d, stagedRelated });
-    } else if (docStaged && !codeStaged && d.relatedPaths.length > 0) {
+    } else if (docStaged && !codeStaged && d.relatedPaths.length > 0 && !freshNoCode(noCodeLog, d.slug, d.currentHash)) {
       missingCode.push(d);
     } else if (!docStaged && !codeStaged) {
       untouched.push(d);
@@ -5022,10 +5047,10 @@ var checkDrift = async (input) => {
       return `${sanitizeText(d.slug)}${why} -> related code (none staged): ${paths.join(", ")}${pathsMore}`;
     }).join(" / ");
     reasons.push(
-      `[CONCEPT DRIFT] ${detail}${more}. \uAC1C\uB150 \uBB38\uC11C\uAC00 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC654\uB294\uB370 \uC5F0\uACB0\uB41C \uCF54\uB4DC\uAC00 \uD558\uB098\uB3C4 \uC548 \uB530\uB77C\uC654\uC2B5\uB2C8\uB2E4. \uAC1C\uB150 \uBCC0\uACBD\uC5D0 \uB9DE\uCDB0 \uACE0\uCE5C \uCF54\uB4DC\uB97C \uD568\uAED8 \uC2A4\uD14C\uC774\uC9D5\uD558\uC138\uC694 \u2014 \uC5F0\uACB0 \uCF54\uB4DC \uC804\uBD80\uAC00 \uC544\uB2C8\uB77C \uC2E4\uC81C\uB85C \uACE0\uCE5C \uD30C\uC77C\uC774\uBA74 \uB429\uB2C8\uB2E4(\uCF54\uB4DC \uBCC0\uACBD\uC774 \uD544\uC694 \uC5C6\uB294 \uAC1C\uB150 \uC218\uC815\uC774\uBA74 \uAC15\uD589 \uAC00\uB2A5, [Drift Ignored]\uB85C \uAE30\uB85D\uB428).`
+      `[CONCEPT DRIFT] ${detail}${more}. \uAC1C\uB150 \uBB38\uC11C\uAC00 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC654\uB294\uB370 \uC5F0\uACB0\uB41C \uCF54\uB4DC\uAC00 \uD558\uB098\uB3C4 \uC548 \uB530\uB77C\uC654\uC2B5\uB2C8\uB2E4. \uAC1C\uB150 \uBCC0\uACBD\uC5D0 \uB9DE\uCDB0 \uACE0\uCE5C \uCF54\uB4DC\uB97C \uD568\uAED8 \uC2A4\uD14C\uC774\uC9D5\uD558\uC138\uC694 \u2014 \uC5F0\uACB0 \uCF54\uB4DC \uC804\uBD80\uAC00 \uC544\uB2C8\uB77C \uC2E4\uC81C\uB85C \uACE0\uCE5C \uD30C\uC77C\uC774\uBA74 \uB429\uB2C8\uB2E4. \uCF54\uB4DC \uBCC0\uACBD\uC774 \uC815\uB9D0 \uD544\uC694 \uC5C6\uB294 \uAC1C\uB150 \uC218\uC815\uC774\uBA74 \uC0AC\uC6A9\uC790 \uD655\uC778 \uD6C4 \uAE30\uB85D\uD558\uACE0 \uB2E4\uC2DC \uCEE4\uBC0B\uD558\uC138\uC694: attest-no-code \uC2AC\uB7EC\uADF8 --note "\uC0AC\uC720" (\uAC1C\uB150\uC758 \uD604\uC7AC \uC9C0\uBB38\uC5D0 \uBB36\uC774\uBA70, \uACB0\uC0B0 \uC774\uB825\uC5D0 \uC0AC\uC720\uAC00 \uD568\uAED8 \uB0A8\uC2B5\uB2C8\uB2E4).`
     );
     contexts.push(
-      "The staged concept doc(s) changed but NONE of their related code is staged (any one related file staged counts as followed; a staged file whose leading comment block carries the @concept:<slug> tag also counts, even if the mapping cache is stale). If you did change code for this concept, add the @concept:<slug> tag to it and stage it (then run conceptpowers:update-mapping). Otherwise run conceptpowers:check-concept to update the code, or override when the concept change genuinely needs no code change (the commit will be allowed and recorded as drift-ignored on the next reconcile)."
+      'The staged concept doc(s) changed but NONE of their related code is staged (any one related file staged counts as followed; a staged file whose leading comment block carries the @concept:<slug> tag also counts, even if the mapping cache is stale). If you did change code for this concept, add the @concept:<slug> tag to it and stage it (then run conceptpowers:update-mapping). Otherwise run conceptpowers:check-concept to update the code. When the concept change genuinely needs no code change, confirm with the user and record it \u2014 attest-no-code <slug> --note "<why>" \u2014 then retry the commit; the record is bound to the concept hash and the gate passes in every enforcement mode, with the reason kept in the reconcile history.'
     );
   }
   return {
@@ -5047,10 +5072,10 @@ async function driftReviewNote(input) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile10(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile11(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -5095,7 +5120,7 @@ var checkTestFollow = async (input) => {
 };
 
 // src/hooks/gates/testScopeGate.ts
-import { readFile as readFile11 } from "node:fs/promises";
+import { readFile as readFile12 } from "node:fs/promises";
 import { join as join7 } from "node:path";
 var MAX_LISTED_PATHS3 = 8;
 var TAG_RE3 = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
@@ -5103,7 +5128,7 @@ var defaultTestGlobs2 = () => InitConfigSchema.shape.testGlobs.parse(void 0);
 async function pointsAtConcept(root, rel) {
   let content;
   try {
-    content = await readFile11(join7(root, rel), "utf8");
+    content = await readFile12(join7(root, rel), "utf8");
   } catch {
     return null;
   }

@@ -44,6 +44,7 @@ import { writeLock } from '../../src/drift/lock.js';
 import { contractHash } from '../../src/drift/hash.js';
 import { appendHistory } from '../../src/drift/history.js';
 import { recordTestReview } from '../../src/concept/testReview.js';
+import { recordNoCode } from '../../src/drift/noCode.js';
 import { parseConcept } from '../../src/schema/concept.js';
 import { recordAttest } from '../../src/concept/attest.js';
 
@@ -366,6 +367,56 @@ describe('decidePreToolUse', () => {
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('DRIFT');
+    // 정식 해소 경로 안내 — 강도와 무관하게 attest-no-code 기록을 안내한다(강행 안내가 아니라).
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('attest-no-code');
+  });
+
+  it('drift 문서만 스테이징돼도 신선한 코드무관 기록이 있으면 막지 않는다 [규칙: 신선한 기록이 있는 개념은 문서만 커밋해도 문지기가 막지 않는다]', async () => {
+    await scaffoldInit(root, {});
+    touch('src/login.ts');
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v1' },
+      purpose: { reason: 'r' },
+      actions: {},
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+    } as any);
+    const c1 = await readConcept(root, 'auth-token');
+    await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
+    await writeFeature(root, {
+      slug: 'login',
+      title: 'L',
+      concepts: ['auth-token'],
+      codePaths: ['src/login.ts'],
+    } as any);
+    await writeConcept(root, {
+      slug: 'auth-token',
+      category: ['behavior'],
+      title: 'A',
+      status: 'green',
+      description: { definition: 'v2' },
+      purpose: { reason: 'r' },
+      actions: {},
+      state: { managed: ['이 개념이 관리하는 대상'] },
+      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+    } as any);
+    const c2 = (await readConcept(root, 'auth-token'))!;
+    // drift 게이트 하나만 보려는 시나리오 — 딸린 검사·증빙 게이트는 기록으로 분리한다.
+    await recordTestReview(root, c2, 'no-tests', {
+      note: 'drift 게이트 단독 시나리오 — 이 픽스처 개념에는 딸린 검사가 없다',
+    });
+    await recordAttest(root, c2, 'pass');
+    await recordNoCode(root, c2, '문구 정리만 반영한 개념 수정 — 코드 영향 없음');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['docs/conceptpowers/concepts/data/auth-token.json'],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
   });
 
   it('개념 drift인데 맵핑된 코드만 스테이징되고 개념 문서가 빠지면 ask로 잡는다 (규칙: 개념 문서 동반 필수)', async () => {

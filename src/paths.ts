@@ -23,5 +23,6 @@ export function cpPaths(root: string) {
     pendingConflicts: join(base, 'concepts', '.alignment', 'pending-conflicts.json'),
     attestFile: join(base, 'concepts', '.alignment', 'attest.json'),
     testReviewFile: join(base, 'concepts', '.alignment', 'test-review.json'),
+    noCodeFile: join(base, 'concepts', '.alignment', 'no-code.json'),
   } as const;
 }

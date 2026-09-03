@@ -36,7 +36,8 @@ function cpPaths(root) {
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
-    testReviewFile: join(base, "concepts", ".alignment", "test-review.json")
+    testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
   };
 }
 
@@ -4386,7 +4387,10 @@ var HistoryEntry = external_exports.object({
   reason: external_exports.string().max(1e3).default(""),
   at: external_exports.string(),
   ignored: external_exports.boolean().default(false),
-  aligned: external_exports.boolean().default(false)
+  aligned: external_exports.boolean().default(false),
+  // 코드무관 기록이 있는 무시함: 사유가 남은 정당한 예외를 설명 없는 강행과 구분한다.
+  noCode: external_exports.boolean().default(false),
+  note: external_exports.string().max(1e3).default("")
 });
 var History = external_exports.array(HistoryEntry);
 var AttestEntry = external_exports.object({
@@ -4409,6 +4413,12 @@ var TestReviewEntry = external_exports.object({
   // 판단 요약
 });
 var TestReviewLog = external_exports.record(external_exports.string(), TestReviewEntry);
+var NoCodeEntry = external_exports.object({
+  hash: external_exports.string(),
+  note: external_exports.string().min(1).max(1e3),
+  at: external_exports.string()
+});
+var NoCodeLog = external_exports.record(external_exports.string(), NoCodeEntry);
 
 // src/drift/hash.ts
 import { createHash } from "node:crypto";
@@ -5211,11 +5221,11 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     "Commit packaging (the commit gate inspects ONLY the currently staged list \u2014 `git diff --cached --diff-filter=ACMR`; code already landed in earlier commits does NOT count):",
     "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the code you changed for them AND the fresh consistency attestation (docs/conceptpowers/concepts/.alignment/attest.json) in the SAME commit. The alignment lock/history are rewritten by the post-commit reconcile \u2014 include those files in your next commit; a lock-only follow-up commit is expected, not drift.",
     "- A drifted concept is judged ONLY when this commit engages it \u2014 its concept doc (docs/conceptpowers/concepts/data/**) or at least one of its related paths (@concept-tagged files + feature codePaths) is staged. A staged file whose leading comment block carries the @concept:<slug> tag also counts even if the mapping cache is stale.",
-    "- Staging mapped code for a drifted concept WITHOUT its edited concept doc is caught by the gate \u2014 stage the doc in the same commit (not required when the doc has no uncommitted changes, e.g. it already landed via a merge). Staging the doc without any related code is also caught (override only when the concept change genuinely needs no code change \u2192 recorded as Drift Ignored).",
+    '- Staging mapped code for a drifted concept WITHOUT its edited concept doc is caught by the gate \u2014 stage the doc in the same commit (not required when the doc has no uncommitted changes, e.g. it already landed via a merge). Staging the doc without any related code is also caught \u2014 when the concept change genuinely needs no code change, confirm with the user and record it (attest-no-code <slug> --note "<why>"); the record is bound to the concept hash and the gate then passes in every enforcement mode, with the reason kept in the reconcile history.',
     "- A commit unrelated to every drifted concept passes with a [DRIFT REVIEW] note \u2014 double-check the staged files are truly unrelated; the drift obligation stays open (baseline untouched) for a later engaged commit.",
     "- When moving or deleting files, migrate the @concept tags and refresh the mapping (conceptpowers:update-mapping) in the SAME commit. Paths that no longer exist on disk are excluded from the follow judgment, so a stale deleted path cannot block the gate \u2014 but it does leave the mapping inaccurate until refreshed.",
     "- Editing only a path string inside a concept body still changes its hash and counts as drift; update path wording in the same commit that moves the path.",
-    "- Never routinely force past the gate (Drift Ignored). Force only when the concept change genuinely needs no code change (say so to the user); otherwise fix the code and stage it. Each `ignored: true` entry in history.json is a recorded exception \u2014 accumulated unexplained ones void the concept\u2013code alignment guarantee.",
+    "- Never force past the gate (Drift Ignored). When the concept change genuinely needs no code change, the legitimate path is attest-no-code (user-confirmed, reason recorded); otherwise fix the code and stage it. Each `ignored: true` history entry without a noCode reason is an unexplained exception \u2014 accumulated ones void the concept\u2013code alignment guarantee.",
     redLine,
     pendingLine,
     "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
