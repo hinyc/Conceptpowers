@@ -892,6 +892,15 @@ li::marker {
   color: var(--muted);
 }
 
+/* 개념 근거 */
+.sources {
+  list-style: none;
+  padding-left: 0;
+}
+.sources li {
+  margin: 0.3rem 0;
+}
+
 /* 구현 경로 */
 .paths {
   list-style: none;

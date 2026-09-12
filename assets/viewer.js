@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-spec-bridge @concept:globally-unique-slug
+// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-spec-bridge @concept:globally-unique-slug @concept:concept-provenance
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -82,7 +82,7 @@ var I18N = {
     category: '분류',
     codeLinksLabel: '코드 경로',
     sourcesLabel: '근거',
-    sourceLinesHint: '한 줄에 하나씩 — 종류 | 경로 | 좌표 | 뒷받침',
+    sourceLinesHint: '한 줄에 하나씩 — code|reference|decision | 경로 | 좌표 | 뒷받침',
     sourceKind_code: '코드',
     sourceKind_reference: '참고자료',
     sourceKind_decision: '사람의 결정',
