@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug
+// @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug @concept:concept-provenance
 // src/store/conceptStore.ts
 import { readFile, readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
@@ -175,6 +175,7 @@ const EDITABLE_FIELDS = [
   'principle',
   'relations',
   'codeLinks',
+  'sources',
 ] as const;
 type EditableField = (typeof EDITABLE_FIELDS)[number];
 export type ConceptContentPatch = Partial<Pick<Concept, EditableField>>;

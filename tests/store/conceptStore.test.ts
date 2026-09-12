@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:globally-unique-slug @concept:human-owns-contract @concept:concept-inline-edit @concept:viewer-readability
+// @concept:settled-status @concept:globally-unique-slug @concept:human-owns-contract @concept:concept-inline-edit @concept:viewer-readability @concept:concept-provenance
 // tests/store/conceptStore.test.ts
 // 개념 본문의 저장·읽기와 상태 전이 가드를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -20,6 +20,9 @@
 //    있으면 그것을 따라가지 않고 실패시킨다" → 임시파일+rename 경로를 쓰고 심볼릭 링크를 따라가지 않는다
 //  - viewer-readability 불변 "항목의 이름은 은유적 부제 없이 그 자체로 무엇인지 알 수 있는 평이한
 //    이름 하나로 적는다 — 부제를 담을 자리 자체를 두지 않는다" → 부제를 patch에 실어도 저장 결과에 남지 않는다
+//  - concept-provenance 불변 "모든 개념은 근거를 하나 이상 밝힌다"
+//    → sources도 다른 본문 필드처럼 편집 화이트리스트에 있다 — 근거만 고쳐도 concept-inline-edit의
+//    "확정된 개념을 고치면 예외 없이 검토 중 상태로 내려간다"가 그대로 적용된다(특례 없음)
 //  - "없는 개념은 에러를 던진다"는 대응하는 개념 규칙이 없다 — 방어적 처리다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, lstatSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
@@ -224,5 +227,21 @@ describe('editConceptContent', () => {
   });
   it('없는 개념은 에러를 던진다', async () => {
     await expect(editConceptContent(root, 'ghost', { title: 'x' })).rejects.toThrow('not found');
+  });
+  it('sources도 편집 가능한 필드다', async () => {
+    await writeConcept(root, { ...base, status: 'pending' } as any);
+    const updated = await editConceptContent(root, 'admin-role', {
+      sources: [{ kind: 'decision', locator: '2026-09-12', supports: '테스트 근거' }],
+    });
+    expect(updated.sources).toEqual([
+      { kind: 'decision', path: '', locator: '2026-09-12', supports: '테스트 근거' },
+    ]);
+  });
+  it('sources만 고쳐도 다른 필드와 똑같이 green이 pending으로 내려간다(특례 없음)', async () => {
+    await writeConcept(root, { ...base, status: 'green' } as any);
+    const updated = await editConceptContent(root, 'admin-role', {
+      sources: [{ kind: 'decision', locator: '2026-09-12', supports: '테스트 근거' }],
+    });
+    expect(updated.status).toBe('pending');
   });
 });
