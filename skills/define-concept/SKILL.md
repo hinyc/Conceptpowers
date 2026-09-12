@@ -130,6 +130,20 @@ When you arrive here from an **undecidable verdict** (check-concept/audit report
      아니라 **전형적인 한 장면**을 한 문장으로 적는다 — "이렇게 하면 이렇게 된다"의 꼴이다
      (예: "개념 본문을 고치면 지문이 달라지고, 커밋 뒤 결산이 코드가 따라왔는지 판정한다").
      이 한 문장이 개념의 목적이 실제로 이루어지는 방식이고, 읽는 사람이 개념을 이해하는 입구다.
+   - **근거 (개념 `concept-provenance`):** `sources`에는 이 개념이 어디서 왔는지 코드
+     자리·참고자료 좌표·사람의 결정 가운데 하나 이상을 적는다.
+     - `code`/`reference`는 `path`가 필수다 — 코드는 저장소 상대 경로, 참고자료는 문서명 또는
+       `reference/paths.md`에 등록된 바깥 경로.
+     - `locator`는 자유 형식이다 — 코드는 심볼 이름을 먼저 짚고 줄 번호는 보조로만 쓴다
+       (줄 번호만 적으면 위 몇 줄만 고쳐도 낡는다). 참고자료는 `p.12`, `slide 7`, `3.2절`처럼
+       PDF 페이지·PPTX 슬라이드·문서 절 등 실제 형태를 따른다.
+     - `supports`에는 그 근거가 뒷받침하는 **우리가 쓴 규칙의 요약**을 적는다 — 참고자료의
+       원문을 옮겨 적지 않는다(`reference-privacy`). 발췌가 아니라 위치만 남긴다.
+     - 코드에도 참고자료에도 없이 사람이 판단해 정한 규칙은 `decision`으로 밝힌다 — `path` 없이
+       `locator`(언제/어떤 논의에서)와 `supports`(그 판단이 무엇에 기댔는지)만 채운다. **없는
+       근거를 지어내는 것보다 "사람이 정했다"고 정직하게 적는 것이 낫다.**
+     - 근거는 코드 판단(`check-concept`/`audit`)의 입력이 아니다 — 이 스킬(개념을 만들고 고칠
+       때)에서만 채운다.
 4. **Quality self-check (before saving anything):** for each rule in
    `actions.allow` / `actions.restrict` / `principle.immutableRules`, verify it is a
    **violation-decidable sentence** — a reviewer reading code could answer "does this code
