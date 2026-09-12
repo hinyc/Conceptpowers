@@ -76,5 +76,31 @@
     "src/audit/gaps.ts",
     "src/audit/audit.ts",
     "src/util/glob.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/mapping/scan.ts",
+      "locator": "scanTags, TAG_RE",
+      "supports": "\"코드의 표식을 훑어 지도를 만들고 보관본으로 저장하는 것\" — 파일에서 @concept 태그를 긁어 slug→files 지도를 만드는 지점"
+    },
+    {
+      "kind": "code",
+      "path": "src/mapping/leadingComment.ts",
+      "locator": "leadingCommentBlock",
+      "supports": "\"표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 — 본문 속 문자열이나 예시에 등장하는 표식 모양 글자는 표식이 아니다\""
+    },
+    {
+      "kind": "code",
+      "path": "src/audit/gaps.ts",
+      "locator": "findConceptlessFiles, isCodeFile",
+      "supports": "\"표식이 하나도 없는 파일을 격차로 모아 사용자에게 알리는 것\" / \"읽을 수 없거나 이미 사라진 파일은 격차로 판정하지 않고 건너뛴다\""
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-07-29 커밋 398f55e",
+      "supports": "2026-07-29 커밋 398f55e — 프로젝트 전반을 훑어 개념 후보를 전수 조사한 뒤 뷰어·거버넌스·플랫폼 세 갈래로 22개를 한꺼번에 정의·승인한 자리에서 함께 세워졌다. 개념별 개별 사유는 커밋 메시지에 남아 있지 않다"
+    }
   ]
 }

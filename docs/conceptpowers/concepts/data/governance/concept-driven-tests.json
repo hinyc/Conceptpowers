@@ -82,5 +82,37 @@
     "src/hooks/gates/testFollowGate.ts",
     "src/hooks/gates/testScopeGate.ts",
     "src/concept/testReview.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/hooks/gates/testFollowGate.ts",
+      "locator": "checkTestFollow",
+      "supports": "\"개념이 바뀌면 그 개념에 딸린 검사를 반드시 다시 본다 — 검사를 함께 고쳤거나, 고칠 필요가 없다는 사유를 기록으로 남겼거나, 둘 중 하나여야 넘어간다\""
+    },
+    {
+      "kind": "code",
+      "path": "src/hooks/gates/testScopeGate.ts",
+      "locator": "checkTestScope, pointsAtConcept",
+      "supports": "\"검사 파일에 '해당 개념 없음' 표시를 달거나 아무 개념도 가리키지 않은 채 두는 것\" 금지 — 검사는 반드시 실제 개념을 가리켜야 한다(@concept:none 불인정)"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-24 커밋 13d2049",
+      "supports": "\"딸린 검사가 아예 없더라도 조용히 넘어가지 않는다\" 등 검토 강제 규칙을 세션 안내 수준에서 커밋 게이트로 승격시킨 결정. 커밋 메시지: \"concept-driven-tests 개념은 사용자 승인 아래 수정 → 충돌 검사(30개 비교, 0건) 통과·증빙 기록 후 green 재정착\""
+    },
+    {
+      "kind": "reference",
+      "path": "docs/conceptpowers/reference/concept-centric-software-design.md",
+      "locator": "§7.2",
+      "supports": "테스트가 검사할 내용은 대상의 계약(스펙)에서 나와야 한다는 우리 규칙"
+    },
+    {
+      "kind": "reference",
+      "path": "app_design_with_alloy (2).pdf",
+      "locator": "p.71–72",
+      "supports": "개념이 바뀌면 그 개념에 딸린 검사를 반드시 다시 봐야 한다는 우리 규칙의 형식적 원형"
+    }
   ]
 }

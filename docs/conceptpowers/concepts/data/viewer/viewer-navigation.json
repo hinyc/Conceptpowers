@@ -69,5 +69,25 @@
     "assets/sidebar.js",
     "assets/topnav.js",
     "assets/viewer.js"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "assets/sidebar.js",
+      "locator": "CPSidebar.isOpen(), setOpen(), STORAGE_KEY, ensureEscHandler()",
+      "supports": "선택을 기록하는 것은 사람이 직접 조작했을 때뿐(버튼 클릭 시에만 writeStored 호출) / 기록된 선택이 있으면 기본값보다 우선(isOpen이 stored==='0'만 확인) / 상세 화면을 떠나 분리된 노드의 Esc는 사람의 뜻과 무관한 상황이라 기록하지 않음"
+    },
+    {
+      "kind": "code",
+      "path": "assets/topnav.js",
+      "locator": "CPTopnav.ensureGlobalHandlers()의 keydown 핸들러(ev.stopImmediatePropagation())",
+      "supports": "한 손짓(Esc)이 여러 뜻으로 읽힐 수 있으면 사람이 방금 하던 일(펼침 메뉴 닫기)을 먼저 되돌리고 그다음 것(곁 목록)은 건드리지 않음"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-25 커밋 75949d7",
+      "supports": "group-navbar와 sidebar-toggle을 병합해 viewer-navigation 신설 — 자격 기준 도입에 따라 화면 배치 규칙은 상위 기준 문서로 내리고 '사람이 직접 정한 선택을 도구가 뒤집지 않는다'는 약속 하나만 남김"
+    }
   ]
 }

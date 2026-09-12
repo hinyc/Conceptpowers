@@ -73,5 +73,31 @@
     "assets/viewer.js",
     "src/store/conceptStore.ts",
     "src/viewer/serve.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/viewer/serve.ts",
+      "locator": "isLocalRequest(), readBody()/MAX_BODY",
+      "supports": "읽기가 아닌 모든 요청은 내 컴퓨터에서 온 것인지 확인하고 아니면 거절 / 요청 본문 크기를 제한 없이 통째로 받지 않음(256KB 상한)"
+    },
+    {
+      "kind": "code",
+      "path": "src/store/conceptStore.ts",
+      "locator": "EDITABLE_FIELDS, editConceptContent()",
+      "supports": "고칠 수 없는 것으로 정해진 값(slug/group/status)을 저장에 끼워 넣지 못함 / 확정된 개념을 고치면 예외 없이 검토 중 상태로 내려감(nextStatus 로직)"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "renderConceptEdit()의 saveBtn 클릭 핸들러",
+      "supports": "분류·정의·존재 이유 중 하나라도 비어 있으면 저장하지 않고 어디가 비었는지 알려줌"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-28 커밋 67bf4ba",
+      "supports": "자격 기준을 개념 목록 자신에게 적용하면서, 따로 서 있던 뷰어 서버 보호 개념을 흡수했다 — 보호 규칙 전체가 결국 '고치는 통로'의 접근 조건이라는 판단이었다"
+    }
   ]
 }

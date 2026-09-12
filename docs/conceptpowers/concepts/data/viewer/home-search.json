@@ -67,5 +67,25 @@
   },
   "codeLinks": [
     "assets/viewer.js"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "searchData()",
+      "supports": "대소문자를 가리지 않고 일부만 맞아도 걸림(toLowerCase+indexOf) / 찾아오기 대상에 코드 파일 경로가 반드시 포함(type==='file' 필터) / 별칭도 같은 개념으로 데려옴(aliases를 검색 문자열에 포함)"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "viewIndex()의 searchIn 'input' 리스너, renderSearchResults()",
+      "supports": "검색어를 지우면 결과 화면을 닫고 원래 전체 목록으로 되돌아감 / 검색어가 비어 있을 때는 결과없음 안내를 절대 보여주지 않음(빈 값이면 renderSearchResults 자체를 호출하지 않음) / 맞는 것이 하나도 없으면 결과없음 안내를 보여줌"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-28 커밋 67bf4ba",
+      "supports": "옛 '찾기' 개념이 '두 자리에서 쓰인다'고 스스로 밝히고 있어(자격 기준: 목적 하나에 개념 하나), 없던 것을 찾아오는 쪽만 home-search로 남기고 있던 것을 좁히는 쪽은 list-filter로 분리"
+    }
   ]
 }

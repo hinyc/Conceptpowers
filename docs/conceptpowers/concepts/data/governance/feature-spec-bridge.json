@@ -70,5 +70,37 @@
   "codeLinks": [
     "src/schema/feature.ts",
     "src/store/featureStore.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/schema/feature.ts",
+      "locator": "FeatureSchema (concepts, codePaths 필드)",
+      "supports": "기능이 따르는 개념과 그것을 구현한 코드 경로는 기능 기록 한 곳에만 적는다"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "relatedFeatures()",
+      "supports": "개념에서 기능으로 가는 반대 방향은 그것에서 파생시킨다 — 함수 바로 위 주석에 '연결은 기능 기록 한 곳에만 적히므로(feature-spec-bridge) 역방향은 여기서 파생시킨다'고 명시"
+    },
+    {
+      "kind": "code",
+      "path": "skills/define-concept/SKILL.md",
+      "locator": "\"Check the related feature spec in features/...\" 단계 (약 106-109줄)",
+      "supports": "개념을 정의하는 자리에서 그 개념을 가리키는 기능 기록을 함께 만든다 — \"a concept with no feature pointing at it is an orphan in the knowledge graph\""
+    },
+    {
+      "kind": "reference",
+      "path": "docs/conceptpowers/reference/concept-centric-software-design.md",
+      "locator": "§2.1",
+      "supports": "기능은 그 자체로 읽을 내용을 갖지 않고 자신이 따르는 개념에 기대어서만 의미를 갖는다는 우리 규칙"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-07-29 커밋 398f55e",
+      "supports": "2026-07-29 커밋 398f55e — 프로젝트 전반을 훑어 개념 후보를 전수 조사한 뒤 뷰어·거버넌스·플랫폼 세 갈래로 22개를 한꺼번에 정의·승인한 자리에서 함께 세워졌다. 개념별 개별 사유는 커밋 메시지에 남아 있지 않다"
+    }
   ]
 }

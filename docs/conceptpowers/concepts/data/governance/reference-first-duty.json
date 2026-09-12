@@ -62,5 +62,25 @@
   "codeLinks": [
     "src/init/reference.ts",
     "src/init/referencePaths.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "skills/check-concept/SKILL.md",
+      "locator": "\"## Judgment basis: concepts ONLY (do not read reference/)\" 절 (약 17-20줄)",
+      "supports": "코드 판단 단계에서는 참고자료를 읽지 않고 적혀 있는 개념의 규칙만 근거로 삼는다"
+    },
+    {
+      "kind": "code",
+      "path": "skills/define-concept/SKILL.md",
+      "locator": "\"Reference first (필수)\" 지시문 및 \"Precedence when reference contradicts a settled concept\" 절 (약 34-51줄)",
+      "supports": "개념을 만들거나 고치거나 검사할 때는 참고자료 확인을 건너뛰지 않는다 / 참고자료가 확정된 개념과 어긋나면 개념이 우선이며, 그 사실을 사람에게 알린다"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-07-29 커밋 398f55e",
+      "supports": "2026-07-29 커밋 398f55e — 프로젝트 전반을 훑어 개념 후보를 전수 조사한 뒤 뷰어·거버넌스·플랫폼 세 갈래로 22개를 한꺼번에 정의·승인한 자리에서 함께 세워졌다. 개념별 개별 사유는 커밋 메시지에 남아 있지 않다"
+    }
   ]
 }

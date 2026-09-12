@@ -86,5 +86,55 @@
     "src/concept/quality.ts",
     "src/concept/conceptReference.ts",
     "src/concept/implementationLeak.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/concept/quality.ts",
+      "locator": "checkConceptQuality, checkFullConcept, MIN_RULE_LENGTH",
+      "supports": "\"개념에는 자기가 관리하는 대상과 그 대상을 바꾸는 행동이 각각 하나 이상 있다\" / \"규칙 문장은 최소 길이를 넘어야 판별 가능하다\" — green 승격의 결정론적 최소치를 기계로 검증"
+    },
+    {
+      "kind": "code",
+      "path": "src/concept/conceptReference.ts",
+      "locator": "findConceptReferences",
+      "supports": "\"개념의 규칙 문장은 다른 개념의 이름을 빌리지 않고 그대로 판별된다 — 개념 사이의 맞물림은 규칙이 아니라 상호작용 자리에 적는다\""
+    },
+    {
+      "kind": "code",
+      "path": "src/concept/implementationLeak.ts",
+      "locator": "findImplementationLeaks",
+      "supports": "\"개념 본문은 코드 표기 없이 그대로 읽힌다 — 파일 경로·함수 이름·호출 방법을 규칙 문장의 주어나 서술어로 쓰지 않는다\""
+    },
+    {
+      "kind": "reference",
+      "path": "docs/conceptpowers/reference/concept-centric-software-design.md",
+      "locator": "§2.1",
+      "supports": "개념은 클래스·데이터모델 엔티티·기능(feature)과 구분되는 별도의 실체라는 우리 규칙 — 무엇이 개념이 '아닌지'를 가르는 자격 기준의 뼈대"
+    },
+    {
+      "kind": "reference",
+      "path": "docs/conceptpowers/reference/concept-centric-software-design.md",
+      "locator": "§2.2",
+      "supports": "개념에는 관리 대상(상태)·행동·목적이 실현되는 전형적 장면(운영원칙)이 있어야 한다는 우리 규칙"
+    },
+    {
+      "kind": "reference",
+      "path": "Seminar_Concept_Centric_Software_Development_홍인열.pdf",
+      "locator": "p.25",
+      "supports": "개념의 규칙 문장이 다른 개념 이름을 빌리지 않고 독립적으로 판별돼야 한다는 우리 규칙"
+    },
+    {
+      "kind": "reference",
+      "path": "Seminar_Concept_Centric_Software_Development_홍인열.pdf",
+      "locator": "p.26",
+      "supports": "무엇이 개념이 될 수 있는지를 여섯 가지 자격 기준으로 차례로 물어 가른다는 우리 규칙 — 개념 판별 체크리스트가 원형이다"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-25 커밋 75949d7",
+      "supports": "참고자료(개념 중심 소프트웨어 개발 세미나)를 기준으로 당시 정의돼 있던 개념 31개를 전수 재검토한 끝에, 무엇이 개념이 될 수 있는지의 기준 자체가 없다는 판단으로 이 개념을 신설했다"
+    }
   ]
 }

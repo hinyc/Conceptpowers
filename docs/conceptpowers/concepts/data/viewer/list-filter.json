@@ -69,5 +69,19 @@
   "codeLinks": [
     "assets/sidebar.js",
     "assets/viewer.js"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "assets/sidebar.js",
+      "locator": "filterSideList(), matchesQuery(), shell()",
+      "supports": "대소문자 무시·부분 일치로 남김 / 좁히기는 이미 떠 있는 목록 안에서만 걸러내고 새로 데려오지 않음 / 묶음이 전부 안 맞으면 묶음 제목까지 숨김 / 입력을 지우면 원래대로 되돌림(matchesQuery('')→true) / shell()이 슬러그마다 searchIn을 새로 만들어 다른 항목 이동 시 입력이 빈 상태로 초기화됨"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-28 커밋 67bf4ba",
+      "supports": "옛 '찾기' 개념에서 '있던 것을 좁히는' 쪽만 떼어내 list-filter로 신설 — 자격 기준(목적 하나에 개념 하나) 위반 해소가 근거"
+    }
   ]
 }

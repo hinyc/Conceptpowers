@@ -105,5 +105,37 @@
     "src/drift/reconcile.ts",
     "src/drift/history.ts",
     "src/drift/noCode.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/drift/hash.ts",
+      "locator": "contractHash(), CONTRACT_HASH_VERSION",
+      "supports": "약속에 해당하는 항목 중 하나라도 값이 바뀌면 반드시 다른 지문이 나온다 / 지문 계산에 넣는 항목이 바뀌면 반드시 계산 규칙의 판을 함께 올린다"
+    },
+    {
+      "kind": "code",
+      "path": "src/drift/reconcile.ts",
+      "locator": "reconcileAfterCommit()",
+      "supports": "결산은 이번 커밋에 맞물린 개념만 한다 / 결산은 커밋이 성공한 뒤에만 한다"
+    },
+    {
+      "kind": "code",
+      "path": "src/drift/noCode.ts",
+      "locator": "recordNoCode(), NoCodeEntry.parse",
+      "supports": "코드 변경이 필요 없다는 기록은 사유 없이 남길 수 없고, 개념이 다시 바뀌면 효력을 잃는다 (zod 스키마가 빈 사유를 거절하고, hash에 당시 contractHash를 함께 저장)"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-26 커밋 cf524ab",
+      "supports": "결산·문지기 판정을 '이번 커밋에 맞물린 개념'으로 한정하기로 한 결정(사용자 승인) — 맞물린 코드 커밋에는 개념 동반을 요구하고, 무관한 커밋은 검토 안내만 하고 통과시키는 현재 규칙의 근거"
+    },
+    {
+      "kind": "reference",
+      "path": "docs/conceptpowers/reference/concept-centric-software-design.md",
+      "locator": "§7.2",
+      "supports": "코드가 지켜야 할 약속(스펙)이 실제로 바뀌었을 때에만 어긋남이 열린다는 우리 규칙"
+    }
   ]
 }

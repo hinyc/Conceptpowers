@@ -56,5 +56,25 @@
   "codeLinks": [
     "src/cli.ts",
     "src/init/scaffold.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/cli.ts",
+      "locator": "NO_INIT_REQUIRED / program.hook('preAction', ...)",
+      "supports": "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다 — NO_INIT_REQUIRED=new Set(['init','status'])만 예외로 두고, 나머지 명령은 preAction 훅에서 isInitialized 검사를 거친다"
+    },
+    {
+      "kind": "code",
+      "path": "src/init/scaffold.ts",
+      "locator": "isInitialized()",
+      "supports": "초기화되지 않았으면 실행하지 않고 무엇을 먼저 해야 하는지 알린다 — init.json 존재 여부만으로 초기화 표시를 판정하고, 없으면 cli.ts가 'not initialized — run /conceptpowers:init first'를 던진다"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-07-22 커밋 dbcbf16",
+      "supports": "커밋 메시지 'CLI preAction 가드: init.json 없으면 init·status 외 모든 명령 거부' — 개념 문서화(398f55e, 2026-07-29) 이전에 이미 사람이 이 강제 규칙을 결정해 구현했음을 보여주는 실제 도입 시점"
+    }
   ]
 }

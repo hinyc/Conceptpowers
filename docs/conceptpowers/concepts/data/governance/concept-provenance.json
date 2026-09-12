@@ -75,5 +75,24 @@
     "assets/viewer.js",
     "skills/define-concept/SKILL.md"
   ],
-  "sources": []
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/schema/concept.ts",
+      "locator": "ConceptSource, ConceptSourceKind (약 21-37줄), Concept.sources",
+      "supports": "모든 개념은 자신이 어디서 왔는지 코드 자리·참고자료 좌표·사람의 결정 가운데 하나 이상으로 밝힌다 (kind가 code/reference/decision 셋뿐이고, code/reference는 path 필수·decision은 supports 필수로 스키마가 강제)"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "sourceToLine(), describeSource()",
+      "supports": "근거에는 참고자료의 원문을 옮겨 적지 않고 위치만 적는다 — 편집 줄 형식이 kind|path|locator|supports 네 칸뿐이라 원문을 담을 칸이 애초에 없음(주석: '원문을 옮겨 적을 칸을 애초에 두지 않는다')"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-09-12 커밋 b553fc5",
+      "supports": "concept-provenance 개념의 최초 정의 결정. 설계 문서(docs/superpowers/specs/2026-09-12-concept-provenance-design.md)와 계획 문서(docs/superpowers/plans/2026-09-12-concept-provenance.md)를 거쳐 '모든 개념은 근거를 하나 이상 밝힌다'는 불변규칙을 도입했고, 뒤이은 902c83c(스키마 추가)·6aeb4c1(편집 화이트리스트)·ce9aedd(뷰어 표시·편집)·b13da11(상호작용 문구 정정)로 이어짐"
+    }
+  ]
 }

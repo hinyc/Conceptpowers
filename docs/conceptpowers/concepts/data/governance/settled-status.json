@@ -81,5 +81,31 @@
     "src/concept/quality.ts",
     "src/concept/attest.ts",
     "src/concept/pendingConflicts.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/concept/approve.ts",
+      "locator": "approveConcept",
+      "supports": "\"빨강을 초록으로 올리는 것은 사람이 명시적으로 요청했을 때만 한다\" — red가 아니면 거부하는 가드(approve는 red→green 전용)"
+    },
+    {
+      "kind": "code",
+      "path": "src/concept/attest.ts",
+      "locator": "recordAttest, readAttestLog",
+      "supports": "\"초록이 되려면 ... 다른 개념과 충돌하지 않는지 검사한 기록이 있을 것(검사 증빙)\""
+    },
+    {
+      "kind": "code",
+      "path": "src/concept/pendingConflicts.ts",
+      "locator": "setPendingConflict, clearPendingConflict",
+      "supports": "\"충돌로 확정을 미룰 때는 반드시 그 사유를 함께 기록한다\" / \"확정되는 순간 남아 있던 충돌 사유 기록을 지운다\""
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-07-22 커밋 1aaa2c7",
+      "supports": "이 도구가 자기 자신에게 처음 적용한 개념 세 가지 가운데 하나로 정해졌다 — 문지기·개념의 주인·신호등을 한 묶음으로 세운 자리다"
+    }
   ]
 }

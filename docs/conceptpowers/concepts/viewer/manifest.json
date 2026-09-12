@@ -96,7 +96,8 @@
         "skills/define-concept/SKILL.md",
         "tests/schema/concept.test.ts",
         "tests/store/conceptStore.test.ts",
-        "tests/viewer/sources.test.ts"
+        "tests/viewer/sources.test.ts",
+        "tests/concept/quality.test.ts"
       ]
     },
     {
@@ -348,7 +349,6 @@
         "tests/concept/attest.test.ts",
         "tests/concept/pendingConflicts.test.ts",
         "tests/concept/quality-gate.test.ts",
-        "tests/concept/quality.test.ts",
         "tests/drift/detect.test.ts",
         "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
@@ -360,7 +360,8 @@
         "tests/schema/concept.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/concept/quality.test.ts"
       ]
     },
     {
@@ -1260,6 +1261,13 @@
         "title": "tests/viewer/sources.test.ts"
       },
       {
+        "id": "p:tests/concept/quality.test.ts",
+        "label": "quality.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/quality.test.ts"
+      },
+      {
         "id": "c:concept-scope",
         "label": "개념 자격 기준",
         "type": "concept",
@@ -1839,13 +1847,6 @@
         "type": "file",
         "href": "",
         "title": "tests/concept/quality-gate.test.ts"
-      },
-      {
-        "id": "p:tests/concept/quality.test.ts",
-        "label": "quality.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/quality.test.ts"
       },
       {
         "id": "c:generated-not-hand-edited",
@@ -2539,6 +2540,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:concept-provenance",
+        "target": "p:tests/concept/quality.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:concept-scope",
         "target": "p:skills/define-concept/SKILL.md",
         "kind": "concept-file"
@@ -3180,11 +3186,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/concept/quality.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/drift/detect.test.ts",
         "kind": "concept-file"
       },
@@ -3241,6 +3242,11 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/concept/quality.test.ts",
         "kind": "concept-file"
       },
       {

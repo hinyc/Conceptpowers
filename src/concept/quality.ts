@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:concept-scope
+// @concept:settled-status @concept:concept-scope @concept:concept-provenance
 // src/concept/quality.ts
 // green 승격의 결정론적 최소치. 규칙의 "의미적" 품질(위반 판별 가능한 문장인가)은
 // define-concept 스킬(LLM 루브릭)이 담당하고, 여기서는 기계 검증 가능한 결격만 거른다.
@@ -47,12 +47,21 @@ function checkFullConcept(c: Concept, rules: readonly string[]): string[] {
   ];
 }
 
+// 근거가 없으면 초록으로 올리지 않는다(concept-provenance). 용어 단독 개념도 예외가 아니다 —
+// 사람의 결정 하나만 적혀 있어도 통과하므로, 통과하려고 없는 좌표를 지어낼 이유가 없다.
+function checkSources(c: Concept): string[] {
+  return c.sources.length === 0
+    ? ['no source: sources must name at least 1 origin (code / reference / decision)']
+    : [];
+}
+
 export function checkConceptQuality(c: Concept, knownSlugs: readonly string[] = []): QualityReport {
   const rules = [...c.actions.allow, ...c.actions.restrict, ...c.principle.immutableRules];
   const termOnly = c.category.length === 1 && c.category[0] === 'term';
 
   const deficiencies = [
     ...(termOnly ? checkTermConcept(c) : checkFullConcept(c, rules)),
+    ...checkSources(c),
     ...rules
       .filter((rule) => rule.trim().length < MIN_RULE_LENGTH)
       .map((rule) => `rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`),

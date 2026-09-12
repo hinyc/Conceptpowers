@@ -76,5 +76,25 @@
   "codeLinks": [
     "assets/viewer.js",
     "src/viewer/graph.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/viewer/graph.ts",
+      "locator": "buildGraphData()",
+      "supports": "그래프는 기능을 기준으로 잇는다 — 기능→개념(feature-concept 엣지), 개념→코드 파일(concept-file 엣지); 기능의 codePaths는 선이 되지 않고 코드는 반드시 개념을 거쳐 이어짐"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "파일 말풍선의 copyBtn 클릭 핸들러, flashBtn()",
+      "supports": "경로 복사의 성공과 실패를 모두 사용자에게 즉시 보여준다 — copyText() then/catch 각각에서 flashBtn(copied)/flashBtn(copyFailed) 호출"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-24 개념 수정 이력(사용자 승인)",
+      "supports": "그래프를 기능 기준 3종 노드(기능·개념·코드)로 확장하고, 기능 점을 중앙·강조색으로, 진입 시 쪽맞춤, 점 클릭 시 이웃 하이라이트+바로가기 단추를 사용자 요청으로 도입"
+    }
   ]
 }

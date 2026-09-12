@@ -66,5 +66,25 @@
     "src/hooks/preToolUse.ts",
     "src/hooks/postToolUse.ts",
     "src/schema/initConfig.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/schema/initConfig.ts",
+      "locator": "EnforcementSchema",
+      "supports": "\"강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다\" — z.enum(['strict','standard','light']).default('standard')"
+    },
+    {
+      "kind": "code",
+      "path": "src/hooks/preToolUse.ts",
+      "locator": "decidePreToolUse — enforcement 분기 (standard/strict/light)",
+      "supports": "\"강도가 무엇이든 지키는 대상(검사 항목)은 같다 — 바뀌는 것은 대응(차단/질문/경고)뿐이다\" — 코드 주석도 이 규칙을 직접 인용: \"기밀 확인 판정 자체는 강도(enforcement)와 무관하게 항상 계산한다(governance-mode 불변 규칙: 지키는 대상은 같다)\""
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-08-13 커밋 77bab17",
+      "supports": "ask-only-gate(단일 강도)를 은퇴시키고 governance-mode(strict/standard/light 3단계)를 새로 정의한 결정. 이 교체를 참조하던 기존 개념 4건(settled-status, drift-reconcile, audit-gap-detection, init-gate)의 상호작용 텍스트도 함께 갱신하고 사용자 승인 아래 green 재정착시켰다고 커밋 메시지에 기록됨"
+    }
   ]
 }

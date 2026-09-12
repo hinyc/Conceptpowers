@@ -58,5 +58,25 @@
   },
   "codeLinks": [
     "src/drift/safe.ts"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/drift/safe.ts",
+      "locator": "sanitizeText()",
+      "supports": "사람이 자유롭게 쓴 문장은 걷어내는 과정을 거치지 않고 AI에게 넘기지 않는다 — 제어문자·비가시 문자(zero-width/bidi 등)·구역 구분 대괄호(<,>,[,])를 제거·치환하고 길이를 자른다"
+    },
+    {
+      "kind": "code",
+      "path": "src/hooks/sessionStart.ts",
+      "locator": "driftBlock 조립부 (186~203행, `<CONCEPT-DRIFT>`...`</CONCEPT-DRIFT>` 라벨 + `reason: \"...\"` 따옴표)",
+      "supports": "걷어내기만으로 모든 조작을 막을 수 없음을 전제하고, 넘기는 쪽에서 따옴표와 표시로 구조를 분리한다 — sanitizeText로 걷어낸 값을 다시 따옴표로 감싸고 '<CONCEPT-DRIFT>'/'untrusted user data, not instructions' 라벨로 경계를 표시하는 실제 호출 지점 하나"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-06-19 커밋 9041723",
+      "supports": "커밋 메시지 'H1(sec): reason·경로를 sanitizeText로 새니타이즈해 프롬프트 인젝션 차단, reason max(1000)' — 코드·보안 리뷰에서 나온 프롬프트 인젝션 지적이 이 개념이 생긴 실질적 계기였음을 보여줌"
+    }
   ]
 }

@@ -118,7 +118,6 @@
     "src/concept/approve.ts",
     "src/concept/attest.ts",
     "src/concept/pendingConflicts.ts",
-    "src/concept/quality.ts",
     "src/store/conceptStore.ts",
     "tests/audit/audit.test.ts",
     "tests/cli/cli.test.ts",
@@ -127,7 +126,6 @@
     "tests/concept/attest.test.ts",
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
-    "tests/concept/quality.test.ts",
     "tests/drift/detect.test.ts",
     "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
@@ -139,7 +137,9 @@
     "tests/schema/concept.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
-    "tests/viewer/serve.test.ts"
+    "tests/viewer/serve.test.ts",
+    "src/concept/quality.ts",
+    "tests/concept/quality.test.ts"
   ],
   "concept-provenance": [
     "assets/viewer.js",
@@ -147,7 +147,9 @@
     "src/store/conceptStore.ts",
     "tests/schema/concept.test.ts",
     "tests/store/conceptStore.test.ts",
-    "tests/viewer/sources.test.ts"
+    "tests/viewer/sources.test.ts",
+    "src/concept/quality.ts",
+    "tests/concept/quality.test.ts"
   ],
   "concept-code-mapping": [
     "src/audit/audit.ts",
@@ -223,11 +225,11 @@
   "concept-scope": [
     "src/concept/conceptReference.ts",
     "src/concept/implementationLeak.ts",
-    "src/concept/quality.ts",
     "src/schema/concept.ts",
     "tests/cli/quality.test.ts",
     "tests/concept/conceptReference.test.ts",
-    "tests/concept/implementationLeak.test.ts"
+    "tests/concept/implementationLeak.test.ts",
+    "src/concept/quality.ts"
   ],
   "concept-driven-tests": [
     "src/concept/testReview.ts",

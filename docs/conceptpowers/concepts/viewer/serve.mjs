@@ -4303,11 +4303,15 @@ function checkFullConcept(c, rules) {
     ] : []
   ];
 }
+function checkSources(c) {
+  return c.sources.length === 0 ? ["no source: sources must name at least 1 origin (code / reference / decision)"] : [];
+}
 function checkConceptQuality(c, knownSlugs = []) {
   const rules = [...c.actions.allow, ...c.actions.restrict, ...c.principle.immutableRules];
   const termOnly = c.category.length === 1 && c.category[0] === "term";
   const deficiencies = [
     ...termOnly ? checkTermConcept(c) : checkFullConcept(c, rules),
+    ...checkSources(c),
     ...rules.filter((rule) => rule.trim().length < MIN_RULE_LENGTH).map((rule) => `rule too short (< ${MIN_RULE_LENGTH} chars after trim): "${rule}"`),
     // 개념 독립성 — 규칙이 다른 개념의 이름을 불러야 판별된다면 혼자 서지 못하는 개념이다.
     ...findConceptReferences(c, knownSlugs).map(describeConceptReference)
