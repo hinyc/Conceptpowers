@@ -78,34 +78,34 @@
   "feature-spec-bridge": {
     "hash": "3:70491ad40129",
     "result": "pass",
-    "at": "2026-09-12T10:45:38.738Z",
+    "at": "2026-09-12T10:47:54.637Z",
     "compared": [
       "concept-code-mapping",
       "globally-unique-slug",
       "knowledge-graph-view"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "globally-unique-slug": {
     "hash": "3:26e0204fc772",
     "result": "pass",
-    "at": "2026-09-12T10:45:38.790Z",
+    "at": "2026-09-12T10:47:54.689Z",
     "compared": [
       "feature-spec-bridge",
       "concept-code-mapping",
       "human-owns-contract"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "reference-first-duty": {
     "hash": "3:02792f6ccd4e",
     "result": "pass",
-    "at": "2026-09-12T10:45:38.841Z",
+    "at": "2026-09-12T10:47:54.736Z",
     "compared": [
       "human-owns-contract",
       "reference-privacy"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "output-locale": {
     "hash": "3:dc3ce369ff7d",
@@ -147,11 +147,11 @@
   "generated-not-hand-edited": {
     "hash": "3:0aab1909a951",
     "result": "pass",
-    "at": "2026-09-12T10:45:38.890Z",
+    "at": "2026-09-12T10:47:54.782Z",
     "compared": [
       "plugin-version-sync"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "plugin-version-sync": {
     "hash": "3:87dd40f97056",
@@ -174,12 +174,12 @@
   "reference-privacy": {
     "hash": "3:371e2b04dacf",
     "result": "pass",
-    "at": "2026-09-12T10:45:38.940Z",
+    "at": "2026-09-12T10:47:54.831Z",
     "compared": [
       "reference-first-duty",
       "untrusted-text-sanitization"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "concept-driven-tests": {
     "hash": "3:73b980042e49",
