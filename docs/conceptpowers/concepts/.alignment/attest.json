@@ -649,5 +649,22 @@
       "viewer-navigation",
       "viewer-readability"
     ]
+  },
+  "concept-provenance": {
+    "hash": "3:ff307e04b551",
+    "result": "pass",
+    "at": "2026-09-12T06:27:05.839Z",
+    "compared": [
+      "reference-first-duty",
+      "reference-privacy",
+      "settled-status",
+      "concept-scope",
+      "human-owns-contract",
+      "governance-mode",
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-inline-edit"
+    ],
+    "note": "수정 — 근거 편집도 여느 본문 편집과 동일하게 강등된다고 정정(concept-inline-edit의 '예외 없이' 규칙과 충돌 발견 후 반영), 그 외 충돌 없음"
   }
 }

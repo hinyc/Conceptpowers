@@ -7395,6 +7395,17 @@ var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "per
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
 var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
 var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
+var ConceptSourceKind = external_exports.enum(["code", "reference", "decision"]);
+var ConceptSource = external_exports.object({
+  kind: ConceptSourceKind,
+  path: external_exports.string().default(""),
+  locator: external_exports.string().default(""),
+  supports: external_exports.string().default("")
+}).refine((s) => s.kind === "decision" || s.path.trim() !== "", {
+  message: "code/reference source requires a non-empty path"
+}).refine((s) => s.kind !== "decision" || s.supports.trim() !== "", {
+  message: "decision source requires a non-empty supports"
+});
 var ConceptSchema = external_exports.object({
   slug,
   group: external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default(""),
@@ -7440,7 +7451,8 @@ var ConceptSchema = external_exports.object({
     next: external_exports.string().default(""),
     related: external_exports.array(external_exports.string()).default([])
   }).default({}),
-  codeLinks: external_exports.array(external_exports.string()).default([])
+  codeLinks: external_exports.array(external_exports.string()).default([]),
+  sources: external_exports.array(ConceptSource).default([])
 });
 function parseConcept(input) {
   return ConceptSchema.parse(input);
@@ -7810,7 +7822,8 @@ var EDITABLE_FIELDS = [
   "actions",
   "principle",
   "relations",
-  "codeLinks"
+  "codeLinks",
+  "sources"
 ];
 async function editConceptContent(root, slug3, patch) {
   const concept = await readConcept(root, slug3);

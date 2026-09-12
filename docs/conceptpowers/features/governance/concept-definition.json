@@ -6,7 +6,8 @@
   "concepts": [
     "concept-scope",
     "globally-unique-slug",
-    "human-owns-contract"
+    "human-owns-contract",
+    "concept-provenance"
   ],
   "codePaths": [
     "skills/define-concept/SKILL.md",

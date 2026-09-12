@@ -90,5 +90,9 @@
   "concept-code-binding": {
     "hash": "3:833eb6e346a2",
     "at": "2026-08-31T09:40:09.141Z"
+  },
+  "concept-provenance": {
+    "hash": "3:ff307e04b551",
+    "at": "2026-09-12T07:44:50.448Z"
   }
 }

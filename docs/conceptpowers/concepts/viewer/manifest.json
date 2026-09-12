@@ -78,6 +78,25 @@
       ]
     },
     {
+      "slug": "concept-provenance",
+      "group": "governance",
+      "title": "개념의 근거",
+      "status": "green",
+      "category": [
+        "behavior",
+        "term"
+      ],
+      "aliases": [],
+      "url": "../data/governance/concept-provenance.json",
+      "codeLinks": [
+        "src/schema/concept.ts",
+        "src/concept/quality.ts",
+        "src/store/conceptStore.ts",
+        "assets/viewer.js",
+        "skills/define-concept/SKILL.md"
+      ]
+    },
+    {
       "slug": "concept-scope",
       "group": "governance",
       "title": "개념 자격 기준",
@@ -633,7 +652,8 @@
       "concepts": [
         "concept-scope",
         "globally-unique-slug",
-        "human-owns-contract"
+        "human-owns-contract",
+        "concept-provenance"
       ]
     },
     {
@@ -1173,18 +1193,11 @@
         "title": "tests/hooks/testFollowGate.test.ts"
       },
       {
-        "id": "c:concept-scope",
-        "label": "개념 자격 기준",
+        "id": "c:concept-provenance",
+        "label": "개념의 근거",
         "type": "concept",
-        "href": "#/concept/concept-scope",
-        "title": "concept-scope"
-      },
-      {
-        "id": "p:skills/define-concept/SKILL.md",
-        "label": "SKILL.md",
-        "type": "file",
-        "href": "",
-        "title": "skills/define-concept/SKILL.md"
+        "href": "#/concept/concept-provenance",
+        "title": "concept-provenance"
       },
       {
         "id": "p:src/schema/concept.ts",
@@ -1199,6 +1212,34 @@
         "type": "file",
         "href": "",
         "title": "src/concept/quality.ts"
+      },
+      {
+        "id": "p:src/store/conceptStore.ts",
+        "label": "conceptStore.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/store/conceptStore.ts"
+      },
+      {
+        "id": "p:assets/viewer.js",
+        "label": "viewer.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/viewer.js"
+      },
+      {
+        "id": "p:skills/define-concept/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/define-concept/SKILL.md"
+      },
+      {
+        "id": "c:concept-scope",
+        "label": "개념 자격 기준",
+        "type": "concept",
+        "href": "#/concept/concept-scope",
+        "title": "concept-scope"
       },
       {
         "id": "p:src/concept/conceptReference.ts",
@@ -1460,13 +1501,6 @@
         "title": "tests/store/featureStore.test.ts"
       },
       {
-        "id": "p:assets/viewer.js",
-        "label": "viewer.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/viewer.js"
-      },
-      {
         "id": "p:assets/concept.css",
         "label": "concept.css",
         "type": "file",
@@ -1479,13 +1513,6 @@
         "type": "concept",
         "href": "#/concept/globally-unique-slug",
         "title": "globally-unique-slug"
-      },
-      {
-        "id": "p:src/store/conceptStore.ts",
-        "label": "conceptStore.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/store/conceptStore.ts"
       },
       {
         "id": "p:src/viewer/manifest.ts",
@@ -2146,6 +2173,11 @@
         "kind": "feature-concept"
       },
       {
+        "source": "f:concept-definition",
+        "target": "c:concept-provenance",
+        "kind": "feature-concept"
+      },
+      {
         "source": "f:concept-driven-testing",
         "target": "c:concept-driven-tests",
         "kind": "feature-concept"
@@ -2453,6 +2485,31 @@
       {
         "source": "c:concept-driven-tests",
         "target": "p:tests/hooks/testFollowGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:src/schema/concept.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:src/concept/quality.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:src/store/conceptStore.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:assets/viewer.js",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:skills/define-concept/SKILL.md",
         "kind": "concept-file"
       },
       {
@@ -3702,5 +3759,5 @@
       }
     ]
   },
-  "generatorVersion": "1.11.1"
+  "generatorVersion": "1.12.0"
 }

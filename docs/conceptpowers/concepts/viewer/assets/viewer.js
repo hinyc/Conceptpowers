@@ -81,6 +81,11 @@ var I18N = {
     relatedSlugs: '관련 개념(slug)',
     category: '분류',
     codeLinksLabel: '코드 경로',
+    sourcesLabel: '근거',
+    sourceLinesHint: '한 줄에 하나씩 — 종류 | 경로 | 좌표 | 뒷받침',
+    sourceKind_code: '코드',
+    sourceKind_reference: '참고자료',
+    sourceKind_decision: '사람의 결정',
     linesHint: '한 줄에 하나씩',
     sidebarOpenLabel: '개념 목록 열기',
     sidebarCloseLabel: '개념 목록 닫기',
@@ -163,6 +168,11 @@ var I18N = {
     relatedSlugs: 'Related concepts (slug)',
     category: 'Category',
     codeLinksLabel: 'Code paths',
+    sourcesLabel: 'Sources',
+    sourceLinesHint: 'one per line — kind | path | locator | supports',
+    sourceKind_code: 'Code',
+    sourceKind_reference: 'Reference',
+    sourceKind_decision: 'Decision',
     linesHint: 'one per line',
     sidebarOpenLabel: 'Open concept list',
     sidebarCloseLabel: 'Close concept list',
@@ -1039,6 +1049,7 @@ function renderConceptRead(slug) {
   var entry = conceptEntry(slug);
   var related = relatedFeatures(slug);
   var codeLinks = (entry && entry.codeLinks) || [];
+  var sources = c.sources || [];
   var editBar = state.editable
     ? h('div', { class: 'edit-bar' }, [
         statusControl(slug, c),
@@ -1105,6 +1116,18 @@ function renderConceptRead(slug) {
           ),
         ])
       : null,
+    sources.length
+      ? h('section', { class: 'section' }, [
+          h('h2', null, t.sourcesLabel),
+          h(
+            'ul',
+            { class: 'sources' },
+            sources.map(function (s) {
+              return h('li', null, describeSource(t, s));
+            })
+          ),
+        ])
+      : null,
     codeLinks.length
       ? h('section', { class: 'section' }, [
           h('h2', null, t.implementationPaths),
@@ -1138,6 +1161,36 @@ function toLines(str) {
 }
 function linesOf(arr) {
   return (arr || []).join('\n');
+}
+var SOURCE_KINDS = ['code', 'reference', 'decision'];
+// 근거 한 줄 ↔ 구조체 왕복(concept-provenance). 표시와 저장 모두 이 형식을 쓴다 —
+// 원문을 옮겨 적을 칸을 애초에 두지 않는다(reference-privacy).
+function sourceToLine(s) {
+  return [s.kind || '', s.path || '', s.locator || '', s.supports || ''].join(' | ');
+}
+function lineToSource(line) {
+  var parts = line.split('|').map(function (p) {
+    return p.trim();
+  });
+  var kind = parts[0];
+  if (SOURCE_KINDS.indexOf(kind) === -1) return null;
+  return { kind: kind, path: parts[1] || '', locator: parts[2] || '', supports: parts[3] || '' };
+}
+function sourcesToLines(sources) {
+  return (sources || []).map(sourceToLine).join('\n');
+}
+function linesToSources(text) {
+  return toLines(text)
+    .map(lineToSource)
+    .filter(Boolean);
+}
+function describeSource(t, s) {
+  var kindLabel = t['sourceKind_' + s.kind] || s.kind;
+  var bits = [kindLabel];
+  if (s.path) bits.push(s.path);
+  if (s.locator) bits.push(s.locator);
+  var head = bits.join(' · ');
+  return s.supports ? head + ' — ' + s.supports : head;
 }
 // label + 컨트롤 행. ctrl은 input/textarea 노드. 반환: { row, ctrl }
 function field(labelText, ctrl, hint) {
@@ -1193,6 +1246,7 @@ function renderConceptEdit(slug) {
   f.next = input(c.relations.next);
   f.related = area(linesOf(c.relations.related), 2);
   f.codeLinks = area(linesOf(c.codeLinks), 3);
+  f.sources = area(sourcesToLines(c.sources), 3);
 
   function collect() {
     var category = CATEGORIES.filter(function (cat) {
@@ -1233,6 +1287,7 @@ function renderConceptEdit(slug) {
         related: toLines(f.related.value),
       },
       codeLinks: toLines(f.codeLinks.value),
+      sources: linesToSources(f.sources.value),
     };
   }
 
@@ -1317,6 +1372,7 @@ function renderConceptEdit(slug) {
           field('next', f.next),
           field(t.relatedSlugs, f.related, t.linesHint),
           field(t.codeLinksLabel, f.codeLinks, t.linesHint),
+          field(t.sourcesLabel, f.sources, t.sourceLinesHint),
         ]),
         h('nav', { class: 'pagenav' }, [h('a', { href: '#/' }, t.conceptList)]),
       ])

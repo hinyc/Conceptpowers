@@ -1924,5 +1924,14 @@
     "at": "2026-09-03T01:55:38.333Z",
     "ignored": false,
     "aligned": true
+  },
+  {
+    "slug": "concept-provenance",
+    "hash": "3:ff307e04b551",
+    "prevHash": "",
+    "reason": "정의 직후 재검토 — concept-inline-edit의 '예외 없이' 규칙과 충돌해 '근거만 고치면 강등 안 함' 관련 서술 3곳 제거",
+    "at": "2026-09-12T06:27:15.130Z",
+    "ignored": false,
+    "aligned": false
   }
 ]
