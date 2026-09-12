@@ -43,12 +43,12 @@
   "knowledge-graph-view": {
     "hash": "3:060f2ceca012",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.900Z",
+    "at": "2026-09-12T10:23:44.514Z",
     "compared": [
       "concept-code-mapping",
       "feature-spec-bridge"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "drift-reconcile": {
     "hash": "3:999d889b5d9a",
@@ -67,45 +67,45 @@
   "concept-code-mapping": {
     "hash": "3:69b2b52f6545",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.117Z",
+    "at": "2026-09-12T10:23:44.210Z",
     "compared": [
       "feature-spec-bridge",
       "globally-unique-slug",
       "governance-mode"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "feature-spec-bridge": {
     "hash": "3:70491ad40129",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.268Z",
+    "at": "2026-09-12T10:23:44.265Z",
     "compared": [
       "concept-code-mapping",
       "globally-unique-slug",
       "knowledge-graph-view"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "globally-unique-slug": {
     "hash": "3:26e0204fc772",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.319Z",
+    "at": "2026-09-12T10:23:44.317Z",
     "compared": [
       "feature-spec-bridge",
       "concept-code-mapping",
       "human-owns-contract"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "reference-first-duty": {
     "hash": "3:02792f6ccd4e",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.464Z",
+    "at": "2026-09-12T10:23:44.367Z",
     "compared": [
       "human-owns-contract",
       "reference-privacy"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "output-locale": {
     "hash": "3:dc3ce369ff7d",
@@ -147,11 +147,11 @@
   "generated-not-hand-edited": {
     "hash": "3:0aab1909a951",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.561Z",
+    "at": "2026-09-12T10:23:44.413Z",
     "compared": [
       "plugin-version-sync"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "plugin-version-sync": {
     "hash": "3:87dd40f97056",
@@ -174,12 +174,12 @@
   "reference-privacy": {
     "hash": "3:371e2b04dacf",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.707Z",
+    "at": "2026-09-12T10:23:44.465Z",
     "compared": [
       "reference-first-duty",
       "untrusted-text-sanitization"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "concept-driven-tests": {
     "hash": "3:73b980042e49",
