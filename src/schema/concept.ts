@@ -1,4 +1,4 @@
-// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-scope
+// @concept:globally-unique-slug @concept:viewer-readability @concept:concept-scope @concept:concept-provenance
 import { z } from 'zod';
 
 export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permission', 'term']);
@@ -15,6 +15,26 @@ const slug = z
 // red = 미승인(자동추론 기본/거부). 기본값은 red(특권 상태 pending은 명시 지정만).
 export const ConceptStatus = z.enum(['green', 'pending', 'red']);
 export type ConceptStatus = z.infer<typeof ConceptStatus>;
+
+// 개념이 어디서 왔는지 밝히는 근거 하나(concept-provenance). code/reference는 path로
+// 코드 자리·참고자료 좌표를 가리키고, decision은 path 없이 사람의 판단만으로 성립한다.
+export const ConceptSourceKind = z.enum(['code', 'reference', 'decision']);
+export type ConceptSourceKind = z.infer<typeof ConceptSourceKind>;
+
+export const ConceptSource = z
+  .object({
+    kind: ConceptSourceKind,
+    path: z.string().default(''),
+    locator: z.string().default(''),
+    supports: z.string().default(''),
+  })
+  .refine((s) => s.kind === 'decision' || s.path.trim() !== '', {
+    message: 'code/reference source requires a non-empty path',
+  })
+  .refine((s) => s.kind !== 'decision' || s.supports.trim() !== '', {
+    message: 'decision source requires a non-empty supports',
+  });
+export type ConceptSource = z.infer<typeof ConceptSource>;
 
 export const ConceptSchema = z.object({
   slug,
@@ -70,6 +90,7 @@ export const ConceptSchema = z.object({
     })
     .default({}),
   codeLinks: z.array(z.string()).default([]),
+  sources: z.array(ConceptSource).default([]),
 });
 
 export type Concept = z.infer<typeof ConceptSchema>;

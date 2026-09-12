@@ -8,6 +8,7 @@
 //    → 계약 필드(작동 원리)가 바뀌면 해시가 바뀐다
 //  - drift-reconcile 불변 "약속 밖 항목만 바뀐 경우에는 지문이 달라지지 않는다"
 //    → 비계약 필드(title/status/analogy)가 바뀌어도 해시는 불변
+//    → 비계약 필드(sources)가 바뀌어도 해시는 불변 — concept-provenance는 계약 밖 메타다
 //  - drift-reconcile 불변 "상호작용 항목은 개념 사이의 역할 경계만 서술한다 — 코드가 지켜야 할 판정
 //    규칙은 상호작용이 아니라 허용 행동·제한 행동·불변 규칙에 적는다"
 //    → 상호작용만 바뀌어도 지문은 달라지지 않는다 (상호작용은 약속 밖이다)
@@ -62,6 +63,16 @@ describe('contractHash', () => {
         title: '다른 제목',
         status: 'green',
         description: { ...base.description, analogy: '다른 비유' },
+      })
+    );
+    expect(a).toBe(b);
+  });
+  it('비계약 필드(sources)가 바뀌어도 해시는 불변 — concept-provenance는 계약 밖 메타다', () => {
+    const a = contractHash(parseConcept(base));
+    const b = contractHash(
+      parseConcept({
+        ...base,
+        sources: [{ kind: 'decision', locator: '오늘', supports: '테스트' }],
       })
     );
     expect(a).toBe(b);
