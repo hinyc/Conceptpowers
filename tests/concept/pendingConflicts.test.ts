@@ -29,6 +29,7 @@ const baseConcept = {
   actions: {},
   state: { managed: ['이 개념이 관리하는 대상'] },
   principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+  sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
 };
 
 describe('pendingConflicts', () => {

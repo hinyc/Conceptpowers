@@ -32,6 +32,7 @@ function conceptInput(rules: string[]) {
     actions: {},
     state: { managed: ['이 개념이 관리하는 대상'] },
     principle: { immutableRules: rules, operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+    sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
   };
 }
 

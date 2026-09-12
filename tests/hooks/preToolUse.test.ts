@@ -403,6 +403,7 @@ describe('decidePreToolUse', () => {
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
       principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
     // drift 게이트 하나만 보려는 시나리오 — 딸린 검사·증빙 게이트는 기록으로 분리한다.
@@ -491,6 +492,7 @@ describe('decidePreToolUse', () => {
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
       principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
     // 이 시나리오가 보려는 것은 drift 게이트 하나다. 개념 문서가 스테이징되므로 딸린
@@ -539,6 +541,7 @@ describe('decidePreToolUse', () => {
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
       principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
     // drift 게이트의 '따라옴 = 하나라도'만 보려는 시나리오다 — 딸린 검사(tests/login.test.ts)가

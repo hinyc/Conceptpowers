@@ -26,6 +26,7 @@ function makeConcept(over: Record<string, unknown> = {}) {
     state: { managed: ['사용자에게 한 약속의 목록'] },
     actions: { allow: ['사용자에게 한 약속을 그대로 지키는 것'], restrict: [] },
     principle: { immutableRules: [], operationalPrinciple: '약속을 적어두면 그대로 지켜진다' },
+    sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     ...over,
   });
 }
