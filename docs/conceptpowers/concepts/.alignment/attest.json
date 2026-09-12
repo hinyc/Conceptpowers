@@ -653,7 +653,7 @@
   "concept-provenance": {
     "hash": "3:ff307e04b551",
     "result": "pass",
-    "at": "2026-09-12T06:27:05.839Z",
+    "at": "2026-09-12T08:30:35.629Z",
     "compared": [
       "reference-first-duty",
       "reference-privacy",
@@ -665,6 +665,6 @@
       "concept-code-mapping",
       "concept-inline-edit"
     ],
-    "note": "수정 — 근거 편집도 여느 본문 편집과 동일하게 강등된다고 정정(concept-inline-edit의 '예외 없이' 규칙과 충돌 발견 후 반영), 그 외 충돌 없음"
+    "note": "최종 리뷰 지적(I-2) 반영 — 강등 규칙의 주인을 settled-status에서 concept-inline-edit으로 정정하고 relations에 추가. 계약 밖 칸만 바뀌어 지문 불변, 충돌 없음"
   }
 }
