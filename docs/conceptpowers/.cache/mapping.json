@@ -228,7 +228,16 @@
     "tests/util/isMain.test.ts",
     "tests/hooks/gateFailure.test.ts",
     "src/util/exitAfterWrite.ts",
-    "tests/hooks/entrypoint.e2e.test.ts"
+    "tests/hooks/entrypoint.e2e.test.ts",
+    "src/hooks/command/shellWords.ts",
+    "src/hooks/command/commitPlan.ts",
+    "src/hooks/command/commitFiles.ts",
+    "tests/hooks/commitPlan.test.ts",
+    "tests/hooks/commitFiles.test.ts",
+    "tests/hooks/commitGate.test.ts",
+    "src/hooks/command/commandKinds.ts",
+    "src/hooks/command/commitArgs.ts",
+    "tests/hooks/shellWords.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -280,7 +289,9 @@
     "tests/hooks/sessionStart.test.ts",
     "src/schema/alignment.ts",
     "tests/schema/alignment.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/commitFiles.test.ts",
+    "tests/hooks/commitGate.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",

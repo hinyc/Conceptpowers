@@ -196,9 +196,9 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "governance-mode": {
-    "hash": "3:fa21cc7e8452",
+    "hash": "3:7e5e0c1d2ae1",
     "result": "pass",
-    "at": "2026-09-14T13:14:45.670Z",
+    "at": "2026-09-14T13:36:12.050Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -226,7 +226,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "새 불변 규칙(통과는 명령 실행 허락이 아니다)을 전 개념과 대조: concept-code-mapping(표식 없음으로 막지 않음)·drift-reconcile(무관 커밋 안 막음)은 '막지 않음'이지 '대신 승인'이 아니므로 충돌 없음. settled-status의 승인은 개념 승인으로 대상이 다름(규칙이 '명령'을 명시). concept-scope 문장 규칙(코드 표기·타 개념명 없음) 충족. 참고자료에 훅 권한 관련 내용 없음."
+    "note": "새 불변 규칙(커밋에 실제로 들어갈 파일 기준 검사, 확정 불가 시 강도별 대응)을 전 개념과 대조: drift-reconcile '커밋 전 판정과 커밋 뒤 결산은 같은 잣대'를 강화하는 방향. concept-code-mapping '표식 없음만으로 막지 않음'·drift-reconcile '맞물리지 않은 커밋은 막지 않음'과는 막는 사유가 달라(파일 확정 불가) 충돌 없음. 앞선 규칙 '통과는 실행 허락이 아니다'와 양립. concept-scope 문장 규칙 충족. 참고자료에 명령 해석 관련 내용 없음."
   },
   "concept-scope": {
     "hash": "3:fad8db1c941f",

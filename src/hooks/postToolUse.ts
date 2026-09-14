@@ -7,9 +7,10 @@ import { reconcileAfterCommit, type ReconcileResult } from '../drift/reconcile.j
 import { cpPaths } from '../paths.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { isMainModule } from '../util/isMain.js';
+import { planCommit } from './command/commitPlan.js';
+import { createAliasResolver } from './command/commitFiles.js';
 
 const execFileAsync = promisify(execFile);
-const isGitCommit = (cmd?: string) => !!cmd && /\bgit\s+commit\b/.test(cmd);
 // 대형 커밋(수천 파일)에서도 잘리지 않도록 execFile 기본 1MB를 넉넉히 늘린다.
 const MAX_BUFFER = 64 * 1024 * 1024;
 
@@ -86,7 +87,12 @@ export async function runPostToolUse(
   ev: PostToolEvent
 ): Promise<ReconcileResult | null> {
   if (!(await isInitialized(root))) return null;
-  if (!(ev.tool === 'Bash' && isGitCommit(ev.input.command))) return null;
+  if (ev.tool !== 'Bash') return null;
+  // 커밋 전 문지기와 같은 명령 해석을 쓴다(drift-reconcile: 같은 잣대). 확정 불가 커밋도 실행됐을 수 있으니 결산한다.
+  const plan = await planCommit(ev.input.command ?? '', {
+    resolveAlias: createAliasResolver(root),
+  });
+  if (plan.kind === 'none') return null;
 
   // 명시적 파일목록(테스트/프로그램 경로)은 그대로 신뢰한다.
   if (ev.committedFiles) {
