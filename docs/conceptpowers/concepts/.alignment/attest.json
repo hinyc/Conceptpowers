@@ -9,9 +9,9 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "settled-status": {
-    "hash": "3:b74494c7eb64",
+    "hash": "3:505ff4f9b98e",
     "result": "pass",
-    "at": "2026-09-14T16:08:54.330Z",
+    "at": "2026-09-14T19:47:15.789Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -39,7 +39,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
+    "note": "6단계 리뷰 반영 문구 조정 — 다른 25개 개념과 대조. 소유권 원칙(승격은 사람 확인 뒤)과 같은 방향, 허용·제한·불변 충돌 없음"
   },
   "home-search": {
     "hash": "3:0a8841576155",
@@ -303,9 +303,9 @@
     "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
   },
   "governance-mode": {
-    "hash": "3:a1cee63f539b",
+    "hash": "3:26fc5e05cd86",
     "result": "pass",
-    "at": "2026-09-14T18:28:37.612Z",
+    "at": "2026-09-14T19:47:15.588Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -333,17 +333,40 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "리뷰 반영 문구 조정 — 다른 25개 개념과 대조. 문지기 강도(차단·질문·경고) 구분·기밀 확인 항상 질문·소유권 원칙·개념 기반 테스트 제한과 같은 방향이며 허용/제한/불변 충돌 없음"
+    "note": "6단계 리뷰 반영 문구 조정 — 다른 25개 개념과 대조. 소유권 원칙(승격은 사람 확인 뒤)과 같은 방향, 허용·제한·불변 충돌 없음"
   },
   "concept-scope": {
-    "hash": "3:fad8db1c941f",
+    "hash": "3:606006c0b6fa",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.217Z",
+    "at": "2026-09-14T19:41:14.443Z",
     "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
       "settled-status",
-      "human-owns-contract"
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "6단계 규칙 추가 — 다른 25개 개념과 대조. 안내 문구 규칙이라 허용·제한·불변과 충돌 없음(소유권 원칙의 사람 확인, 개념↔코드 연결의 표식 역할과 같은 방향)"
   },
   "viewer-readability": {
     "hash": "3:5fcfb1164bbf",

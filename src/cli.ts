@@ -182,7 +182,7 @@ export async function runCli(
     .command('edit-concept')
     .description(
       '개념 본문 수정 — 사용자 승인 후에만 실행한다. green 개념은 자동으로 pending으로 내려가며, ' +
-        'approve로 사람이 다시 승인해야 개념으로 재활성화된다 (human-owns-contract·settled-status).'
+        '정합성 검사 증빙과 사용자 확인을 거쳐 green으로 재정착해야 개념으로 재활성화된다 — approve는 red 전용 (human-owns-contract·settled-status).'
     )
     .argument('<slug>')
     .requiredOption('--file <path>', '수정할 필드만 담은 패치 JSON 경로')

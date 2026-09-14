@@ -9460,7 +9460,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     out(JSON.stringify({ ok: true, slug: slug3, ...viewerHint() }));
   });
   program2.command("edit-concept").description(
-    "\uAC1C\uB150 \uBCF8\uBB38 \uC218\uC815 \u2014 \uC0AC\uC6A9\uC790 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC2E4\uD589\uD55C\uB2E4. green \uAC1C\uB150\uC740 \uC790\uB3D9\uC73C\uB85C pending\uC73C\uB85C \uB0B4\uB824\uAC00\uBA70, approve\uB85C \uC0AC\uB78C\uC774 \uB2E4\uC2DC \uC2B9\uC778\uD574\uC57C \uAC1C\uB150\uC73C\uB85C \uC7AC\uD65C\uC131\uD654\uB41C\uB2E4 (human-owns-contract\xB7settled-status)."
+    "\uAC1C\uB150 \uBCF8\uBB38 \uC218\uC815 \u2014 \uC0AC\uC6A9\uC790 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC2E4\uD589\uD55C\uB2E4. green \uAC1C\uB150\uC740 \uC790\uB3D9\uC73C\uB85C pending\uC73C\uB85C \uB0B4\uB824\uAC00\uBA70, \uC815\uD569\uC131 \uAC80\uC0AC \uC99D\uBE59\uACFC \uC0AC\uC6A9\uC790 \uD655\uC778\uC744 \uAC70\uCCD0 green\uC73C\uB85C \uC7AC\uC815\uCC29\uD574\uC57C \uAC1C\uB150\uC73C\uB85C \uC7AC\uD65C\uC131\uD654\uB41C\uB2E4 \u2014 approve\uB294 red \uC804\uC6A9 (human-owns-contract\xB7settled-status)."
   ).argument("<slug>").requiredOption("--file <path>", "\uC218\uC815\uD560 \uD544\uB4DC\uB9CC \uB2F4\uC740 \uD328\uCE58 JSON \uACBD\uB85C").option("--reason <reason>", "\uBCC0\uACBD \uC0AC\uC720 (drift \uC774\uB825\uC5D0 \uAE30\uB85D)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     const before = await readConcept(o.root, slug3);
     if (!before) {

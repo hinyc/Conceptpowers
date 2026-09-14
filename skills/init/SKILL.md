@@ -92,8 +92,10 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 - The language can be changed later by editing `locale` in `init.json`.
 - If `init.json` already exists, it is not overwritten (user settings are preserved).
 - Concept `status` (3-state model):
-  - `green` — user-approved and consistent; source of truth.
-  - `pending` — user-authored draft; auto-promotes to `green` after a passing consistency check,
+  - `green` — settled contract: user-authored, consistency-checked, user-confirmed. It states what
+    must hold, not that the current code already complies.
+  - `pending` — user-authored draft; settles to `green` after a passing consistency check and the
+    user's confirmation,
     else stays pending until resolved. See `conceptpowers:update-concepts`.
   - `red` — auto-inferred (full scan) proposal awaiting user review and approval.
     See the approve flow (D) of `conceptpowers:update-concepts`.

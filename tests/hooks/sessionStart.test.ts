@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:feature-spec-bridge @concept:drift-reconcile @concept:governance-mode @concept:output-locale @concept:reference-privacy @concept:reference-first-duty @concept:generated-not-hand-edited
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:init-gate @concept:settled-status @concept:concept-scope @concept:feature-spec-bridge @concept:drift-reconcile @concept:governance-mode @concept:output-locale @concept:reference-privacy @concept:reference-first-duty @concept:generated-not-hand-edited
 // tests/hooks/sessionStart.test.ts
 // 세션 시작 컨텍스트(buildSessionStartOutput)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -23,6 +23,13 @@
 //    → ko면 Output language가 Korean(기본) / en이면 English
 //  - settled-status 제한 "AI가 스스로 판단해서 승인하는 것"
 //    → 보류(pending) 잔존과 자동승인 금지 규칙을 컨텍스트에 담는다
+//  - settled-status 불변 "초록은 코드가 따라야 할 약속이 확정됐다는 뜻이지, 지금 코드가 그 약속을 지킨다는 뜻이
+//    아니다 — 작업 시작 안내는 동작을 말하기 전에 코드로 확인하라고 알린다"
+//    → 규칙은 요구이지 현재 사실이 아니라는 안내를 담는다 / 미정착 개념은 자동이 아니라 사용자 확인 뒤 정착한다고 알린다
+//  - governance-mode 불변 "작업 시작 안내는 문지기가 검사하지 않는 것도 밝힌다 — …"
+//    → 바뀌지 않은 개념을 코드가 어기는지는 문지기가 보지 않는다는 안내를 담는다
+//  - concept-scope 허용 "무엇이 어디에·어떻게 구현됐는지를 물을 때는 개념이 아니라 코드에서 답을 찾도록 작업 시작
+//    안내에 알리는 것" → 개념 먼저·코드 먼저를 가르는 안내를 담는다
 //  - governance-mode 제한 "도구나 에이전트가 스스로 강도를 바꾸는 것"
 //    → strict면 우회 금지 지침을 주입한다
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -372,5 +379,44 @@ describe('플러그인 업데이트 알림', () => {
         process.env.CONCEPTPOWERS_NO_VERSION_CHECK = prev;
       }
     }
+  });
+});
+
+describe('규범과 현실을 가르는 안내', () => {
+  async function context(setup?: () => Promise<void>) {
+    await scaffoldInit(root, {});
+    if (setup) await setup();
+    return (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext;
+  }
+  it('규칙은 요구이지 현재 사실이 아니라고 알린다 [규칙: 초록은 지금 코드가 약속을 지킨다는 뜻이 아니다]', async () => {
+    const ctx = await context();
+    expect(ctx).toContain('Concept rules are requirements, not observations');
+    expect(ctx).not.toContain('verified source of truth');
+  });
+  it('미정착 개념은 자동이 아니라 사용자 확인 뒤에 정착한다고 알린다', async () => {
+    const ctx = await context(async () => {
+      await writeConcept(root, {
+        slug: 'pending-two',
+        category: ['behavior'],
+        title: 'P',
+        status: 'pending',
+        description: { definition: '정의' },
+        purpose: { reason: '이유' },
+        actions: {},
+        principle: {},
+      } as never);
+    });
+    expect(ctx).toContain("the user's confirmation");
+    expect(ctx).not.toContain('become green automatically');
+  });
+  it('문지기는 바뀐 개념이든 아니든 코드의 규칙 준수를 판정하지 않는다고 밝힌다 [규칙: 문지기가 검사하지 않는 것도 밝힌다]', async () => {
+    const ctx = await context();
+    expect(ctx).toContain('What the commit gate does NOT check');
+    expect(ctx).toContain('never judges whether code obeys a concept, changed or not');
+  });
+  it('개념 먼저·코드 먼저를 가르는 안내를 담는다 [규칙: 구현 위치·방법은 코드에서 답을 찾게 알린다]', async () => {
+    const ctx = await context();
+    expect(ctx).toContain('Where to look first');
+    expect(ctx).toContain('go straight to the code');
   });
 });
