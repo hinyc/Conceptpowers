@@ -307,5 +307,17 @@
       "governance-mode"
     ],
     "note": "근거·코드 연결만 갱신, 규칙 불변; reference-privacy의 새 허용 행동과 맞물림"
+  },
+  "skill-surface": {
+    "hash": "3:1c5841611473",
+    "result": "pass",
+    "at": "2026-09-14T10:18:11.844Z",
+    "compared": [
+      "plugin-version-sync",
+      "output-locale",
+      "generated-not-hand-edited",
+      "human-owns-contract"
+    ],
+    "note": "스킬은 생성물도 프로젝트 산출물도 아닌 도구의 지시문 — output-locale이 명시적으로 제외하고, plugin-version-sync·generated-not-hand-edited는 생성물만 다룬다. 충돌 없음"
   }
 }

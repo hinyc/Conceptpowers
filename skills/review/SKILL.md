@@ -1,6 +1,6 @@
 ---
 name: review
-description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a governance-active project, and whenever the user asks to check that code follows its concepts ("검토", "이 개념대로 구현됐나", "전체 검토"). Judges code against the allow/restrict/immutable rules of the concepts mapped to it — one procedure, three entry modes: pre-change check (files → concepts), one concept (concept → its mapped files), or the whole project.
+description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a governance-active project, and whenever the user asks to check that code follows its concepts ("검토", "이 개념대로 구현됐나", "전체 검토"). Judges code against the allow/restrict/immutable rules of the concepts mapped to it — one procedure with three entry modes (pre-change check, one concept, whole project). Never reads reference.
 ---
 
 # Conceptpowers: Review (검토 — 코드 ↔ 개념)
@@ -11,11 +11,11 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 매핑된 코드가 개념의 규칙(`actions.allow` / `actions.restrict` / `principle.immutableRules`)대로 구현됐는지
 판정한다. **판정 절차는 하나**이고 들어오는 문이 셋이다.
 
-| 모드 | 시작점 | 누가 부르나 |
-| --- | --- | --- |
-| ① **변경 전 검사** | 바꾸려는 파일(들) | Edit/Write 훅 안내, 코드 작업 중 자동 |
-| ② **특정 개념** | 개념 slug 하나 → 그 개념에 매핑된 파일 전부 | 사용자 |
-| ③ **전체** | 모든 green 개념 → 각각 ② | 사용자, `auto` |
+| 모드               | 시작점                                      | 누가 부르나                           |
+| ------------------ | ------------------------------------------- | ------------------------------------- |
+| ① **변경 전 검사** | 바꾸려는 파일(들)                           | Edit/Write 훅 안내, 코드 작업 중 자동 |
+| ② **특정 개념**    | 개념 slug 하나 → 그 개념에 매핑된 파일 전부 | 사용자                                |
+| ③ **전체**         | 모든 green 개념 → 각각 ②                    | 사용자, `auto`                        |
 
 사용자가 모드를 말하지 않고 불렀으면 **②/③ 중 무엇을 원하는지 묻는다**.
 
@@ -35,6 +35,7 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 ## Locating concepts and files
 
 ### ① 파일 → 개념
+
 1. **태그(무료)** — 대상 파일 첫머리 주석 블록(첫 코드 줄 앞)의 `@concept:<slug>`를 읽는다. `'use client';`,
    docstring, `<template>`이 먼저 오면 엔진이 태그를 못 본다. 태그가 있으면 그것이 답이다.
 2. **인덱스(작은 파일 하나)** — 태그가 없으면 `docs/conceptpowers/concepts/viewer/manifest.json`을 **한 번** 읽는다.
@@ -46,12 +47,14 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
    달고 `map`으로 매핑을 갱신한다(다음부터는 1번으로 끝난다).
 
 ### ② 개념 → 파일
+
 - `docs/conceptpowers/.cache/mapping.json`의 `slug → files` + 그 개념을 가리키는 feature의 `codePaths`
   (`docs/conceptpowers/features/**`). 디스크에 없는 경로는 건너뛴다.
 - 파일이 많으면 규칙과 맞닿는 파일부터(허용·제한 행동이 바꾸는 관리 대상을 다루는 파일) 보고, 나머지는
   표본 검사한다고 사용자에게 밝힌다.
 
 ### ③ 전체
+
 - `node "<cli>" audit --root .`로 매핑 무결성(`unknownTags`)을 먼저 확인하고, green 개념마다 ②를 돈다.
   red/pending 개념은 코드를 다스리지 않으므로 판정 대상이 아니다(목록만 보고).
 
@@ -67,8 +70,8 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
   (b) **기능/개념 분리** — 새 기능 명세나 개념으로 나눈다. 코드를 통과시키려고 개념을 조용히 고치지 않는다.
 - **③ 판단 불가(개념 모호)** — 규칙만으로 "이 코드가 어기는가"에 답할 수 없다 → 추측하지 않고 reference도
   읽지 않는다. "개념 `<slug>`의 규칙만으로는 판단할 수 없습니다"라고 어느 규칙·어떤 해석 차이인지 밝히고
-  `conceptpowers:update-concepts`의 업그레이드 진입점(reference는 **거기서** 읽는다, `note-change` 기록)을
-  권한다. 지금 올릴지는 사용자가 정한다.
+  `conceptpowers:update-concepts` **계기 F(개념 업그레이드)** — reference는 **거기서** 읽고 변경은 `note-change`로
+  기록된다 — 를 권한다. 지금 올릴지는 사용자가 정한다.
 
 테스트가 개념과 충돌하면 조용히 통과시키지 않는다 — 테스트 오류인지 개념이 낡았는지 사용자에게 묻는다.
 

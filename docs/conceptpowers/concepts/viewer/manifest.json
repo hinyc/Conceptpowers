@@ -540,6 +540,26 @@
       ]
     },
     {
+      "slug": "skill-surface",
+      "group": "platform",
+      "title": "스킬 표면",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "aliases": [],
+      "url": "../data/platform/skill-surface.json",
+      "codeLinks": [
+        "skills/auto/SKILL.md",
+        "skills/init/SKILL.md",
+        "skills/scan/SKILL.md",
+        "skills/review/SKILL.md",
+        "skills/update-concepts/SKILL.md",
+        "tests/compat/skillFrontmatter.test.ts",
+        "tests/compat/superpowers.test.ts"
+      ]
+    },
+    {
       "slug": "untrusted-text-sanitization",
       "group": "platform",
       "title": "비신뢰 입력 처리",
@@ -2188,6 +2208,34 @@
         "type": "file",
         "href": "",
         "title": "tests/init/addReferencePath.test.ts"
+      },
+      {
+        "id": "c:skill-surface",
+        "label": "스킬 표면",
+        "type": "concept",
+        "href": "#/concept/skill-surface",
+        "title": "skill-surface"
+      },
+      {
+        "id": "p:skills/init/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/init/SKILL.md"
+      },
+      {
+        "id": "p:tests/compat/skillFrontmatter.test.ts",
+        "label": "skillFrontmatter.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/compat/skillFrontmatter.test.ts"
+      },
+      {
+        "id": "p:tests/compat/superpowers.test.ts",
+        "label": "superpowers.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/compat/superpowers.test.ts"
       },
       {
         "id": "c:untrusted-text-sanitization",
@@ -3970,6 +4018,41 @@
       {
         "source": "c:reference-privacy",
         "target": "p:tests/i18n/messages.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:skills/auto/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:skills/init/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:skills/scan/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:skills/review/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:skills/update-concepts/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:tests/compat/skillFrontmatter.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:skill-surface",
+        "target": "p:tests/compat/superpowers.test.ts",
         "kind": "concept-file"
       },
       {

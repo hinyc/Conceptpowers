@@ -1,4 +1,4 @@
-# Define Concept — Batch flow (전체 일괄 정의)
+# Update Concepts — Batch flow (references/batch.md, 전체 일괄 정의)
 
 This file is loaded on demand when the user picks batch mode in `conceptpowers:update-concepts`
 (계기 B), and its candidate-enumeration rules are reused for `newMaterial` in 계기 A. The single-flow

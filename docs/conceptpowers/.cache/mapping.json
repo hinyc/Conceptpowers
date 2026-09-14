@@ -366,5 +366,9 @@
     "src/reference/diff.ts",
     "src/reference/sessionBlock.ts",
     "tests/init/referenceLockIgnore.test.ts"
+  ],
+  "skill-surface": [
+    "tests/compat/skillFrontmatter.test.ts",
+    "tests/compat/superpowers.test.ts"
   ]
 }

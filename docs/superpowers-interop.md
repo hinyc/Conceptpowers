@@ -4,14 +4,14 @@
 
 ## 역할 분담
 
-| 단계            | superpowers                                           | Conceptpowers                                  |
-| --------------- | ----------------------------------------------------- | ---------------------------------------------- |
-| 아이디어 → 스펙 | brainstorming                                         | (스펙에서 핵심 **개념** 식별)                  |
-| 스펙 → 계획     | writing-plans                                         | —                                              |
-| 구현(TDD)       | test-driven-development / subagent-driven-development | review(변경 전 검사)로 변경의 개념 위배 검증   |
-| 개념 정의       | —                                                     | update-concepts(정의 + 정합성 검사)            |
-| 커밋            | —                                                     | 커밋 게이트(review + 정합성 검사)              |
-| 점검            | requesting-code-review                                | scan(개념 구멍) · review 전체(코드↔개념)       |
+| 단계            | superpowers                                           | Conceptpowers                                |
+| --------------- | ----------------------------------------------------- | -------------------------------------------- |
+| 아이디어 → 스펙 | brainstorming                                         | (스펙에서 핵심 **개념** 식별)                |
+| 스펙 → 계획     | writing-plans                                         | —                                            |
+| 구현(TDD)       | test-driven-development / subagent-driven-development | review(변경 전 검사)로 변경의 개념 위배 검증 |
+| 개념 정의       | —                                                     | update-concepts(정의 + 정합성 검사)          |
+| 커밋            | —                                                     | 커밋 게이트(review + 정합성 검사)            |
+| 점검            | requesting-code-review                                | scan(개념 구멍) · review 전체(코드↔개념)     |
 
 ## 권장 흐름
 

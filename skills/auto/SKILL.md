@@ -1,6 +1,6 @@
 ---
 name: auto
-description: Use after init when the user wants guided operation ("auto", "다음 뭐하면 돼?", "알아서 순서대로 진행해줘") in a governance-active project. Diagnoses the current stage and walks baseline → update-concepts (reference changes + definitions) → scan (gaps + mapping) → review (code vs concepts) in the right order, asking at every stage boundary.
+description: Use after init when the user wants guided operation ("auto", "다음 뭐하면 돼?", "알아서 순서대로 진행해줘") in a governance-active project, or when the viewer / concepts:view script looks stale after a plugin update. Diagnoses the current stage and walks baseline → update-concepts (reference changes + definitions) → scan (gaps + mapping) → review (code vs concepts) in the right order, asking at every stage boundary.
 ---
 
 # Conceptpowers: Auto (단계 안내 오케스트레이터)
@@ -27,7 +27,9 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
 무엇도 바꾸지 말고 현재 상태만 수집한다(CLI 경로는 `CONCEPTPOWERS-ACTIVE` 세션 컨텍스트 또는 플러그인 dist):
 
 1. **버전 동기화**: 모든 CLI 명령 앞에서 자동으로 맞춰지므로 따로 할 일은 없다 — stderr에
-   `[conceptpowers] auto version-sync` 안내가 있었으면 "완료됨"으로 보고한다.
+   `[conceptpowers] auto version-sync` 안내가 있었으면 "완료됨"으로 보고한다. 수동 실행
+   (`node "<cli>" version-sync --root .`)이 `skipped: up-to-date`를 내면 그대로 둔다 — `--force` 재생성은
+   사용자가 명시적으로 요청할 때만(같은 버전 재생성은 로컬 산출물 수정을 되돌릴 수 있다).
 2. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿 그대로인지.
 3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
    그리고 `node "<cli>" reference-diff --root .` — `unlocked`(기준점 없음), `changed/removed`(변경),
@@ -70,7 +72,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 
 - 개념 없는 코드 → 기존 개념 태그 / `update-concepts`로 정의(Stage 2 루프백) / `@concept:none` / 보류.
 - 🔴 red → 사용자가 원하면 `update-concepts`(D) 승인 흐름(사용자 게이트 — auto가 스스로 승인하지 않는다).
-- 🟡 pending → 정합성 검사 재실행으로 정착 시도 / 수정·분리 논의 / 보류.
+- 🟡 pending → `update-concepts`(G) 재검사로 정착 시도 / 수정·분리 논의(C) / 보류.
 - 품질 미달 green → 사용자에게 물어 채운다(자동 채움 금지).
 - 태그 달기 + `map` + `render`는 scan 안에서 마친다.
 
@@ -79,7 +81,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 `conceptpowers:review` **전체 모드** 호출 — 매핑된 코드가 개념대로 구현됐는지 판정하고 **어긋남 목록**을 받는다.
 
 - 위반 → 사용자가 고른다: 코드 수정(TDD, 개념 안에서) / 개념 수정(`update-concepts` C) / 기능 분리.
-- 판단 불가(개념 모호) → `update-concepts` 업그레이드 진입점 권장(Stage 2 루프백 — 그때 reference를 읽는다).
+- 판단 불가(개념 모호) → `update-concepts`(F) 업그레이드 권장(Stage 2 루프백 — 그때 reference를 읽는다).
 - 루프백으로 개념이 바뀌었으면 review를 한 번 더 돌려 수렴을 확인한다.
 
 ## Final report

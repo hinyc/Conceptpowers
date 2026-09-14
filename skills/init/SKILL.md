@@ -67,7 +67,7 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    implementing `codePaths` filled in (the _feature → code_ link) via the 기능 명세 기록 procedure of `conceptpowers:scan`.
 4. **Infer concepts and wire features to them**: 기능은 접점마다 하나씩이지만 **개념은 접점마다
    하나가 아니다.** 기능에서 그 기능이 사용자에게 하는 **약속**을 뽑고, 그 약속을
-   `conceptpowers:update-concepts`(references/define.md)의 「자격 기준 관문」 여섯 물음(목적·관리 대상·작동 원리·약속·
+   `conceptpowers:update-concepts`(그 스킬의 define 절차)의 「자격 기준 관문」 여섯 물음(목적·관리 대상·작동 원리·약속·
    독립·표기)에 걸어 통과한 것만 개념으로 세운다.
    - 이미 같은 약속을 담은 개념이 있으면 **새로 만들지 않고** 그 개념의 slug를 그 기능의
      `concepts`에 적는다 — 여러 기능이 한 개념을 가리키는 것이 정상이다.

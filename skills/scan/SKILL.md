@@ -1,6 +1,6 @@
 ---
 name: scan
-description: Use when the user wants to find what is NOT yet covered by concepts in a governance-active project ("상태 탐색", "개념 없는 코드 찾기", "구멍 찾기", "매핑 갱신") — concept-less code, broken @concept links, features missing a spec, unapproved red / lingering pending concepts — and to wire @concept tags and the mapping cache. Finds gaps; it does not judge code against rules (that is review).
+description: Use when the user wants to find what is NOT yet covered by concepts in a governance-active project ("상태 탐색", "개념 전수 점검", "audit", "감사", "개념 없는 코드 찾기", "구멍 찾기", "기능 명세", "feature spec", "매핑 갱신", "태그 달기") and after modifying, moving, or deleting code to resync @concept tags — concept-less code, broken @concept links, features missing a spec, unapproved red / lingering pending concepts — and to wire @concept tags and the mapping cache. Finds gaps; it does not judge code against rules (that is review).
 ---
 
 # Conceptpowers: Scan (상태 탐색 — 개념이 안 걸린 것 찾기)
@@ -14,6 +14,9 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 
 > **Concepts ONLY**: 여기서는 `reference/` 내용을 읽지 않는다. 허용되는 것은 비어 있는지 확인(폴더 목록 +
 > `paths.md` 항목 유무)뿐이다.
+
+> **코드 수정 뒤 매핑만 갱신할 때**(파일 몇 개의 태그·캐시, 파일 이동·삭제 뒤): 아래 Steps를 건너뛰고
+> 「태그 규칙과 매핑 갱신」만 실행한다. 전체 점검은 사용자가 "상태 탐색 / 구멍 찾기 / 전수 점검"을 요청했을 때.
 
 ## Steps
 
@@ -46,7 +49,8 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    채우자고 권한다(자동 채움 금지, 강등도 사람 판단).
 6. **태그 달기 + 매핑 갱신** (아래 규칙), 그리고 `node "<cli>" render --root .`.
 7. **보고**: 격차 / 깨진 태그 / 기능 명세 누락 / red / pending / 품질 결격 + 각각 권장 조치. 기준선은 읽기
-   전용이므로 개념 생성·수정은 사용자 확인 뒤 `update-concepts`에서만 한다.
+   전용이므로 개념 생성·수정은 사용자 확인 뒤 `update-concepts`에서만 한다. 코드가 개념대로인지는 여기서
+   판정하지 않았다 — 전수 판정을 원하면 `conceptpowers:review` 전체 모드로 이어간다.
 
 ## 태그 규칙과 매핑 갱신
 
@@ -56,6 +60,7 @@ description: Use when the user wants to find what is NOT yet covered by concepts
      같아야 한다. 한 파일이 여러 개념에 걸치면 태그를 여럿 단다(개념 `concept-code-binding`의 분리 검토 뒤).
    - 개념이 없으면 같은 자리에 **`@concept:none`**. 예약어라 게이트는 통과하지만 개념으로 취급되지 않는다.
    - `ignoreGlobs`는 재생성물·외부 코드만 자동 제외한다. 손으로 쓴 코드는 예외 없이 마커가 필요하다.
+     `ignoreGlobs`에 경로를 더하는 것은 진짜 생성물일 때만 — 감사를 피하려고 넓히지 않는다.
 2. 매핑 캐시 갱신:
    `node "<cli>" map --root . <changed files...>`
    - 기본은 증분: 넘긴 파일의 항목만 바꾸고 나머지는 보존한다. **삭제한 파일도 인자에 넣어야** 낡은 항목이 빠진다.
@@ -67,7 +72,8 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 
 ## 기능 명세 기록 (feature → concept, feature → code)
 
-> reference를 읽지 않는다 — 기능 명세는 지도 배선이지 계약 작성이 아니다.
+> reference를 읽지 않는다 — 기능 명세는 지도 배선이지 계약 작성이 아니다. 기능 명세는 기능→개념·기능→코드
+> 링크의 **유일한 출처**다(엔진은 검증·기록만). 내용은 `init.json`의 `locale`로 쓴다.
 
 1. **기능 식별** — 구체적 사용자 접점 하나: 버튼, 폼 제출, 메뉴 동작, 라우트, 명령. 짧은 `title`과 한 줄 `description`.
 2. **기능 → 코드**(`codePaths`): 구현 파일 목록.

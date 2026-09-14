@@ -86,6 +86,9 @@ baseline document — never a concept per button.
 
 ### Upgrade entry point (개념 업그레이드)
 
+> The focused version of this section lives in `references/upgrade.md` (loaded for 계기 A/F). Read
+> on here only when a redefinition turns into a restructuring of the whole concept.
+
 When you arrive here from an **undecidable verdict** (`review` reported "개념 `<slug>`의 규칙만으로는
 판단 불가") or from a **reference change** (`update-concepts` 계기 A — the concept's `sources` cite a
 changed/removed file), this is a **redefinition** of that concept, focused:

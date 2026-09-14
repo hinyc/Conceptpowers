@@ -1,5 +1,9 @@
-// @concept:none
+// @concept:skill-surface
 // tests/compat/superpowers.test.ts
+// 검증 대상 규칙 ↔ 시나리오:
+//  - skill-surface 불변 "스킬 이름은 폴더 이름과 같다" → name == 디렉터리 이름
+//  - skill-surface 허용 "설명문에 사용자가 실제로 쓰는 말을 담아 부르기 쉽게 하는 것"
+//    → 이름에 conceptpowers- 접두사를 중복하지 않는다(네임스페이스가 이미 붙는다) / superpowers 스킬 이름과 겹치지 않는다
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

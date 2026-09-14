@@ -51,7 +51,7 @@
       "대상 개념이 말하지 않는 동작을 검사로 못박는 것",
       "사람의 확인 없이 검토 기록을 남겨 통과시키는 것"
     ],
-    "interaction": "코드 판정(check-concept)의 개념 찾기 절차를 그대로 재사용한다 — 이름표, 색인, 표적 읽기 순. 개념이 없으면 개념 정의(define-concept)로 먼저 만든다. 문지기 강도(governance-mode)는 붙잡는 방식만 정하고 무엇을 붙잡을지는 이 개념이 정한다. 어긋남 결산(drift-reconcile)이 계산한 '바뀐 개념과 그에 연결된 코드'를 그대로 재료로 쓴다."
+    "interaction": "코드 판정(review)의 개념 찾기 절차를 그대로 재사용한다 — 이름표, 색인, 표적 읽기 순. 개념이 없으면 개념 정의(update-concepts)로 먼저 만든다. 문지기 강도(governance-mode)는 붙잡는 방식만 정하고 무엇을 붙잡을지는 이 개념이 정한다. 어긋남 결산(drift-reconcile)이 계산한 '바뀐 개념과 그에 연결된 코드'를 그대로 재료로 쓴다."
   },
   "principle": {
     "immutableRules": [

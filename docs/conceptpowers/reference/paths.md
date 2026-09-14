@@ -2,7 +2,7 @@
 #
 # List one path per line. Lines starting with "#" are comments and are ignored.
 # These are read ONLY while defining, upgrading, or verifying a concept
-# (define-concept / check-consistency) — never during ordinary code checks.
+# (the update-concepts skill) — never during ordinary code checks.
 #
 # Accepted forms:
 #   ~/Documents/domain-glossary/     home-relative folder (all files inside)
