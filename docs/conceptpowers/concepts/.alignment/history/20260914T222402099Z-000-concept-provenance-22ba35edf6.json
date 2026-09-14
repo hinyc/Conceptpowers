@@ -1,0 +1,11 @@
+{
+  "slug": "concept-provenance",
+  "hash": "3:c73c30597e37",
+  "prevHash": "3:ff307e04b551",
+  "reason": "레드팀 8단계: 근거·코드 연결의 코드 자리가 실재하는지 감사에서 확인",
+  "at": "2026-09-14T22:24:02.099Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

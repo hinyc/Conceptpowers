@@ -14,6 +14,7 @@ import { renderViewerToDisk } from './viewer/render.js';
 import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
 import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
+import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
 import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
 import { defaultIgnoreGlobs } from './schema/initConfig.js';
@@ -237,7 +238,9 @@ export async function runCli(
 
   program
     .command('audit')
-    .description('파일 지정: 태그 정합성 검사 / 인자 없음: 전체 스캔 + 개념 없는 코드(gap) 탐지')
+    .description(
+      '파일 지정: 태그 정합성 검사 / 인자 없음: 전체 스캔 + 개념 없는 코드(gap)·깨진 코드 자리(근거·코드 연결) 탐지'
+    )
     .option('--root <dir>', 'project root', process.cwd())
     .argument('[files...]')
     .action(async (files, o) => {
@@ -261,8 +264,10 @@ export async function runCli(
       const codeScanned = scanned.filter(isCodeFile);
       const r = await auditIntegrity(o.root, codeScanned);
       const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
-      out(JSON.stringify({ ...r, conceptless }));
-      if (!r.ok || conceptless.length > 0) code = 1;
+      // 개념의 근거·코드 연결 목록이 가리키는 코드 자리가 지금도 실재하는지(파일·짚은 심볼·줄 범위).
+      const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, await listConcepts(o.root));
+      out(JSON.stringify({ ...r, conceptless, brokenCodeLinks }));
+      if (!r.ok || conceptless.length > 0 || brokenCodeLinks.length > 0) code = 1;
     });
 
   program

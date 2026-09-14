@@ -159,7 +159,10 @@
     "tests/concept/quality.test.ts",
     "tests/reference/affected.test.ts",
     "src/concept/quality.ts",
-    "src/store/conceptStore.ts"
+    "src/store/conceptStore.ts",
+    "src/audit/codeCoordinates.ts",
+    "tests/audit/codeCoordinates.test.ts",
+    "tests/cli/audit.test.ts"
   ],
   "concept-code-mapping": [
     "src/audit/audit.ts",
@@ -170,7 +173,6 @@
     "src/util/glob.ts",
     "tests/audit/audit.test.ts",
     "tests/audit/gaps.test.ts",
-    "tests/cli/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/hooks/gates.modes.test.ts",
     "tests/integration/smoke.test.ts",
@@ -181,10 +183,10 @@
     "tests/hooks/preToolUse.test.ts",
     "src/hooks/gates/noConceptNote.ts",
     "tests/hooks/noConceptNote.test.ts",
-    "tests/mapping/leadingComment.test.ts"
+    "tests/mapping/leadingComment.test.ts",
+    "tests/cli/audit.test.ts"
   ],
   "init-gate": [
-    "tests/cli/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
     "tests/cli/noCode.test.ts",
@@ -210,7 +212,8 @@
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/gateFailure.test.ts",
     "tests/cli/attestScope.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/cli/audit.test.ts"
   ],
   "governance-mode": [
     "src/hooks/gates/conceptSlugs.ts",

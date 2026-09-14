@@ -429,21 +429,37 @@
     ]
   },
   "concept-provenance": {
-    "hash": "3:ff307e04b551",
+    "hash": "3:c73c30597e37",
     "result": "pass",
-    "at": "2026-09-12T08:30:35.629Z",
+    "at": "2026-09-14T22:24:02.161Z",
     "compared": [
-      "reference-first-duty",
-      "reference-privacy",
-      "settled-status",
-      "concept-scope",
-      "human-owns-contract",
-      "governance-mode",
       "concept-code-binding",
       "concept-code-mapping",
-      "concept-inline-edit"
+      "concept-driven-tests",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "최종 리뷰 지적(I-2) 반영 — 강등 규칙의 주인을 settled-status에서 concept-inline-edit으로 정정하고 relations에 추가. 계약 밖 칸만 바뀌어 지문 불변, 충돌 없음"
+    "note": "8단계 허용 추가(코드 자리 실재 확인) — 다른 25개 개념과 대조. 근거를 준수 판정에 쓰지 않는다는 불변·지어낸 좌표 금지와 같은 방향, 충돌 없음"
   },
   "reference-sync": {
     "hash": "3:2766aa2fbad0",

@@ -157,7 +157,6 @@
         "tests/drift/detect.test.ts",
         "tests/drift/follow.test.ts",
         "tests/drift/hash.test.ts",
-        "tests/drift/history.test.ts",
         "tests/drift/lock.test.ts",
         "tests/drift/noCode.test.ts",
         "tests/drift/reconcile.test.ts",
@@ -175,7 +174,9 @@
         "src/hooks/command/commitTree.ts",
         "tests/hooks/commitFiles.test.ts",
         "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "tests/drift/historyMerge.test.ts",
+        "tests/drift/history.test.ts"
       ]
     },
     {
@@ -444,7 +445,6 @@
         "tests/concept/pendingConflicts.test.ts",
         "tests/concept/quality-gate.test.ts",
         "tests/drift/detect.test.ts",
-        "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/integration/smoke.test.ts",
@@ -461,7 +461,8 @@
         "tests/hooks/evidenceGate.test.ts",
         "src/hooks/gates/evidenceGate.ts",
         "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "tests/drift/history.test.ts"
       ]
     },
     {
@@ -1597,13 +1598,6 @@
         "title": "tests/drift/hash.test.ts"
       },
       {
-        "id": "p:tests/drift/history.test.ts",
-        "label": "history.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/history.test.ts"
-      },
-      {
         "id": "p:tests/drift/lock.test.ts",
         "label": "lock.test.ts",
         "type": "file",
@@ -1679,6 +1673,20 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/commitFiles.test.ts"
+      },
+      {
+        "id": "p:tests/drift/historyMerge.test.ts",
+        "label": "historyMerge.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/historyMerge.test.ts"
+      },
+      {
+        "id": "p:tests/drift/history.test.ts",
+        "label": "history.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/history.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -3287,11 +3295,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/drift/history.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/drift/lock.test.ts",
         "kind": "concept-file"
       },
@@ -3378,6 +3381,16 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/historyMerge.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/history.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4182,11 +4195,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/drift/history.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/drift/reconcile.test.ts",
         "kind": "concept-file"
       },
@@ -4268,6 +4276,11 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/drift/history.test.ts",
         "kind": "concept-file"
       },
       {

@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile21, stat as stat6 } from "node:fs/promises";
-import { dirname as dirname5, isAbsolute as isAbsolute3, join as join22, relative as relative4, resolve as resolve2 } from "node:path";
+import { readFile as readFile22, stat as stat7 } from "node:fs/promises";
+import { dirname as dirname5, isAbsolute as isAbsolute3, join as join23, relative as relative4, resolve as resolve2 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
@@ -8699,6 +8699,68 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
   return conceptless;
 }
 
+// src/audit/codeCoordinates.ts
+import { readFile as readFile15, stat as stat3 } from "node:fs/promises";
+import { join as join18 } from "node:path";
+var CALL = /([A-Za-z_$][\w$]*)\s*\(/g;
+var CONSTANT = /\b([A-Z][A-Z0-9_]{2,})\b/g;
+var MIXED = /\b([A-Za-z_$][a-z0-9_$]*[A-Z][\w$]*)\b/g;
+var LINE_RANGE = /(\d+)\s*[~\-–]\s*(\d+)\s*행|\bL(\d+)(?:\s*-\s*L?(\d+))?\b/g;
+function locatorSymbols(locator) {
+  const found = /* @__PURE__ */ new Set();
+  for (const pattern of [CALL, CONSTANT, MIXED]) {
+    for (const match of locator.matchAll(pattern)) found.add(match[1]);
+  }
+  return [...found];
+}
+function locatorMaxLine(locator) {
+  const numbers = [...locator.matchAll(LINE_RANGE)].flatMap((m) => [m[1], m[2], m[3], m[4]]).filter((n) => n !== void 0).map(Number);
+  return numbers.length > 0 ? Math.max(...numbers) : null;
+}
+var cleanPath = (path) => path.split("#")[0].trim();
+async function readTarget(root, path) {
+  try {
+    const info = await stat3(join18(root, path));
+    if (info.isDirectory()) return "dir";
+    return await readFile15(join18(root, path), "utf8");
+  } catch {
+    return null;
+  }
+}
+async function checkSource(root, slug3, path, locator) {
+  const target2 = await readTarget(root, path);
+  if (target2 === null) return { slug: slug3, field: "sources", path, locator, problem: "missing-file" };
+  if (target2 === "dir" || !locator.trim()) return null;
+  const missing = locatorSymbols(locator).filter((symbol) => !target2.includes(symbol));
+  if (missing.length > 0) {
+    return { slug: slug3, field: "sources", path, locator, problem: "missing-symbol", detail: missing };
+  }
+  const maxLine = locatorMaxLine(locator);
+  const lineCount = target2.split("\n").length;
+  if (maxLine !== null && maxLine > lineCount) {
+    return {
+      slug: slug3,
+      field: "sources",
+      path,
+      locator,
+      problem: "line-out-of-range",
+      detail: [`${maxLine} > ${lineCount}`]
+    };
+  }
+  return null;
+}
+async function findBrokenCodeCoordinates(root, concepts) {
+  const checks = concepts.flatMap((concept) => [
+    ...(concept.codeLinks ?? []).map(async (link) => {
+      const path = cleanPath(link);
+      return await readTarget(root, path) === null ? { slug: concept.slug, field: "codeLinks", path, problem: "missing-file" } : null;
+    }),
+    ...(concept.sources ?? []).filter((source) => source.kind === "code").map((source) => checkSource(root, concept.slug, cleanPath(source.path), source.locator))
+  ]);
+  const results = await Promise.all(checks);
+  return results.filter((r) => r !== null);
+}
+
 // src/audit/tracked.ts
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -8737,10 +8799,10 @@ async function approveConcept(root, slug3) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile15 } from "node:fs/promises";
+import { readFile as readFile16 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile15(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile16(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -8748,11 +8810,11 @@ async function readLock(root) {
 
 // src/drift/history.ts
 import { createHash as createHash2 } from "node:crypto";
-import { readdir as readdir6, readFile as readFile16 } from "node:fs/promises";
-import { join as join18 } from "node:path";
+import { readdir as readdir6, readFile as readFile17 } from "node:fs/promises";
+import { join as join19 } from "node:path";
 async function readLegacyHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile16(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile17(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -8768,7 +8830,7 @@ async function readRecordFiles(root) {
   const entries = await Promise.all(
     names.map(async (name) => {
       try {
-        return HistoryEntry.parse(JSON.parse(await readFile16(join18(dir, name), "utf8")));
+        return HistoryEntry.parse(JSON.parse(await readFile17(join19(dir, name), "utf8")));
       } catch {
         return null;
       }
@@ -8808,7 +8870,7 @@ async function appendHistoryMany(root, inputs) {
     const entry = toEntry(input, lastHash.get(input.slug) ?? "");
     lastHash.set(entry.slug, entry.hash);
     await writeFileAtomic(
-      join18(dir, recordFileName(entry, order)),
+      join19(dir, recordFileName(entry, order)),
       JSON.stringify(entry, null, 2) + "\n"
     );
     added.push(entry);
@@ -8820,8 +8882,8 @@ async function appendHistory(root, input) {
 }
 
 // src/drift/follow.ts
-import { stat as stat3 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join19, relative as relative3, resolve } from "node:path";
+import { stat as stat4 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, join as join20, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
   const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
@@ -8829,7 +8891,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat3(join19(root, rel))).isFile();
+    return (await stat4(join20(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -8920,10 +8982,10 @@ function resolveComparedScope(slug3, requested, knownSlugs) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile17 } from "node:fs/promises";
+import { readFile as readFile18 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile17(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile18(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -8943,11 +9005,11 @@ async function recordTestReview(root, concept, result, evidence = {}) {
 
 // src/drift/noCode.ts
 import { execFile as execFile2 } from "node:child_process";
-import { readFile as readFile18 } from "node:fs/promises";
+import { readFile as readFile19 } from "node:fs/promises";
 import { promisify as promisify2 } from "node:util";
 async function readNoCodeLog(root) {
   try {
-    return NoCodeLog.parse(JSON.parse(await readFile18(cpPaths(root).noCodeFile, "utf8")));
+    return NoCodeLog.parse(JSON.parse(await readFile19(cpPaths(root).noCodeFile, "utf8")));
   } catch {
     return {};
   }
@@ -8965,8 +9027,8 @@ async function recordNoCode(root, concept, note) {
 }
 
 // src/init/addReferencePath.ts
-import { readFile as readFile19 } from "node:fs/promises";
-import { join as join20 } from "node:path";
+import { readFile as readFile20 } from "node:fs/promises";
+import { join as join21 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -8974,10 +9036,10 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target2 = join20(cpPaths(root).reference, PATHS_FILE);
+  const target2 = join21(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile19(target2, "utf8");
+    existing = await readFile20(target2, "utf8");
   } catch (error) {
     throw new Error(
       `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target2}): ${error.message}`
@@ -9018,7 +9080,7 @@ async function addReferencePath(root, raws) {
 }
 
 // src/reference/lock.ts
-import { readFile as readFile20, mkdir as mkdir10 } from "node:fs/promises";
+import { readFile as readFile21, mkdir as mkdir10 } from "node:fs/promises";
 
 // src/util/mapLimit.ts
 async function mapLimit(items, limit, fn) {
@@ -9035,8 +9097,8 @@ async function mapLimit(items, limit, fn) {
 }
 
 // src/reference/enumerate.ts
-import { stat as stat4 } from "node:fs/promises";
-import { join as join21 } from "node:path";
+import { stat as stat5 } from "node:fs/promises";
+import { join as join22 } from "node:path";
 
 // src/reference/canonical.ts
 import { realpath } from "node:fs/promises";
@@ -9046,7 +9108,7 @@ var DRIVE = /^([A-Za-z]):/;
 var ABSOLUTE = /^(?:[A-Za-z]:)?\//;
 var HOME_LIKE = /^(?:[a-z]:)?\/(?:users|home)\/(?!(?:shared|public)(?:\/|$))[^/]+(?=\/|$)/i;
 var PRIVATE_PREFIX = "/private/";
-function cleanPath(p) {
+function cleanPath2(p) {
   const unified = p.replace(/\\/g, "/").normalize("NFC").replace(DRIVE, (_m, d) => `${d.toLowerCase()}:`);
   const trimmed = posix.normalize(unified).replace(/\/+$/, "");
   return trimmed === "" ? "/" : trimmed;
@@ -9063,7 +9125,7 @@ function rest(p, base) {
   return base === "/" ? p.slice(1) : p.slice(base.length + 1);
 }
 function canonicalPath(abs, aliases) {
-  const p = cleanPath(abs);
+  const p = cleanPath2(abs);
   for (const root of aliases.roots) {
     if (isUnder(p, root)) return rest(p, root) || ".";
   }
@@ -9076,12 +9138,12 @@ function canonicalKeyOf(root, key, aliases) {
   const k = key.replace(/\\/g, "/");
   const home = aliases.homes[0];
   const homeForm = k === "~" || k.startsWith("~/");
-  if (homeForm && !home) return cleanPath(k);
+  if (homeForm && !home) return cleanPath2(k);
   const abs = homeForm ? `${home}/${k.slice(2)}` : isAbsoluteKey(k) ? k : `${root}/${k}`;
   return canonicalPath(abs, aliases);
 }
 function portableHomeForm(p) {
-  const c = cleanPath(p);
+  const c = cleanPath2(p);
   const m = c.match(HOME_LIKE);
   if (!m) return null;
   const tail = c.slice(m[0].length);
@@ -9095,7 +9157,7 @@ async function safeRealpath(p) {
   }
 }
 function nameForms(p) {
-  const c = cleanPath(p);
+  const c = cleanPath2(p);
   return c.startsWith(PRIVATE_PREFIX) ? [c, c.slice(PRIVATE_PREFIX.length - 1)] : [c];
 }
 async function loadAliases(root, home = homedir2()) {
@@ -9111,7 +9173,7 @@ function toPosix(p) {
   return p.replace(/\\/g, "/");
 }
 function repoKey(rel) {
-  return cleanPath(`${CP_REL}/reference/${toPosix(rel)}`);
+  return cleanPath2(`${CP_REL}/reference/${toPosix(rel)}`);
 }
 function hasDotSegment(rel) {
   return toPosix(rel).split("/").some((seg) => seg.startsWith("."));
@@ -9124,7 +9186,7 @@ async function listRepo(root, files) {
   const rels = (files ?? await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
   const found = await Promise.all(
     rels.map(async (rel) => {
-      const abs = join21(refDir, rel);
+      const abs = join22(refDir, rel);
       const s = await statUsableFile(abs);
       return s ? target(repoKey(rel), abs, "repo", "", s) : null;
     })
@@ -9136,7 +9198,7 @@ async function listExternal(check, aliases, limit) {
   const base = canonicalPath(resolved, aliases);
   let isFile2;
   try {
-    isFile2 = (await stat4(resolved)).isFile();
+    isFile2 = (await stat5(resolved)).isFile();
   } catch {
     return { targets: [], base, outcome: "unreachable" };
   }
@@ -9192,10 +9254,10 @@ async function enumerateReference(root, opts = {}) {
 // src/reference/fingerprint.ts
 import { createHash as createHash3 } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { stat as stat5 } from "node:fs/promises";
+import { stat as stat6 } from "node:fs/promises";
 async function statFile(abs) {
   try {
-    const s = await stat5(abs);
+    const s = await stat6(abs);
     if (!s.isFile()) return null;
     return { size: s.size, mtime: s.mtime.toISOString() };
   } catch {
@@ -9230,7 +9292,7 @@ function parseLockFiles(raw) {
 }
 async function readReferenceLock(root) {
   try {
-    const raw = JSON.parse(await readFile20(cpPaths(root).referenceLock, "utf8"));
+    const raw = JSON.parse(await readFile21(cpPaths(root).referenceLock, "utf8"));
     if (!isPlainObject(raw)) return null;
     const { files, ...rest2 } = raw;
     return { ...ReferenceLock.parse({ ...rest2, files: {} }), files: parseLockFiles(files) };
@@ -9408,7 +9470,7 @@ async function diffReference(root, mode = "full", inputs = {}) {
 // src/cli.ts
 var isFile = async (p) => {
   try {
-    return (await stat6(p)).isFile();
+    return (await stat7(p)).isFile();
   } catch {
     return false;
   }
@@ -9505,7 +9567,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile21(o.file, "utf8"));
+    const patch = JSON.parse(await readFile22(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -9520,7 +9582,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile21(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile22(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -9529,7 +9591,9 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     if (o.full) await writeMappingCache(o.root, await buildMapping(o.root, files, ignoreGlobs));
     else await updateMappingCache(o.root, files, ignoreGlobs);
   });
-  program2.command("audit").description("\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap) \uD0D0\uC9C0").option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
+  program2.command("audit").description(
+    "\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap)\xB7\uAE68\uC9C4 \uCF54\uB4DC \uC790\uB9AC(\uADFC\uAC70\xB7\uCF54\uB4DC \uC5F0\uACB0) \uD0D0\uC9C0"
+  ).option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
     if (files.length > 0) {
       const r2 = await auditIntegrity(o.root, files);
       out(JSON.stringify(r2));
@@ -9543,8 +9607,9 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const codeScanned = scanned.filter(isCodeFile);
     const r = await auditIntegrity(o.root, codeScanned);
     const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
-    out(JSON.stringify({ ...r, conceptless }));
-    if (!r.ok || conceptless.length > 0) code = 1;
+    const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, await listConcepts(o.root));
+    out(JSON.stringify({ ...r, conceptless, brokenCodeLinks }));
+    if (!r.ok || conceptless.length > 0 || brokenCodeLinks.length > 0) code = 1;
   });
   program2.command("drift").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify(await computeDrift(o.root)));
@@ -9676,7 +9741,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     for (const t of tests) {
       const rel = normalizeRel(relative4(resolve2(o.root), resolve2(o.root, t)));
       const inside = rel !== "" && rel !== ".." && !rel.startsWith("../") && !isAbsolute3(rel);
-      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join22(o.root, rel));
+      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join23(o.root, rel));
       if (!ok) invalid.push(t);
     }
     if (invalid.length > 0) {

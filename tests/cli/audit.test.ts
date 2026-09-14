@@ -1,4 +1,4 @@
-// @concept:concept-code-mapping @concept:init-gate
+// @concept:concept-code-mapping @concept:init-gate @concept:concept-provenance
 // audit 명령의 전체 스캔·파일 지정 두 모드를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - concept-code-mapping 허용 "격차로 잡힌 파일을 모아 사용자에게 알리는 것"
@@ -9,6 +9,8 @@
 //    → 파일 지정 모드는 .md도 선행 블록 기준으로 스캔한다
 //  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 격차는 exit 1로 알릴 뿐
 //    커밋 경로가 아니다 (이 명령은 보고 수단이다)
+//  - concept-provenance 허용 "근거와 코드 연결 목록에 적힌 코드 자리가 지금도 실재하는지 … 감사에서 확인해 알리는 것"
+//    → 전체 스캔이 없는 파일을 가리키는 코드 연결을 brokenCodeLinks로 알리고 exit 1이다
 //  - "파일 지정 모드는 기존 동작 그대로"는 개념 규칙이 아니라 호출 형태의 하위 호환 계약이다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -54,6 +56,18 @@ describe('cli: audit 전체 스캔 모드', () => {
     expect(code).toBe(1);
     const r = JSON.parse(output);
     expect(r.conceptless).toContain('src/naked.ts');
+  });
+
+  it('개념의 코드 연결이 없는 파일을 가리키면 brokenCodeLinks로 알리고 exit 1이다 [규칙: 코드 자리가 실재하는지 확인해 알린다]', async () => {
+    await writeConcept(root, { ...conceptInput(), codeLinks: ['src/gone.ts'] });
+    writeFileSync(join(root, 'src/tagged.ts'), '// @concept:known-one\nexport const x = 1;\n');
+    execSync('git add -A && git commit -m init', { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    expect(code).toBe(1);
+    const r = JSON.parse(output);
+    expect(r.brokenCodeLinks).toEqual([
+      expect.objectContaining({ slug: 'known-one', path: 'src/gone.ts', problem: 'missing-file' }),
+    ]);
   });
 
   it('비-ASCII 파일명도 전체 스캔 대상에 포함되어 conceptless로 보고된다', async () => {
