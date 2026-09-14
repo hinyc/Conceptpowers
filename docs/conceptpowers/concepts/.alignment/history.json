@@ -2726,5 +2726,38 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "concept-scope",
+    "hash": "3:606006c0b6fa",
+    "prevHash": "3:606006c0b6fa",
+    "reason": "레드팀 6단계: 규칙은 요구이지 현재 사실이 아님·문지기가 보지 않는 것·개념/코드 찾는 자리 안내",
+    "at": "2026-09-14T19:48:09.742Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "3:26fc5e05cd86",
+    "prevHash": "3:26fc5e05cd86",
+    "reason": "레드팀 6단계 리뷰 반영: 문지기는 바뀐 개념이든 아니든 준수를 판정하지 않음·초록 정착에 사람 확인",
+    "at": "2026-09-14T19:48:09.742Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "settled-status",
+    "hash": "3:505ff4f9b98e",
+    "prevHash": "3:505ff4f9b98e",
+    "reason": "레드팀 6단계 리뷰 반영: 문지기는 바뀐 개념이든 아니든 준수를 판정하지 않음·초록 정착에 사람 확인",
+    "at": "2026-09-14T19:48:09.742Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
