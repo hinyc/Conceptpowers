@@ -38,7 +38,6 @@
         "src/audit/tracked.ts",
         "tests/audit/audit.test.ts",
         "tests/audit/gaps.test.ts",
-        "tests/cli/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/hooks/gates.modes.test.ts",
         "tests/integration/smoke.test.ts",
@@ -49,7 +48,8 @@
         "tests/hooks/preToolUse.test.ts",
         "src/hooks/gates/noConceptNote.ts",
         "tests/hooks/noConceptNote.test.ts",
-        "tests/mapping/leadingComment.test.ts"
+        "tests/mapping/leadingComment.test.ts",
+        "tests/cli/audit.test.ts"
       ]
     },
     {
@@ -102,7 +102,10 @@
         "tests/store/conceptStore.test.ts",
         "tests/viewer/sources.test.ts",
         "tests/concept/quality.test.ts",
-        "tests/reference/affected.test.ts"
+        "tests/reference/affected.test.ts",
+        "src/audit/codeCoordinates.ts",
+        "tests/audit/codeCoordinates.test.ts",
+        "tests/cli/audit.test.ts"
       ]
     },
     {
@@ -506,7 +509,6 @@
       "codeLinks": [
         "src/cli.ts",
         "src/init/scaffold.ts",
-        "tests/cli/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/feature.test.ts",
         "tests/cli/noCode.test.ts",
@@ -530,7 +532,8 @@
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/gateFailure.test.ts",
         "tests/cli/attestScope.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "tests/cli/audit.test.ts"
       ]
     },
     {
@@ -1171,13 +1174,6 @@
         "title": "tests/audit/gaps.test.ts"
       },
       {
-        "id": "p:tests/cli/audit.test.ts",
-        "label": "audit.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/cli/audit.test.ts"
-      },
-      {
         "id": "p:tests/cli/cli.test.ts",
         "label": "cli.test.ts",
         "type": "file",
@@ -1253,6 +1249,13 @@
         "type": "file",
         "href": "",
         "title": "tests/mapping/leadingComment.test.ts"
+      },
+      {
+        "id": "p:tests/cli/audit.test.ts",
+        "label": "audit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/audit.test.ts"
       },
       {
         "id": "c:concept-driven-tests",
@@ -1442,6 +1445,20 @@
         "type": "file",
         "href": "",
         "title": "tests/reference/affected.test.ts"
+      },
+      {
+        "id": "p:src/audit/codeCoordinates.ts",
+        "label": "codeCoordinates.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/audit/codeCoordinates.ts"
+      },
+      {
+        "id": "p:tests/audit/codeCoordinates.test.ts",
+        "label": "codeCoordinates.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/audit/codeCoordinates.test.ts"
       },
       {
         "id": "c:concept-scope",
@@ -2975,11 +2992,6 @@
       },
       {
         "source": "c:concept-code-mapping",
-        "target": "p:tests/cli/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -3031,6 +3043,11 @@
       {
         "source": "c:concept-code-mapping",
         "target": "p:tests/mapping/leadingComment.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3161,6 +3178,21 @@
       {
         "source": "c:concept-provenance",
         "target": "p:tests/reference/affected.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:src/audit/codeCoordinates.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:tests/audit/codeCoordinates.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-provenance",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4370,11 +4402,6 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -4491,6 +4518,11 @@
       {
         "source": "c:init-gate",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4960,5 +4992,5 @@
       }
     ]
   },
-  "generatorVersion": "1.16.1"
+  "generatorVersion": "1.17.0"
 }

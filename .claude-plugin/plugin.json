@@ -1,7 +1,7 @@
 {
   "name": "conceptpowers",
   "description": "Concept-driven development governance: define concepts before code; agents review changes against them and a commit gate keeps concepts, code links and evidence in step",
-  "version": "1.16.1",
+  "version": "1.17.0",
   "author": { "name": "inyeol Hong", "email": "dlsduf@gmail.com" },
   "license": "MIT",
   "keywords": ["concept", "governance", "skills", "consistency", "guardrails"]
