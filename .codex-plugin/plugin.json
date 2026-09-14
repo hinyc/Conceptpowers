@@ -1,6 +1,6 @@
 {
   "name": "conceptpowers",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "description": "Concept-driven development governance: define concepts before code, enforce that changes never violate them",
   "author": {
     "name": "inyeol Hong",

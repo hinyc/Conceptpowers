@@ -4829,17 +4829,7 @@ async function pendingConceptDocs(root) {
   try {
     const { stdout } = await execFileAsync(
       "git",
-      [
-        "-c",
-        "core.quotePath=false",
-        "--no-pager",
-        "diff",
-        "--name-only",
-        "-z",
-        "HEAD",
-        "--",
-        dataRel
-      ],
+      ["-c", "core.quotePath=false", "--no-pager", "diff", "--name-only", "-z", "HEAD", "--", dataRel],
       { cwd: root, maxBuffer: MAX_BUFFER }
     );
     return new Set(
