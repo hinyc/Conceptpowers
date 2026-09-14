@@ -2759,5 +2759,27 @@
     "aligned": true,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "3:40abb59d1620",
+    "prevHash": "3:9eae88cc8b58",
+    "reason": "레드팀 8단계: 작업 시작 안내 목록에 상한을 두고 넘치는 수는 개수로만 알림",
+    "at": "2026-09-14T22:15:34.294Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "settled-status",
+    "hash": "3:ef837556c633",
+    "prevHash": "3:505ff4f9b98e",
+    "reason": "레드팀 8단계: 작업 시작 안내 목록에 상한을 두고 넘치는 수는 개수로만 알림",
+    "at": "2026-09-14T22:15:34.481Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]

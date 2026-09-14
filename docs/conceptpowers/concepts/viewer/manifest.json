@@ -165,15 +165,16 @@
         "src/schema/alignment.ts",
         "tests/schema/alignment.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/commitFiles.test.ts",
         "tests/hooks/commitGate.test.ts",
         "src/hooks/command/recordCommands.ts",
         "tests/hooks/recordCommands.test.ts",
         "tests/mapping/leadingComment.test.ts",
-        "src/hooks/command/commitTree.ts",
         "src/hooks/gates/governanceFilesGate.ts",
         "tests/drift/reconcileCommitted.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "src/hooks/command/commitTree.ts",
+        "tests/hooks/commitFiles.test.ts"
       ]
     },
     {
@@ -276,11 +277,9 @@
         "tests/util/isMain.test.ts",
         "tests/hooks/gateFailure.test.ts",
         "src/util/exitAfterWrite.ts",
-        "tests/hooks/entrypoint.e2e.test.ts",
         "src/hooks/command/shellWords.ts",
         "src/hooks/command/commitPlan.ts",
         "tests/hooks/commitPlan.test.ts",
-        "tests/hooks/commitFiles.test.ts",
         "tests/hooks/commitGate.test.ts",
         "src/hooks/command/commandKinds.ts",
         "src/hooks/command/commitArgs.ts",
@@ -290,7 +289,6 @@
         "tests/hooks/evidenceGate.test.ts",
         "tests/hooks/governanceFiles.test.ts",
         "tests/hooks/noConceptNote.test.ts",
-        "src/hooks/command/commitTree.ts",
         "src/hooks/gates/alwaysAsk.ts",
         "src/hooks/command/commitFiles.ts",
         "src/hooks/gates/evidenceGate.ts",
@@ -298,7 +296,10 @@
         "src/hooks/command/stagingReach.ts",
         "tests/hooks/stagingReach.test.ts",
         "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "src/hooks/command/commitTree.ts",
+        "tests/hooks/commitFiles.test.ts"
       ]
     },
     {
@@ -323,7 +324,8 @@
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts",
         "tests/hooks/governanceFiles.test.ts",
-        "src/hooks/gates/governanceFilesGate.ts"
+        "src/hooks/gates/governanceFilesGate.ts",
+        "tests/hooks/entrypoint.e2e.test.ts"
       ]
     },
     {
@@ -474,7 +476,6 @@
       "codeLinks": [
         "src/viewer/render.ts",
         "src/viewer/manifest.ts",
-        "scripts/release.mjs",
         "scripts/build.mjs",
         "tests/init/packageScript.test.ts",
         "tests/init/scaffold.test.ts",
@@ -484,7 +485,10 @@
         "tests/viewer/renderDisk.test.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "scripts/release.mjs",
+        "scripts/releaseSteps.mjs",
+        "tests/scripts/release.test.ts"
       ]
     },
     {
@@ -543,7 +547,6 @@
         "src/version/checkUpdate.ts",
         "src/version/compareSemver.ts",
         "src/hooks/sessionStart.ts",
-        "scripts/release.mjs",
         "src/init/packageScript.ts",
         "src/version/autoSync.ts",
         "tests/cli/cli.test.ts",
@@ -555,7 +558,9 @@
         "src/cli.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "scripts/release.mjs",
+        "scripts/releaseSteps.mjs"
       ]
     },
     {
@@ -1633,25 +1638,11 @@
         "title": "tests/schema/alignment.test.ts"
       },
       {
-        "id": "p:tests/hooks/commitFiles.test.ts",
-        "label": "commitFiles.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/commitFiles.test.ts"
-      },
-      {
         "id": "p:tests/hooks/commitGate.test.ts",
         "label": "commitGate.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/hooks/commitGate.test.ts"
-      },
-      {
-        "id": "p:src/hooks/command/commitTree.ts",
-        "label": "commitTree.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/commitTree.ts"
       },
       {
         "id": "p:src/hooks/gates/governanceFilesGate.ts",
@@ -1666,6 +1657,27 @@
         "type": "file",
         "href": "",
         "title": "tests/drift/reconcileCommitted.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "label": "entrypoint.e2e.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/entrypoint.e2e.test.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commitTree.ts",
+        "label": "commitTree.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitTree.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitFiles.test.ts",
+        "label": "commitFiles.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitFiles.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -1904,13 +1916,6 @@
         "type": "file",
         "href": "",
         "title": "src/util/exitAfterWrite.ts"
-      },
-      {
-        "id": "p:tests/hooks/entrypoint.e2e.test.ts",
-        "label": "entrypoint.e2e.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/entrypoint.e2e.test.ts"
       },
       {
         "id": "p:src/hooks/command/shellWords.ts",
@@ -2396,13 +2401,6 @@
         "title": "src/viewer/render.ts"
       },
       {
-        "id": "p:scripts/release.mjs",
-        "label": "release.mjs",
-        "type": "file",
-        "href": "",
-        "title": "scripts/release.mjs"
-      },
-      {
         "id": "p:scripts/build.mjs",
         "label": "build.mjs",
         "type": "file",
@@ -2429,6 +2427,27 @@
         "type": "file",
         "href": "",
         "title": "tests/init/syncGenerated.test.ts"
+      },
+      {
+        "id": "p:scripts/release.mjs",
+        "label": "release.mjs",
+        "type": "file",
+        "href": "",
+        "title": "scripts/release.mjs"
+      },
+      {
+        "id": "p:scripts/releaseSteps.mjs",
+        "label": "releaseSteps.mjs",
+        "type": "file",
+        "href": "",
+        "title": "scripts/releaseSteps.mjs"
+      },
+      {
+        "id": "p:tests/scripts/release.test.ts",
+        "label": "release.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/scripts/release.test.ts"
       },
       {
         "id": "c:init-gate",
@@ -3307,11 +3326,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/commitFiles.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/hooks/commitGate.test.ts",
         "kind": "concept-file"
       },
@@ -3332,11 +3346,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:src/hooks/command/commitTree.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:src/hooks/gates/governanceFilesGate.ts",
         "kind": "concept-file"
       },
@@ -3348,6 +3357,21 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/commitTree.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/commitFiles.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3657,11 +3681,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/hooks/command/shellWords.ts",
         "kind": "concept-file"
       },
@@ -3673,11 +3692,6 @@
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/commitPlan.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/commitFiles.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3727,11 +3741,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/commitTree.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/hooks/gates/alwaysAsk.ts",
         "kind": "concept-file"
       },
@@ -3768,6 +3777,21 @@
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitTree.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitFiles.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3823,6 +3847,11 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4247,11 +4276,6 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:scripts/release.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
         "target": "p:scripts/build.mjs",
         "kind": "concept-file"
       },
@@ -4298,6 +4322,21 @@
       {
         "source": "c:generated-not-hand-edited",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/release.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/releaseSteps.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/scripts/release.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4462,11 +4501,6 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:scripts/release.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
         "target": "p:src/init/packageScript.ts",
         "kind": "concept-file"
       },
@@ -4523,6 +4557,16 @@
       {
         "source": "c:plugin-version-sync",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:scripts/release.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:scripts/releaseSteps.mjs",
         "kind": "concept-file"
       },
       {

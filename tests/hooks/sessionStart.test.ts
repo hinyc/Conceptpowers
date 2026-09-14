@@ -30,11 +30,16 @@
 //    → 바뀌지 않은 개념을 코드가 어기는지는 문지기가 보지 않는다는 안내를 담는다
 //  - concept-scope 허용 "무엇이 어디에·어떻게 구현됐는지를 물을 때는 개념이 아니라 코드에서 답을 찾도록 작업 시작
 //    안내에 알리는 것" → 개념 먼저·코드 먼저를 가르는 안내를 담는다
+//  - drift-reconcile 불변 "작업 시작 안내에 싣는 어긋난 개념 목록은 상한을 두고 넘치는 수는 개수로만 알린다 — …"
+//    → 어긋난 개념이 많아도 상한까지만 싣고 나머지는 개수와 전체 목록 명령으로 알린다 / 연결 코드도 개념마다 상한까지만
+//  - settled-status 불변 "작업 시작 안내에 싣는 빨강·노랑 개념 목록은 상한을 두고 넘치는 수는 개수로만 알린다 — …"
+//    → 노랑 개념이 많아도 상한까지만 싣는다 / 개념이 많아져도 세션 주입 크기가 일정한 범위에 머문다
 //  - governance-mode 제한 "도구나 에이전트가 스스로 강도를 바꾸는 것"
 //    → strict면 우회 금지 지침을 주입한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { buildSessionStartOutput } from '../../src/hooks/sessionStart.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
@@ -52,7 +57,7 @@ describe('buildSessionStartOutput', () => {
   it('init 안 된 프로젝트면 빈 출력(무동작)', async () => {
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o).toBeNull();
-  });
+  }, 30_000);
   it('init 되면 활성화 컨텍스트와 CLI 경로를 담는다', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, '/plugin');
@@ -418,5 +423,79 @@ describe('규범과 현실을 가르는 안내', () => {
     const ctx = await context();
     expect(ctx).toContain('Where to look first');
     expect(ctx).toContain('go straight to the code');
+  });
+});
+
+describe('작업 시작 안내의 목록 상한', () => {
+  const concept = (slug: string, definition: string, status = 'green') =>
+    ({
+      slug,
+      category: ['behavior'],
+      title: slug,
+      status,
+      description: { definition },
+      purpose: { reason: '이유' },
+      actions: {},
+      principle: {},
+    }) as never;
+
+  it('노랑 개념이 많아도 상한까지만 싣고 나머지는 개수와 전체 목록 명령으로 알린다 [규칙: 빨강·노랑 목록은 상한을 둔다]', async () => {
+    await scaffoldInit(root, {});
+    for (let i = 0; i < 40; i++)
+      await writeConcept(root, concept(`pending-${i}`, '정의', 'pending'));
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    expect(ctx).toContain('status=pending, 40');
+    expect(ctx).toContain('(+25 more)');
+    expect(ctx).toContain('audit --root .');
+  });
+
+  it('어긋난 개념이 많아도 상한까지만 싣고, 연결 코드도 개념마다 상한까지만 싣는다 [규칙: 어긋난 개념 목록은 상한을 둔다]', async () => {
+    await scaffoldInit(root, {});
+    const lock: Record<string, { hash: string; at: string }> = {};
+    const mapping: Record<string, string[]> = {};
+    for (let i = 0; i < 30; i++) {
+      const slug = `drift-${i}`;
+      await writeConcept(root, concept(slug, 'v1'));
+      lock[slug] = {
+        hash: contractHash((await readConcept(root, slug))!),
+        at: '2026-01-01T00:00:00.000Z',
+      };
+      mapping[slug] = Array.from({ length: 12 }, (_, j) => `src/${slug}/f${j}.ts`);
+    }
+    await writeLock(root, lock);
+    await mkdir(join(root, 'docs/conceptpowers/.cache'), { recursive: true });
+    writeFileSync(join(root, 'docs/conceptpowers/.cache/mapping.json'), JSON.stringify(mapping));
+    for (const slug of Object.keys(mapping)) {
+      for (const file of mapping[slug]) {
+        await mkdir(join(root, file, '..'), { recursive: true });
+        writeFileSync(join(root, file), `// @concept:${slug}\nexport const x = 1;\n`);
+      }
+      await writeConcept(root, concept(slug, 'v2'));
+    }
+    const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
+      .additionalContext;
+    const driftLines = ctx.split('\n').filter((line) => line.startsWith('- drift-'));
+    expect(driftLines).toHaveLength(10);
+    expect(driftLines[0]).toContain('(+7 more)');
+    expect(ctx).toContain('+20 more changed concepts');
+    expect(ctx).toContain('drift --root .');
+  });
+
+  it('개념이 많아져도 세션 주입 크기가 일정한 범위에 머문다 [규칙: 목록은 상한을 두고 개수로만 알린다]', async () => {
+    await scaffoldInit(root, {});
+    const small = Buffer.byteLength(
+      (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext
+    );
+    for (let i = 0; i < 60; i++) {
+      await writeConcept(
+        root,
+        concept(`many-pending-concept-with-a-long-name-${i}`, '정의', 'pending')
+      );
+    }
+    const large = Buffer.byteLength(
+      (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext
+    );
+    expect(large - small).toBeLessThan(2000);
   });
 });

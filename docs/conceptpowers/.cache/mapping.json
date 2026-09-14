@@ -15,10 +15,10 @@
     "src/init/syncGenerated.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/schema/initConfig.test.ts",
-    "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts",
     "scripts/release.mjs",
-    "scripts/releaseSteps.mjs"
+    "scripts/releaseSteps.mjs",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/sessionStart.test.ts"
   ],
   "globally-unique-slug": [
     "assets/concept.css",
@@ -84,10 +84,10 @@
     "tests/viewer/renderDisk.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts",
     "scripts/release.mjs",
     "scripts/releaseSteps.mjs",
-    "tests/scripts/release.test.ts"
+    "tests/scripts/release.test.ts",
+    "tests/hooks/sessionStart.test.ts"
   ],
   "knowledge-graph-view": [
     "assets/concept.css",
@@ -257,11 +257,11 @@
     "src/hooks/gates/governanceFilesGate.ts",
     "src/hooks/command/stagingReach.ts",
     "tests/hooks/stagingReach.test.ts",
-    "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts",
     "tests/hooks/entrypoint.e2e.test.ts",
     "src/hooks/command/commitTree.ts",
-    "tests/hooks/commitFiles.test.ts"
+    "tests/hooks/commitFiles.test.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/sessionStart.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -323,10 +323,11 @@
     "src/hooks/gates/governanceFilesGate.ts",
     "tests/drift/reconcileCommitted.test.ts",
     "src/drift/noCode.ts",
-    "tests/hooks/sessionStart.test.ts",
     "tests/hooks/entrypoint.e2e.test.ts",
     "src/hooks/command/commitTree.ts",
-    "tests/hooks/commitFiles.test.ts"
+    "tests/hooks/commitFiles.test.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/hooks/sessionStart.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
