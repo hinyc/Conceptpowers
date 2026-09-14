@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:governance-mode @concept:output-locale @concept:concept-code-mapping @concept:plugin-version-sync
+// @concept:concept-driven-tests @concept:governance-mode @concept:output-locale @concept:concept-code-mapping @concept:plugin-version-sync @concept:reference-privacy
 // 시작 설정(InitConfig)의 스키마와 기본값을 검증한다 — 여러 개념의 스위치가 여기 모여 있다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
@@ -122,5 +122,19 @@ describe('enforcement (거버넌스 강도)', () => {
   });
   it('알 수 없는 값은 거부한다 (readInitConfig가 null→standard 폴백) [규칙: 깨졌으면 표준]', () => {
     expect(() => parseInitConfig({ ...base, enforcement: 'hard' })).toThrow();
+  });
+});
+
+// reference-privacy 허용 "프로젝트 설정으로 공유를 택했을 때만 참고자료 기준점을 저장소에 함께 올리는 것"
+describe('referenceLock', () => {
+  const base = { version: '0.1.0', enabled: true } as const;
+  it('누락 시 기본값 shared', () => {
+    expect(parseInitConfig(base).referenceLock).toBe('shared');
+  });
+  it('local을 허용한다', () => {
+    expect(parseInitConfig({ ...base, referenceLock: 'local' }).referenceLock).toBe('local');
+  });
+  it('알 수 없는 값은 거부한다', () => {
+    expect(() => parseInitConfig({ ...base, referenceLock: 'private' })).toThrow();
   });
 });

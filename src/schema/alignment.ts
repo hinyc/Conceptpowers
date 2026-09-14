@@ -1,5 +1,23 @@
-// @concept:drift-reconcile @concept:concept-driven-tests
+// @concept:drift-reconcile @concept:concept-driven-tests @concept:reference-sync
 import { z } from 'zod';
+
+// 참고자료 기준점: 파일마다 지문(내용 해시)·크기·수정 시각만 남긴다 — 내용은 절대 담지 않는다.
+// 열쇠는 저장소 안 파일이면 저장소 상대 경로, 등록 폴더 안 파일이면 "등록 경로/상대 경로".
+export const ReferenceLockEntry = z.object({
+  hash: z.string(), // sha256 앞 12 hex
+  size: z.number().int().nonnegative(),
+  mtime: z.string(), // ISO
+});
+export type ReferenceLockEntry = z.infer<typeof ReferenceLockEntry>;
+
+export const ReferenceLock = z.object({
+  version: z.literal(1).default(1),
+  at: z.string(),
+  files: z.record(z.string(), ReferenceLockEntry).default({}),
+  // 상한에 걸려 일부만 훑은 등록 경로(paths.md에 적힌 그대로)
+  truncated: z.array(z.string()).default([]),
+});
+export type ReferenceLock = z.infer<typeof ReferenceLock>;
 
 export const LockEntry = z.object({ hash: z.string(), at: z.string() });
 export const AlignmentLock = z.record(z.string(), LockEntry);

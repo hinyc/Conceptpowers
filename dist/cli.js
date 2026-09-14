@@ -16,9 +16,9 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
 var __commonJS = (cb, mod) => function __require2() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
-var __export = (target, all) => {
+var __export = (target2, all) => {
   for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+    __defProp(target2, name, { get: all[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -28,12 +28,12 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+var __toESM = (mod, isNodeMode, target2) => (target2 = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
   // If the importer is in node compatibility mode or this is not an ESM
   // file that has been converted to a CommonJS file using a Babel-
   // compatible transform (i.e. "__esModule" has not been set), then set
   // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target2, "default", { value: mod, enumerable: true }) : target2,
   mod
 ));
 
@@ -1453,9 +1453,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {string} invalidArgumentMessage
        * @private
        */
-      _callParseArg(target, value, previous, invalidArgumentMessage) {
+      _callParseArg(target2, value, previous, invalidArgumentMessage) {
         try {
-          return target.parseArg(value, previous);
+          return target2.parseArg(value, previous);
         } catch (err) {
           if (err.code === "commander.invalidArgument") {
             const message = `${invalidArgumentMessage} ${err.message}`;
@@ -2569,10 +2569,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
           const optionKey = option2.attributeName();
           const optionValue = this.getOptionValue(optionKey);
           const negativeOption = this.options.find(
-            (target) => target.negate && optionKey === target.attributeName()
+            (target2) => target2.negate && optionKey === target2.attributeName()
           );
           const positiveOption = this.options.find(
-            (target) => !target.negate && optionKey === target.attributeName()
+            (target2) => !target2.negate && optionKey === target2.attributeName()
           );
           if (negativeOption && (negativeOption.presetArg === void 0 && optionValue === false || negativeOption.presetArg !== void 0 && optionValue === negativeOption.presetArg)) {
             return negativeOption;
@@ -3048,13 +3048,13 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile19 } from "node:fs/promises";
+import { readFile as readFile21 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir9, writeFile as writeFile10, access as access5 } from "node:fs/promises";
-import { join as join13 } from "node:path";
+import { join as join15 } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -3079,7 +3079,8 @@ function cpPaths(root) {
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
     testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
-    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json"),
+    referenceLock: join(base, "concepts", ".alignment", "reference.lock.json")
   };
 }
 
@@ -4008,8 +4009,8 @@ var ZodType = class {
       description
     });
   }
-  pipe(target) {
-    return ZodPipeline.create(this, target);
+  pipe(target2) {
+    return ZodPipeline.create(this, target2);
   }
   readonly() {
     return ZodReadonly.create(this);
@@ -7151,6 +7152,9 @@ var InitConfigSchema = external_exports.object({
     "**/test_*.py"
   ]),
   enforcement: EnforcementSchema.default("standard"),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
@@ -7286,7 +7290,7 @@ function buildInitHint(locale, opts) {
 
 // src/init/syncGenerated.ts
 import { readdir as readdir5, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join12 } from "node:path";
+import { join as join14 } from "node:path";
 
 // src/viewer/render.ts
 import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile8 } from "node:fs/promises";
@@ -7378,12 +7382,12 @@ import { join as join2, relative } from "node:path";
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
 import { dirname } from "node:path";
 var counter = 0;
-async function writeFileAtomic(target, data) {
-  await mkdir(dirname(target), { recursive: true });
-  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+async function writeFileAtomic(target2, data) {
+  await mkdir(dirname(target2), { recursive: true });
+  const tmp = `${target2}.${process.pid}.${counter++}.tmp`;
   try {
     await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
-    await rename(tmp, target);
+    await rename(tmp, target2);
   } catch (error) {
     await rm(tmp, { force: true });
     throw error;
@@ -7619,6 +7623,20 @@ function checkConceptQuality(c, knownSlugs = []) {
 import { readFile as readFile2 } from "node:fs/promises";
 
 // src/schema/alignment.ts
+var ReferenceLockEntry = external_exports.object({
+  hash: external_exports.string(),
+  // sha256 앞 12 hex
+  size: external_exports.number().int().nonnegative(),
+  mtime: external_exports.string()
+  // ISO
+});
+var ReferenceLock = external_exports.object({
+  version: external_exports.literal(1).default(1),
+  at: external_exports.string(),
+  files: external_exports.record(external_exports.string(), ReferenceLockEntry).default({}),
+  // 상한에 걸려 일부만 훑은 등록 경로(paths.md에 적힌 그대로)
+  truncated: external_exports.array(external_exports.string()).default([])
+});
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
 var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
 var HistoryEntry = external_exports.object({
@@ -7714,11 +7732,11 @@ function fileFor(root, c) {
   const dataDir = cpPaths(root).conceptsData;
   return c.group ? join2(dataDir, c.group, `${c.slug}.json`) : join2(dataDir, `${c.slug}.json`);
 }
-function assertAliasesFree(concept, existing, target, root) {
+function assertAliasesFree(concept, existing, target2, root) {
   const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((c) => c.slug)]);
   const takenBy = /* @__PURE__ */ new Map();
   for (const other of existing) {
-    if (fileFor(root, other) === target) continue;
+    if (fileFor(root, other) === target2) continue;
     for (const alias of other.aliases) takenBy.set(alias, other.slug);
   }
   const seen = /* @__PURE__ */ new Set();
@@ -7738,14 +7756,14 @@ function assertAliasesFree(concept, existing, target, root) {
 }
 async function writeConcept(root, input) {
   const concept = parseConcept(input);
-  const target = fileFor(root, concept);
+  const target2 = fileFor(root, concept);
   const existing = await listConcepts(root);
-  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
+  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target2);
   if (duplicate) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
-  assertAliasesFree(concept, existing, target, root);
-  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
+  assertAliasesFree(concept, existing, target2, root);
+  await writeFileAtomic(target2, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }
 async function walkJson(dir) {
@@ -7875,13 +7893,13 @@ function fileFor2(root, f) {
 }
 async function writeFeature(root, input) {
   const feature = parseFeature(input);
-  const target = fileFor2(root, feature);
+  const target2 = fileFor2(root, feature);
   const existing = await listFeatures(root);
-  const duplicate = existing.find((f) => f.slug === feature.slug && fileFor2(root, f) !== target);
+  const duplicate = existing.find((f) => f.slug === feature.slug && fileFor2(root, f) !== target2);
   if (duplicate) {
     throw new Error(`Duplicate feature slug: ${feature.slug} already exists (globally unique)`);
   }
-  await writeFileAtomic(target, JSON.stringify(feature, null, 2) + "\n");
+  await writeFileAtomic(target2, JSON.stringify(feature, null, 2) + "\n");
   return feature;
 }
 async function walkJson2(dir) {
@@ -8039,9 +8057,9 @@ async function buildMapping(root, files, ignoreGlobs = []) {
   return mapping;
 }
 async function writeMappingCache(root, mapping) {
-  const target = cpPaths(root).mappingCache;
-  await mkdir2(dirname2(target), { recursive: true });
-  await writeFile2(target, JSON.stringify(mapping, null, 2) + "\n", "utf8");
+  const target2 = cpPaths(root).mappingCache;
+  await mkdir2(dirname2(target2), { recursive: true });
+  await writeFile2(target2, JSON.stringify(mapping, null, 2) + "\n", "utf8");
 }
 async function updateMappingCache(root, files, ignoreGlobs = []) {
   const existing = await readMappingCache(root);
@@ -8141,9 +8159,9 @@ async function readAsset(name) {
   }
   throw new Error(`asset not found: ${name} (search start: ${start})`);
 }
-async function copyAsset(name, target) {
-  await mkdir4(dirname4(target), { recursive: true });
-  await writeFile4(target, await readAsset(name));
+async function copyAsset(name, target2) {
+  await mkdir4(dirname4(target2), { recursive: true });
+  await writeFile4(target2, await readAsset(name));
 }
 async function readPluginVersion() {
   const pluginRoot = findPluginRoot(dirname4(fileURLToPath(import.meta.url)));
@@ -8252,9 +8270,52 @@ async function listReferenceFiles(root) {
 }
 
 // src/init/referencePaths.ts
-import { readFile as readFile10, readdir as readdir4, stat, access as access2, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
+import { readFile as readFile10, stat as stat2, access as access2, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
 import { homedir } from "node:os";
-import { isAbsolute, join as join9 } from "node:path";
+import { isAbsolute, join as join10 } from "node:path";
+
+// src/init/referenceWalk.ts
+import { readdir as readdir4, stat } from "node:fs/promises";
+import { join as join9 } from "node:path";
+var SCAN_LIMIT = 5e3;
+async function statUsableFile(path) {
+  try {
+    const s = await stat(path);
+    if (!s.isFile() || s.size === 0) return null;
+    return { size: s.size, mtime: s.mtime.toISOString() };
+  } catch {
+    return null;
+  }
+}
+async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
+  const queue = [dir];
+  let visited = 0;
+  while (queue.length > 0) {
+    const current = queue.shift();
+    let entries;
+    try {
+      entries = await readdir4(current, { withFileTypes: true });
+    } catch {
+      if (current === dir) return "unreadable";
+      continue;
+    }
+    for (const entry of entries) {
+      if (++visited > limit) return "capped";
+      if (entry.name.startsWith(".")) continue;
+      const full = join9(current, entry.name);
+      if (entry.isDirectory()) {
+        queue.push(full);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      const s = await statUsableFile(full);
+      if (s && !await visit(full, s)) return "stopped";
+    }
+  }
+  return "done";
+}
+
+// src/init/referencePaths.ts
 var PATHS_FILE = "paths.md";
 var PATHS_TEMPLATE = [
   "# Reference paths \u2014 external documents to consult when authoring concepts.",
@@ -8285,60 +8346,31 @@ var PATHS_TEMPLATE = [
 ].join("\n");
 async function ensureReferencePaths(root) {
   const dir = cpPaths(root).reference;
-  const target = join9(dir, PATHS_FILE);
+  const target2 = join10(dir, PATHS_FILE);
   try {
-    await access2(target);
+    await access2(target2);
     return false;
   } catch {
   }
   await mkdir6(dir, { recursive: true });
-  await writeFile7(target, PATHS_TEMPLATE, "utf8");
+  await writeFile7(target2, PATHS_TEMPLATE, "utf8");
   return true;
 }
 function parseReferencePaths(content) {
   return content.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#")).map((line) => line.replace(/^[-*]\s+/, "").trim()).filter((line) => line !== "");
 }
 function resolveReferencePath(root, raw) {
-  if (raw === "~" || raw.startsWith("~/")) return join9(homedir(), raw.slice(1));
+  if (raw === "~" || raw.startsWith("~/")) return join10(homedir(), raw.slice(1));
   if (isAbsolute(raw)) return raw;
-  return join9(root, raw);
-}
-var SCAN_LIMIT = 5e3;
-async function fileHasBytes(path) {
-  try {
-    return (await stat(path)).size > 0;
-  } catch {
-    return false;
-  }
+  return join10(root, raw);
 }
 async function dirHasUsableContent(dir) {
-  const queue = [dir];
-  let visited = 0;
-  while (queue.length > 0) {
-    const current = queue.shift();
-    let entries;
-    try {
-      entries = await readdir4(current, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-    for (const entry of entries) {
-      if (++visited > SCAN_LIMIT) return true;
-      if (entry.name.startsWith(".")) continue;
-      const full = join9(current, entry.name);
-      if (entry.isDirectory()) {
-        queue.push(full);
-      } else if (entry.isFile() && await fileHasBytes(full)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return await walkUsableFiles(dir, () => false) !== "done";
 }
 async function checkReferencePaths(root) {
   let content;
   try {
-    content = await readFile10(join9(cpPaths(root).reference, PATHS_FILE), "utf8");
+    content = await readFile10(join10(cpPaths(root).reference, PATHS_FILE), "utf8");
   } catch {
     return [];
   }
@@ -8347,7 +8379,7 @@ async function checkReferencePaths(root) {
     const resolved = resolveReferencePath(root, raw);
     let status;
     try {
-      const s = await stat(resolved);
+      const s = await stat2(resolved);
       const usable = s.isDirectory() ? await dirHasUsableContent(resolved) : s.size > 0;
       status = usable ? "ok" : "empty";
     } catch {
@@ -8360,23 +8392,23 @@ async function checkReferencePaths(root) {
 
 // src/init/alignmentGitignore.ts
 import { access as access3, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
-import { join as join10 } from "node:path";
+import { join as join11 } from "node:path";
 var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
 async function ensureAlignmentGitignore(root) {
-  const target = join10(cpPaths(root).alignmentDir, ".gitignore");
+  const target2 = join11(cpPaths(root).alignmentDir, ".gitignore");
   try {
-    await access3(target);
+    await access3(target2);
     return false;
   } catch {
     await mkdir7(cpPaths(root).alignmentDir, { recursive: true });
-    await writeFile8(target, CONTENT, "utf8");
+    await writeFile8(target2, CONTENT, "utf8");
     return true;
   }
 }
 
 // src/init/referenceGitignore.ts
 import { access as access4, mkdir as mkdir8, writeFile as writeFile9 } from "node:fs/promises";
-import { join as join11 } from "node:path";
+import { join as join12 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
   "# only the external-path list (paths.md) is shared; README is regenerated locally",
@@ -8386,13 +8418,13 @@ var CONTENT2 = [
   ""
 ].join("\n");
 async function ensureReferenceGitignore(root) {
-  const target = join11(cpPaths(root).reference, ".gitignore");
+  const target2 = join12(cpPaths(root).reference, ".gitignore");
   try {
-    await access4(target);
+    await access4(target2);
     return false;
   } catch {
     await mkdir8(cpPaths(root).reference, { recursive: true });
-    await writeFile9(target, CONTENT2, "utf8");
+    await writeFile9(target2, CONTENT2, "utf8");
     return true;
   }
 }
@@ -8400,10 +8432,10 @@ async function ensureReferenceGitignore(root) {
 // src/init/ensureConfigDefaults.ts
 import { readFile as readFile11 } from "node:fs/promises";
 async function ensureInitConfigDefaults(root) {
-  const target = cpPaths(root).initFile;
+  const target2 = cpPaths(root).initFile;
   let current;
   try {
-    const parsed = JSON.parse(await readFile11(target, "utf8"));
+    const parsed = JSON.parse(await readFile11(target2, "utf8"));
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
     current = parsed;
   } catch {
@@ -8420,16 +8452,36 @@ async function ensureInitConfigDefaults(root) {
   const next = { ...current };
   for (const key of missing) next[key] = filled[key];
   try {
-    await writeFileAtomic(target, JSON.stringify(next, null, 2) + "\n");
+    await writeFileAtomic(target2, JSON.stringify(next, null, 2) + "\n");
   } catch (error) {
     throw new Error(`init.json \uC124\uC815 \uBCF4\uCDA9\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4: ${error.message}`);
   }
   return missing;
 }
 
+// src/init/referenceLockIgnore.ts
+import { readFile as readFile12 } from "node:fs/promises";
+import { join as join13 } from "node:path";
+var LOCK_LINE = "reference.lock.json";
+function withLine(lines) {
+  return lines.includes(LOCK_LINE) ? [...lines] : [...lines, LOCK_LINE];
+}
+function withoutLine(lines) {
+  return lines.filter((l) => l !== LOCK_LINE);
+}
+async function applyReferenceLockIgnore(root, mode) {
+  await ensureAlignmentGitignore(root);
+  const target2 = join13(cpPaths(root).alignmentDir, ".gitignore");
+  const lines = (await readFile12(target2, "utf8")).replace(/\n$/, "").split("\n");
+  const next = mode === "local" ? withLine(lines) : withoutLine(lines);
+  if (next.length === lines.length) return "unchanged";
+  await writeFileAtomic(target2, next.join("\n") + "\n");
+  return mode === "local" ? "added" : "removed";
+}
+
 // src/init/syncGenerated.ts
 async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join12(viewerDir, "index.html");
+  const keep = join14(viewerDir, "index.html");
   let removed = 0;
   async function walk(dir) {
     let entries;
@@ -8439,7 +8491,7 @@ async function cleanLegacyViewerHtml(viewerDir) {
       return;
     }
     for (const e of entries) {
-      const full = join12(dir, e.name);
+      const full = join14(dir, e.name);
       if (e.isDirectory()) {
         await walk(full);
         try {
@@ -8464,6 +8516,8 @@ async function syncGenerated(root, opts = {}) {
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
   const referenceGitignoreCreated = await ensureReferenceGitignore(root);
   const configFieldsAdded = await ensureInitConfigDefaults(root);
+  const referenceLockMode = (await readInitConfig(root))?.referenceLock ?? "shared";
+  const referenceLockIgnore = await applyReferenceLockIgnore(root, referenceLockMode);
   return {
     scriptStatus,
     orphansRemoved,
@@ -8471,7 +8525,9 @@ async function syncGenerated(root, opts = {}) {
     referencePathsCreated,
     alignmentGitignoreCreated,
     referenceGitignoreCreated,
-    configFieldsAdded
+    configFieldsAdded,
+    referenceLockMode,
+    referenceLockIgnore
   };
 }
 
@@ -8495,7 +8551,9 @@ async function syncSafely(root) {
       referencePathsCreated: false,
       alignmentGitignoreCreated: false,
       referenceGitignoreCreated: false,
-      configFieldsAdded: []
+      configFieldsAdded: [],
+      referenceLockMode: "shared",
+      referenceLockIgnore: "unchanged"
     };
   }
 }
@@ -8525,19 +8583,19 @@ async function scaffoldInit(root, opts) {
   });
   await writeFile10(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile10(join13(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile10(join13(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile10(join15(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile10(join15(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncSafely(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
 
 // src/version/autoSync.ts
-import { readFile as readFile12 } from "node:fs/promises";
-import { join as join14 } from "node:path";
+import { readFile as readFile13 } from "node:fs/promises";
+import { join as join16 } from "node:path";
 async function readGeneratorVersion(root) {
   try {
     const manifest = JSON.parse(
-      await readFile12(join14(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
+      await readFile13(join16(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
     );
     return typeof manifest?.generatorVersion === "string" ? manifest.generatorVersion : null;
   } catch {
@@ -8596,8 +8654,8 @@ async function auditIntegrity(root, files, ignoreGlobs = []) {
 }
 
 // src/audit/gaps.ts
-import { readFile as readFile13 } from "node:fs/promises";
-import { join as join15, extname } from "node:path";
+import { readFile as readFile14 } from "node:fs/promises";
+import { join as join17, extname } from "node:path";
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -8627,7 +8685,7 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
     if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
-      content = await readFile13(join15(root, rel), "utf8");
+      content = await readFile14(join17(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -8662,20 +8720,20 @@ async function approveConcept(root, slug3) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile14 } from "node:fs/promises";
+import { readFile as readFile15 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile14(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile15(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { readFile as readFile15 } from "node:fs/promises";
+import { readFile as readFile16 } from "node:fs/promises";
 async function readHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile15(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile16(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -8711,8 +8769,8 @@ async function appendHistory(root, input) {
 }
 
 // src/drift/follow.ts
-import { stat as stat2 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join16, relative as relative3, resolve } from "node:path";
+import { stat as stat3 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, join as join18, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
   const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
@@ -8720,7 +8778,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat2(join16(root, rel))).isFile();
+    return (await stat3(join18(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -8786,10 +8844,10 @@ async function noteChange(root, slug3, reason, at) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile16 } from "node:fs/promises";
+import { readFile as readFile17 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile16(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile17(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -8808,10 +8866,10 @@ async function recordTestReview(root, concept, result, evidence = {}) {
 }
 
 // src/drift/noCode.ts
-import { readFile as readFile17 } from "node:fs/promises";
+import { readFile as readFile18 } from "node:fs/promises";
 async function readNoCodeLog(root) {
   try {
-    return NoCodeLog.parse(JSON.parse(await readFile17(cpPaths(root).noCodeFile, "utf8")));
+    return NoCodeLog.parse(JSON.parse(await readFile18(cpPaths(root).noCodeFile, "utf8")));
   } catch {
     return {};
   }
@@ -8828,8 +8886,8 @@ async function recordNoCode(root, concept, note) {
 }
 
 // src/init/addReferencePath.ts
-import { readFile as readFile18 } from "node:fs/promises";
-import { join as join17 } from "node:path";
+import { readFile as readFile19 } from "node:fs/promises";
+import { join as join19 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -8837,13 +8895,13 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target = join17(cpPaths(root).reference, PATHS_FILE);
+  const target2 = join19(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile18(target, "utf8");
+    existing = await readFile19(target2, "utf8");
   } catch (error) {
     throw new Error(
-      `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
+      `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target2}): ${error.message}`
     );
   }
   const registered = new Set(
@@ -8869,15 +8927,259 @@ async function addReferencePath(root, raws) {
     const base = existing === "" || existing.endsWith("\n") ? existing : `${existing}
 `;
     try {
-      await writeFileAtomic(target, `${base}${added.map((entry) => `- ${entry}`).join("\n")}
+      await writeFileAtomic(target2, `${base}${added.map((entry) => `- ${entry}`).join("\n")}
 `);
     } catch (error) {
       throw new Error(
-        `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C\uB97C \uAE30\uB85D\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target}): ${error.message}`
+        `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C\uB97C \uAE30\uB85D\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target2}): ${error.message}`
       );
     }
   }
   return { added, skipped };
+}
+
+// src/reference/lock.ts
+import { readFile as readFile20, mkdir as mkdir10 } from "node:fs/promises";
+
+// src/util/mapLimit.ts
+async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
+// src/reference/enumerate.ts
+import { stat as stat4 } from "node:fs/promises";
+import { join as join20, relative as relative4 } from "node:path";
+function toPosix(p) {
+  return p.replace(/\\/g, "/");
+}
+function repoKey(rel) {
+  return `${CP_REL}/reference/${toPosix(rel)}`;
+}
+function externalKey(raw, rel) {
+  const base = toPosix(raw).replace(/\/+$/, "");
+  return `${base}/${toPosix(rel)}`;
+}
+function hasDotSegment(rel) {
+  return toPosix(rel).split("/").some((seg) => seg.startsWith("."));
+}
+function target(key, abs, origin, raw, s) {
+  return { key, abs, origin, raw, size: s.size, mtime: s.mtime };
+}
+async function listRepo(root) {
+  const refDir = cpPaths(root).reference;
+  const rels = (await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
+  const found = await Promise.all(
+    rels.map(async (rel) => {
+      const abs = join20(refDir, rel);
+      const s = await statUsableFile(abs);
+      return s ? target(repoKey(rel), abs, "repo", "", s) : null;
+    })
+  );
+  return found.filter((t) => t !== null);
+}
+async function listExternal(raw, resolved, limit) {
+  let isFile;
+  try {
+    isFile = (await stat4(resolved)).isFile();
+  } catch {
+    return { targets: [], outcome: "unreachable" };
+  }
+  if (isFile) {
+    const s = await statUsableFile(resolved);
+    const targets = s ? [target(toPosix(raw), resolved, "external", raw, s)] : [];
+    return { targets, outcome: "ok" };
+  }
+  const found = [];
+  const walk = await walkUsableFiles(
+    resolved,
+    (abs, s) => {
+      found.push(target(externalKey(raw, relative4(resolved, abs)), abs, "external", raw, s));
+      return true;
+    },
+    limit
+  );
+  const outcome = walk === "capped" ? "capped" : walk === "unreadable" ? "unreachable" : "ok";
+  return { targets: found, outcome };
+}
+function sortedUnique(targets) {
+  const sorted = [...targets].sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+  return sorted.filter((t, i) => i === 0 || t.key !== sorted[i - 1].key);
+}
+async function enumerateReference(root, opts = {}) {
+  const limit = opts.limit ?? SCAN_LIMIT;
+  const repo = await listRepo(root);
+  const checks = await checkReferencePaths(root);
+  const unreachable = checks.filter((c) => c.status === "missing").map((c) => c.raw);
+  const external = [];
+  const truncated = [];
+  for (const c of checks.filter((x) => x.status !== "missing")) {
+    const r = await listExternal(c.raw, c.resolved, limit);
+    external.push(...r.targets);
+    if (r.outcome === "capped") truncated.push(c.raw);
+    if (r.outcome === "unreachable") unreachable.push(c.raw);
+  }
+  return { targets: sortedUnique([...repo, ...external]), truncated, unreachable };
+}
+
+// src/reference/fingerprint.ts
+import { createHash as createHash2 } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { stat as stat5 } from "node:fs/promises";
+async function statFile(abs) {
+  try {
+    const s = await stat5(abs);
+    if (!s.isFile()) return null;
+    return { size: s.size, mtime: s.mtime.toISOString() };
+  } catch {
+    return null;
+  }
+}
+async function hashFile(abs) {
+  const hash = createHash2("sha256");
+  for await (const chunk of createReadStream(abs)) hash.update(chunk);
+  return hash.digest("hex").slice(0, 12);
+}
+async function fingerprintFile(abs) {
+  const s = await statFile(abs);
+  if (!s) return null;
+  try {
+    return { hash: await hashFile(abs), size: s.size, mtime: s.mtime };
+  } catch {
+    return null;
+  }
+}
+
+// src/reference/lock.ts
+var HASH_CONCURRENCY = 16;
+async function readReferenceLock(root) {
+  try {
+    return ReferenceLock.parse(JSON.parse(await readFile20(cpPaths(root).referenceLock, "utf8")));
+  } catch {
+    return null;
+  }
+}
+async function writeReferenceLock(root, lock) {
+  const p = cpPaths(root);
+  await mkdir10(p.alignmentDir, { recursive: true });
+  await writeFileAtomic(p.referenceLock, JSON.stringify(lock, null, 2) + "\n");
+}
+async function readReferenceLockMode(root) {
+  return (await readInitConfig(root))?.referenceLock ?? "shared";
+}
+async function fingerprintAll(targets) {
+  const entries = await mapLimit(targets, HASH_CONCURRENCY, async (t) => ({
+    key: t.key,
+    entry: await fingerprintFile(t.abs)
+  }));
+  return Object.fromEntries(
+    entries.flatMap(({ key, entry }) => entry ? [[key, entry]] : [])
+  );
+}
+async function snapshotReference(root, at = (/* @__PURE__ */ new Date()).toISOString()) {
+  const inv = await enumerateReference(root);
+  const files = await fingerprintAll(inv.targets);
+  const lock = { version: 1, at, files, truncated: inv.truncated };
+  await writeReferenceLock(root, lock);
+  const mode = await readReferenceLockMode(root);
+  await applyReferenceLockIgnore(root, mode);
+  const kept = (origin) => inv.targets.filter((t) => t.origin === origin && t.key in files).length;
+  return {
+    lock,
+    repo: kept("repo"),
+    external: kept("external"),
+    skipped: inv.targets.length - Object.keys(files).length,
+    truncated: inv.truncated,
+    unreachable: inv.unreachable,
+    mode
+  };
+}
+
+// src/reference/affected.ts
+import { basename } from "node:path/posix";
+function sourceMatchesKey(sourcePath, key) {
+  const p = normalizeRel(sourcePath);
+  const k = normalizeRel(key);
+  if (p === "") return false;
+  return k === p || basename(k) === p || k.endsWith(`/${p}`);
+}
+function matchedSources(concept, keys) {
+  const paths = concept.sources.filter((s) => s.kind === "reference" && s.path !== "").filter((s) => keys.some((k) => sourceMatchesKey(s.path, k))).map((s) => s.path);
+  return [...new Set(paths)];
+}
+function findAffectedConcepts(concepts, keys) {
+  if (keys.length === 0) return [];
+  return concepts.map((c) => ({ slug: c.slug, status: c.status, sourcePaths: matchedSources(c, keys) })).filter((a) => a.sourcePaths.length > 0).sort((a, b) => a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0);
+}
+
+// src/reference/diff.ts
+async function isChanged(t, prev, mode) {
+  if (mode === "quick" && t.size === prev.size && t.mtime === prev.mtime) return false;
+  try {
+    return await hashFile(t.abs) !== prev.hash;
+  } catch {
+    return false;
+  }
+}
+function underUnreachable(key, unreachable) {
+  return unreachable.some((raw) => {
+    const base = raw.replace(/\\/g, "/").replace(/\/+$/, "");
+    return key === base || key.startsWith(`${base}/`);
+  });
+}
+function uncited(concepts, keys) {
+  return keys.filter((k) => findAffectedConcepts(concepts, [k]).length === 0);
+}
+async function unlockedDiff(root, inv) {
+  const added = inv.targets.map((t) => t.key);
+  return {
+    unlocked: true,
+    added,
+    newMaterial: uncited(await listConcepts(root), added),
+    changed: [],
+    removed: [],
+    affected: [],
+    unreachable: inv.unreachable,
+    truncated: inv.truncated
+  };
+}
+async function splitCurrent(inv, lock, mode) {
+  const added = inv.targets.filter((t) => !(t.key in lock.files)).map((t) => t.key);
+  const known = inv.targets.filter((t) => t.key in lock.files);
+  const flags = await mapLimit(
+    known,
+    HASH_CONCURRENCY,
+    (t) => isChanged(t, lock.files[t.key], mode)
+  );
+  const changed = known.filter((_, i) => flags[i]).map((t) => t.key);
+  return { added, changed };
+}
+async function diffReference(root, mode = "full") {
+  const inv = await enumerateReference(root);
+  const lock = await readReferenceLock(root);
+  if (!lock) return unlockedDiff(root, inv);
+  const { added, changed } = await splitCurrent(inv, lock, mode);
+  const current = new Set(inv.targets.map((t) => t.key));
+  const removed = Object.keys(lock.files).filter((k) => !current.has(k)).filter((k) => !underUnreachable(k, inv.unreachable)).sort();
+  const concepts = await listConcepts(root);
+  return {
+    unlocked: false,
+    added,
+    newMaterial: uncited(concepts, added),
+    changed,
+    removed,
+    affected: findAffectedConcepts(concepts, [...changed, ...removed]),
+    unreachable: inv.unreachable,
+    truncated: inv.truncated
+  };
 }
 
 // src/cli.ts
@@ -8973,7 +9275,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       return;
     }
     const wasGreen = before.status === "green";
-    const patch = JSON.parse(await readFile19(o.file, "utf8"));
+    const patch = JSON.parse(await readFile21(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
     if (o.reason) await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
@@ -8988,7 +9290,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile19(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile21(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -9072,6 +9374,41 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       })
     );
   });
+  program2.command("reference-snapshot").description(
+    "\uCC38\uACE0\uC790\uB8CC \uAE30\uC900\uC810 \uCC0D\uAE30 \u2014 \uD604\uC7AC \uC790\uB8CC \uC804\uCCB4\uC758 \uC9C0\uBB38\uC744 .alignment/reference.lock.json\uC5D0 \uAE30\uB85D"
+  ).option("--reviewed", "\uC601\uD5A5 \uAC1C\uB150\uC744 \uC0AC\uB78C\uACFC \uD568\uAED8 \uB2E4\uC2DC \uBCF8 \uB4A4\uC784\uC744 \uBC1D\uD788\uACE0 \uCC0D\uB294\uB2E4").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    const before = await diffReference(o.root, "full");
+    const pending = before.affected.map((a) => a.slug);
+    if (pending.length > 0 && !o.reviewed) {
+      out(
+        JSON.stringify({
+          ok: false,
+          error: "affected concepts not reviewed \u2014 review them with the user, then pass --reviewed",
+          affected: pending
+        })
+      );
+      code = 1;
+      return;
+    }
+    const r = await snapshotReference(o.root);
+    out(
+      JSON.stringify({
+        ok: true,
+        files: Object.keys(r.lock.files).length,
+        repo: r.repo,
+        external: r.external,
+        skipped: r.skipped,
+        truncated: r.truncated,
+        unreachable: r.unreachable,
+        reviewed: pending,
+        mode: r.mode,
+        lock: `${CP_REL}/concepts/.alignment/reference.lock.json`
+      })
+    );
+  });
+  program2.command("reference-diff").description("\uCC38\uACE0\uC790\uB8CC \uBCC0\uACBD \uD655\uC778 \u2014 \uAE30\uC900\uC810\uACFC \uACAC\uC918 \uCD94\uAC00\xB7\uBCC0\uACBD\xB7\uC0AD\uC81C\uC640 \uC601\uD5A5 \uAC1C\uB150\uC744 \uBC18\uD658").option("--quick", "\uD06C\uAE30\xB7\uC218\uC815\uC2DC\uAC01\uC774 \uAC19\uC740 \uD30C\uC77C\uC740 \uD574\uC2DC\uD558\uC9C0 \uC54A\uC74C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    out(JSON.stringify(await diffReference(o.root, o.quick ? "quick" : "full")));
+  });
   program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").requiredOption("--compared <slugs>", "\uBE44\uAD50\uD55C \uB300\uC0C1 \uAC1C\uB150 slug \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84)").option("--note <text>", "\uD310\uB2E8 \uC694\uC57D").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (o.result !== "pass" && o.result !== "conflict") {
       throw new Error(`--result must be pass|conflict, got: ${o.result}`);
@@ -9112,7 +9449,9 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const entry = await recordTestReview(o.root, concept, o.result, { tests, note: o.note });
     out(JSON.stringify({ ok: true, slug: slug3, ...entry }));
   });
-  program2.command("attest-no-code").description("\uAC1C\uB150 \uC218\uC815\uC774 \uCF54\uB4DC \uBCC0\uACBD\uC744 \uD544\uC694\uB85C \uD558\uC9C0 \uC54A\uB294\uB2E4\uB294 \uD310\uB2E8\uC744 \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uCF54\uB4DC\uBB34\uAD00 \uAE30\uB85D)").argument("<slug>").requiredOption("--note <text>", "\uC0AC\uC720 (\uD544\uC218 \u2014 \uAE30\uB85D\uC758 \uBAA9\uC801\uC774 \uC0AC\uC720 \uBCF4\uC874\uC774\uB2E4)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+  program2.command("attest-no-code").description(
+    "\uAC1C\uB150 \uC218\uC815\uC774 \uCF54\uB4DC \uBCC0\uACBD\uC744 \uD544\uC694\uB85C \uD558\uC9C0 \uC54A\uB294\uB2E4\uB294 \uD310\uB2E8\uC744 \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uCF54\uB4DC\uBB34\uAD00 \uAE30\uB85D)"
+  ).argument("<slug>").requiredOption("--note <text>", "\uC0AC\uC720 (\uD544\uC218 \u2014 \uAE30\uB85D\uC758 \uBAA9\uC801\uC774 \uC0AC\uC720 \uBCF4\uC874\uC774\uB2E4)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     const concept = await readConcept(o.root, slug3);
     if (!concept) throw new Error(`Concept not found: ${slug3}`);
     const entry = await recordNoCode(o.root, concept, o.note);

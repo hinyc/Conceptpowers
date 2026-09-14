@@ -1,4 +1,4 @@
-// @concept:drift-reconcile @concept:settled-status
+// @concept:drift-reconcile @concept:settled-status @concept:reference-sync
 // 정렬 기록(lock·history·attest)의 스키마를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - drift-reconcile 구성요소 "지문: 약속 부분만 모아 만든 짧은 표식"
@@ -8,7 +8,14 @@
 //  - settled-status 불변 "초록이 되려면 … 검사한 기록이 있을 것(검사 증빙)"
 //    → AttestEntry가 compared/note를 기록·파싱한다 / 없는 기존 로그도 파싱된다(하위 호환)
 import { describe, it, expect } from 'vitest';
-import { AlignmentLock, History, HistoryEntry, AttestEntry } from '../../src/schema/alignment.js';
+import {
+  AlignmentLock,
+  History,
+  HistoryEntry,
+  AttestEntry,
+  ReferenceLock,
+  ReferenceLockEntry,
+} from '../../src/schema/alignment.js';
 
 describe('alignment schemas', () => {
   it('AlignmentLock은 slug→{hash,at} 레코드를 파싱한다', () => {
@@ -46,5 +53,19 @@ describe('alignment schemas', () => {
     const entry = AttestEntry.parse({ hash: 'h1', result: 'pass', at: '2026-08-11T00:00:00.000Z' });
     expect(entry.compared).toBeUndefined();
     expect(entry.note).toBeUndefined();
+  });
+  // reference-sync 불변 "기준점에는 자료의 지문·크기·시각만 남기고 내용은 남기지 않는다"
+  it('ReferenceLock: version/files/truncated 기본값을 채우고 항목은 hash/size/mtime을 요구한다', () => {
+    const lock = ReferenceLock.parse({ at: '2026-09-14T00:00:00.000Z' });
+    expect(lock.version).toBe(1);
+    expect(lock.files).toEqual({});
+    expect(lock.truncated).toEqual([]);
+    expect(() => ReferenceLockEntry.parse({ hash: 'h', size: 1 })).toThrow();
+    expect(() => ReferenceLockEntry.parse({ hash: 'h', size: -1, mtime: 't' })).toThrow();
+    expect(ReferenceLockEntry.parse({ hash: 'h', size: 1, mtime: 't' })).toEqual({
+      hash: 'h',
+      size: 1,
+      mtime: 't',
+    });
   });
 });

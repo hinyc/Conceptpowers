@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:governance-mode
+// @concept:concept-driven-tests @concept:governance-mode @concept:reference-sync
 import { z } from 'zod';
 
 export const LocaleSchema = z.enum(['ko', 'en']);
@@ -35,6 +35,9 @@ export const InitConfigSchema = z.object({
       '**/test_*.py',
     ]),
   enforcement: EnforcementSchema.default('standard'),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: z.enum(['local', 'shared']).default('shared'),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).

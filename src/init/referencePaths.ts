@@ -3,11 +3,11 @@
 // reference/paths.md — 사용자가 등록한 외부 참고자료 경로 목록(여러 개, 절대/상대, 파일/폴더).
 // 여기서는 그 목록을 파싱·검증만 한다(내용은 읽지 않는다 — 내용 읽기는 개념 정의 시점의
 // 에이전트 몫). 검증 결과는 세션 시작 알림과 `reference` CLI가 사용한다.
-import { readFile, readdir, stat, access, mkdir, writeFile } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
+import { readFile, stat, access, mkdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { cpPaths } from '../paths.js';
+import { walkUsableFiles } from './referenceWalk.js';
 
 export type ReferencePathStatus = 'ok' | 'missing' | 'empty';
 export interface ReferencePathCheck {
@@ -82,44 +82,11 @@ export function resolveReferencePath(root: string, raw: string): string {
   return join(root, raw);
 }
 
-// 한 폴더 트리를 훑는 상한. 이 수를 넘도록 자료를 못 찾으면 거짓 경고 대신 "있음"으로 본다.
-const SCAN_LIMIT = 5000;
-
-// 크기가 0인 파일은 자료로 치지 않는다(빈 placeholder가 "자료 있음" 오신호를 내지 않도록).
-async function fileHasBytes(path: string): Promise<boolean> {
-  try {
-    return (await stat(path)).size > 0;
-  } catch {
-    return false;
-  }
-}
-
 // 폴더 트리에 실제로 읽을 자료가 하나라도 있는지 확인한다(첫 자료를 찾는 즉시 중단).
-// 점(.)으로 시작하는 이름은 건너뛴다 — .DS_Store·.git 같은 잡음이 "자료 있음"이 되지 않도록.
-// 심볼릭 링크는 Dirent.isDirectory()가 false라 재귀 대상이 아니다(순환 안전).
+// 건너뛰기 규칙(점 이름·0바이트·심볼릭 링크)은 공용 walker가 맡는다.
+// 상한 초과(capped)는 보수적으로 "자료 있음"으로 본다 — 거짓 경고를 내지 않기 위해서다.
 async function dirHasUsableContent(dir: string): Promise<boolean> {
-  const queue: string[] = [dir];
-  let visited = 0;
-  while (queue.length > 0) {
-    const current = queue.shift() as string;
-    let entries: Dirent[];
-    try {
-      entries = await readdir(current, { withFileTypes: true });
-    } catch {
-      continue; // 읽을 수 없는 하위 폴더는 건너뛴다
-    }
-    for (const entry of entries) {
-      if (++visited > SCAN_LIMIT) return true; // 상한 초과 — 보수적으로 자료 있음
-      if (entry.name.startsWith('.')) continue;
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) {
-        queue.push(full);
-      } else if (entry.isFile() && (await fileHasBytes(full))) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return (await walkUsableFiles(dir, () => false)) !== 'done';
 }
 
 // 등록된 각 경로의 상태: ok(내용 있는 파일/자료 있는 폴더) · empty(읽을 자료 없음) · missing(없음).

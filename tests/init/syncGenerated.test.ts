@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:init-gate @concept:generated-not-hand-edited
+// @concept:plugin-version-sync @concept:init-gate @concept:generated-not-hand-edited @concept:reference-privacy
 // tests/init/syncGenerated.test.ts
 // 생성물 동기화(syncGenerated)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -61,6 +61,21 @@ describe('syncGenerated', () => {
   it('보충할 설정 항목이 없으면 configFieldsAdded가 비어 있다', async () => {
     await scaffoldInit(root, {}); // scaffold가 이미 전 항목을 기록
     expect((await syncGenerated(root)).configFieldsAdded).toEqual([]);
+  });
+
+  // reference-privacy 허용 "프로젝트 설정으로 공유를 택했을 때만 참고자료 기준점을 저장소에 함께 올리는 것"
+  it('참고자료 기준점 공유 설정에 맞춰 .alignment/.gitignore를 맞춘다', async () => {
+    await scaffoldInit(root, {});
+    const gi = join(root, 'docs/conceptpowers/concepts/.alignment/.gitignore');
+    expect((await syncGenerated(root)).referenceLockMode).toBe('shared');
+    expect(readFileSync(gi, 'utf8')).not.toContain('reference.lock.json');
+    const initPath = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
+    writeFileSync(initPath, JSON.stringify({ ...cfg, referenceLock: 'local' }, null, 2) + '\n');
+    const r = await syncGenerated(root);
+    expect(r.referenceLockMode).toBe('local');
+    expect(r.referenceLockIgnore).toBe('added');
+    expect(readFileSync(gi, 'utf8')).toContain('reference.lock.json');
   });
 
   it('옛 포맷 고아 *.html을 정리하고 index.html은 보존한다', async () => {

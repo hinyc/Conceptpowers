@@ -1,4 +1,4 @@
-// @concept:plugin-version-sync @concept:concept-driven-tests @concept:governance-mode
+// @concept:plugin-version-sync @concept:concept-driven-tests @concept:governance-mode @concept:reference-sync
 // src/hooks/sessionStart.ts
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,9 @@ import { syncIfStale, findPluginRoot } from '../version/autoSync.js';
 import { listConcepts } from '../store/conceptStore.js';
 import { listReferenceFiles } from '../init/reference.js';
 import { checkReferencePaths } from '../init/referencePaths.js';
+import { readReferenceLock } from '../reference/lock.js';
+import { diffReference, isEmptyDiff } from '../reference/diff.js';
+import { buildReferenceChangedBlock } from '../reference/sessionBlock.js';
 import { computeDrift, type DriftItem } from '../drift/detect.js';
 import { sanitizeText } from '../drift/safe.js';
 import { localeLabel } from '../i18n/messages.js';
@@ -176,6 +179,17 @@ export async function buildSessionStartOutput(
   } catch {
     pathsBlock = '';
   }
+  // best-effort: 참고자료 기준점이 있고 그 뒤 자료가 바뀐 경우에만 알린다. 값싼 견주기(quick) —
+  // 크기·시각이 다른 파일만 해시하므로 큰 PDF 폴더도 세션마다 전부 읽지 않는다. 기준점은 절대 옮기지 않는다.
+  let referenceChangedBlock = '';
+  try {
+    if (await readReferenceLock(root)) {
+      const d = await diffReference(root, 'quick');
+      if (!isEmptyDiff(d)) referenceChangedBlock = '\n' + buildReferenceChangedBlock(d);
+    }
+  } catch {
+    referenceChangedBlock = '';
+  }
   // best-effort: drift 계산 실패가 세션 시작을 막지 않게 한다.
   let drift: DriftItem[] = [];
   try {
@@ -231,7 +245,13 @@ export async function buildSessionStartOutput(
     hookSpecificOutput: {
       hookEventName: 'SessionStart',
       additionalContext:
-        context + autoSyncBlock + referenceBlock + pathsBlock + driftBlock + updateBlock,
+        context +
+        autoSyncBlock +
+        referenceBlock +
+        pathsBlock +
+        referenceChangedBlock +
+        driftBlock +
+        updateBlock,
     },
   };
 }

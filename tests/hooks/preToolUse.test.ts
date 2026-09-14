@@ -28,11 +28,13 @@
 //  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다" +
 //    reference-privacy 구성요소 "안내용 파일: … 도구가 이 폴더에 쓸 수 있는 유일한 것"
 //    → reference/ 문서가 스테이징되면 기밀 확인 ask / 스캐폴드 README·paths.md·.gitignore만이면 건너뛴다
+//    reference-privacy 허용 "프로젝트 설정으로 공유를 택했을 때만 참고자료 기준점을 저장소에 함께 올리는 것"
+//    → 설정이 local인데 기준점이 스테이징되면 ask / shared(기본)면 묻지 않는다
 //  - generated-not-hand-edited 불변 "원본을 고쳤으면 같은 작업 안에서 다시 만들기까지 마쳐 생성물을
 //    맞춰 둔다" → viewer 산출물이 unstaged dirty면 ask / 실질 위반이 있으면 그쪽이 우선 / git 저장소가
 //      아니면 조용히 통과(best-effort)
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -316,7 +318,10 @@ describe('decidePreToolUse', () => {
       description: { definition: '정의' },
       purpose: { reason: '이유' },
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -339,7 +344,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -358,7 +366,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -383,7 +394,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -402,7 +416,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
@@ -472,7 +489,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -491,7 +511,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
@@ -521,7 +544,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });
@@ -540,7 +566,10 @@ describe('decidePreToolUse', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     } as any);
     const c2 = (await readConcept(root, 'auth-token'))!;
@@ -665,7 +694,10 @@ describe('decidePreToolUse', () => {
       description: { definition: '정의' },
       purpose: { reason: '이유' },
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const out = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -686,7 +718,10 @@ describe('decidePreToolUse', () => {
       description: { definition: '정의' },
       purpose: { reason: '이유' },
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     });
     await writeConcept(root, c);
     await recordAttest(root, c, 'pass');
@@ -714,7 +749,10 @@ describe('decidePreToolUse', () => {
       description: { definition: '정의' },
       purpose: { reason: '이유' },
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
     } as any);
     const out = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -815,6 +853,33 @@ it('reference/.gitignore(플러그인 메타 파일)만 스테이징이면 기�
     changedFiles: ['docs/conceptpowers/reference/.gitignore'],
   });
   expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('gitignore');
+});
+
+// reference-privacy 허용 "프로젝트 설정으로 공유를 택했을 때만 참고자료 기준점을 저장소에 함께 올리는 것"
+describe('참고자료 기준점 커밋 확인', () => {
+  const LOCK = 'docs/conceptpowers/concepts/.alignment/reference.lock.json';
+  it('설정이 local인데 기준점이 스테이징되면 ask', async () => {
+    await scaffoldInit(root, {});
+    const initFile = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(initFile, 'utf8'));
+    writeFileSync(initFile, JSON.stringify({ ...cfg, referenceLock: 'local' }));
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: [LOCK],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('referenceLock');
+  });
+  it('설정이 shared(기본)면 기준점 스테이징을 묻지 않는다', async () => {
+    await scaffoldInit(root, {});
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: [LOCK],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('referenceLock');
+  });
 });
 
 it('viewer 생성 산출물이 unstaged dirty면 최종 allow 대신 ask한다', async () => {

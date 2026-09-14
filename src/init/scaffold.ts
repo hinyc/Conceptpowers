@@ -41,6 +41,8 @@ async function syncSafely(root: string): Promise<SyncResult> {
       alignmentGitignoreCreated: false,
       referenceGitignoreCreated: false,
       configFieldsAdded: [],
+      referenceLockMode: 'shared',
+      referenceLockIgnore: 'unchanged',
     };
   }
 }

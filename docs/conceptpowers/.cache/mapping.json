@@ -1,11 +1,8 @@
 {
   "plugin-version-sync": [
     "scripts/release.mjs",
-    "src/cli.ts",
-    "src/hooks/sessionStart.ts",
     "src/init/ensureConfigDefaults.ts",
     "src/init/packageScript.ts",
-    "src/init/syncGenerated.ts",
     "src/version/autoSync.ts",
     "src/version/checkUpdate.ts",
     "src/version/compareSemver.ts",
@@ -13,11 +10,14 @@
     "tests/hooks/sessionStart.test.ts",
     "tests/init/ensureConfigDefaults.test.ts",
     "tests/init/packageScript.test.ts",
-    "tests/init/syncGenerated.test.ts",
-    "tests/schema/initConfig.test.ts",
     "tests/version/autoSync.test.ts",
     "tests/version/checkUpdate.test.ts",
-    "tests/version/compareSemver.test.ts"
+    "tests/version/compareSemver.test.ts",
+    "src/hooks/sessionStart.ts",
+    "src/cli.ts",
+    "src/init/syncGenerated.ts",
+    "tests/init/syncGenerated.test.ts",
+    "tests/schema/initConfig.test.ts"
   ],
   "globally-unique-slug": [
     "assets/concept.css",
@@ -60,7 +60,6 @@
     "tests/drift/detect.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/schema/feature.test.ts",
@@ -69,22 +68,23 @@
     "tests/viewer/graph.test.ts",
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts"
+    "tests/viewer/renderDisk.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "generated-not-hand-edited": [
     "scripts/release.mjs",
     "scripts/build.mjs",
     "src/viewer/manifest.ts",
     "src/viewer/render.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/packageScript.test.ts",
     "tests/init/scaffold.test.ts",
-    "tests/init/syncGenerated.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/version/autoSync.test.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts"
+    "tests/viewer/renderDisk.test.ts",
+    "tests/init/syncGenerated.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "knowledge-graph-view": [
     "assets/concept.css",
@@ -130,16 +130,16 @@
     "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/integration/smoke.test.ts",
-    "tests/schema/alignment.test.ts",
     "tests/schema/concept.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/viewer/serve.test.ts",
     "src/concept/quality.ts",
-    "tests/concept/quality.test.ts"
+    "tests/concept/quality.test.ts",
+    "tests/schema/alignment.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "concept-provenance": [
     "assets/viewer.js",
@@ -149,7 +149,8 @@
     "tests/store/conceptStore.test.ts",
     "tests/viewer/sources.test.ts",
     "src/concept/quality.ts",
-    "tests/concept/quality.test.ts"
+    "tests/concept/quality.test.ts",
+    "tests/reference/affected.test.ts"
   ],
   "concept-code-mapping": [
     "src/audit/audit.ts",
@@ -163,16 +164,14 @@
     "tests/cli/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/hooks/gates.modes.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/mapping/scan.test.ts",
-    "tests/schema/initConfig.test.ts",
     "tests/util/glob.test.ts",
-    "tests/viewer/renderDisk.test.ts"
+    "tests/viewer/renderDisk.test.ts",
+    "tests/schema/initConfig.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "init-gate": [
-    "src/cli.ts",
-    "src/init/scaffold.ts",
     "tests/cli/audit.test.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/feature.test.ts",
@@ -185,42 +184,45 @@
     "tests/concept/pendingConflicts.test.ts",
     "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/alignmentGitignore.test.ts",
     "tests/init/readConfig.test.ts",
     "tests/init/reference.test.ts",
     "tests/init/referenceGitignore.test.ts",
     "tests/init/scaffold.test.ts",
-    "tests/init/syncGenerated.test.ts",
     "tests/integration/smoke.test.ts",
-    "tests/version/autoSync.test.ts"
+    "tests/version/autoSync.test.ts",
+    "src/cli.ts",
+    "tests/cli/referenceSync.test.ts",
+    "src/init/scaffold.ts",
+    "tests/init/syncGenerated.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "governance-mode": [
-    "src/cli.ts",
     "src/hooks/gates/attestGate.ts",
     "src/hooks/gates/conceptSlugs.ts",
     "src/hooks/gates/conceptlessGate.ts",
     "src/hooks/gates/conflictedPendingGate.ts",
     "src/hooks/gates/driftGate.ts",
     "src/hooks/gates/qualityGate.ts",
-    "src/hooks/gates/referenceGate.ts",
     "src/hooks/gates/staleArtifactsGate.ts",
     "src/hooks/gates/types.ts",
     "src/hooks/gates/unapprovedRedGate.ts",
     "src/hooks/gates/unknownTagsGate.ts",
     "src/hooks/postToolUse.ts",
-    "src/hooks/preToolUse.ts",
-    "src/hooks/sessionStart.ts",
-    "src/init/scaffold.ts",
-    "src/schema/initConfig.ts",
     "tests/cli/cli.test.ts",
     "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/integration/smoke.test.ts",
-    "tests/schema/initConfig.test.ts"
+    "src/hooks/sessionStart.ts",
+    "src/cli.ts",
+    "src/init/scaffold.ts",
+    "src/hooks/gates/referenceGate.ts",
+    "src/hooks/preToolUse.ts",
+    "src/schema/initConfig.ts",
+    "tests/schema/initConfig.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -235,16 +237,16 @@
     "src/concept/testReview.ts",
     "src/hooks/gates/testFollowGate.ts",
     "src/hooks/gates/testScopeGate.ts",
-    "src/hooks/preToolUse.ts",
-    "src/hooks/sessionStart.ts",
-    "src/schema/alignment.ts",
-    "src/schema/initConfig.ts",
     "tests/cli/testReview.test.ts",
     "tests/concept/testReview.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/hooks/testFollowGate.test.ts",
     "tests/hooks/testScopeGate.test.ts",
     "tests/init/scaffold.test.ts",
+    "src/schema/alignment.ts",
+    "src/hooks/sessionStart.ts",
+    "src/hooks/preToolUse.ts",
+    "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts"
   ],
   "drift-reconcile": [
@@ -258,7 +260,6 @@
     "src/drift/pendingDocs.ts",
     "src/drift/reconcile.ts",
     "src/hooks/gates/driftGate.ts",
-    "src/schema/alignment.ts",
     "tests/cli/cli.test.ts",
     "tests/cli/noCode.test.ts",
     "tests/concept/aliases.test.ts",
@@ -270,31 +271,44 @@
     "tests/drift/noCode.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/schema/alignment.test.ts"
+    "src/schema/alignment.ts",
+    "tests/schema/alignment.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
     "tests/drift/safe.test.ts",
-    "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/testScopeGate.test.ts"
+    "tests/hooks/testScopeGate.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "reference-privacy": [
-    "src/hooks/gates/referenceGate.ts",
     "src/init/addReferencePath.ts",
     "src/init/reference.ts",
     "src/init/referenceGitignore.ts",
-    "src/init/referencePaths.ts",
     "tests/cli/reference.test.ts",
-    "tests/hooks/preToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/i18n/messages.test.ts",
     "tests/init/addReferencePath.test.ts",
     "tests/init/reference.test.ts",
     "tests/init/referenceGitignore.test.ts",
     "tests/init/referencePaths.test.ts",
-    "tests/init/scaffold.test.ts"
+    "tests/init/scaffold.test.ts",
+    "src/init/referencePaths.ts",
+    "tests/init/referenceWalk.test.ts",
+    "tests/reference/fingerprint.test.ts",
+    "tests/reference/lock.test.ts",
+    "tests/hooks/sessionStartReference.test.ts",
+    "src/init/referenceLockIgnore.ts",
+    "src/init/referenceWalk.ts",
+    "src/hooks/gates/referenceGate.ts",
+    "src/reference/fingerprint.ts",
+    "src/reference/lock.ts",
+    "src/reference/sessionBlock.ts",
+    "tests/init/referenceLockIgnore.test.ts",
+    "tests/init/syncGenerated.test.ts",
+    "tests/schema/initConfig.test.ts",
+    "tests/hooks/preToolUse.test.ts"
   ],
   "output-locale": [
     "src/i18n/messages.ts",
@@ -304,17 +318,23 @@
     "tests/i18n/messages.test.ts",
     "tests/init/readConfig.test.ts",
     "tests/init/scaffold.test.ts",
-    "tests/schema/initConfig.test.ts",
-    "tests/viewer/sidebarState.test.ts"
+    "tests/viewer/sidebarState.test.ts",
+    "tests/schema/initConfig.test.ts"
   ],
   "reference-first-duty": [
     "src/init/addReferencePath.ts",
     "src/init/reference.ts",
-    "src/init/referencePaths.ts",
     "tests/cli/reference.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/init/reference.test.ts",
-    "tests/init/referencePaths.test.ts"
+    "tests/init/referencePaths.test.ts",
+    "src/init/referencePaths.ts",
+    "tests/init/referenceWalk.test.ts",
+    "tests/reference/enumerate.test.ts",
+    "tests/reference/diff.test.ts",
+    "tests/hooks/sessionStartReference.test.ts",
+    "src/init/referenceWalk.ts",
+    "src/reference/enumerate.ts"
   ],
   "human-owns-contract": [
     "tests/cli/cli.test.ts",
@@ -324,5 +344,27 @@
   "list-filter": [
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/sidebarState.test.ts"
+  ],
+  "reference-sync": [
+    "src/reference/affected.ts",
+    "src/schema/alignment.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/reference/enumerate.test.ts",
+    "tests/reference/fingerprint.test.ts",
+    "tests/reference/lock.test.ts",
+    "tests/reference/affected.test.ts",
+    "tests/reference/diff.test.ts",
+    "tests/cli/referenceSync.test.ts",
+    "tests/hooks/sessionStartReference.test.ts",
+    "tests/schema/alignment.test.ts",
+    "src/init/referenceLockIgnore.ts",
+    "src/hooks/gates/referenceGate.ts",
+    "src/schema/initConfig.ts",
+    "src/reference/enumerate.ts",
+    "src/reference/fingerprint.ts",
+    "src/reference/lock.ts",
+    "src/reference/diff.ts",
+    "src/reference/sessionBlock.ts",
+    "tests/init/referenceLockIgnore.test.ts"
   ]
 }

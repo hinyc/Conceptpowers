@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "at": "2026-09-14T05:49:07.705Z",
+  "files": {
+    "docs/conceptpowers/reference/concept-centric-software-design.md": {
+      "hash": "23992d4b77c7",
+      "size": 19631,
+      "mtime": "2026-08-31T09:25:11.721Z"
+    },
+    "~/Documents/인텔리코드/세미나/Concept_Centric_Software_Development/Concept_Centric_Software_Development_2.pdf": {
+      "hash": "72bbba3ff0a2",
+      "size": 1838464,
+      "mtime": "2026-09-12T04:57:27.158Z"
+    },
+    "~/Documents/인텔리코드/세미나/Concept_Centric_Software_Development/Concept_Centric_Software_Development_2.pptx": {
+      "hash": "0b0cf963fd6c",
+      "size": 4294622,
+      "mtime": "2025-11-06T10:27:53.711Z"
+    },
+    "~/Documents/인텔리코드/세미나/Concept_Centric_Software_Development/Seminar_Concept_Centric_Software_Development_홍인열.pdf": {
+      "hash": "f53310b19079",
+      "size": 3276251,
+      "mtime": "2026-09-12T04:57:13.677Z"
+    },
+    "~/Documents/인텔리코드/세미나/Concept_Centric_Software_Development/Seminar_Concept_Centric_Software_Development_홍인열.pptx": {
+      "hash": "d0ac273de4b0",
+      "size": 10860110,
+      "mtime": "2025-07-11T03:58:02.232Z"
+    },
+    "~/Documents/인텔리코드/세미나/Concept_Centric_Software_Development/app_design_with_alloy (2).pdf": {
+      "hash": "36f35b1f853c",
+      "size": 6496089,
+      "mtime": "2026-08-24T09:09:01.726Z"
+    }
+  },
+  "truncated": []
+}

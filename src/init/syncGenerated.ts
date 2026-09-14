@@ -12,6 +12,12 @@ import { ensureReferencePaths } from './referencePaths.js';
 import { ensureAlignmentGitignore } from './alignmentGitignore.js';
 import { ensureReferenceGitignore } from './referenceGitignore.js';
 import { ensureInitConfigDefaults } from './ensureConfigDefaults.js';
+import { readInitConfig } from './readConfig.js';
+import {
+  applyReferenceLockIgnore,
+  type ReferenceLockMode,
+  type ReferenceLockIgnoreStatus,
+} from './referenceLockIgnore.js';
 import { cpPaths } from '../paths.js';
 
 export interface SyncResult {
@@ -23,6 +29,9 @@ export interface SyncResult {
   referenceGitignoreCreated: boolean;
   // 새 버전에서 생겨 이번에 기본값으로 채운 설정 항목 이름들.
   configFieldsAdded: string[];
+  // 참고자료 기준점의 공유 설정과, 그에 맞춰 .alignment/.gitignore를 손본 결과.
+  referenceLockMode: ReferenceLockMode;
+  referenceLockIgnore: ReferenceLockIgnoreStatus;
 }
 
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
@@ -72,6 +81,9 @@ export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<
   const alignmentGitignoreCreated = await ensureAlignmentGitignore(root); // last-commit 추적 제외 보장
   const referenceGitignoreCreated = await ensureReferenceGitignore(root); // 기밀 기본 로컬 전용 보장
   const configFieldsAdded = await ensureInitConfigDefaults(root); // 새로 생긴 설정 항목만 기본값 보충
+  // 참고자료 기준점을 올릴지(shared)/내 컴퓨터에만 둘지(local)는 설정이 정한다 — 설정에 맞춰 .gitignore를 맞춘다.
+  const referenceLockMode = (await readInitConfig(root))?.referenceLock ?? 'shared';
+  const referenceLockIgnore = await applyReferenceLockIgnore(root, referenceLockMode);
   return {
     scriptStatus,
     orphansRemoved,
@@ -80,5 +92,7 @@ export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<
     alignmentGitignoreCreated,
     referenceGitignoreCreated,
     configFieldsAdded,
+    referenceLockMode,
+    referenceLockIgnore,
   };
 }

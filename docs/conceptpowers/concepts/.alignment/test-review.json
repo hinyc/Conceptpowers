@@ -219,21 +219,16 @@
     "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
   },
   "reference-privacy": {
-    "hash": "2:ca7eda0da323",
+    "hash": "3:307eda9e3131",
     "result": "updated",
-    "at": "2026-08-28T04:09:31.499Z",
+    "at": "2026-09-14T05:48:46.240Z",
     "tests": [
-      "tests/cli/reference.test.ts",
+      "tests/init/referenceLockIgnore.test.ts",
       "tests/hooks/preToolUse.test.ts",
-      "tests/hooks/sessionStart.test.ts",
-      "tests/i18n/messages.test.ts",
-      "tests/init/addReferencePath.test.ts",
-      "tests/init/reference.test.ts",
-      "tests/init/referenceGitignore.test.ts",
-      "tests/init/referencePaths.test.ts",
-      "tests/init/scaffold.test.ts"
+      "tests/schema/initConfig.test.ts",
+      "tests/init/syncGenerated.test.ts"
     ],
-    "note": "개념 재편에 맞춰 규칙 인용과 개념 표식을 다시 도출해 갱신"
+    "note": "기준점 공유 설정(referenceLock)의 gitignore 반영·커밋 게이트·스키마 기본값 시나리오를 새 허용 규칙에서 도출해 추가"
   },
   "untrusted-text-sanitization": {
     "hash": "2:f3baa3c0db16",
@@ -326,5 +321,17 @@
     "result": "no-tests",
     "at": "2026-08-31T09:39:50.236Z",
     "note": "신규 개념 — 에이전트 판단 규칙(코드 결속 갈래)이라 아직 딸린 테스트 없음, 사용자 커밋 승인"
+  },
+  "reference-sync": {
+    "hash": "3:2766aa2fbad0",
+    "result": "no-impact",
+    "at": "2026-09-14T05:48:46.293Z",
+    "tests": [
+      "tests/reference/lock.test.ts",
+      "tests/reference/diff.test.ts",
+      "tests/cli/referenceSync.test.ts",
+      "tests/hooks/sessionStartReference.test.ts"
+    ],
+    "note": "근거·코드 연결만 바뀌고 규칙은 그대로 — 검사 시나리오 변경 없음"
   }
 }

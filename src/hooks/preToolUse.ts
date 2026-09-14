@@ -6,7 +6,7 @@ import { isInitialized } from '../init/scaffold.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { defaultIgnoreGlobs } from '../schema/initConfig.js';
 import { auditIntegrity } from '../audit/audit.js';
-import { checkReferenceGate } from './gates/referenceGate.js';
+import { checkReferenceGate, checkReferenceLockGate } from './gates/referenceGate.js';
 import { checkUnknownTags } from './gates/unknownTagsGate.js';
 import { checkConceptless } from './gates/conceptlessGate.js';
 import { checkDrift, driftReviewNote } from './gates/driftGate.js';
@@ -116,7 +116,10 @@ function appendFailedGatesNote(output: PreToolOutput, failedGates: string[]): Pr
 // 않은 커밋은 막지 않는다). ask도 사용자가 승인하면 커밋이 진행되므로 안내를 잃지 않는다.
 // deny는 어차피 커밋이 막히므로 덧붙이지 않는다.
 // best-effort — 안내 계산 실패가 커밋을 막지 않는다. 불변 패턴: 새 객체를 반환한다.
-async function withDriftReviewNote(output: PreToolOutput, input: GateInput): Promise<PreToolOutput> {
+async function withDriftReviewNote(
+  output: PreToolOutput,
+  input: GateInput
+): Promise<PreToolOutput> {
   if (output.hookSpecificOutput.permissionDecision === 'deny') return output;
   let note: string | null = null;
   try {
@@ -224,9 +227,10 @@ export async function decidePreToolUse(
     // 기밀 확인 판정 자체는 강도(enforcement)와 무관하게 항상 계산한다(governance-mode
     // 불변 규칙: 지키는 대상은 같다). 다만 "무엇을 반환하느냐"는 모드별로 다르다 —
     // standard는 그대로 즉시 ask, strict/light는 아래에서 다른 위반들과 합쳐 처리한다.
-    const ref = checkReferenceGate(files);
-
     const cfg = await readInitConfig(root);
+    const ref =
+      checkReferenceGate(files) ?? checkReferenceLockGate(files, cfg?.referenceLock ?? 'shared');
+
     const enforcement = cfg?.enforcement ?? 'standard';
     // 무시 목록의 생성물(docs/conceptpowers/** 등)에 실려 온 태그는 정합성 검사 대상이 아니다 —
     // 무시 목록 기준은 CLI 전체 스캔과 동일. (코드 파일 한정 필터는 훅에 없다 — 스테이징 전량을 본다.)
@@ -257,7 +261,10 @@ export async function decidePreToolUse(
       // 위반 없이 참조 문서만 있으면 현행대로 ask — 다만 실행 실패한 게이트가 있었다면
       // (findings가 비어 있어도!) 조용히 묻히지 않도록 light 분기와 동일하게 알린다(finding #2).
       if (ref)
-        return withDriftReviewNote(askOutput(ref, { warningsNote: failedGatesNote(failedGates) }), input);
+        return withDriftReviewNote(
+          askOutput(ref, { warningsNote: failedGatesNote(failedGates) }),
+          input
+        );
       const stale = await checkStaleArtifacts(input);
       if (stale) return withDriftReviewNote(askOutput(stale), input); // 정리용 게이트는 strict에서도 차단하지 않는다
       return withDriftReviewNote(appendFailedGatesNote(ALLOW_DEFAULT, failedGates), input);
@@ -275,7 +282,10 @@ export async function decidePreToolUse(
     if (ref) {
       // 기밀 확인은 light에서도 절대 allow로 내리지 않는다 — ask하되, 수집된 경고를
       // 같은 응답의 additionalContext에 실어 잃어버리지 않게 한다(finding #1).
-      return withDriftReviewNote(askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) }), input);
+      return withDriftReviewNote(
+        askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) }),
+        input
+      );
     }
     if (all.length > 0) return withDriftReviewNote(lightOutput(all, failedGates), input);
     return withDriftReviewNote(appendFailedGatesNote(ALLOW_DEFAULT, failedGates), input);

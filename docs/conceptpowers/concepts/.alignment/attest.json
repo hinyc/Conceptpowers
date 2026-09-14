@@ -172,14 +172,17 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "reference-privacy": {
-    "hash": "3:371e2b04dacf",
+    "hash": "3:307eda9e3131",
     "result": "pass",
-    "at": "2026-09-12T10:47:54.831Z",
+    "at": "2026-09-14T05:48:41.352Z",
     "compared": [
+      "reference-sync",
       "reference-first-duty",
+      "governance-mode",
+      "human-owns-contract",
       "untrusted-text-sanitization"
     ],
-    "note": "sources 결정 근거의 유추 표시를 사용자 확인(2026-09-12)으로 확정한 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "기준점(파일 이름·지문 목록) 공유는 설정으로만 허용하고 내용은 어느 설정에서도 안 올림 — reference-sync의 '내용 없음' 불변과 일치; governance-mode의 기밀 확인은 참고자료 문서 대상이며 기준점은 설정 자체가 사람의 동의라 충돌 없음"
   },
   "concept-driven-tests": {
     "hash": "3:73b980042e49",
@@ -289,5 +292,20 @@
       "concept-inline-edit"
     ],
     "note": "최종 리뷰 지적(I-2) 반영 — 강등 규칙의 주인을 settled-status에서 concept-inline-edit으로 정정하고 relations에 추가. 계약 밖 칸만 바뀌어 지문 불변, 충돌 없음"
+  },
+  "reference-sync": {
+    "hash": "3:2766aa2fbad0",
+    "result": "pass",
+    "at": "2026-09-14T05:48:41.416Z",
+    "compared": [
+      "reference-privacy",
+      "reference-first-duty",
+      "concept-provenance",
+      "drift-reconcile",
+      "human-owns-contract",
+      "settled-status",
+      "governance-mode"
+    ],
+    "note": "근거·코드 연결만 갱신, 규칙 불변; reference-privacy의 새 허용 행동과 맞물림"
   }
 }

@@ -30,6 +30,9 @@ import { recordNoCode } from './drift/noCode.js';
 import { listReferenceFiles } from './init/reference.js';
 import { checkReferencePaths } from './init/referencePaths.js';
 import { addReferencePath } from './init/addReferencePath.js';
+import { snapshotReference } from './reference/lock.js';
+import { diffReference } from './reference/diff.js';
+import { CP_REL } from './paths.js';
 
 type Out = (s: string) => void;
 
@@ -350,6 +353,57 @@ export async function runCli(
       );
     });
 
+  // 기준점은 "이 자료 상태가 개념에 반영됐다"는 사람의 확인이다 — 이 명령으로만 찍는다.
+  // 영향 개념이 남아 있으면 --reviewed(사람과 함께 다시 봤다는 뜻) 없이는 찍지 않는다.
+  program
+    .command('reference-snapshot')
+    .description(
+      '참고자료 기준점 찍기 — 현재 자료 전체의 지문을 .alignment/reference.lock.json에 기록'
+    )
+    .option('--reviewed', '영향 개념을 사람과 함께 다시 본 뒤임을 밝히고 찍는다')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (o) => {
+      const before = await diffReference(o.root, 'full');
+      const pending = before.affected.map((a) => a.slug);
+      if (pending.length > 0 && !o.reviewed) {
+        out(
+          JSON.stringify({
+            ok: false,
+            error:
+              'affected concepts not reviewed — review them with the user, then pass --reviewed',
+            affected: pending,
+          })
+        );
+        code = 1;
+        return;
+      }
+      const r = await snapshotReference(o.root);
+      out(
+        JSON.stringify({
+          ok: true,
+          files: Object.keys(r.lock.files).length,
+          repo: r.repo,
+          external: r.external,
+          skipped: r.skipped,
+          truncated: r.truncated,
+          unreachable: r.unreachable,
+          reviewed: pending,
+          mode: r.mode,
+          lock: `${CP_REL}/concepts/.alignment/reference.lock.json`,
+        })
+      );
+    });
+
+  // 정보성 명령(drift와 같다): 변경이 있어도 exit 0 — 스킬이 JSON을 보고 분기한다.
+  program
+    .command('reference-diff')
+    .description('참고자료 변경 확인 — 기준점과 견줘 추가·변경·삭제와 영향 개념을 반환')
+    .option('--quick', '크기·수정시각이 같은 파일은 해시하지 않음')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (o) => {
+      out(JSON.stringify(await diffReference(o.root, o.quick ? 'quick' : 'full')));
+    });
+
   program
     .command('attest-consistency')
     .description('check-consistency 실행 결과를 계약 해시에 묶어 기록 (증빙)')
@@ -417,7 +471,9 @@ export async function runCli(
 
   program
     .command('attest-no-code')
-    .description('개념 수정이 코드 변경을 필요로 하지 않는다는 판단을 계약 해시에 묶어 기록 (코드무관 기록)')
+    .description(
+      '개념 수정이 코드 변경을 필요로 하지 않는다는 판단을 계약 해시에 묶어 기록 (코드무관 기록)'
+    )
     .argument('<slug>')
     .requiredOption('--note <text>', '사유 (필수 — 기록의 목적이 사유 보존이다)')
     .option('--root <dir>', 'project root', process.cwd())
