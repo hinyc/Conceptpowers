@@ -5,7 +5,7 @@
 // 저장소에 올릴지는 시작 설정(referenceLock)이 정하고, 찍을 때마다 .gitignore를 그에 맞춘다.
 import { readFile, mkdir } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';
-import { ReferenceLock, type ReferenceLockEntry } from '../schema/alignment.js';
+import { ReferenceLock, ReferenceLockEntry } from '../schema/alignment.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { applyReferenceLockIgnore, type ReferenceLockMode } from '../init/referenceLockIgnore.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
@@ -16,10 +16,28 @@ import { fingerprintFile } from './fingerprint.js';
 // 한 번에 여는 참고자료 파일 수 — 큰 PDF 수천 개를 동시에 읽어 메모리가 치솟지 않게 한다.
 export const HASH_CONCURRENCY = 16;
 
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+
+const hasOwn = (obj: object, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(obj, key);
+
+// 파일 목록은 항목마다 직접 검증한다 — 파일 이름이 __proto__ 같은 객체 속성 이름이어도 사라지지 않도록.
+function parseLockFiles(raw: unknown): ReferenceLock['files'] {
+  if (raw === undefined) return {};
+  if (!isPlainObject(raw)) throw new Error('reference lock: files must be an object');
+  return Object.fromEntries(
+    Object.entries(raw).map(([key, entry]) => [key, ReferenceLockEntry.parse(entry)])
+  );
+}
+
 // 없거나 깨졌으면 null — "기준점 없음"은 빈 기준점과 다르게 다뤄야 한다(전부 새 자료로 본다).
 export async function readReferenceLock(root: string): Promise<ReferenceLock | null> {
   try {
-    return ReferenceLock.parse(JSON.parse(await readFile(cpPaths(root).referenceLock, 'utf8')));
+    const raw: unknown = JSON.parse(await readFile(cpPaths(root).referenceLock, 'utf8'));
+    if (!isPlainObject(raw)) return null;
+    const { files, ...rest } = raw;
+    return { ...ReferenceLock.parse({ ...rest, files: {} }), files: parseLockFiles(files) };
   } catch {
     return null;
   }
@@ -70,7 +88,7 @@ export async function snapshotReference(
   const mode = await readReferenceLockMode(root);
   await applyReferenceLockIgnore(root, mode);
   const kept = (origin: ReferenceTarget['origin']) =>
-    inv.targets.filter((t) => t.origin === origin && t.key in files).length;
+    inv.targets.filter((t) => t.origin === origin && hasOwn(files, t.key)).length;
   return {
     lock,
     repo: kept('repo'),

@@ -5,11 +5,18 @@
 import { listConcepts } from '../store/conceptStore.js';
 import type { Concept } from '../schema/concept.js';
 import type { ReferenceLock, ReferenceLockEntry } from '../schema/alignment.js';
+import type { ReferencePathCheck } from '../init/referencePaths.js';
 import { mapLimit } from '../util/mapLimit.js';
 import { enumerateReference, type ReferenceInventory, type ReferenceTarget } from './enumerate.js';
+import { canonicalKeyOf, isAbsoluteKey, type PathAliases } from './canonical.js';
 import { hashFile } from './fingerprint.js';
 import { readReferenceLock, HASH_CONCURRENCY } from './lock.js';
-import { findAffectedConcepts, type AffectedConcept } from './affected.js';
+import {
+  citedMatcher,
+  findAffectedConcepts,
+  type AffectedConcept,
+  type PathCanon,
+} from './affected.js';
 
 export type DiffMode = 'full' | 'quick';
 
@@ -25,6 +32,18 @@ export interface ReferenceDiff {
   unreachable: string[];
   truncated: string[];
 }
+
+/** 호출한 쪽이 이미 읽어 둔 재료 — 넘기면 다시 읽지 않는다(세션 시작 훅의 중복 조회 제거). */
+export interface DiffInputs {
+  checks?: readonly ReferencePathCheck[];
+  repoFiles?: readonly string[];
+  concepts?: readonly Concept[];
+  /** null이면 "기준점 없음"으로 확정된 것 — undefined일 때만 읽는다 */
+  lock?: ReferenceLock | null;
+}
+
+// 기준점 열쇠는 Map으로 다룬다 — 파일 이름이 constructor 같은 객체 속성 이름과 겹쳐도 오판하지 않도록.
+type LockFiles = ReadonlyMap<string, ReferenceLockEntry>;
 
 export function isEmptyDiff(d: ReferenceDiff): boolean {
   return d.added.length === 0 && d.changed.length === 0 && d.removed.length === 0;
@@ -44,25 +63,69 @@ async function isChanged(
   }
 }
 
-// 닿지 않는 등록 경로 아래의 열쇠는 삭제로 세지 않는다 — 다른 기기의 팀원에게 전부 삭제로
-// 보이지 않게 하기 위해서다.
-function underUnreachable(key: string, unreachable: readonly string[]): boolean {
-  return unreachable.some((raw) => {
-    const base = raw.replace(/\\/g, '/').replace(/\/+$/, '');
-    return key === base || key.startsWith(`${base}/`);
-  });
+// 열쇠가 위치 아래에 있으면 그 위치의 구체성(깊이), 아니면 -1. 저장소 루트(.)가 가장 넓다.
+function depthUnder(key: string, base: string): number {
+  if (base === '.') return !key.startsWith('~') && !isAbsoluteKey(key) ? 0 : -1;
+  if (base === '/') return key.startsWith('/') ? 1 : -1;
+  const under = key === base || key.startsWith(`${base}/`);
+  return under ? base.split('/').length + 1 : -1;
 }
 
-function uncited(concepts: readonly Concept[], keys: readonly string[]): string[] {
-  return keys.filter((k) => findAffectedConcepts(concepts, [k]).length === 0);
+const deepest = (key: string, bases: readonly string[]): number =>
+  bases.reduce((best, b) => Math.max(best, depthUnder(key, b)), -1);
+
+/**
+ * 기준점에만 있는 열쇠를 삭제로 셀지 정한다 — 가장 구체적인 위치가 판정한다.
+ * 닿지 않는 위치 아래면 세지 않는다(다른 기기의 팀원에게 전부 삭제로 보이지 않게). 다만 더 구체적인
+ * 닿는 위치 아래라면 실제로 사라진 것이므로 센다. 다른 기기 홈의 ~/… 표기는 같은 깊이의 닿는 위치에 진다.
+ */
+export function countsAsRemoved(
+  key: string,
+  unreachableBases: readonly string[],
+  reachableBases: readonly string[],
+  portableBases: readonly string[] = []
+): boolean {
+  const u = deepest(key, unreachableBases);
+  const p = deepest(key, portableBases);
+  if (u < 0 && p < 0) return true;
+  const r = deepest(key, reachableBases);
+  return r > u && r >= p;
 }
 
-async function unlockedDiff(root: string, inv: ReferenceInventory): Promise<ReferenceDiff> {
+function memoCanon(root: string, aliases: PathAliases): PathCanon {
+  const memo = new Map<string, string>();
+  return (path) => {
+    const hit = memo.get(path);
+    if (hit !== undefined) return hit;
+    const value = canonicalKeyOf(root, path, aliases);
+    memo.set(path, value);
+    return value;
+  };
+}
+
+// 옛 기준점은 등록 경로를 적힌 그대로(절대·./·../ 등) 열쇠로 남겼을 수 있다 — 지금의 정규 표기로 모은다.
+// 둘이 같은 열쇠로 모이면 이미 정규형인 쪽을 남긴다.
+function canonicalLockFiles(files: ReferenceLock['files'], canon: PathCanon): LockFiles {
+  const own = new Map(Object.entries(files));
+  const pairs = [...own].map(([key, entry]) => [key, canon(key), entry] as const);
+  return new Map(
+    pairs
+      .filter(([key, canonKey]) => canonKey === key || !own.has(canonKey))
+      .map(([, canonKey, entry]) => [canonKey, entry] as const)
+  );
+}
+
+function unlockedDiff(
+  inv: ReferenceInventory,
+  concepts: readonly Concept[],
+  canon: PathCanon
+): ReferenceDiff {
   const added = inv.targets.map((t) => t.key);
+  const isCited = citedMatcher(concepts, canon);
   return {
     unlocked: true,
     added,
-    newMaterial: uncited(await listConcepts(root), added),
+    newMaterial: added.filter((k) => !isCited(k)),
     changed: [],
     removed: [],
     affected: [],
@@ -73,36 +136,49 @@ async function unlockedDiff(root: string, inv: ReferenceInventory): Promise<Refe
 
 async function splitCurrent(
   inv: ReferenceInventory,
-  lock: ReferenceLock,
+  files: LockFiles,
   mode: DiffMode
 ): Promise<{ added: string[]; changed: string[] }> {
-  const added = inv.targets.filter((t) => !(t.key in lock.files)).map((t) => t.key);
-  const known = inv.targets.filter((t) => t.key in lock.files);
+  const added = inv.targets.filter((t) => !files.has(t.key)).map((t) => t.key);
+  const known = inv.targets.filter((t) => files.has(t.key));
   const flags = await mapLimit(known, HASH_CONCURRENCY, (t) =>
-    isChanged(t, lock.files[t.key], mode)
+    isChanged(t, files.get(t.key) as ReferenceLockEntry, mode)
   );
   const changed = known.filter((_, i) => flags[i]).map((t) => t.key);
   return { added, changed };
 }
 
-export async function diffReference(root: string, mode: DiffMode = 'full'): Promise<ReferenceDiff> {
-  const inv = await enumerateReference(root);
-  const lock = await readReferenceLock(root);
-  if (!lock) return unlockedDiff(root, inv);
-  const { added, changed } = await splitCurrent(inv, lock, mode);
+export async function diffReference(
+  root: string,
+  mode: DiffMode = 'full',
+  inputs: DiffInputs = {}
+): Promise<ReferenceDiff> {
+  const inv = await enumerateReference(root, {
+    checks: inputs.checks,
+    repoFiles: inputs.repoFiles,
+  });
+  const lock = inputs.lock !== undefined ? inputs.lock : await readReferenceLock(root);
+  const concepts = inputs.concepts ?? (await listConcepts(root));
+  const canon = memoCanon(root, inv.aliases);
+  if (!lock) return unlockedDiff(inv, concepts, canon);
+  const files = canonicalLockFiles(lock.files, canon);
+  const { added, changed } = await splitCurrent(inv, files, mode);
   const current = new Set(inv.targets.map((t) => t.key));
-  const removed = Object.keys(lock.files)
+  // 위치도 기준점 열쇠와 같은 규칙으로 모은다 — 다른 기기의 ~/… 가 이 기기에서는 저장소 상대가 될 수 있다.
+  const unreachableBases = inv.unreachableBases.map(canon);
+  const portableBases = inv.portableBases.map(canon);
+  const removed = [...files.keys()]
     .filter((k) => !current.has(k))
-    .filter((k) => !underUnreachable(k, inv.unreachable))
+    .filter((k) => countsAsRemoved(k, unreachableBases, inv.reachableBases, portableBases))
     .sort();
-  const concepts = await listConcepts(root);
+  const isCited = citedMatcher(concepts, canon);
   return {
     unlocked: false,
     added,
-    newMaterial: uncited(concepts, added),
+    newMaterial: added.filter((k) => !isCited(k)),
     changed,
     removed,
-    affected: findAffectedConcepts(concepts, [...changed, ...removed]),
+    affected: findAffectedConcepts(concepts, [...changed, ...removed], canon),
     unreachable: inv.unreachable,
     truncated: inv.truncated,
   };

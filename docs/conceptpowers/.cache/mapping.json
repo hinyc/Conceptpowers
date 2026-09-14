@@ -13,11 +13,11 @@
     "tests/version/autoSync.test.ts",
     "tests/version/checkUpdate.test.ts",
     "tests/version/compareSemver.test.ts",
-    "src/hooks/sessionStart.ts",
     "src/cli.ts",
     "src/init/syncGenerated.ts",
     "tests/init/syncGenerated.test.ts",
-    "tests/schema/initConfig.test.ts"
+    "tests/schema/initConfig.test.ts",
+    "src/hooks/sessionStart.ts"
   ],
   "globally-unique-slug": [
     "assets/concept.css",
@@ -210,7 +210,6 @@
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/integration/smoke.test.ts",
-    "src/hooks/sessionStart.ts",
     "src/cli.ts",
     "src/init/scaffold.ts",
     "src/hooks/gates/referenceGate.ts",
@@ -222,7 +221,8 @@
     "src/hooks/gates/unknownTagsGate.ts",
     "src/hooks/gates/qualityGate.ts",
     "src/hooks/gates/attestGate.ts",
-    "src/hooks/gates/unapprovedRedGate.ts"
+    "src/hooks/gates/unapprovedRedGate.ts",
+    "src/hooks/sessionStart.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -243,11 +243,11 @@
     "tests/hooks/testScopeGate.test.ts",
     "tests/init/scaffold.test.ts",
     "src/schema/alignment.ts",
-    "src/hooks/sessionStart.ts",
     "src/hooks/preToolUse.ts",
     "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts",
-    "src/hooks/gates/testScopeGate.ts"
+    "src/hooks/gates/testScopeGate.ts",
+    "src/hooks/sessionStart.ts"
   ],
   "drift-reconcile": [
     "src/drift/detect.ts",
@@ -301,14 +301,14 @@
     "src/init/referenceWalk.ts",
     "src/hooks/gates/referenceGate.ts",
     "src/reference/fingerprint.ts",
-    "src/reference/lock.ts",
     "src/reference/sessionBlock.ts",
     "tests/init/referenceLockIgnore.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/schema/initConfig.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "src/init/reference.ts",
-    "tests/i18n/messages.test.ts"
+    "tests/i18n/messages.test.ts",
+    "src/reference/lock.ts"
   ],
   "output-locale": [
     "src/init/readConfig.ts",
@@ -333,8 +333,8 @@
     "tests/reference/diff.test.ts",
     "tests/hooks/sessionStartReference.test.ts",
     "src/init/referenceWalk.ts",
-    "src/reference/enumerate.ts",
-    "src/init/reference.ts"
+    "src/init/reference.ts",
+    "src/reference/enumerate.ts"
   ],
   "human-owns-contract": [
     "tests/cli/cli.test.ts",
@@ -346,9 +346,7 @@
     "tests/viewer/sidebarState.test.ts"
   ],
   "reference-sync": [
-    "src/reference/affected.ts",
     "src/schema/alignment.ts",
-    "src/hooks/sessionStart.ts",
     "tests/reference/enumerate.test.ts",
     "tests/reference/fingerprint.test.ts",
     "tests/reference/lock.test.ts",
@@ -360,12 +358,20 @@
     "src/init/referenceLockIgnore.ts",
     "src/hooks/gates/referenceGate.ts",
     "src/schema/initConfig.ts",
-    "src/reference/enumerate.ts",
     "src/reference/fingerprint.ts",
-    "src/reference/lock.ts",
-    "src/reference/diff.ts",
     "src/reference/sessionBlock.ts",
-    "tests/init/referenceLockIgnore.test.ts"
+    "tests/init/referenceLockIgnore.test.ts",
+    "src/reference/canonical.ts",
+    "src/reference/enumerate.ts",
+    "src/reference/lock.ts",
+    "src/hooks/sessionStart.ts",
+    "tests/reference/canonical.test.ts",
+    "tests/reference/canonicalEdge.test.ts",
+    "tests/reference/canonicalSymlink.test.ts",
+    "tests/hooks/sessionStartLookups.test.ts",
+    "src/reference/diff.ts",
+    "src/reference/affected.ts",
+    "tests/reference/canonicalFinal.test.ts"
   ],
   "skill-surface": [
     "tests/compat/skillFrontmatter.test.ts",

@@ -116,17 +116,22 @@ export async function buildSessionStartOutput(
   ].join('\n');
   // paths.md 경로 검증은 한 번만 수행해 아래 두 블록(자료 신호 + 깨진 경로 경고)에서 공유한다.
   let pathChecks: Awaited<ReturnType<typeof checkReferencePaths>> = [];
+  let pathChecksOk = false;
   try {
     pathChecks = await checkReferencePaths(root);
+    pathChecksOk = true;
   } catch {
     pathChecks = [];
   }
+  // 아래 참고자료 변경 알림도 같은 목록을 쓴다 — 읽기에 성공했을 때만 넘긴다.
+  let repoFiles: string[] | undefined;
   const okPaths = pathChecks.filter((p) => p.status === 'ok');
   // best-effort: reference/ 자료(폴더 파일 또는 유효한 외부 경로)가 있으면 "관련 시 참고하라"는
   // 신호를 넣는다(항상 로드 X). paths.md 자체는 목록에서 빠지므로 유효 외부 경로를 따로 센다.
   let referenceBlock = '';
   try {
     const refs = await listReferenceFiles(root);
+    repoFiles = refs;
     if (refs.length > 0 || okPaths.length > 0) {
       const MAX = 15;
       const shown = refs
@@ -181,10 +186,17 @@ export async function buildSessionStartOutput(
   }
   // best-effort: 참고자료 기준점이 있고 그 뒤 자료가 바뀐 경우에만 알린다. 값싼 견주기(quick) —
   // 크기·시각이 다른 파일만 해시하므로 큰 PDF 폴더도 세션마다 전부 읽지 않는다. 기준점은 절대 옮기지 않는다.
+  // 위에서 이미 읽은 경로 확인·파일 목록·개념 목록·기준점을 넘겨 같은 조회를 되풀이하지 않는다.
   let referenceChangedBlock = '';
   try {
-    if (await readReferenceLock(root)) {
-      const d = await diffReference(root, 'quick');
+    const lock = await readReferenceLock(root);
+    if (lock) {
+      const d = await diffReference(root, 'quick', {
+        lock,
+        concepts: all,
+        ...(pathChecksOk ? { checks: pathChecks } : {}),
+        ...(repoFiles ? { repoFiles } : {}),
+      });
       if (!isEmptyDiff(d)) referenceChangedBlock = '\n' + buildReferenceChangedBlock(d);
     }
   } catch {

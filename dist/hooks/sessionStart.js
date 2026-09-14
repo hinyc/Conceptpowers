@@ -3058,8 +3058,8 @@ var ZodTuple = class _ZodTuple extends ZodType {
       });
       return INVALID;
     }
-    const rest = this._def.rest;
-    if (!rest && ctx.data.length > this._def.items.length) {
+    const rest2 = this._def.rest;
+    if (!rest2 && ctx.data.length > this._def.items.length) {
       addIssueToContext(ctx, {
         code: ZodIssueCode.too_big,
         maximum: this._def.items.length,
@@ -3086,10 +3086,10 @@ var ZodTuple = class _ZodTuple extends ZodType {
   get items() {
     return this._def.items;
   }
-  rest(rest) {
+  rest(rest2) {
     return new _ZodTuple({
       ...this._def,
-      rest
+      rest: rest2
     });
   }
 };
@@ -5171,16 +5171,82 @@ async function mapLimit(items, limit, fn) {
 
 // src/reference/enumerate.ts
 import { stat as stat3 } from "node:fs/promises";
-import { join as join15, relative as relative3 } from "node:path";
+import { join as join15 } from "node:path";
+
+// src/reference/canonical.ts
+import { realpath } from "node:fs/promises";
+import { homedir as homedir3 } from "node:os";
+import { posix } from "node:path";
+var DRIVE = /^([A-Za-z]):/;
+var ABSOLUTE = /^(?:[A-Za-z]:)?\//;
+var HOME_LIKE = /^(?:[a-z]:)?\/(?:users|home)\/(?!(?:shared|public)(?:\/|$))[^/]+(?=\/|$)/i;
+var PRIVATE_PREFIX = "/private/";
+function cleanPath(p) {
+  const unified = p.replace(/\\/g, "/").normalize("NFC").replace(DRIVE, (_m, d) => `${d.toLowerCase()}:`);
+  const trimmed = posix.normalize(unified).replace(/\/+$/, "");
+  return trimmed === "" ? "/" : trimmed;
+}
+function isAbsoluteKey(p) {
+  return ABSOLUTE.test(p.replace(/\\/g, "/"));
+}
+function isUnder(p, base) {
+  if (base === "/") return p.startsWith("/");
+  return p === base || p.startsWith(`${base}/`);
+}
+function rest(p, base) {
+  if (p === base) return "";
+  return base === "/" ? p.slice(1) : p.slice(base.length + 1);
+}
+function canonicalPath(abs, aliases) {
+  const p = cleanPath(abs);
+  for (const root of aliases.roots) {
+    if (isUnder(p, root)) return rest(p, root) || ".";
+  }
+  for (const home of aliases.homes) {
+    if (isUnder(p, home)) return rest(p, home) ? `~/${rest(p, home)}` : "~";
+  }
+  return p;
+}
+function canonicalKeyOf(root, key, aliases) {
+  const k = key.replace(/\\/g, "/");
+  const home = aliases.homes[0];
+  const homeForm = k === "~" || k.startsWith("~/");
+  if (homeForm && !home) return cleanPath(k);
+  const abs = homeForm ? `${home}/${k.slice(2)}` : isAbsoluteKey(k) ? k : `${root}/${k}`;
+  return canonicalPath(abs, aliases);
+}
+function portableHomeForm(p) {
+  const c = cleanPath(p);
+  const m = c.match(HOME_LIKE);
+  if (!m) return null;
+  const tail = c.slice(m[0].length);
+  return tail === "" ? "~" : `~${tail}`;
+}
+async function safeRealpath(p) {
+  try {
+    return await realpath(p);
+  } catch {
+    return p;
+  }
+}
+function nameForms(p) {
+  const c = cleanPath(p);
+  return c.startsWith(PRIVATE_PREFIX) ? [c, c.slice(PRIVATE_PREFIX.length - 1)] : [c];
+}
+async function loadAliases(root, home = homedir3()) {
+  const [realRoot, realHome] = await Promise.all([safeRealpath(root), safeRealpath(home)]);
+  return {
+    roots: [...new Set([root, realRoot].flatMap(nameForms))],
+    homes: [...new Set([home, realHome].flatMap(nameForms))]
+  };
+}
+
+// src/reference/enumerate.ts
 function toPosix(p) {
   return p.replace(/\\/g, "/");
 }
 function repoKey(rel) {
-  return `${CP_REL}/reference/${toPosix(rel)}`;
-}
-function externalKey(raw, rel) {
-  const base = toPosix(raw).replace(/\/+$/, "");
-  return `${base}/${toPosix(rel)}`;
+  return cleanPath(`${CP_REL}/reference/${toPosix(rel)}`);
 }
 function hasDotSegment(rel) {
   return toPosix(rel).split("/").some((seg) => seg.startsWith("."));
@@ -5188,9 +5254,9 @@ function hasDotSegment(rel) {
 function target(key, abs, origin, raw, s) {
   return { key, abs, origin, raw, size: s.size, mtime: s.mtime };
 }
-async function listRepo(root) {
+async function listRepo(root, files) {
   const refDir = cpPaths(root).reference;
-  const rels = (await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
+  const rels = (files ?? await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
   const found = await Promise.all(
     rels.map(async (rel) => {
       const abs = join15(refDir, rel);
@@ -5200,48 +5266,62 @@ async function listRepo(root) {
   );
   return found.filter((t) => t !== null);
 }
-async function listExternal(raw, resolved, limit) {
+async function listExternal(check, aliases, limit) {
+  const { raw, resolved } = check;
+  const base = canonicalPath(resolved, aliases);
   let isFile;
   try {
     isFile = (await stat3(resolved)).isFile();
   } catch {
-    return { targets: [], outcome: "unreachable" };
+    return { targets: [], base, outcome: "unreachable" };
   }
   if (isFile) {
     const s = await statUsableFile(resolved);
-    const targets = s ? [target(toPosix(raw), resolved, "external", raw, s)] : [];
-    return { targets, outcome: "ok" };
+    return { targets: s ? [target(base, resolved, "external", raw, s)] : [], base, outcome: "ok" };
   }
   const found = [];
   const walk = await walkUsableFiles(
     resolved,
     (abs, s) => {
-      found.push(target(externalKey(raw, relative3(resolved, abs)), abs, "external", raw, s));
+      found.push(target(canonicalPath(abs, aliases), abs, "external", raw, s));
       return true;
     },
     limit
   );
   const outcome = walk === "capped" ? "capped" : walk === "unreadable" ? "unreachable" : "ok";
-  return { targets: found, outcome };
+  return { targets: found, base, outcome };
 }
 function sortedUnique(targets) {
   const sorted = [...targets].sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
   return sorted.filter((t, i) => i === 0 || t.key !== sorted[i - 1].key);
 }
+var unique = (xs) => [...new Set(xs)];
 async function enumerateReference(root, opts = {}) {
   const limit = opts.limit ?? SCAN_LIMIT;
-  const repo = await listRepo(root);
-  const checks = await checkReferencePaths(root);
-  const unreachable = checks.filter((c) => c.status === "missing").map((c) => c.raw);
+  const aliases = await loadAliases(root);
+  const repo = await listRepo(root, opts.repoFiles);
+  const checks = opts.checks ?? await checkReferencePaths(root);
+  const unreachableChecks = checks.filter((c) => c.status === "missing");
   const external = [];
   const truncated = [];
+  const reachableBases = [repoKey("")];
   for (const c of checks.filter((x) => x.status !== "missing")) {
-    const r = await listExternal(c.raw, c.resolved, limit);
+    const r = await listExternal(c, aliases, limit);
     external.push(...r.targets);
     if (r.outcome === "capped") truncated.push(c.raw);
-    if (r.outcome === "unreachable") unreachable.push(c.raw);
+    if (r.outcome === "unreachable") unreachableChecks.push(c);
+    else reachableBases.push(r.base);
   }
-  return { targets: sortedUnique([...repo, ...external]), truncated, unreachable };
+  const portable = unreachableChecks.map((c) => portableHomeForm(c.resolved));
+  return {
+    targets: sortedUnique([...repo, ...external]),
+    truncated,
+    unreachable: unreachableChecks.map((c) => c.raw),
+    unreachableBases: unique(unreachableChecks.map((c) => canonicalPath(c.resolved, aliases))),
+    portableBases: unique(portable.filter((p) => p !== null)),
+    reachableBases: unique(reachableBases),
+    aliases
+  };
 }
 
 // src/reference/fingerprint.ts
@@ -5255,9 +5335,20 @@ async function hashFile(abs) {
 
 // src/reference/lock.ts
 var HASH_CONCURRENCY = 16;
+var isPlainObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+function parseLockFiles(raw) {
+  if (raw === void 0) return {};
+  if (!isPlainObject(raw)) throw new Error("reference lock: files must be an object");
+  return Object.fromEntries(
+    Object.entries(raw).map(([key, entry]) => [key, ReferenceLockEntry.parse(entry)])
+  );
+}
 async function readReferenceLock(root) {
   try {
-    return ReferenceLock.parse(JSON.parse(await readFile12(cpPaths(root).referenceLock, "utf8")));
+    const raw = JSON.parse(await readFile12(cpPaths(root).referenceLock, "utf8"));
+    if (!isPlainObject(raw)) return null;
+    const { files, ...rest2 } = raw;
+    return { ...ReferenceLock.parse({ ...rest2, files: {} }), files: parseLockFiles(files) };
   } catch {
     return null;
   }
@@ -5265,19 +5356,40 @@ async function readReferenceLock(root) {
 
 // src/reference/affected.ts
 import { basename } from "node:path/posix";
-function sourceMatchesKey(sourcePath, key) {
-  const p = normalizeRel(sourcePath);
-  const k = normalizeRel(key);
-  if (p === "") return false;
+var relCanon = (p) => normalizeRel(p).replace(/\/+$/, "");
+var referencePaths = (concept) => concept.sources.filter((s) => s.kind === "reference" && s.path !== "").map((s) => s.path);
+function matches(p, k) {
+  if (p === "" || p === ".") return false;
   return k === p || basename(k) === p || k.endsWith(`/${p}`);
 }
-function matchedSources(concept, keys) {
-  const paths = concept.sources.filter((s) => s.kind === "reference" && s.path !== "").filter((s) => keys.some((k) => sourceMatchesKey(s.path, k))).map((s) => s.path);
+function citedMatcher(concepts, canon = relCanon) {
+  const cited = new Set(
+    concepts.flatMap(referencePaths).map(canon).filter((p) => p !== "" && p !== ".")
+  );
+  return (key) => {
+    const k = canon(key);
+    if (cited.has(k)) return true;
+    for (let i = k.indexOf("/"); i >= 0; i = k.indexOf("/", i + 1)) {
+      if (cited.has(k.slice(i + 1))) return true;
+    }
+    return false;
+  };
+}
+function matchedSources(concept, canonKeys, canon) {
+  const paths = referencePaths(concept).filter((path) => {
+    const p = canon(path);
+    return canonKeys.some((k) => matches(p, k));
+  });
   return [...new Set(paths)];
 }
-function findAffectedConcepts(concepts, keys) {
+function findAffectedConcepts(concepts, keys, canon = relCanon) {
   if (keys.length === 0) return [];
-  return concepts.map((c) => ({ slug: c.slug, status: c.status, sourcePaths: matchedSources(c, keys) })).filter((a) => a.sourcePaths.length > 0).sort((a, b) => a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0);
+  const canonKeys = keys.map(canon);
+  return concepts.map((c) => ({
+    slug: c.slug,
+    status: c.status,
+    sourcePaths: matchedSources(c, canonKeys, canon)
+  })).filter((a) => a.sourcePaths.length > 0).sort((a, b) => a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0);
 }
 
 // src/reference/diff.ts
@@ -5292,21 +5404,44 @@ async function isChanged(t, prev, mode) {
     return false;
   }
 }
-function underUnreachable(key, unreachable) {
-  return unreachable.some((raw) => {
-    const base = raw.replace(/\\/g, "/").replace(/\/+$/, "");
-    return key === base || key.startsWith(`${base}/`);
-  });
+function depthUnder(key, base) {
+  if (base === ".") return !key.startsWith("~") && !isAbsoluteKey(key) ? 0 : -1;
+  if (base === "/") return key.startsWith("/") ? 1 : -1;
+  const under = key === base || key.startsWith(`${base}/`);
+  return under ? base.split("/").length + 1 : -1;
 }
-function uncited(concepts, keys) {
-  return keys.filter((k) => findAffectedConcepts(concepts, [k]).length === 0);
+var deepest = (key, bases) => bases.reduce((best, b) => Math.max(best, depthUnder(key, b)), -1);
+function countsAsRemoved(key, unreachableBases, reachableBases, portableBases = []) {
+  const u = deepest(key, unreachableBases);
+  const p = deepest(key, portableBases);
+  if (u < 0 && p < 0) return true;
+  const r = deepest(key, reachableBases);
+  return r > u && r >= p;
 }
-async function unlockedDiff(root, inv) {
+function memoCanon(root, aliases) {
+  const memo = /* @__PURE__ */ new Map();
+  return (path) => {
+    const hit = memo.get(path);
+    if (hit !== void 0) return hit;
+    const value = canonicalKeyOf(root, path, aliases);
+    memo.set(path, value);
+    return value;
+  };
+}
+function canonicalLockFiles(files, canon) {
+  const own3 = new Map(Object.entries(files));
+  const pairs = [...own3].map(([key, entry]) => [key, canon(key), entry]);
+  return new Map(
+    pairs.filter(([key, canonKey]) => canonKey === key || !own3.has(canonKey)).map(([, canonKey, entry]) => [canonKey, entry])
+  );
+}
+function unlockedDiff(inv, concepts, canon) {
   const added = inv.targets.map((t) => t.key);
+  const isCited = citedMatcher(concepts, canon);
   return {
     unlocked: true,
     added,
-    newMaterial: uncited(await listConcepts(root), added),
+    newMaterial: added.filter((k) => !isCited(k)),
     changed: [],
     removed: [],
     affected: [],
@@ -5314,32 +5449,40 @@ async function unlockedDiff(root, inv) {
     truncated: inv.truncated
   };
 }
-async function splitCurrent(inv, lock, mode) {
-  const added = inv.targets.filter((t) => !(t.key in lock.files)).map((t) => t.key);
-  const known = inv.targets.filter((t) => t.key in lock.files);
+async function splitCurrent(inv, files, mode) {
+  const added = inv.targets.filter((t) => !files.has(t.key)).map((t) => t.key);
+  const known = inv.targets.filter((t) => files.has(t.key));
   const flags = await mapLimit(
     known,
     HASH_CONCURRENCY,
-    (t) => isChanged(t, lock.files[t.key], mode)
+    (t) => isChanged(t, files.get(t.key), mode)
   );
   const changed = known.filter((_, i) => flags[i]).map((t) => t.key);
   return { added, changed };
 }
-async function diffReference(root, mode = "full") {
-  const inv = await enumerateReference(root);
-  const lock = await readReferenceLock(root);
-  if (!lock) return unlockedDiff(root, inv);
-  const { added, changed } = await splitCurrent(inv, lock, mode);
+async function diffReference(root, mode = "full", inputs = {}) {
+  const inv = await enumerateReference(root, {
+    checks: inputs.checks,
+    repoFiles: inputs.repoFiles
+  });
+  const lock = inputs.lock !== void 0 ? inputs.lock : await readReferenceLock(root);
+  const concepts = inputs.concepts ?? await listConcepts(root);
+  const canon = memoCanon(root, inv.aliases);
+  if (!lock) return unlockedDiff(inv, concepts, canon);
+  const files = canonicalLockFiles(lock.files, canon);
+  const { added, changed } = await splitCurrent(inv, files, mode);
   const current = new Set(inv.targets.map((t) => t.key));
-  const removed = Object.keys(lock.files).filter((k) => !current.has(k)).filter((k) => !underUnreachable(k, inv.unreachable)).sort();
-  const concepts = await listConcepts(root);
+  const unreachableBases = inv.unreachableBases.map(canon);
+  const portableBases = inv.portableBases.map(canon);
+  const removed = [...files.keys()].filter((k) => !current.has(k)).filter((k) => countsAsRemoved(k, unreachableBases, inv.reachableBases, portableBases)).sort();
+  const isCited = citedMatcher(concepts, canon);
   return {
     unlocked: false,
     added,
-    newMaterial: uncited(concepts, added),
+    newMaterial: added.filter((k) => !isCited(k)),
     changed,
     removed,
-    affected: findAffectedConcepts(concepts, [...changed, ...removed]),
+    affected: findAffectedConcepts(concepts, [...changed, ...removed], canon),
     unreachable: inv.unreachable,
     truncated: inv.truncated
   };
@@ -5403,9 +5546,9 @@ async function readHistory(root) {
 
 // src/drift/follow.ts
 import { stat as stat4 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join16, relative as relative4, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join16, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative4(resolve(root), resolve(root, rel));
+  const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
 }
 async function isRelatedFile(root, rel) {
@@ -5455,8 +5598,8 @@ async function computeDrift(root) {
   })).filter(
     (x) => x.locked !== void 0
   ).filter((x) => hashVersion(x.locked.hash) === CONTRACT_HASH_VERSION).map((x) => ({ ...x, current: contractHash(x.c) })).filter((x) => x.locked.hash !== x.current).map((x) => ({ ...x, related: collectRelatedPaths(x.c.slug, features, mapping) }));
-  const unique = [...new Set(drifted.flatMap((x) => x.related))];
-  const alive = new Set(await pruneMissingPaths(root, unique));
+  const unique2 = [...new Set(drifted.flatMap((x) => x.related))];
+  const alive = new Set(await pruneMissingPaths(root, unique2));
   return drifted.map((x) => ({
     slug: x.c.slug,
     currentHash: x.current,
@@ -5529,15 +5672,19 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     "</CONCEPTPOWERS-ACTIVE>"
   ].join("\n");
   let pathChecks = [];
+  let pathChecksOk = false;
   try {
     pathChecks = await checkReferencePaths(root);
+    pathChecksOk = true;
   } catch {
     pathChecks = [];
   }
+  let repoFiles;
   const okPaths = pathChecks.filter((p) => p.status === "ok");
   let referenceBlock = "";
   try {
     const refs = await listReferenceFiles(root);
+    repoFiles = refs;
     if (refs.length > 0 || okPaths.length > 0) {
       const MAX = 15;
       const shown = refs.slice(0, MAX).map((r) => sanitizeText(r)).join(", ");
@@ -5574,8 +5721,14 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   }
   let referenceChangedBlock = "";
   try {
-    if (await readReferenceLock(root)) {
-      const d = await diffReference(root, "quick");
+    const lock = await readReferenceLock(root);
+    if (lock) {
+      const d = await diffReference(root, "quick", {
+        lock,
+        concepts: all,
+        ...pathChecksOk ? { checks: pathChecks } : {},
+        ...repoFiles ? { repoFiles } : {}
+      });
       if (!isEmptyDiff(d)) referenceChangedBlock = "\n" + buildReferenceChangedBlock(d);
     }
   } catch {
