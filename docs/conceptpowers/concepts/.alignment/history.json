@@ -2473,5 +2473,16 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "3:7e5e0c1d2ae1",
+    "prevHash": "3:7e5e0c1d2ae1",
+    "reason": "커밋 탐지가 명령 글자 정규식과 실행 전 스테이징 목록에 기대어, git add … && git commit·git commit -a·git -C . commit이 빈/엉뚱한 파일로 판정되거나 게이트를 우회함 — 실제로 커밋될 파일 기준 검사와 확정 불가 시 강도별 대응 규칙 추가 (레드팀 G1·G5, 사용자 위임)",
+    "at": "2026-09-14T14:26:41.626Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
