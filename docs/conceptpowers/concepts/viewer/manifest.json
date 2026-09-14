@@ -158,7 +158,9 @@
         "tests/hooks/sessionStart.test.ts",
         "src/schema/alignment.ts",
         "tests/schema/alignment.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/commitFiles.test.ts",
+        "tests/hooks/commitGate.test.ts"
       ]
     },
     {
@@ -263,7 +265,16 @@
         "tests/util/isMain.test.ts",
         "tests/hooks/gateFailure.test.ts",
         "src/util/exitAfterWrite.ts",
-        "tests/hooks/entrypoint.e2e.test.ts"
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "src/hooks/command/shellWords.ts",
+        "src/hooks/command/commitPlan.ts",
+        "src/hooks/command/commitFiles.ts",
+        "tests/hooks/commitPlan.test.ts",
+        "tests/hooks/commitFiles.test.ts",
+        "tests/hooks/commitGate.test.ts",
+        "src/hooks/command/commandKinds.ts",
+        "src/hooks/command/commitArgs.ts",
+        "tests/hooks/shellWords.test.ts"
       ]
     },
     {
@@ -1554,6 +1565,20 @@
         "title": "tests/schema/alignment.test.ts"
       },
       {
+        "id": "p:tests/hooks/commitFiles.test.ts",
+        "label": "commitFiles.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitFiles.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitGate.test.ts",
+        "label": "commitGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitGate.test.ts"
+      },
+      {
         "id": "c:feature-spec-bridge",
         "label": "기능 명세",
         "type": "concept",
@@ -1797,6 +1822,55 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/entrypoint.e2e.test.ts"
+      },
+      {
+        "id": "p:src/hooks/command/shellWords.ts",
+        "label": "shellWords.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/shellWords.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commitPlan.ts",
+        "label": "commitPlan.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitPlan.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commitFiles.ts",
+        "label": "commitFiles.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitFiles.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitPlan.test.ts",
+        "label": "commitPlan.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitPlan.test.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commandKinds.ts",
+        "label": "commandKinds.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commandKinds.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commitArgs.ts",
+        "label": "commitArgs.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitArgs.ts"
+      },
+      {
+        "id": "p:tests/hooks/shellWords.test.ts",
+        "label": "shellWords.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/shellWords.test.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -3050,6 +3124,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/commitFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/commitGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:feature-spec-bridge",
         "target": "p:src/schema/feature.ts",
         "kind": "concept-file"
@@ -3367,6 +3451,51 @@
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/shellWords.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitPlan.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitFiles.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitPlan.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commandKinds.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitArgs.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/shellWords.test.ts",
         "kind": "concept-file"
       },
       {

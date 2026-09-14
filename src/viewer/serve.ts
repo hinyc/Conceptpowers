@@ -5,7 +5,7 @@
 // `node serve.mjs`로 실행하면 docs/conceptpowers를 http로 서빙하고 기본 브라우저를 연다.
 // projectRoot가 주어지면 /api/* 쓰기 엔드포인트가 활성화되어 뷰어에서 상태/내용을 편집할 수 있다.
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, realpath } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { extname, normalize, resolve, sep } from 'node:path';
@@ -29,6 +29,8 @@ const MIME: Record<string, string> = {
 };
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+// 서버가 내주지 않는 폴더(대소문자 무시) — 참고자료는 개념 작업용 기밀 자료다(reference-privacy).
+const PRIVATE_DIRS = new Set(['reference']);
 const MAX_BODY = 256 * 1024; // 256KB
 
 // 확장자 → Content-Type. 알 수 없으면 octet-stream.
@@ -51,8 +53,27 @@ export function safeResolve(root: string, urlPath: string): string | null {
   if (p === '/' || p === '') p = '/index.html';
   if (p.split('/').some((seg) => seg.startsWith('.'))) return null;
   const resolved = normalize(resolve(base, '.' + p));
-  if (resolved !== base && !resolved.startsWith(base + sep)) return null;
-  return resolved;
+  return isServable(base, resolved) ? resolved : null;
+}
+
+// base 안이고, 숨김 폴더·비공개 폴더(참고자료)를 어느 깊이에서도 거치지 않는 경로인가. 실제 경로(바로가기
+// 해소 뒤)에도 쓴다. 끝의 점·공백은 Windows가 지우고 읽으므로 어휘 단계에서도 지우고 비교한다 — 아래 realpath
+// (네이티브 구현: 대소문자·8.3 이름 정규화)와 함께 이중 방어다. 둘 중 하나만 남기지 않는다.
+function isServable(base: string, target: string): boolean {
+  if (target !== base && !target.startsWith(base + sep)) return false;
+  const segs = target
+    .slice(base.length + 1)
+    .split(sep)
+    .filter(Boolean);
+  if (segs.some((seg) => seg.startsWith('.'))) return false;
+  return !segs.some((seg) => PRIVATE_DIRS.has(seg.replace(/[. ]+$/, '').toLowerCase()));
+}
+
+// 요청이 실제로 내 컴퓨터(루프백) 소켓에서 왔는가 — Host 헤더는 손으로 넣을 수 있으므로 소켓 주소도 본다.
+export function isLoopbackAddress(address: string | undefined): boolean {
+  if (!address) return false;
+  const a = address.toLowerCase().replace(/^::ffff:/, '');
+  return a === '::1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(a);
 }
 
 // 플랫폼별 "기본 브라우저로 URL 열기" 명령. http URL은 IDE가 아닌 브라우저로 열린다.
@@ -82,6 +103,37 @@ export function isLocalRequest(headers: Record<string, string | string[] | undef
   return host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
 }
 
+function header(headers: Record<string, string | string[] | undefined>, name: string): string {
+  const value = headers[name];
+  return Array.isArray(value) ? (value[0] ?? '') : String(value ?? '');
+}
+
+// CSRF 방어: 고치는 요청은 이 뷰어 화면(같은 출처)이 보낸 JSON 요청만 받는다. 브라우저는 쓰기 요청에 항상
+// Origin을 싣고, 다른 사이트 화면이 JSON 형식으로 보내려면 사전 확인(preflight)을 통과해야 하는데 이 서버는
+// 허락하지 않는다. Host 확인만으로는 부족하다 — 다른 사이트 화면이 보낸 요청도 Host는 localhost다.
+// Origin을 보내지 않는 브라우저 설정도 있다 — 그때는 같은 출처 표시(sec-fetch-site)가 대신 증명한다.
+// 둘 다 없으면 출처를 알 수 없으므로 거절한다.
+export function isSameOriginWrite(headers: Record<string, string | string[] | undefined>): boolean {
+  if (!isLocalRequest(headers)) return false;
+  if (header(headers, 'content-type').split(';')[0].trim().toLowerCase() !== 'application/json') {
+    return false;
+  }
+  const siteValue = headers['sec-fetch-site'];
+  if (Array.isArray(siteValue) && siteValue.length > 1) return false; // 중복 표시는 신뢰하지 않는다
+  const site = header(headers, 'sec-fetch-site');
+  if (site && site !== 'same-origin') return false;
+  const rawOrigin = header(headers, 'origin');
+  if (!rawOrigin) return site === 'same-origin';
+  let origin: URL;
+  try {
+    origin = new URL(rawOrigin);
+  } catch {
+    return false;
+  }
+  if (origin.protocol !== 'http:') return false;
+  return origin.host.toLowerCase() === header(headers, 'host').toLowerCase();
+}
+
 export interface ApiRequest {
   method: string;
   url: string;
@@ -98,12 +150,17 @@ export interface ApiResult {
 export async function handleApi(projectRoot: string, req: ApiRequest): Promise<ApiResult> {
   const path = (req.url || '').split('?')[0];
 
+  // 읽기 요청도 내 컴퓨터 주소로 온 것만 — 다른 사이트 이름으로 이 서버를 가리키게 한 요청(DNS 리바인딩) 거절.
+  if (!isLocalRequest(req.headers)) {
+    return { status: 403, json: { error: 'forbidden: non-local request' } };
+  }
+
   if (req.method === 'GET' && path === '/api/health') {
     return { status: 200, json: { editable: true } };
   }
 
-  if (req.method !== 'GET' && !isLocalRequest(req.headers)) {
-    return { status: 403, json: { error: 'forbidden: non-local request' } };
+  if (req.method !== 'GET' && !isSameOriginWrite(req.headers)) {
+    return { status: 403, json: { error: 'forbidden: write must come from this viewer as JSON' } };
   }
 
   // POST /api/concept/:slug/status  { status }
@@ -183,8 +240,19 @@ function readBody(req: IncomingMessage): Promise<string> {
   });
 }
 
+// 같은 출처 신뢰가 유일한 방어선이므로, 내주는 파일이 뜻밖의 문서로 해석되거나 바깥 스크립트를 끌어오지 못하게 한다.
+// 뷰어는 외부 스크립트(assets/*.js)만 쓰고 인라인 스타일 조작은 하므로 style만 inline을 허용한다.
+const STATIC_SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy':
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+} as const;
+
 function sendJson(res: ServerResponse, status: number, json: unknown): void {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'X-Content-Type-Options': 'nosniff',
+  });
   res.end(JSON.stringify(json));
 }
 
@@ -195,10 +263,23 @@ async function handle(
   res: ServerResponse
 ): Promise<void> {
   const url = req.url || '/';
+  // 모든 요청은 내 컴퓨터 주소로 온 것만 — 주소 바꿔치기(DNS 리바인딩)로 파일을 읽어 가는 것을 막는다.
+  // 헤더와 소켓 주소를 함께 본다: 바인드 주소가 바뀌어도 손으로 넣은 Host: localhost가 통하지 않게.
+  if (!isLocalRequest(req.headers) || !isLoopbackAddress(req.socket?.remoteAddress)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
   // /api/* : projectRoot가 있을 때만 활성(정적 배포는 읽기 전용).
   if (url.split('?')[0].startsWith('/api/')) {
     if (!projectRoot) {
       sendJson(res, 404, { error: 'editing not available' });
+      return;
+    }
+    // 고치는 요청은 본문을 받기 전에 출처를 확인한다 — 다른 사이트 화면이 큰 본문을 흘려 넣지 못하게.
+    if (req.method !== 'GET' && !isSameOriginWrite(req.headers)) {
+      sendJson(res, 403, { error: 'forbidden: write must come from this viewer as JSON' });
+      req.destroy();
       return;
     }
     try {
@@ -228,9 +309,23 @@ async function handle(
     res.end('Forbidden');
     return;
   }
+  let real: string;
   try {
-    const file = await readFile(target);
-    res.writeHead(200, { 'Content-Type': contentType(target) });
+    real = await realpath(target);
+  } catch {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
+  // 바로가기(심링크)로 폴더 밖·숨김 폴더·참고자료를 가리키는 파일은 내주지 않는다.
+  if (!isServable(await realpath(root), real)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
+  try {
+    const file = await readFile(real);
+    res.writeHead(200, { 'Content-Type': contentType(real), ...STATIC_SECURITY_HEADERS });
     res.end(file);
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });

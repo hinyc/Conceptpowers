@@ -30,15 +30,37 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "concept-inline-edit": {
-    "hash": "3:f98dcbf5e830",
+    "hash": "3:d6d5b56a7b40",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.803Z",
+    "at": "2026-09-14T14:31:06.685Z",
     "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
       "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
       "settled-status",
-      "untrusted-text-sanitization"
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "보강한 규칙(모든 요청의 주소 확인, 고치는 요청은 이 뷰어 화면이 보낸 것만, 참고자료·바로가기 서빙 금지)을 전 개념과 대조: reference-privacy '밖으로 나가지 않는다'를 강화, untrusted-text-sanitization의 '들어오는 통로' 역할과 일치, human-owns-contract·settled-status와 충돌 없음. 서버가 이미 내 컴퓨터 주소에만 열려 있어 뷰어 읽기 개념(viewer-navigation·viewer-readability·knowledge-graph-view·home-search·list-filter)의 사용 범위를 줄이지 않음. concept-scope 문장 규칙 충족. 참고자료에 서버 보안 관련 내용 없음."
   },
   "knowledge-graph-view": {
     "hash": "3:060f2ceca012",

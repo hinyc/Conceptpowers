@@ -6,7 +6,7 @@ var __export = (target, all) => {
 
 // src/viewer/serve.ts
 import { createServer } from "node:http";
-import { readFile as readFile9 } from "node:fs/promises";
+import { readFile as readFile9, realpath } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve, sep } from "node:path";
@@ -1051,10 +1051,10 @@ function isValidJWT(jwt, alg) {
   if (!jwtRegex.test(jwt))
     return false;
   try {
-    const [header] = jwt.split(".");
-    if (!header)
+    const [header2] = jwt.split(".");
+    if (!header2)
       return false;
-    const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
+    const base64 = header2.replace(/-/g, "+").replace(/_/g, "/").padEnd(header2.length + (4 - header2.length % 4) % 4, "=");
     const decoded = JSON.parse(atob(base64));
     if (typeof decoded !== "object" || decoded === null)
       return false;
@@ -4820,6 +4820,7 @@ var MIME = {
   ".map": "application/json; charset=utf-8"
 };
 var SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+var PRIVATE_DIRS = /* @__PURE__ */ new Set(["reference"]);
 var MAX_BODY = 256 * 1024;
 function contentType(pathname) {
   return MIME[extname(pathname).toLowerCase()] ?? "application/octet-stream";
@@ -4836,8 +4837,18 @@ function safeResolve(root, urlPath) {
   if (p === "/" || p === "") p = "/index.html";
   if (p.split("/").some((seg) => seg.startsWith("."))) return null;
   const resolved = normalize(resolve(base, "." + p));
-  if (resolved !== base && !resolved.startsWith(base + sep)) return null;
-  return resolved;
+  return isServable(base, resolved) ? resolved : null;
+}
+function isServable(base, target) {
+  if (target !== base && !target.startsWith(base + sep)) return false;
+  const segs = target.slice(base.length + 1).split(sep).filter(Boolean);
+  if (segs.some((seg) => seg.startsWith("."))) return false;
+  return !segs.some((seg) => PRIVATE_DIRS.has(seg.replace(/[. ]+$/, "").toLowerCase()));
+}
+function isLoopbackAddress(address) {
+  if (!address) return false;
+  const a = address.toLowerCase().replace(/^::ffff:/, "");
+  return a === "::1" || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(a);
 }
 function browserCommand(platform, url) {
   if (platform === "win32") return { cmd: "cmd", args: ["/c", "start", '""', url] };
@@ -4859,13 +4870,40 @@ function isLocalRequest(headers) {
   const host = raw.startsWith("[") ? raw.slice(0, raw.indexOf("]") + 1) : raw.split(":")[0];
   return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
 }
+function header(headers, name) {
+  const value = headers[name];
+  return Array.isArray(value) ? value[0] ?? "" : String(value ?? "");
+}
+function isSameOriginWrite(headers) {
+  if (!isLocalRequest(headers)) return false;
+  if (header(headers, "content-type").split(";")[0].trim().toLowerCase() !== "application/json") {
+    return false;
+  }
+  const siteValue = headers["sec-fetch-site"];
+  if (Array.isArray(siteValue) && siteValue.length > 1) return false;
+  const site = header(headers, "sec-fetch-site");
+  if (site && site !== "same-origin") return false;
+  const rawOrigin = header(headers, "origin");
+  if (!rawOrigin) return site === "same-origin";
+  let origin;
+  try {
+    origin = new URL(rawOrigin);
+  } catch {
+    return false;
+  }
+  if (origin.protocol !== "http:") return false;
+  return origin.host.toLowerCase() === header(headers, "host").toLowerCase();
+}
 async function handleApi(projectRoot, req) {
   const path = (req.url || "").split("?")[0];
+  if (!isLocalRequest(req.headers)) {
+    return { status: 403, json: { error: "forbidden: non-local request" } };
+  }
   if (req.method === "GET" && path === "/api/health") {
     return { status: 200, json: { editable: true } };
   }
-  if (req.method !== "GET" && !isLocalRequest(req.headers)) {
-    return { status: 403, json: { error: "forbidden: non-local request" } };
+  if (req.method !== "GET" && !isSameOriginWrite(req.headers)) {
+    return { status: 403, json: { error: "forbidden: write must come from this viewer as JSON" } };
   }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
   if (statusMatch) {
@@ -4936,15 +4974,32 @@ function readBody(req) {
     req.on("error", reject);
   });
 }
+var STATIC_SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+};
 function sendJson(res, status, json) {
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Content-Type-Options": "nosniff"
+  });
   res.end(JSON.stringify(json));
 }
 async function handle(root, projectRoot, req, res) {
   const url = req.url || "/";
+  if (!isLocalRequest(req.headers) || !isLoopbackAddress(req.socket?.remoteAddress)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
   if (url.split("?")[0].startsWith("/api/")) {
     if (!projectRoot) {
       sendJson(res, 404, { error: "editing not available" });
+      return;
+    }
+    if (req.method !== "GET" && !isSameOriginWrite(req.headers)) {
+      sendJson(res, 403, { error: "forbidden: write must come from this viewer as JSON" });
+      req.destroy();
       return;
     }
     try {
@@ -4972,9 +5027,22 @@ async function handle(root, projectRoot, req, res) {
     res.end("Forbidden");
     return;
   }
+  let real;
   try {
-    const file = await readFile9(target);
-    res.writeHead(200, { "Content-Type": contentType(target) });
+    real = await realpath(target);
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+    return;
+  }
+  if (!isServable(await realpath(root), real)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
+  try {
+    const file = await readFile9(real);
+    res.writeHead(200, { "Content-Type": contentType(real), ...STATIC_SECURITY_HEADERS });
     res.end(file);
   } catch {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
@@ -5041,6 +5109,8 @@ export {
   contentType,
   handleApi,
   isLocalRequest,
+  isLoopbackAddress,
+  isSameOriginWrite,
   safeResolve,
   startServer
 };

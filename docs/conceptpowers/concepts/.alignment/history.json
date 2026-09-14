@@ -2484,5 +2484,16 @@
     "aligned": true,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "concept-inline-edit",
+    "hash": "3:d6d5b56a7b40",
+    "prevHash": "2:952efb6e6931",
+    "reason": "뷰어 서버가 변경 요청을 Host 헤더로만 확인해 다른 웹사이트가 개념 상태를 바꿀 수 있고(CSRF), 읽기 요청은 확인이 없어 주소 바꿔치기(DNS 리바인딩)로 참고자료를 읽을 수 있음 — 요청 출처·주소 확인과 참고자료·바로가기 서빙 금지 규칙으로 보강 (레드팀 V1·V2, 사용자 위임)",
+    "at": "2026-09-14T14:31:06.523Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]
