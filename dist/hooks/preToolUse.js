@@ -31,7 +31,9 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentHistoryDir: join(base, "concepts", ".alignment", "history"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
@@ -4907,18 +4909,42 @@ async function readLock(root) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile9 } from "node:fs/promises";
-async function readHistory(root) {
+import { readdir as readdir3, readFile as readFile9 } from "node:fs/promises";
+import { join as join6 } from "node:path";
+async function readLegacyHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile9(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
 }
+async function readRecordFiles(root) {
+  const dir = cpPaths(root).alignmentHistoryDir;
+  let names2;
+  try {
+    names2 = (await readdir3(dir)).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const entries = await Promise.all(
+    names2.map(async (name) => {
+      try {
+        return HistoryEntry.parse(JSON.parse(await readFile9(join6(dir, name), "utf8")));
+      } catch {
+        return null;
+      }
+    })
+  );
+  return entries.filter((entry) => entry !== null);
+}
+async function readHistory(root) {
+  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
+  return [...legacy, ...records];
+}
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute, join as join6, relative as relative2, resolve } from "node:path";
+import { isAbsolute, join as join7, relative as relative2, resolve } from "node:path";
 async function presentTagSlugs(root, present, ignoreGlobs) {
   try {
     const files = [...present].map(normalizeRel).filter(isCodeFile);
@@ -4942,7 +4968,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat(join6(root, rel))).isFile();
+    return (await stat(join7(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -5196,14 +5222,14 @@ var checkTestFollow = async (input) => {
 
 // src/hooks/gates/testScopeGate.ts
 import { readFile as readFile12 } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { join as join8 } from "node:path";
 var MAX_LISTED_PATHS3 = 8;
 var TAG_RE3 = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var defaultTestGlobs2 = () => InitConfigSchema.shape.testGlobs.parse(void 0);
 async function pointsAtConcept(root, rel) {
   let content;
   try {
-    content = await readFile12(join7(root, rel), "utf8");
+    content = await readFile12(join8(root, rel), "utf8");
   } catch {
     return null;
   }
@@ -5365,7 +5391,7 @@ function sameJsonText(a, b) {
 import { execFile as execFile4 } from "node:child_process";
 import { copyFile, mkdtemp, readFile as readFile13, rm, stat as stat2, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join as join8, resolve as resolve2 } from "node:path";
+import { join as join9, resolve as resolve2 } from "node:path";
 import { promisify as promisify4 } from "node:util";
 var execFileAsync4 = promisify4(execFile4);
 var MAX_BUFFER2 = 64 * 1024 * 1024;
@@ -5412,7 +5438,7 @@ var indexContent = (root) => treeContent(root, "");
 function diskContent(root) {
   return {
     blobId: async (path) => (await tryGit(["hash-object", "--no-filters", "--", path], root) ?? "").trim(),
-    read: (path) => readFile13(join8(root, path), "utf8").catch(() => null)
+    read: (path) => readFile13(join9(root, path), "utf8").catch(() => null)
   };
 }
 function injectedContent(root, files) {
@@ -5450,15 +5476,15 @@ async function prepareIndex(plan, cwd, env, hasHead) {
   }
 }
 async function emptyTreeId(cwd, dir) {
-  const env = { GIT_INDEX_FILE: join8(dir, "empty-index") };
+  const env = { GIT_INDEX_FILE: join9(dir, "empty-index") };
   await git(["read-tree", "--empty"], cwd, env);
   return (await git(["write-tree"], cwd, env)).trim();
 }
 async function snapshotCommit(root, plan) {
   const cwd = plan.cwd ? resolve2(root, plan.cwd) : root;
-  const dir = await mkdtemp(join8(tmpdir(), "cp-commit-"));
+  const dir = await mkdtemp(join9(tmpdir(), "cp-commit-"));
   try {
-    const env = { GIT_INDEX_FILE: join8(dir, "index") };
+    const env = { GIT_INDEX_FILE: join9(dir, "index") };
     const hasHead = await tryGit(["rev-parse", "-q", "--verify", "HEAD^{commit}"], cwd) !== null;
     await prepareIndex(plan, cwd, env, hasHead);
     const tree = (await git(["write-tree"], cwd, env)).trim();
@@ -5544,7 +5570,7 @@ var checkEvidenceStaged = async (input) => {
 // src/hooks/gates/governanceFilesGate.ts
 import { execFile as execFile6 } from "node:child_process";
 import { realpathSync } from "node:fs";
-import { basename, dirname as dirname2, isAbsolute as isAbsolute2, join as join9, relative as relative4, resolve as resolve3 } from "node:path";
+import { basename, dirname as dirname2, isAbsolute as isAbsolute2, join as join10, relative as relative4, resolve as resolve3 } from "node:path";
 import { promisify as promisify6 } from "node:util";
 
 // src/hooks/gates/alwaysAsk.ts
@@ -5695,7 +5721,7 @@ function canonicalPath(path) {
   let tail = [];
   for (; ; ) {
     try {
-      return join9(realpathSync(current), ...tail);
+      return join10(realpathSync(current), ...tail);
     } catch {
       const parent = dirname2(current);
       if (parent === current) return resolve3(path);

@@ -128,7 +128,6 @@
     "tests/concept/pendingConflicts.test.ts",
     "tests/concept/quality-gate.test.ts",
     "tests/drift/detect.test.ts",
-    "tests/drift/history.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/integration/smoke.test.ts",
@@ -148,7 +147,8 @@
     "tests/hooks/evidenceGate.test.ts",
     "src/hooks/gates/evidenceGate.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/drift/history.test.ts"
   ],
   "concept-provenance": [
     "assets/viewer.js",
@@ -296,7 +296,6 @@
     "src/drift/detect.ts",
     "src/drift/follow.ts",
     "src/drift/hash.ts",
-    "src/drift/history.ts",
     "src/drift/lock.ts",
     "src/drift/note.ts",
     "src/drift/pendingDocs.ts",
@@ -308,7 +307,6 @@
     "tests/drift/detect.test.ts",
     "tests/drift/follow.test.ts",
     "tests/drift/hash.test.ts",
-    "tests/drift/history.test.ts",
     "tests/drift/lock.test.ts",
     "tests/drift/noCode.test.ts",
     "tests/drift/reconcile.test.ts",
@@ -327,7 +325,10 @@
     "src/hooks/command/commitTree.ts",
     "tests/hooks/commitFiles.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/drift/history.ts",
+    "tests/drift/historyMerge.test.ts",
+    "tests/drift/history.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",

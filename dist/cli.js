@@ -3049,7 +3049,7 @@ var {
 
 // src/cli.ts
 import { readFile as readFile21, stat as stat6 } from "node:fs/promises";
-import { dirname as dirname5, isAbsolute as isAbsolute3, join as join21, relative as relative4, resolve as resolve2 } from "node:path";
+import { dirname as dirname5, isAbsolute as isAbsolute3, join as join22, relative as relative4, resolve as resolve2 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
@@ -3074,7 +3074,9 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentHistoryDir: join(base, "concepts", ".alignment", "history"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
@@ -8745,13 +8747,38 @@ async function readLock(root) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile16 } from "node:fs/promises";
-async function readHistory(root) {
+import { createHash as createHash2 } from "node:crypto";
+import { readdir as readdir6, readFile as readFile16 } from "node:fs/promises";
+import { join as join18 } from "node:path";
+async function readLegacyHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile16(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
+}
+async function readRecordFiles(root) {
+  const dir = cpPaths(root).alignmentHistoryDir;
+  let names;
+  try {
+    names = (await readdir6(dir)).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const entries = await Promise.all(
+    names.map(async (name) => {
+      try {
+        return HistoryEntry.parse(JSON.parse(await readFile16(join18(dir, name), "utf8")));
+      } catch {
+        return null;
+      }
+    })
+  );
+  return entries.filter((entry) => entry !== null);
+}
+async function readHistory(root) {
+  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
+  return [...legacy, ...records];
 }
 function toEntry(input, prevHash) {
   return HistoryEntry.parse({
@@ -8766,17 +8793,26 @@ function toEntry(input, prevHash) {
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
+function recordFileName(entry, order) {
+  const stamp = entry.at.replace(/[^0-9A-Za-z]/g, "") || "unknown";
+  const digest = createHash2("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
+  return `${stamp}-${String(order).padStart(3, "0")}-${entry.slug}-${digest}.json`;
+}
 async function appendHistoryMany(root, inputs) {
   if (inputs.length === 0) return [];
-  const all = [...await readHistory(root)];
+  const existing = await readHistory(root);
+  const lastHash = new Map(existing.map((entry) => [entry.slug, entry.hash]));
+  const dir = cpPaths(root).alignmentHistoryDir;
   const added = [];
-  for (const input of inputs) {
-    const prev = [...all].reverse().find((e) => e.slug === input.slug);
-    const entry = toEntry(input, prev?.hash ?? "");
-    all.push(entry);
+  for (const [order, input] of inputs.entries()) {
+    const entry = toEntry(input, lastHash.get(input.slug) ?? "");
+    lastHash.set(entry.slug, entry.hash);
+    await writeFileAtomic(
+      join18(dir, recordFileName(entry, order)),
+      JSON.stringify(entry, null, 2) + "\n"
+    );
     added.push(entry);
   }
-  await writeFileAtomic(cpPaths(root).alignmentHistory, JSON.stringify(all, null, 2) + "\n");
   return added;
 }
 async function appendHistory(root, input) {
@@ -8785,7 +8821,7 @@ async function appendHistory(root, input) {
 
 // src/drift/follow.ts
 import { stat as stat3 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join18, relative as relative3, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join19, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
   const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
@@ -8793,7 +8829,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat3(join18(root, rel))).isFile();
+    return (await stat3(join19(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -8930,7 +8966,7 @@ async function recordNoCode(root, concept, note) {
 
 // src/init/addReferencePath.ts
 import { readFile as readFile19 } from "node:fs/promises";
-import { join as join19 } from "node:path";
+import { join as join20 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -8938,7 +8974,7 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target2 = join19(cpPaths(root).reference, PATHS_FILE);
+  const target2 = join20(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
     existing = await readFile19(target2, "utf8");
@@ -9000,7 +9036,7 @@ async function mapLimit(items, limit, fn) {
 
 // src/reference/enumerate.ts
 import { stat as stat4 } from "node:fs/promises";
-import { join as join20 } from "node:path";
+import { join as join21 } from "node:path";
 
 // src/reference/canonical.ts
 import { realpath } from "node:fs/promises";
@@ -9088,7 +9124,7 @@ async function listRepo(root, files) {
   const rels = (files ?? await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
   const found = await Promise.all(
     rels.map(async (rel) => {
-      const abs = join20(refDir, rel);
+      const abs = join21(refDir, rel);
       const s = await statUsableFile(abs);
       return s ? target(repoKey(rel), abs, "repo", "", s) : null;
     })
@@ -9154,7 +9190,7 @@ async function enumerateReference(root, opts = {}) {
 }
 
 // src/reference/fingerprint.ts
-import { createHash as createHash2 } from "node:crypto";
+import { createHash as createHash3 } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { stat as stat5 } from "node:fs/promises";
 async function statFile(abs) {
@@ -9167,7 +9203,7 @@ async function statFile(abs) {
   }
 }
 async function hashFile(abs) {
-  const hash = createHash2("sha256");
+  const hash = createHash3("sha256");
   for await (const chunk of createReadStream(abs)) hash.update(chunk);
   return hash.digest("hex").slice(0, 12);
 }
@@ -9640,7 +9676,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     for (const t of tests) {
       const rel = normalizeRel(relative4(resolve2(o.root), resolve2(o.root, t)));
       const inside = rel !== "" && rel !== ".." && !rel.startsWith("../") && !isAbsolute3(rel);
-      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join21(o.root, rel));
+      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join22(o.root, rel));
       if (!ok) invalid.push(t);
     }
     if (invalid.length > 0) {

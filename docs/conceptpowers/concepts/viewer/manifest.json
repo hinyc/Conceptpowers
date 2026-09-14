@@ -171,10 +171,11 @@
         "tests/mapping/leadingComment.test.ts",
         "src/hooks/gates/governanceFilesGate.ts",
         "tests/drift/reconcileCommitted.test.ts",
-        "tests/hooks/sessionStart.test.ts",
         "tests/hooks/entrypoint.e2e.test.ts",
         "src/hooks/command/commitTree.ts",
-        "tests/hooks/commitFiles.test.ts"
+        "tests/hooks/commitFiles.test.ts",
+        "src/hooks/sessionStart.ts",
+        "tests/hooks/sessionStart.test.ts"
       ]
     },
     {
@@ -295,11 +296,11 @@
         "src/hooks/gates/governanceFilesGate.ts",
         "src/hooks/command/stagingReach.ts",
         "tests/hooks/stagingReach.test.ts",
-        "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts",
         "tests/hooks/entrypoint.e2e.test.ts",
         "src/hooks/command/commitTree.ts",
-        "tests/hooks/commitFiles.test.ts"
+        "tests/hooks/commitFiles.test.ts",
+        "src/hooks/sessionStart.ts",
+        "tests/hooks/sessionStart.test.ts"
       ]
     },
     {
@@ -485,10 +486,10 @@
         "tests/viewer/renderDisk.test.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts",
         "scripts/release.mjs",
         "scripts/releaseSteps.mjs",
-        "tests/scripts/release.test.ts"
+        "tests/scripts/release.test.ts",
+        "tests/hooks/sessionStart.test.ts"
       ]
     },
     {
@@ -558,9 +559,9 @@
         "src/cli.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/hooks/sessionStart.test.ts",
         "scripts/release.mjs",
-        "scripts/releaseSteps.mjs"
+        "scripts/releaseSteps.mjs",
+        "tests/hooks/sessionStart.test.ts"
       ]
     },
     {
@@ -3356,11 +3357,6 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/hooks/entrypoint.e2e.test.ts",
         "kind": "concept-file"
       },
@@ -3372,6 +3368,16 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/hooks/commitFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3771,16 +3777,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/sessionStart.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:tests/hooks/entrypoint.e2e.test.ts",
         "kind": "concept-file"
       },
@@ -3792,6 +3788,16 @@
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/commitFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4321,11 +4327,6 @@
       },
       {
         "source": "c:generated-not-hand-edited",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
         "target": "p:scripts/release.mjs",
         "kind": "concept-file"
       },
@@ -4337,6 +4338,11 @@
       {
         "source": "c:generated-not-hand-edited",
         "target": "p:tests/scripts/release.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4556,17 +4562,17 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
         "target": "p:scripts/release.mjs",
         "kind": "concept-file"
       },
       {
         "source": "c:plugin-version-sync",
         "target": "p:scripts/releaseSteps.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {

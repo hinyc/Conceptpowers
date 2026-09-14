@@ -253,7 +253,7 @@ marker; only regenerated/external code (`ignoreGlobs`: `dist/**`, `**/*.generate
 `standard` and `strict` both stop and wait for you on the _first_ thing they surface (an ask or a
 deny); `light` never blocks the terminal — it always passes without a decision and relies on the warnings in
 the response context to get read. **Only `drift` warnings are persisted** — the post-commit reconcile
-still records a drift pass to `history.json` whether it was surfaced by `standard`/`strict` or waved
+still records a drift pass to the history (one file per record under `.alignment/history/`, so branches merge without conflicts) whether it was surfaced by `standard`/`strict` or waved
 through by `light`. Every other `light` warning (no-marker, undefined tag, unapproved-red, quality
 floor, missing attestation, unstaged evidence, conflicted-pending, stale artifact) is **advisory only** and is not written
 anywhere — nothing is lost from the governance data itself, since `/conceptpowers:scan` can always

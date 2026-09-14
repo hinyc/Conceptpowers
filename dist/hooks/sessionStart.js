@@ -8,7 +8,7 @@ var __export = (target2, all) => {
 };
 
 // src/hooks/sessionStart.ts
-import { join as join17, dirname as dirname4 } from "node:path";
+import { join as join18, dirname as dirname4 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
@@ -32,7 +32,9 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentHistoryDir: join(base, "concepts", ".alignment", "history"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
@@ -5540,18 +5542,42 @@ async function readLock(root) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile14 } from "node:fs/promises";
-async function readHistory(root) {
+import { readdir as readdir6, readFile as readFile14 } from "node:fs/promises";
+import { join as join16 } from "node:path";
+async function readLegacyHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile14(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
 }
+async function readRecordFiles(root) {
+  const dir = cpPaths(root).alignmentHistoryDir;
+  let names;
+  try {
+    names = (await readdir6(dir)).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const entries = await Promise.all(
+    names.map(async (name) => {
+      try {
+        return HistoryEntry.parse(JSON.parse(await readFile14(join16(dir, name), "utf8")));
+      } catch {
+        return null;
+      }
+    })
+  );
+  return entries.filter((entry) => entry !== null);
+}
+async function readHistory(root) {
+  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
+  return [...legacy, ...records];
+}
 
 // src/drift/follow.ts
 import { stat as stat4 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join16, relative as relative3, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join17, relative as relative3, resolve } from "node:path";
 function isInsideRoot(root, rel) {
   const r = relative3(resolve(root), resolve(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
@@ -5559,7 +5585,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat4(join16(root, rel))).isFile();
+    return (await stat4(join17(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -5648,7 +5674,7 @@ function capped(items, max) {
 }
 async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   if (!await isInitialized(root)) return null;
-  const cli = join17(pluginRoot, "dist", "cli.js");
+  const cli = join18(pluginRoot, "dist", "cli.js");
   let autoSyncBlock = "";
   const sync = await syncIfStale(root, pluginRoot);
   if (sync.synced) {
@@ -5697,7 +5723,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     ...enforcementLine,
     "Commit packaging (the commit gate inspects ONLY the files this commit will actually include, counting added/copied/modified/renamed paths (`--diff-filter=ACMR`) \u2014 the staged list, plus unstaged tracked changes for `git commit -a`, or only the given paths for `git commit <paths>`; code already landed in earlier commits does NOT count):",
     "- Run staging (git add/rm/restore) and `git commit` as SEPARATE Bash commands. A commit chained after staging, builds, formatters, scripts or other file-changing commands in the same command cannot be verified beforehand \u2014 the gate treats it as unresolved (strict: deny, standard: ask, light: warn \u2014 or ask when a changed init.json, new/changed no-code or test-review records, or deleted concept docs/records could ride along).",
-    "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the code you changed for them AND the fresh consistency attestation (docs/conceptpowers/concepts/.alignment/attest.json \u2014 plus test-review.json / no-code.json when you recorded those; the gate `evidence-staged` catches a commit that engages a changed concept while the current content of a record is not part of it) in the SAME commit. The alignment lock/history are rewritten by the post-commit reconcile \u2014 include those files in your next commit; a lock-only follow-up commit is expected, not drift.",
+    "- Stage concept JSON edits (docs/conceptpowers/concepts/data/**) together with the code you changed for them AND the fresh consistency attestation (docs/conceptpowers/concepts/.alignment/attest.json \u2014 plus test-review.json / no-code.json when you recorded those; the gate `evidence-staged` catches a commit that engages a changed concept while the current content of a record is not part of it) in the SAME commit. The post-commit reconcile rewrites the alignment lock and adds new record files under .alignment/history/ \u2014 include them in your next commit; a lock-only follow-up commit is expected, not drift.",
     "- A drifted concept is judged ONLY when this commit engages it \u2014 its concept doc (docs/conceptpowers/concepts/data/**) or at least one of its related paths (@concept-tagged files + feature codePaths) is staged. A staged file whose leading comment block carries the @concept:<slug> tag also counts even if the mapping cache is stale.",
     '- Staging mapped code for a drifted concept WITHOUT its edited concept doc is caught by the gate \u2014 stage the doc in the same commit (not required when the doc has no uncommitted changes, e.g. it already landed via a merge). Staging the doc without any related code is also caught \u2014 when the concept change genuinely needs no code change, confirm with the user and record it (attest-no-code <slug> --note "<why>"); the record is bound to the concept hash and the gate then passes in every enforcement mode, with the reason kept in the reconcile history.',
     "- A commit unrelated to every drifted concept passes with a [DRIFT REVIEW] note \u2014 double-check the staged files are truly unrelated; the drift obligation stays open (baseline untouched) for a later engaged commit.",

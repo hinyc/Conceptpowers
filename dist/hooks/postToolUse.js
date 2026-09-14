@@ -33,7 +33,9 @@ function cpPaths(root) {
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
+    // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
     alignmentHistory: join(base, "concepts", ".alignment", "history.json"),
+    alignmentHistoryDir: join(base, "concepts", ".alignment", "history"),
     alignmentLastCommit: join(base, "concepts", ".alignment", "last-commit"),
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
@@ -4667,13 +4669,38 @@ async function writeLock(root, lock) {
 }
 
 // src/drift/history.ts
-import { readFile as readFile8 } from "node:fs/promises";
-async function readHistory(root) {
+import { createHash as createHash2 } from "node:crypto";
+import { readdir as readdir3, readFile as readFile8 } from "node:fs/promises";
+import { join as join5 } from "node:path";
+async function readLegacyHistory(root) {
   try {
     return History.parse(JSON.parse(await readFile8(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
+}
+async function readRecordFiles(root) {
+  const dir = cpPaths(root).alignmentHistoryDir;
+  let names;
+  try {
+    names = (await readdir3(dir)).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const entries = await Promise.all(
+    names.map(async (name) => {
+      try {
+        return HistoryEntry.parse(JSON.parse(await readFile8(join5(dir, name), "utf8")));
+      } catch {
+        return null;
+      }
+    })
+  );
+  return entries.filter((entry) => entry !== null);
+}
+async function readHistory(root) {
+  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
+  return [...legacy, ...records];
 }
 function toEntry(input, prevHash) {
   return HistoryEntry.parse({
@@ -4688,26 +4715,35 @@ function toEntry(input, prevHash) {
     at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
   });
 }
+function recordFileName(entry, order) {
+  const stamp = entry.at.replace(/[^0-9A-Za-z]/g, "") || "unknown";
+  const digest = createHash2("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
+  return `${stamp}-${String(order).padStart(3, "0")}-${entry.slug}-${digest}.json`;
+}
 async function appendHistoryMany(root, inputs) {
   if (inputs.length === 0) return [];
-  const all = [...await readHistory(root)];
+  const existing = await readHistory(root);
+  const lastHash = new Map(existing.map((entry) => [entry.slug, entry.hash]));
+  const dir = cpPaths(root).alignmentHistoryDir;
   const added = [];
-  for (const input of inputs) {
-    const prev = [...all].reverse().find((e) => e.slug === input.slug);
-    const entry = toEntry(input, prev?.hash ?? "");
-    all.push(entry);
+  for (const [order, input] of inputs.entries()) {
+    const entry = toEntry(input, lastHash.get(input.slug) ?? "");
+    lastHash.set(entry.slug, entry.hash);
+    await writeFileAtomic(
+      join5(dir, recordFileName(entry, order)),
+      JSON.stringify(entry, null, 2) + "\n"
+    );
     added.push(entry);
   }
-  await writeFileAtomic(cpPaths(root).alignmentHistory, JSON.stringify(all, null, 2) + "\n");
   return added;
 }
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute, join as join6, relative as relative2, resolve } from "node:path";
+import { isAbsolute, join as join7, relative as relative2, resolve } from "node:path";
 
 // src/audit/gaps.ts
-import { join as join5, extname } from "node:path";
+import { join as join6, extname } from "node:path";
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -4761,7 +4797,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat(join6(root, rel))).isFile();
+    return (await stat(join7(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");

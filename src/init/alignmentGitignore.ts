@@ -2,7 +2,7 @@
 // src/init/alignmentGitignore.ts
 // .alignment/last-commit은 커밋 성공 시마다 훅이 다시 쓰는 로컬 책갈피라
 // git이 추적하면 커밋 → dirty → 커밋의 무한 반복이 생긴다. 폴더 전용
-// .gitignore로 이 파일만 추적에서 제외한다(history.json·lock은 공유 가치가
+// .gitignore로 이 파일만 추적에서 제외한다(history/·lock은 공유 가치가
 // 있어 추적 유지). 사용자 루트 .gitignore는 건드리지 않는다.
 import { access, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';

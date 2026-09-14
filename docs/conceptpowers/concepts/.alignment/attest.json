@@ -95,9 +95,9 @@
     "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "drift-reconcile": {
-    "hash": "3:40abb59d1620",
+    "hash": "3:77e958c1ec0f",
     "result": "pass",
-    "at": "2026-09-14T22:15:34.365Z",
+    "at": "2026-09-14T22:19:45.640Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -125,7 +125,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "8단계 규칙 추가(안내 목록 상한) — 다른 25개 개념과 대조. 참고자료 목록 상한·결정론 CLI 전체 목록과 같은 방향, 허용·제한·불변 충돌 없음"
+    "note": "8단계 규칙 추가(이력은 더하기만) — 다른 25개 개념과 대조. 무시함 기록 의무·기준선 규칙과 같은 방향, 허용·제한·불변 충돌 없음"
   },
   "concept-code-mapping": {
     "hash": "3:ab31baedd435",
