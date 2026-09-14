@@ -17,6 +17,8 @@
 //  - concept-code-mapping "태그가 진실의 원천, mapping은 캐시" → 캐시가 낡아 연결 목록에 없어도
 //    첫머리에 @concept:<slug>를 단 파일이 들어오면 따라옴이다(문지기·결산 동일).
 //    생성물(ignoreGlobs)의 태그와 본문 중간의 태그는 세지 않는다(= 맞물림 아님).
+//  - drift-reconcile 불변 "첫머리 표식만 있고 코드가 없는 파일은 따라온 코드로 세지 않는다"
+//    → 표식만 단 빈 파일로는 문지기를 넘지 못하고 결산도 따라옴으로 기록하지 않는다
 //  - 경로 표기 정규화(./ 접두·역슬래시)는 개념 규칙이 아니라 같은 파일을 다르게 세지 않기 위한 구현 세부다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -98,9 +100,9 @@ describe('hasFollowedCode · isEngagedWithTags — 맞물림 판정(문지기·�
     expect(isEngagedWithTags(d, new Set(['README.md']), new Set())).toBe(false);
   });
   it('문서 경로 표기가 달라도(./ 접두) 정규화해 맞물림으로 본다', () => {
-    expect(isEngagedWithTags({ ...d, docPath: `./${d.docPath}` }, new Set([d.docPath]), new Set())).toBe(
-      true
-    );
+    expect(
+      isEngagedWithTags({ ...d, docPath: `./${d.docPath}` }, new Set([d.docPath]), new Set())
+    ).toBe(true);
   });
 });
 
@@ -300,6 +302,16 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
     const r = await reconcileAfterCommit(root, ['src/late.ts'], 't2');
     expect(r.aligned).toEqual([]);
     expect(r.ignored).toEqual([]);
+  });
+  it('표식만 있고 코드가 없는 파일은 따라온 코드가 아니다 — 문지기가 잡고 결산은 ignored (규칙: 표식만 있는 파일은 세지 않는다)', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/noop.ts', '// @concept:auth-token\n\n');
+    const gate = await checkDrift({ root, files: ['src/noop.ts', DOC] } as never);
+    expect(gate).not.toBeNull();
+    expect(gate!.reason).toContain('연결된 코드가 하나도');
+    const r = await reconcileAfterCommit(root, ['src/noop.ts', DOC], 't2');
+    expect(r.ignored).toContain('auth-token');
+    expect(r.aligned).toEqual([]);
   });
   it('비코드 파일(.md)의 첫머리 텍스트는 태그로 세지 않는다 — 문서만 고친 커밋은 맞물림이 아니다', async () => {
     await makeDrift(['src/a.ts']);

@@ -4,7 +4,7 @@
 //  - settled-status 불변 "초록이 되려면 … 지킬 수 있는 규칙이 실제로 적혀 있을 것(품질 최소치)"
 //    → quality: 결격 개념은 exit 1 + deficiencies / 통과 개념은 exit 0
 //  - settled-status 불변 "… 다른 개념과 충돌하지 않는지 검사한 기록이 있을 것(검사 증빙)"
-//    → attest-consistency: pass 기록이 저장된다 / compared·note가 증빙 로그에 기록된다
+//    → attest-consistency: pass 기록이 저장된다 / compared·note가 증빙 로그에 기록된다(범위 규칙은 tests/cli/attestScope.test.ts)
 //    → result가 pass|conflict 외면 exit 1 / --compared 누락·미존재 slug면 exit 1 (증빙이 헐거워지지 않게)
 //  - 상위 기준 문서 "갈아 끼우기 방식"의 불변 "저장 도중 실패하면 남은 임시 파일을 정리하고 실패를 감추지 않는다"
 //    → --note가 1000자를 초과하면 exit 1이고 증빙 로그가 훼손되지 않는다
@@ -73,16 +73,7 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: pass 기록이 저장된다', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      [
-        'attest-consistency',
-        'cli-target',
-        '--result',
-        'pass',
-        '--compared',
-        'cli-target',
-        '--root',
-        root,
-      ],
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'all', '--root', root],
       out
     );
     expect(code).toBe(0);
@@ -93,16 +84,7 @@ describe('cli: quality / attest-consistency', () => {
   it('attest-consistency: result가 pass|conflict 외면 exit 1', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     const code = await runCli(
-      [
-        'attest-consistency',
-        'cli-target',
-        '--result',
-        'yes',
-        '--compared',
-        'cli-target',
-        '--root',
-        root,
-      ],
+      ['attest-consistency', 'cli-target', '--result', 'yes', '--compared', 'all', '--root', root],
       out
     );
     expect(code).toBe(1);
@@ -139,6 +121,7 @@ describe('cli: quality / attest-consistency', () => {
 
   it('attest-consistency: compared/note가 증빙 로그에 기록된다', async () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
+    await writeConcept(root, { ...conceptInput(['결제 완료 후 price 변경 불가']), slug: 'other' });
     const code = await runCli(
       [
         'attest-consistency',
@@ -146,7 +129,7 @@ describe('cli: quality / attest-consistency', () => {
         '--result',
         'pass',
         '--compared',
-        'cli-target',
+        'all',
         '--note',
         '충돌 없음',
         '--root',
@@ -156,7 +139,7 @@ describe('cli: quality / attest-consistency', () => {
     );
     expect(code).toBe(0);
     const log = await readAttestLog(root);
-    expect(log['cli-target']!.compared).toEqual(['cli-target']);
+    expect(log['cli-target']!.compared).toEqual(['other']);
     expect(log['cli-target']!.note).toBe('충돌 없음');
   });
 
@@ -164,16 +147,7 @@ describe('cli: quality / attest-consistency', () => {
     await writeConcept(root, conceptInput(['결제 완료 후 price 변경 불가']));
     // 기존 증빙을 먼저 남겨 "덮어쓰기로 과거 증빙이 사라지지 않는지" 검증한다.
     const okCode = await runCli(
-      [
-        'attest-consistency',
-        'cli-target',
-        '--result',
-        'pass',
-        '--compared',
-        'cli-target',
-        '--root',
-        root,
-      ],
+      ['attest-consistency', 'cli-target', '--result', 'pass', '--compared', 'all', '--root', root],
       out
     );
     expect(okCode).toBe(0);
@@ -186,7 +160,7 @@ describe('cli: quality / attest-consistency', () => {
         '--result',
         'pass',
         '--compared',
-        'cli-target',
+        'all',
         '--note',
         'x'.repeat(1001),
         '--root',

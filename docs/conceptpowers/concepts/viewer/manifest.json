@@ -46,7 +46,10 @@
         "tests/util/glob.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "src/hooks/gates/noConceptNote.ts",
+        "tests/hooks/noConceptNote.test.ts",
+        "tests/mapping/leadingComment.test.ts"
       ]
     },
     {
@@ -160,7 +163,8 @@
         "tests/schema/alignment.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/commitFiles.test.ts",
-        "tests/hooks/commitGate.test.ts"
+        "tests/hooks/commitGate.test.ts",
+        "tests/mapping/leadingComment.test.ts"
       ]
     },
     {
@@ -274,7 +278,14 @@
         "tests/hooks/commitGate.test.ts",
         "src/hooks/command/commandKinds.ts",
         "src/hooks/command/commitArgs.ts",
-        "tests/hooks/shellWords.test.ts"
+        "tests/hooks/shellWords.test.ts",
+        "src/hooks/gates/evidenceGate.ts",
+        "src/hooks/gates/governanceFilesGate.ts",
+        "src/hooks/gates/noConceptNote.ts",
+        "tests/hooks/attestGate.test.ts",
+        "tests/hooks/evidenceGate.test.ts",
+        "tests/hooks/governanceFiles.test.ts",
+        "tests/hooks/noConceptNote.test.ts"
       ]
     },
     {
@@ -297,7 +308,9 @@
         "skills/update-concepts/references/upgrade.md",
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "src/hooks/gates/governanceFilesGate.ts",
+        "tests/hooks/governanceFiles.test.ts"
       ]
     },
     {
@@ -426,7 +439,12 @@
         "tests/viewer/serve.test.ts",
         "tests/concept/quality.test.ts",
         "tests/schema/alignment.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "src/concept/attestScope.ts",
+        "src/hooks/gates/evidenceGate.ts",
+        "tests/cli/attestScope.test.ts",
+        "tests/hooks/attestGate.test.ts",
+        "tests/hooks/evidenceGate.test.ts"
       ]
     },
     {
@@ -491,7 +509,8 @@
         "tests/cli/referenceSync.test.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/gateFailure.test.ts"
+        "tests/hooks/gateFailure.test.ts",
+        "tests/cli/attestScope.test.ts"
       ]
     },
     {
@@ -1194,6 +1213,27 @@
         "title": "tests/hooks/preToolUse.test.ts"
       },
       {
+        "id": "p:src/hooks/gates/noConceptNote.ts",
+        "label": "noConceptNote.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/noConceptNote.ts"
+      },
+      {
+        "id": "p:tests/hooks/noConceptNote.test.ts",
+        "label": "noConceptNote.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/noConceptNote.test.ts"
+      },
+      {
+        "id": "p:tests/mapping/leadingComment.test.ts",
+        "label": "leadingComment.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/mapping/leadingComment.test.ts"
+      },
+      {
         "id": "c:concept-driven-tests",
         "label": "개념 기반 테스트",
         "type": "concept",
@@ -1873,6 +1913,41 @@
         "title": "tests/hooks/shellWords.test.ts"
       },
       {
+        "id": "p:src/hooks/gates/evidenceGate.ts",
+        "label": "evidenceGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/evidenceGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/governanceFilesGate.ts",
+        "label": "governanceFilesGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/governanceFilesGate.ts"
+      },
+      {
+        "id": "p:tests/hooks/attestGate.test.ts",
+        "label": "attestGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/attestGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/evidenceGate.test.ts",
+        "label": "evidenceGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/evidenceGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/governanceFiles.test.ts",
+        "label": "governanceFiles.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/governanceFiles.test.ts"
+      },
+      {
         "id": "c:human-owns-contract",
         "label": "소유권 원칙",
         "type": "concept",
@@ -2228,6 +2303,20 @@
         "type": "file",
         "href": "",
         "title": "tests/concept/quality-gate.test.ts"
+      },
+      {
+        "id": "p:src/concept/attestScope.ts",
+        "label": "attestScope.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/attestScope.ts"
+      },
+      {
+        "id": "p:tests/cli/attestScope.test.ts",
+        "label": "attestScope.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/attestScope.test.ts"
       },
       {
         "id": "c:generated-not-hand-edited",
@@ -2839,6 +2928,21 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/hooks/gates/noConceptNote.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/hooks/noConceptNote.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/mapping/leadingComment.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:concept-driven-tests",
         "target": "p:src/schema/initConfig.ts",
         "kind": "concept-file"
@@ -3131,6 +3235,11 @@
       {
         "source": "c:drift-reconcile",
         "target": "p:tests/hooks/commitGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/mapping/leadingComment.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3499,6 +3608,41 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/evidenceGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/noConceptNote.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/attestGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/evidenceGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/governanceFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/noConceptNote.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-concepts/references/define.md",
         "kind": "concept-file"
@@ -3541,6 +3685,16 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:tests/hooks/governanceFiles.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3924,6 +4078,31 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:settled-status",
+        "target": "p:src/concept/attestScope.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/hooks/gates/evidenceGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/cli/attestScope.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/attestGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/evidenceGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:generated-not-hand-edited",
         "target": "p:src/viewer/render.ts",
         "kind": "concept-file"
@@ -4116,6 +4295,11 @@
       {
         "source": "c:init-gate",
         "target": "p:tests/hooks/gateFailure.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/attestScope.test.ts",
         "kind": "concept-file"
       },
       {

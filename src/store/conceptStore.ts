@@ -153,7 +153,7 @@ export async function setConceptStatus(
       throw new Error(
         `Cannot promote to green — no fresh passing consistency attestation for ${slug}. ` +
           `Run the consistency check of conceptpowers:update-concepts, then record it: ` +
-          `attest-consistency ${slug} --result pass --compared <비교한 slug들>`
+          `attest-consistency ${slug} --result pass --compared all`
       );
     }
   }

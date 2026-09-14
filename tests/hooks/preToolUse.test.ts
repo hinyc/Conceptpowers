@@ -50,10 +50,22 @@ import { recordNoCode } from '../../src/drift/noCode.js';
 import { parseConcept } from '../../src/schema/concept.js';
 import { recordAttest } from '../../src/concept/attest.js';
 
+// 판정 근거 기록(.alignment)을 먼저 커밋해 둔다 — 이 파일의 시나리오는 기록이 이미 저장소에 정착한 뒤
+// 개념 문서를 커밋하는 경우를 본다. 같은 커밋에 새 기록이 들어오는 경우는 governanceFiles·evidenceGate 테스트가 본다.
+function commitRecords() {
+  execSync('git add -A', { cwd: root });
+  execSync(
+    'git -c user.email=t@t -c user.name=T commit -q -m records -- docs/conceptpowers/concepts/.alignment',
+    { cwd: root }
+  );
+}
+
 let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cp-'));
   mkdirSync(join(root, 'src'), { recursive: true });
+  // 증빙 스테이징 문지기(evidence-staged)는 git 상태를 읽는다 — 커밋이 일어나는 곳은 늘 git 저장소다.
+  execSync('git init -q', { cwd: root });
 });
 
 // 연결 코드 경로는 디스크에 실제로 있어야 판정 대상이 된다(사라진 경로는 제외되므로).
@@ -429,6 +441,7 @@ describe('decidePreToolUse', () => {
     });
     await recordAttest(root, c2, 'pass');
     await recordNoCode(root, c2, '문구 정리만 반영한 개념 수정 — 코드 영향 없음');
+    commitRecords(); // 기록은 지난 커밋에 이미 들어가 있다(evidence-staged·human-record 문지기)
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -524,6 +537,7 @@ describe('decidePreToolUse', () => {
       note: 'drift 게이트 단독 시나리오 — 이 픽스처 개념에는 딸린 검사가 없다',
     });
     await recordAttest(root, c2, 'pass');
+    commitRecords(); // 기록은 지난 커밋에 이미 들어가 있다(evidence-staged·human-record 문지기)
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -580,6 +594,7 @@ describe('decidePreToolUse', () => {
       note: 'drift 게이트 단독 시나리오 — 검사 변경이 필요 없는 픽스처',
     });
     await recordAttest(root, c2, 'pass');
+    commitRecords(); // 기록은 지난 커밋에 이미 들어가 있다(evidence-staged·human-record 문지기)
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -725,6 +740,7 @@ describe('decidePreToolUse', () => {
     });
     await writeConcept(root, c);
     await recordAttest(root, c, 'pass');
+    commitRecords(); // 기록은 지난 커밋에 이미 들어가 있다(evidence-staged·human-record 문지기)
     const out = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },

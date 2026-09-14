@@ -16,17 +16,33 @@ import { checkAttest } from './gates/attestGate.js';
 import { checkConflictedPending } from './gates/conflictedPendingGate.js';
 import { checkUnapprovedRed } from './gates/unapprovedRedGate.js';
 import { checkStaleArtifacts } from './gates/staleArtifactsGate.js';
+import { checkEvidenceStaged } from './gates/evidenceGate.js';
+import {
+  checkGovernanceFiles,
+  checkHumanRecords,
+  governedEditFinding,
+} from './gates/governanceFilesGate.js';
+import { noConceptReviewNote } from './gates/noConceptNote.js';
 import type { GateCheck, GateFinding, GateInput } from './gates/types.js';
 import { describeError } from '../drift/safe.js';
 import { isMainModule } from '../util/isMain.js';
 import { exitAfterWrite } from '../util/exitAfterWrite.js';
 import { planCommit, type CommitPlan } from './command/commitPlan.js';
-import { resolveCommitFiles, createAliasResolver } from './command/commitFiles.js';
+import { findHumanRecordCommands } from './command/recordCommands.js';
+import type { CommitTarget } from './command/commitFiles.js';
+import {
+  resolveCommitFiles,
+  resolveDeletedFiles,
+  createAliasResolver,
+} from './command/commitFiles.js';
 
 export interface PreToolEvent {
   tool: string;
-  input: { file_path?: string; command?: string };
+  input: { file_path?: string; notebook_path?: string; command?: string };
+  /** 테스트·호출자 주입용: 커밋에 들어갈 파일(ACMR). 주어지면 git을 묻지 않는다 */
   changedFiles?: string[];
+  /** 테스트·호출자 주입용: 커밋으로 삭제되는 파일(D) */
+  deletedFiles?: string[];
 }
 export interface PreToolOutput {
   hookSpecificOutput: {
@@ -48,11 +64,14 @@ const GOVERNANCE_GATES: { name: string; check: GateCheck }[] = [
   { name: 'concept-test-scope', check: checkTestScope },
   { name: 'quality-floor', check: checkQualityFloor },
   { name: 'consistency-attest', check: checkAttest },
+  { name: 'evidence-staged', check: checkEvidenceStaged },
   { name: 'conflicted-pending', check: checkConflictedPending },
   { name: 'unapproved-red', check: checkUnapprovedRed },
 ];
 
 const ASK_SUFFIX = ' 그래도 커밋하시겠습니까?';
+const EDIT_ASK_SUFFIX = ' 그래도 진행하시겠습니까?';
+const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 
 // 통과 응답에는 permissionDecision을 싣지 않는다 — 'allow'는 사람의 권한 확인을 건너뛰게 하므로,
 // "git commit" 글자만 섞인 복합 명령 전체가 자동 승인되는 통로가 된다(governance-mode 불변:
@@ -89,23 +108,36 @@ function appendFailedGatesNote(output: PreToolOutput, failedGates: string[]): Pr
 // 않은 커밋은 막지 않는다). ask도 사용자가 승인하면 커밋이 진행되므로 안내를 잃지 않는다.
 // deny는 어차피 커밋이 막히므로 덧붙이지 않는다.
 // best-effort — 안내 계산 실패가 커밋을 막지 않는다. 불변 패턴: 새 객체를 반환한다.
-async function withDriftReviewNote(
-  output: PreToolOutput,
-  input: GateInput
-): Promise<PreToolOutput> {
+// 통과·질문 응답에 덧붙이는 검토 안내들(어긋남 검토·개념 없음 표식 다수). 차단(deny) 응답에는 붙이지 않는다.
+// 안내 계산 실패는 응답을 바꾸지 않는다 — 안내는 판정이 아니다.
+async function withReviewNotes(output: PreToolOutput, input: GateInput): Promise<PreToolOutput> {
   if (output.hookSpecificOutput.permissionDecision === 'deny') return output;
-  let note: string | null = null;
-  try {
-    note = await driftReviewNote(input);
-  } catch {
-    note = null;
-  }
-  if (!note) return output;
+  const notes = await Promise.all(
+    [driftReviewNote, noConceptReviewNote].map((note) => note(input).catch(() => null))
+  );
+  const joined = notes.filter((n): n is string => !!n).join('');
+  if (!joined) return output;
   return {
     hookSpecificOutput: {
       ...output.hookSpecificOutput,
-      additionalContext: (output.hookSpecificOutput.additionalContext ?? '') + note,
+      additionalContext: (output.hookSpecificOutput.additionalContext ?? '') + joined,
     },
+  };
+}
+
+// 강도와 무관하게 항상 사람에게 묻는 항목들(참고자료 기밀·거버넌스 설정 변경·개념 삭제)을 한 판정으로 합친다 —
+// 하나가 다른 하나를 가리지 않게 사유를 이어 붙인다.
+function mergeAlwaysAsk(...findings: (GateFinding | null)[]): GateFinding | null {
+  const present = findings.filter((f): f is GateFinding => f !== null);
+  if (present.length === 0) return null;
+  if (present.length === 1) return present[0];
+  return {
+    gate: present.map((f) => f.gate).join('+'),
+    reason: present.map((f) => f.reason).join(' / '),
+    context: present
+      .map((f) => f.context)
+      .filter(Boolean)
+      .join(' '),
   };
 }
 
@@ -122,18 +154,22 @@ function askOutput(f: GateFinding, opts?: { warningsNote?: string }): PreToolOut
   };
 }
 
-// strict·light 공용: 거버넌스 게이트 전부를 실행해 걸린 것들을 수집한다.
-// best-effort — 검사 하나의 실패가 나머지 수집을 막지 않는다. 다만 실패한 게이트 이름은
-// failedGates로 모아 호출자가 반드시 결과에 드러내도록 한다(조용한 fail-open 금지).
-async function runAllGates(
-  input: GateInput
+// 거버넌스 게이트를 실행해 걸린 것들을 수집한다. standard는 첫 위반에서 멈추고(stopAtFirst), strict·light는 전부 본다.
+// 검사 하나의 실패가 나머지를 막지 않는다. 실패한 게이트 이름은 failedGates로 모아 호출자가 강도에 맞춰
+// 대응하게 한다 — 검사하지 못한 커밋을 검사를 마친 것처럼 통과시키지 않는다(조용한 fail-open 금지).
+async function runGates(
+  input: GateInput,
+  opts: { stopAtFirst?: boolean } = {}
 ): Promise<{ findings: GateFinding[]; failedGates: string[] }> {
   const findings: GateFinding[] = [];
   const failedGates: string[] = [];
   for (const { name, check } of GOVERNANCE_GATES) {
     try {
       const f = await check(input);
-      if (f) findings.push(f);
+      if (f) {
+        findings.push(f);
+        if (opts.stopAtFirst) break;
+      }
     } catch {
       failedGates.push(name);
     }
@@ -163,10 +199,10 @@ function denyOutput(
     : findings.map((f) => f.reason);
   const detail = allReasons.join(' / ');
   const refNote = ref
-    ? ' (기밀 확인 대상 reference 문서도 포함 — 커밋이 어차피 진행되지 않으므로 따로 묻지 않고 함께 차단합니다)'
+    ? ' (항상 사람에게 묻는 항목도 포함 — 커밋이 어차피 진행되지 않으므로 따로 묻지 않고 함께 차단합니다)'
     : '';
   const refContextNote = ref
-    ? ' A staged reference-document confidentiality question was also pending and is folded into this denial so the commit is blocked either way and no confidential content is exposed by a separate ask.'
+    ? ' An always-ask question (reference-document confidentiality, governance config change, or concept deletion) was also pending and is folded into this denial so the commit is blocked either way and nothing is exposed by a separate ask.'
     : '';
   return {
     hookSpecificOutput: {
@@ -196,86 +232,39 @@ export async function decidePreToolUse(
   if (!(await isInitialized(root))) return null;
 
   if (ev.tool === 'Bash') {
+    const command = ev.input.command ?? '';
+    // 사람의 판단을 남기는 기록 명령(검토 기록·코드무관 기록)은 실행 전에 묻는다. 커밋과 한 명령에 섞여 있어도
+    // 커밋 판정은 그대로 하고 질문을 함께 싣는다 — 기록 질문이 커밋 판정을 가리지 않는다.
+    const records = findHumanRecordCommands(command);
+    const recordAsk = records.length > 0 ? recordCommandFinding(records) : null;
     // 명령 글자가 아니라 실제로 실행될 커밋 호출을 해석하고, 실제로 커밋될 파일을 검사한다
     // (governance-mode 불변: 실행 전에 그 파일들을 확정할 수 없으면 강도에 맞춰 대응).
-    const plan = await planCommit(ev.input.command ?? '', {
-      resolveAlias: createAliasResolver(root),
-    });
-    if (plan.kind === 'none') return null;
+    const plan = await planCommit(command, { resolveAlias: createAliasResolver(root) });
+    if (plan.kind === 'none') return recordAsk ? recordAskOutput(recordAsk) : null;
+    const cfg = await readInitConfig(root);
+    const enforcement = cfg?.enforcement ?? 'standard';
     const target = confineToProject(root, plan);
     if (target.kind === 'unresolved') {
-      const cfg = await readInitConfig(root);
-      return unresolvedCommitOutput(cfg?.enforcement ?? 'standard', target.reason);
+      // 물어야 할 기록이 함께 있으면 light도 경고로 흘려보내지 않고 묻는다.
+      const level = recordAsk && enforcement === 'light' ? 'standard' : enforcement;
+      return escalateWithAsk(unresolvedCommitOutput(level, target.reason), recordAsk);
     }
-    const files = ev.changedFiles ?? (await resolveCommitFiles(root, target));
-    // 기밀 확인 판정 자체는 강도(enforcement)와 무관하게 항상 계산한다(governance-mode
-    // 불변 규칙: 지키는 대상은 같다). 다만 "무엇을 반환하느냐"는 모드별로 다르다 —
-    // standard는 그대로 즉시 ask, strict/light는 아래에서 다른 위반들과 합쳐 처리한다.
-    const cfg = await readInitConfig(root);
-    const ref =
-      checkReferenceGate(files) ?? checkReferenceLockGate(files, cfg?.referenceLock ?? 'shared');
-
-    const enforcement = cfg?.enforcement ?? 'standard';
-    // 무시 목록의 생성물(docs/conceptpowers/** 등)에 실려 온 태그는 정합성 검사 대상이 아니다 —
-    // 무시 목록 기준은 CLI 전체 스캔과 동일. (코드 파일 한정 필터는 훅에 없다 — 스테이징 전량을 본다.)
-    // 필터는 audit 입력에만 적용한다(드리프트·기밀 게이트는 원본 files를 봐야 한다).
-    const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
-
-    if (enforcement === 'standard') {
-      if (ref) return askOutput(ref);
-      const report = await auditIntegrity(root, files, ignoreGlobs);
-      const input: GateInput = { root, files, cfg, report };
-      for (const { check } of GOVERNANCE_GATES) {
-        const f = await check(input);
-        if (f) return withDriftReviewNote(askOutput(f), input);
-      }
-      const stale = await checkStaleArtifacts(input);
-      if (stale) return withDriftReviewNote(askOutput(stale), input);
-      return withDriftReviewNote(PASS_DEFAULT, input);
-    }
-
-    const report = await auditIntegrity(root, files, ignoreGlobs);
-    const input: GateInput = { root, files, cfg, report };
-
-    if (enforcement === 'strict') {
-      const { findings, failedGates } = await runAllGates(input);
-      // 참조 문서가 스테이징돼 있어도, 위반이 있으면 ask로 내려가지 않고 deny에 함께
-      // 담는다 — 어차피 커밋을 막으므로 기밀 유출 없이 위반과 함께 알린다(finding #1).
-      if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
-      // 위반 없이 참조 문서만 있으면 현행대로 ask — 다만 실행 실패한 게이트가 있었다면
-      // (findings가 비어 있어도!) 조용히 묻히지 않도록 light 분기와 동일하게 알린다(finding #2).
-      if (ref)
-        return withDriftReviewNote(
-          askOutput(ref, { warningsNote: failedGatesNote(failedGates) }),
-          input
-        );
-      const stale = await checkStaleArtifacts(input);
-      if (stale) return withDriftReviewNote(askOutput(stale), input); // 정리용 게이트는 strict에서도 차단하지 않는다
-      return withDriftReviewNote(appendFailedGatesNote(PASS_DEFAULT, failedGates), input);
-    }
-
-    // enforcement === 'light'
-    const { findings, failedGates } = await runAllGates(input);
-    let stale: GateFinding | null = null;
-    try {
-      stale = await checkStaleArtifacts(input);
-    } catch {
-      stale = null;
-    }
-    const all = stale ? [...findings, stale] : findings;
-    if (ref) {
-      // 기밀 확인은 light에서도 절대 allow로 내리지 않는다 — ask하되, 수집된 경고를
-      // 같은 응답의 additionalContext에 실어 잃어버리지 않게 한다(finding #1).
-      return withDriftReviewNote(
-        askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) }),
-        input
-      );
-    }
-    if (all.length > 0) return withDriftReviewNote(lightOutput(all, failedGates), input);
-    return withDriftReviewNote(appendFailedGatesNote(PASS_DEFAULT, failedGates), input);
+    return decideCommit(root, ev, target, cfg, recordAsk);
   }
 
-  if (ev.tool === 'Edit' || ev.tool === 'Write') {
+  if (EDIT_TOOLS.has(ev.tool)) {
+    // 거버넌스를 정하는 파일(설정·개념 문서·증빙 기록)의 직접 편집은 사람에게 묻는다(human-owns-contract).
+    const governed = governedEditFinding(root, ev.input.file_path ?? ev.input.notebook_path);
+    if (governed) {
+      return {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'ask',
+          permissionDecisionReason: governed.reason + EDIT_ASK_SUFFIX,
+          additionalContext: governed.context,
+        },
+      };
+    }
     return {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
@@ -285,6 +274,141 @@ export async function decidePreToolUse(
     };
   }
   return null;
+}
+
+function recordCommandFinding(records: string[]): GateFinding {
+  return {
+    gate: 'human-record',
+    reason: `[HUMAN RECORD] ${records.join(', ')} — 코드·검사를 고치지 않고 개념을 통과시키는 판단 기록입니다. 사람의 확인을 거쳐 남겨야 합니다 — 사유가 맞는지 확인한 뒤 진행하세요.`,
+    context:
+      "This command records a human judgment that lets a changed concept pass the commit gate without code or test changes (attest-no-code / attest-test-review). The record must reflect the user's confirmation, so it asks every time in every enforcement mode. State the concept and the exact reason to the user; proceed only if they confirm.",
+  };
+}
+
+function recordAskOutput(finding: GateFinding): PreToolOutput {
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'ask',
+      permissionDecisionReason: finding.reason + EDIT_ASK_SUFFIX,
+      additionalContext: finding.context,
+    },
+  };
+}
+
+// 이미 정한 대응(차단·질문)에 항상 묻는 항목을 함께 싣는다. 차단은 차단으로 두고 사유만 더하며,
+// 판정이 없는 응답이면 질문으로 올린다 — 항상 묻는 항목이 다른 대응을 가리지도, 가려지지도 않는다.
+function escalateWithAsk(output: PreToolOutput, finding: GateFinding | null): PreToolOutput {
+  if (!finding) return output;
+  const h = output.hookSpecificOutput;
+  const additionalContext = [finding.context, h.additionalContext].filter(Boolean).join(' ');
+  if (h.permissionDecision === 'deny' || h.permissionDecision === 'ask') {
+    return {
+      hookSpecificOutput: {
+        ...h,
+        permissionDecisionReason: `${finding.reason} / ${h.permissionDecisionReason ?? ''}`,
+        additionalContext,
+      },
+    };
+  }
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'ask',
+      permissionDecisionReason: finding.reason + ASK_SUFFIX,
+      additionalContext,
+    },
+  };
+}
+
+// 게이트 실행 실패 — 검사하지 못한 커밋이다. strict=차단, standard=질문(light는 경고와 함께 진행).
+function failedGatesOutput(enforcement: EnforcementLevel, failedGates: string[]): PreToolOutput {
+  return unverifiedCommitOutput(enforcement, {
+    reason: `[GATE FAILURE] 커밋 게이트 검사 ${failedGates.length}종을 실행하지 못했습니다(${failedGates.join(', ')})`,
+    context:
+      'Some commit-gate checks crashed while evaluating this commit, so governance was NOT fully verified. Fix the cause (for example a git error or a malformed record file) and retry; do not bypass the gate or edit hook/config files.',
+  });
+}
+
+async function decideCommit(
+  root: string,
+  ev: PreToolEvent,
+  target: CommitTarget,
+  cfg: InitConfig | null,
+  recordAsk: GateFinding | null
+): Promise<PreToolOutput> {
+  const injected = ev.changedFiles !== undefined;
+  const files = ev.changedFiles ?? (await resolveCommitFiles(root, target));
+  const deleted = injected ? (ev.deletedFiles ?? []) : await resolveDeletedFiles(root, target);
+  const scope = injected ? undefined : target.scope;
+  // 항상 사람에게 묻는 항목(기밀 확인·거버넌스 설정 변경·삭제·판단 기록)은 강도와 무관하게 계산하고,
+  // 다른 검사 결과와 함께 담는다(governance-mode 불변: 지키는 대상은 같다 — 서로 가리지 않는다).
+  const ref = mergeAlwaysAsk(
+    checkReferenceGate(files) ?? checkReferenceLockGate(files, cfg?.referenceLock ?? 'shared'),
+    checkGovernanceFiles(files, deleted),
+    await checkHumanRecords(root, files, scope),
+    recordAsk
+  );
+  // 무시 목록의 생성물(docs/conceptpowers/** 등)에 실려 온 태그는 정합성 검사 대상이 아니다 —
+  // 필터는 audit 입력에만 적용한다(드리프트·기밀 게이트는 원본 files를 봐야 한다).
+  const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
+  const report = await auditIntegrity(root, files, ignoreGlobs);
+  const input: GateInput = { root, files, cfg, report, ...(scope ? { scope } : {}) };
+  const enforcement = cfg?.enforcement ?? 'standard';
+  if (enforcement === 'standard') return decideStandard(input, ref);
+  if (enforcement === 'strict') return decideStrict(input, ref);
+  return decideLight(input, ref);
+}
+
+// standard: 첫 위반에서 묻되, 항상 묻는 항목과 한 질문에 함께 담는다.
+async function decideStandard(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
+  const { findings, failedGates } = await runGates(input, { stopAtFirst: true });
+  if (findings.length > 0) {
+    const merged = mergeAlwaysAsk(ref, findings[0]) ?? findings[0];
+    return withReviewNotes(
+      askOutput(merged, { warningsNote: failedGatesNote(failedGates) }),
+      input
+    );
+  }
+  if (failedGates.length > 0) {
+    return withReviewNotes(escalateWithAsk(failedGatesOutput('standard', failedGates), ref), input);
+  }
+  if (ref) return withReviewNotes(askOutput(ref), input);
+  const stale = await checkStaleArtifacts(input);
+  if (stale) return withReviewNotes(askOutput(stale), input);
+  return withReviewNotes(PASS_DEFAULT, input);
+}
+
+// strict: 위반 전부를 모아 막는다. 검사하지 못한 게이트가 있으면 위반이 없어도 막는다.
+async function decideStrict(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
+  const { findings, failedGates } = await runGates(input);
+  // 항상 묻는 항목이 있어도 위반이 있으면 ask로 내려가지 않고 deny에 함께 담는다.
+  if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
+  if (failedGates.length > 0) return escalateWithAsk(failedGatesOutput('strict', failedGates), ref);
+  if (ref) return withReviewNotes(askOutput(ref), input);
+  const stale = await checkStaleArtifacts(input);
+  if (stale) return withReviewNotes(askOutput(stale), input); // 정리용 게이트는 strict에서도 차단하지 않는다
+  return withReviewNotes(PASS_DEFAULT, input);
+}
+
+// light: 막지 않고 전부 경고로 모은다. 항상 묻는 항목은 경고로 내려가지 않는다.
+async function decideLight(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
+  const { findings, failedGates } = await runGates(input);
+  let stale: GateFinding | null = null;
+  try {
+    stale = await checkStaleArtifacts(input);
+  } catch {
+    stale = null;
+  }
+  const all = stale ? [...findings, stale] : findings;
+  if (ref) {
+    return withReviewNotes(
+      askOutput(ref, { warningsNote: buildWarningsNote(all, failedGates) }),
+      input
+    );
+  }
+  if (all.length > 0) return withReviewNotes(lightOutput(all, failedGates), input);
+  return withReviewNotes(appendFailedGatesNote(PASS_DEFAULT, failedGates), input);
 }
 
 type EnforcementLevel = NonNullable<InitConfig['enforcement']>;

@@ -3,7 +3,7 @@
 // 바뀐 개념에 딸린 검사가 이번 커밋에 따라왔는지 본다. 이번 커밋에 맞물린 개념
 // (문서나 연결 코드가 스테이징된 개념)만 본다 — 무관한 커밋은 붙잡지 않는다.
 // 통과 조건은 셋 중 하나: (1) 그 개념에 연결된 검사 파일이 스테이징됐다,
-// (2) 스테이징된 검사 파일의 이름표가 그 개념을 가리킨다(지도에 아직 없는 새 검사),
+// (2) 스테이징된 검사 파일의 이름표가 그 개념을 가리킨다(지도에 아직 없는 새 검사 — 이름표만 있는 빈 파일은 제외),
 // (3) 그 개념의 지금 지문에 붙은 신선한 검토 기록이 있다(고칠 필요 없음 / 검사 없음).
 import { engagedDrift } from './driftGate.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
@@ -34,8 +34,10 @@ export const checkTestFollow: GateCheck = async (input) => {
   const stagedSet = new Set(staged);
   const stagedTests = staged.filter((p) => matchesAny(p, testGlobs));
   // 지도(mapping)에 아직 없는 새 검사 파일도 이름표로 인정한다 — 스테이징된 검사 파일만 읽으므로
-  // 비용은 커밋 크기에 비례한다.
-  const taggedSlugs = new Set(Object.values(await scanTags(root, stagedTests)).flat());
+  // 비용은 커밋 크기에 비례한다. 이름표만 있고 검사 내용이 없는 파일은 세지 않는다(concept-driven-tests 불변).
+  const taggedSlugs = new Set(
+    Object.values(await scanTags(root, stagedTests, [], { requireCode: true })).flat()
+  );
 
   const log = await readTestReviewLog(root);
   const concepts = await listConcepts(root);

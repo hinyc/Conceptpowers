@@ -7,6 +7,8 @@
 //    → only(경로 지정): 지정 경로의 변경만(다른 스테이징 파일 제외) / include(-i): 스테이징 + 지정 경로의 변경
 //  - drift-reconcile 불변 "커밋 전 문지기의 판정과 커밋 뒤 결산은 같은 잣대로 맞물림과 따라옴을 판정한다"
 //    → 계산한 목록이 실제 커밋 결과(git diff-tree)와 일치한다(-a 커밋으로 대조)
+//  - governance-mode 불변 "거버넌스 설정 파일의 변경·삭제, 개념 문서나 증빙 기록의 삭제가 커밋에 들어오면 … 묻는다"
+//    → 이름 바꾸기(git mv)도 옛 경로의 삭제로 센다 — 이름 바꾸기로 삭제 확인을 피할 수 없다
 //  - governance-mode 불변 "… 확정할 수 없으면 검사를 마친 것처럼 통과시키지 않는다"
 //    → git이 목록을 못 읽으면 빈 목록이 아니라 예외
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -14,7 +16,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { resolveCommitFiles } from '../../src/hooks/command/commitFiles.js';
+import { resolveCommitFiles, resolveDeletedFiles } from '../../src/hooks/command/commitFiles.js';
 
 let root: string;
 const git = (...args: string[]) =>
@@ -85,5 +87,15 @@ describe('resolveCommitFiles', () => {
   it('git이 목록을 읽지 못하면 빈 목록 대신 예외를 던진다 [규칙: 확정할 수 없으면 통과시키지 않는다]', async () => {
     const bare = mkdtempSync(join(tmpdir(), 'cp-nogit-'));
     await expect(resolveCommitFiles(bare, plan('index'))).rejects.toThrow();
+  });
+
+  it('이름 바꾸기(git mv)는 옛 경로의 삭제와 새 경로의 추가로 센다 [규칙: 이름 바꾸기로 삭제 확인을 피할 수 없다]', async () => {
+    git('mv', 'src/c.ts', 'src/d.ts');
+    expect(
+      await resolveDeletedFiles(root, { kind: 'commit', scope: 'index', pathspecs: [] })
+    ).toEqual(['src/c.ts']);
+    expect(
+      await resolveCommitFiles(root, { kind: 'commit', scope: 'index', pathspecs: [] })
+    ).toContain('src/d.ts');
   });
 });

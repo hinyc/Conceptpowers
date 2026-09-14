@@ -9,15 +9,37 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "settled-status": {
-    "hash": "3:40d543866df8",
+    "hash": "3:b74494c7eb64",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.516Z",
+    "at": "2026-09-14T16:08:54.330Z",
     "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
       "governance-mode",
       "human-owns-contract",
-      "concept-scope"
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
   },
   "home-search": {
     "hash": "3:0a8841576155",
@@ -73,29 +95,70 @@
     "note": "sources(근거) 항목의 문구만 다듬은 편집(결정 사유를 프로젝트 목적에서 유추해 채움, 유추임을 명시) — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
   },
   "drift-reconcile": {
-    "hash": "3:999d889b5d9a",
+    "hash": "3:d272172df460",
     "result": "pass",
-    "at": "2026-09-02T09:12:37.066Z",
+    "at": "2026-09-14T18:28:37.778Z",
     "compared": [
-      "governance-mode",
-      "human-owns-contract",
-      "concept-driven-tests",
-      "concept-code-mapping",
       "concept-code-binding",
-      "settled-status"
-    ],
-    "note": "코드무관 기록(attest-no-code) 도입: 사람 확인 규칙(human-owns-contract)과 모드 공통 검사·이력 보존(governance-mode)을 유지하며 충돌 없음"
-  },
-  "concept-code-mapping": {
-    "hash": "3:69b2b52f6545",
-    "result": "pass",
-    "at": "2026-09-12T10:45:38.677Z",
-    "compared": [
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
       "feature-spec-bridge",
       "globally-unique-slug",
-      "governance-mode"
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources 결정 근거에 사용자 검토 결과(2026-09-12)만 덧붙인 편집 — 계약 지문 불변(drift 0), 규칙 변경 없음 → 충돌 불가"
+    "note": "리뷰 반영 문구 조정 — 다른 25개 개념과 대조. 문지기 강도(차단·질문·경고) 구분·기밀 확인 항상 질문·소유권 원칙·개념 기반 테스트 제한과 같은 방향이며 허용/제한/불변 충돌 없음"
+  },
+  "concept-code-mapping": {
+    "hash": "3:ab31baedd435",
+    "result": "pass",
+    "at": "2026-09-14T16:08:54.530Z",
+    "compared": [
+      "concept-code-binding",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
   },
   "feature-spec-bridge": {
     "hash": "3:70491ad40129",
@@ -207,20 +270,42 @@
     "note": "기준점(파일 이름·지문 목록) 공유는 설정으로만 허용하고 내용은 어느 설정에서도 안 올림 — reference-sync의 '내용 없음' 불변과 일치; governance-mode의 기밀 확인은 참고자료 문서 대상이며 기준점은 설정 자체가 사람의 동의라 충돌 없음"
   },
   "concept-driven-tests": {
-    "hash": "3:73b980042e49",
+    "hash": "3:9586918a0891",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.168Z",
+    "at": "2026-09-14T16:08:54.480Z",
     "compared": [
+      "concept-code-binding",
       "concept-code-mapping",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
       "governance-mode",
-      "drift-reconcile"
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
   },
   "governance-mode": {
-    "hash": "3:7e5e0c1d2ae1",
+    "hash": "3:a1cee63f539b",
     "result": "pass",
-    "at": "2026-09-14T13:36:12.050Z",
+    "at": "2026-09-14T18:28:37.612Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -248,7 +333,7 @@
       "viewer-navigation",
       "viewer-readability"
     ],
-    "note": "새 불변 규칙(커밋에 실제로 들어갈 파일 기준 검사, 확정 불가 시 강도별 대응)을 전 개념과 대조: drift-reconcile '커밋 전 판정과 커밋 뒤 결산은 같은 잣대'를 강화하는 방향. concept-code-mapping '표식 없음만으로 막지 않음'·drift-reconcile '맞물리지 않은 커밋은 막지 않음'과는 막는 사유가 달라(파일 확정 불가) 충돌 없음. 앞선 규칙 '통과는 실행 허락이 아니다'와 양립. concept-scope 문장 규칙 충족. 참고자료에 명령 해석 관련 내용 없음."
+    "note": "리뷰 반영 문구 조정 — 다른 25개 개념과 대조. 문지기 강도(차단·질문·경고) 구분·기밀 확인 항상 질문·소유권 원칙·개념 기반 테스트 제한과 같은 방향이며 허용/제한/불변 충돌 없음"
   },
   "concept-scope": {
     "hash": "3:fad8db1c941f",

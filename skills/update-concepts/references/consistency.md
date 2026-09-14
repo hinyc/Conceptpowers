@@ -40,11 +40,18 @@ When adding or modifying a concept, verify there is no conflict or violation aga
      promotes them to green; on a conflict, they stay pending and the reason is recorded via
      `note-conflict`. Settled green/red concepts are never auto-changed by this check.
 4. **Record the attestation (always, regardless of outcome):**
-   `node "<cli>" attest-consistency <slug> --result pass|conflict --compared <slugs> --root .`
+   `node "<cli>" attest-consistency <slug> --result pass|conflict --compared all --root .`
+   `--compared` must name **every other existing concept** (`all` expands to exactly that list and the
+   record stores the expanded slugs). The engine rejects a list that includes the concept itself or
+   leaves any other concept out — a self-comparison or a partial comparison is not an attestation.
    The attestation is bound to the concept's contract hash — editing the concept invalidates
    it, so re-run this check (and re-attest) after any revision. On a conflict, also record
    the reason via `note-conflict` as before.
-5. Proceed with save/commit only when there are zero unresolved conflicts. Green promotion
+5. **Stage the record with the concept.** `docs/conceptpowers/concepts/.alignment/attest.json` (and
+   `test-review.json` / `no-code.json` when you recorded those) go into the **same commit** as the
+   concept change — the commit gate (`evidence-staged`) catches a record left unstaged. A record that
+   exists only on disk is not evidence.
+6. Proceed with save/commit only when there are zero unresolved conflicts. Green promotion
    is engine-gated: it requires a fresh `pass` attestation for that concept.
 
 ## Commit gate (D17)

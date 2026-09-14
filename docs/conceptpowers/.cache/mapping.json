@@ -139,7 +139,12 @@
     "tests/hooks/preToolUse.test.ts",
     "src/concept/approve.ts",
     "src/concept/quality.ts",
-    "src/store/conceptStore.ts"
+    "src/store/conceptStore.ts",
+    "src/concept/attestScope.ts",
+    "src/hooks/gates/evidenceGate.ts",
+    "tests/cli/attestScope.test.ts",
+    "tests/hooks/attestGate.test.ts",
+    "tests/hooks/evidenceGate.test.ts"
   ],
   "concept-provenance": [
     "assets/viewer.js",
@@ -169,7 +174,10 @@
     "tests/util/glob.test.ts",
     "tests/viewer/renderDisk.test.ts",
     "tests/schema/initConfig.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "src/hooks/gates/noConceptNote.ts",
+    "tests/hooks/noConceptNote.test.ts",
+    "tests/mapping/leadingComment.test.ts"
   ],
   "init-gate": [
     "tests/cli/audit.test.ts",
@@ -197,7 +205,8 @@
     "src/init/scaffold.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/gateFailure.test.ts"
+    "tests/hooks/gateFailure.test.ts",
+    "tests/cli/attestScope.test.ts"
   ],
   "governance-mode": [
     "src/hooks/gates/conceptSlugs.ts",
@@ -237,7 +246,14 @@
     "tests/hooks/commitGate.test.ts",
     "src/hooks/command/commandKinds.ts",
     "src/hooks/command/commitArgs.ts",
-    "tests/hooks/shellWords.test.ts"
+    "tests/hooks/shellWords.test.ts",
+    "src/hooks/gates/evidenceGate.ts",
+    "src/hooks/gates/governanceFilesGate.ts",
+    "src/hooks/gates/noConceptNote.ts",
+    "tests/hooks/attestGate.test.ts",
+    "tests/hooks/evidenceGate.test.ts",
+    "tests/hooks/governanceFiles.test.ts",
+    "tests/hooks/noConceptNote.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -262,7 +278,9 @@
     "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts",
     "src/hooks/gates/testScopeGate.ts",
-    "src/hooks/sessionStart.ts"
+    "src/hooks/sessionStart.ts",
+    "src/hooks/command/recordCommands.ts",
+    "tests/hooks/recordCommands.test.ts"
   ],
   "drift-reconcile": [
     "src/drift/detect.ts",
@@ -291,7 +309,11 @@
     "tests/schema/alignment.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "tests/hooks/commitFiles.test.ts",
-    "tests/hooks/commitGate.test.ts"
+    "tests/hooks/commitGate.test.ts",
+    "src/hooks/command/recordCommands.ts",
+    "tests/hooks/recordCommands.test.ts",
+    "src/hooks/gates/governanceFilesGate.ts",
+    "tests/mapping/leadingComment.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
@@ -356,7 +378,9 @@
   "human-owns-contract": [
     "tests/cli/cli.test.ts",
     "tests/store/conceptStore.test.ts",
-    "tests/viewer/serve.test.ts"
+    "tests/viewer/serve.test.ts",
+    "src/hooks/gates/governanceFilesGate.ts",
+    "tests/hooks/governanceFiles.test.ts"
   ],
   "list-filter": [
     "tests/viewer/listLayout.test.ts",

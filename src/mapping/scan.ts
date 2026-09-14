@@ -4,7 +4,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { z } from 'zod';
 import { cpPaths } from '../paths.js';
-import { leadingCommentBlock } from './leadingComment.js';
+import { leadingCommentBlock, hasCodeAfterLeadingComment } from './leadingComment.js';
 import { matchesAny } from '../util/glob.js';
 
 export type Mapping = Record<string, string[]>;
@@ -20,10 +20,17 @@ export const NO_CONCEPT_TAG = 'none';
 // 기존 호출부(auditIntegrity 등, 이미 대상 파일이 확정된 경우)는 그대로 동작한다.
 // findConceptlessFiles가 이미 하는 방식을 매핑 스캔에도 그대로 적용해, docs/conceptpowers/**
 // 같은 플러그인 생성물이 매핑 캐시(개념→코드)에 섞여 들어가지 않게 한다.
+// requireCode: 첫머리 표식만 있고 코드가 없는 파일은 세지 않는다 — 커밋에 "코드가 따라왔다"·
+// "검사가 따라왔다"를 판정할 때 쓴다(지도 만들기에서는 표식만 있는 파일도 연결로 남긴다).
+export interface ScanTagsOptions {
+  requireCode?: boolean;
+}
+
 export async function scanTags(
   root: string,
   files: string[],
-  ignoreGlobs: string[] = []
+  ignoreGlobs: string[] = [],
+  opts: ScanTagsOptions = {}
 ): Promise<Record<string, string[]>> {
   const result: Record<string, string[]> = {};
   for (const rel of files) {
@@ -34,6 +41,7 @@ export async function scanTags(
     } catch {
       continue;
     }
+    if (opts.requireCode && !hasCodeAfterLeadingComment(content)) continue;
     const slugs: string[] = [];
     for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]); // 예약 마커는 개념 목록에서 제외
@@ -46,9 +54,10 @@ export async function scanTags(
 export async function buildMapping(
   root: string,
   files: string[],
-  ignoreGlobs: string[] = []
+  ignoreGlobs: string[] = [],
+  opts: ScanTagsOptions = {}
 ): Promise<Mapping> {
-  const tags = await scanTags(root, files, ignoreGlobs);
+  const tags = await scanTags(root, files, ignoreGlobs, opts);
   const mapping: Mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
     for (const slug of slugs) mapping[slug] = [...(mapping[slug] ?? []), file];

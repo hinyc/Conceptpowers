@@ -4508,7 +4508,7 @@ async function setConceptStatus(root, slug3, status) {
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared all`
       );
     }
   }

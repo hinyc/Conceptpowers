@@ -12,6 +12,8 @@
 //    기록은 효력을 잃는다" → 옛 지문의 기록으로는 통과하지 못한다
 //  - concept-driven-tests 정의 "이 동작은 시작 설정의 스위치로 끌 수 있다"
 //    → conceptDrivenTests: false면 문지기가 아무 말도 하지 않는다
+//  - concept-driven-tests 불변 "표식만 있고 검사 내용이 없는 파일은 딸린 검사로 세지 않는다"
+//    → 이름표만 단 빈 검사 파일로는 통과하지 못한다
 //  - concept-driven-tests 구성요소 "검사 파일 판별 규칙 … 시작 설정에 적으며, 적지 않으면 흔히
 //    쓰는 기본 규칙을 쓴다" → 설정에 적은 규칙으로 검사 파일을 가려낸다
 //  - 새로 만든 검사(아직 지도에 없는 파일)도 개념 이름표가 그 개념을 가리키면 따라온 것으로 본다 —
@@ -92,6 +94,15 @@ describe('concept-test-follow 문지기', () => {
     await touch('tests/pay.refund.test.ts', '// @concept:pay-rule\n');
     await makeDrift(['src/pay.ts']);
     expect(await checkTestFollow(await input(['tests/pay.refund.test.ts']))).toBeNull();
+  });
+
+  it('이름표만 있고 검사 내용이 없는 파일은 딸린 검사로 세지 않는다 [규칙: 표식만 있고 검사 내용이 없는 파일은 세지 않는다]', async () => {
+    await touch('src/pay.ts');
+    await touch('tests/pay.hollow.test.ts', '// @concept:pay-rule\n\n');
+    await makeDrift(['src/pay.ts']);
+    const f = await checkTestFollow(await input(['src/pay.ts', 'tests/pay.hollow.test.ts']));
+    expect(f?.gate).toBe('concept-test-follow');
+    expect(f?.reason).toContain('pay-rule');
   });
 
   it('신선한 검토 기록이 있으면 검사가 안 와도 통과한다 [규칙: 사유를 기록으로 남기면 넘어간다]', async () => {

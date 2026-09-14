@@ -11,7 +11,13 @@ import type { CommitPlan } from './commitPlan.js';
 const execFileAsync = promisify(execFile);
 // 대형 커밋(수천 파일)에서도 잘리지 않도록 execFile 기본 1MB를 넉넉히 늘린다.
 const MAX_BUFFER = 64 * 1024 * 1024;
-const NAME_ARGS = ['--name-only', '-z', '--diff-filter=ACMR'];
+// --no-renames: 이름 바꾸기를 옛 경로 삭제 + 새 경로 추가로 센다 — 이름 바꾸기로 삭제 확인을 피하지 못하게.
+const nameArgs = (filter: string) => [
+  '--name-only',
+  '-z',
+  '--no-renames',
+  `--diff-filter=${filter}`,
+];
 
 export type CommitTarget = Extract<CommitPlan, { kind: 'commit' }>;
 
@@ -36,8 +42,9 @@ async function gitNames(cwd: string, args: string[], what: string): Promise<stri
 
 const union = (a: string[], b: string[]) => [...new Set([...a, ...b])];
 
-export async function resolveCommitFiles(root: string, plan: CommitTarget): Promise<string[]> {
+async function resolveFiles(root: string, plan: CommitTarget, filter: string): Promise<string[]> {
   const cwd = plan.cwd ? resolve(root, plan.cwd) : root;
+  const NAME_ARGS = nameArgs(filter);
   const staged = () => gitNames(cwd, ['diff', '--cached', ...NAME_ARGS], '스테이징 목록');
   const unstaged = (paths: string[]) =>
     gitNames(
@@ -61,6 +68,16 @@ export async function resolveCommitFiles(root: string, plan: CommitTarget): Prom
         '지정 경로의 변경 목록'
       );
   }
+}
+
+// 커밋에 들어갈 추가·수정·이름변경 파일(ACMR) — 문지기 검사의 대상.
+export async function resolveCommitFiles(root: string, plan: CommitTarget): Promise<string[]> {
+  return resolveFiles(root, plan, 'ACMR');
+}
+
+// 커밋으로 삭제되는 파일(D) — 개념 문서 삭제 확인에 쓴다. 같은 범위 규칙을 따른다.
+export async function resolveDeletedFiles(root: string, plan: CommitTarget): Promise<string[]> {
+  return resolveFiles(root, plan, 'D');
 }
 
 // git alias 조회기 — 모르는 하위 명령일 때만 불린다. 조회 실패·없음은 null(커밋 아님으로 본다).

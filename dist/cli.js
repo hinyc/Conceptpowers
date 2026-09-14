@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile21 } from "node:fs/promises";
-import { dirname as dirname5 } from "node:path";
+import { readFile as readFile21, stat as stat6 } from "node:fs/promises";
+import { dirname as dirname5, isAbsolute as isAbsolute3, join as join21, relative as relative4, resolve as resolve2 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
@@ -7822,7 +7822,7 @@ async function setConceptStatus(root, slug3, status) {
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared all`
       );
     }
   }
@@ -7985,6 +7985,12 @@ function leadingCommentBlock(content) {
   }
   return kept.join("\n");
 }
+var TRIVIAL_LINE = /^\s*(?:[;{}()[\],]*|export\s*\{\s*\}\s*;?|pass|\.\.\.|\/\/.*|#.*|\/\*.*\*\/)\s*$/;
+var DOC_STRING = /("""|''')[\s\S]*?\1/g;
+function hasCodeAfterLeadingComment(content) {
+  const rest2 = content.slice(leadingCommentBlock(content).length).replace(DOC_STRING, "");
+  return rest2.split("\n").some((line) => !TRIVIAL_LINE.test(line));
+}
 
 // src/drift/safe.ts
 function normalizeRel(p) {
@@ -8026,7 +8032,7 @@ function matchesAny(path, globs) {
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
-async function scanTags(root, files, ignoreGlobs = []) {
+async function scanTags(root, files, ignoreGlobs = [], opts = {}) {
   const result = {};
   for (const rel of files) {
     if (matchesAny(rel, ignoreGlobs)) continue;
@@ -8036,6 +8042,7 @@ async function scanTags(root, files, ignoreGlobs = []) {
     } catch {
       continue;
     }
+    if (opts.requireCode && !hasCodeAfterLeadingComment(content)) continue;
     const slugs = [];
     for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]);
@@ -8044,8 +8051,8 @@ async function scanTags(root, files, ignoreGlobs = []) {
   }
   return result;
 }
-async function buildMapping(root, files, ignoreGlobs = []) {
-  const tags = await scanTags(root, files, ignoreGlobs);
+async function buildMapping(root, files, ignoreGlobs = [], opts = {}) {
+  const tags = await scanTags(root, files, ignoreGlobs, opts);
   const mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
     for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
@@ -8851,6 +8858,31 @@ async function noteChange(root, slug3, reason, at) {
   return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
 }
 
+// src/concept/attestScope.ts
+var COMPARED_ALL = "all";
+function resolveComparedScope(slug3, requested, knownSlugs) {
+  const others = knownSlugs.filter((s) => s !== slug3);
+  if (requested.includes(slug3)) {
+    throw new Error(
+      `--compared\uC5D0 \uC790\uAE30 \uC790\uC2E0(${slug3})\uC740 \uB123\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC815\uD569\uC131 \uAC80\uC0AC\uB294 \uB2E4\uB978 \uAC1C\uB150\uACFC \uACAC\uC8FC\uB294 \uAC83\uC785\uB2C8\uB2E4`
+    );
+  }
+  const known = new Set(knownSlugs);
+  const unknown = requested.filter((s) => s !== COMPARED_ALL && !known.has(s));
+  if (unknown.length > 0) {
+    throw new Error(`--compared has unknown concept slug(s): ${unknown.join(", ")}`);
+  }
+  if (requested.includes(COMPARED_ALL)) return [...others];
+  const requestedSet = new Set(requested);
+  const missing = others.filter((s) => !requestedSet.has(s));
+  if (missing.length > 0) {
+    throw new Error(
+      `--compared \uBC94\uC704\uAC00 \uC881\uC2B5\uB2C8\uB2E4 \u2014 \uACAC\uC8FC\uC9C0 \uC54A\uC740 \uAC1C\uB150: ${missing.join(", ")}. \uC815\uD569\uC131 \uAC80\uC0AC\uB294 \uADF8\uB54C \uC788\uB294 \uB2E4\uB978 \uBAA8\uB4E0 \uAC1C\uB150\uACFC \uACAC\uC90D\uB2C8\uB2E4(--compared all \uB85C \uC804\uBD80\uB97C \uC9C0\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4)`
+    );
+  }
+  return [...new Set(requested)];
+}
+
 // src/concept/testReview.ts
 import { readFile as readFile17 } from "node:fs/promises";
 async function readTestReviewLog(root) {
@@ -9063,13 +9095,13 @@ async function listRepo(root, files) {
 async function listExternal(check, aliases, limit) {
   const { raw, resolved } = check;
   const base = canonicalPath(resolved, aliases);
-  let isFile;
+  let isFile2;
   try {
-    isFile = (await stat4(resolved)).isFile();
+    isFile2 = (await stat4(resolved)).isFile();
   } catch {
     return { targets: [], base, outcome: "unreachable" };
   }
-  if (isFile) {
+  if (isFile2) {
     const s = await statUsableFile(resolved);
     return { targets: s ? [target(base, resolved, "external", raw, s)] : [], base, outcome: "ok" };
   }
@@ -9335,6 +9367,13 @@ async function diffReference(root, mode = "full", inputs = {}) {
 }
 
 // src/cli.ts
+var isFile = async (p) => {
+  try {
+    return (await stat6(p)).isFile();
+  } catch {
+    return false;
+  }
+};
 function viewerHint() {
   return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
 }
@@ -9561,23 +9600,21 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   program2.command("reference-diff").description("\uCC38\uACE0\uC790\uB8CC \uBCC0\uACBD \uD655\uC778 \u2014 \uAE30\uC900\uC810\uACFC \uACAC\uC918 \uCD94\uAC00\xB7\uBCC0\uACBD\xB7\uC0AD\uC81C\uC640 \uC601\uD5A5 \uAC1C\uB150\uC744 \uBC18\uD658").option("--quick", "\uD06C\uAE30\xB7\uC218\uC815\uC2DC\uAC01\uC774 \uAC19\uC740 \uD30C\uC77C\uC740 \uD574\uC2DC\uD558\uC9C0 \uC54A\uC74C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
     out(JSON.stringify(await diffReference(o.root, o.quick ? "quick" : "full")));
   });
-  program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").requiredOption("--compared <slugs>", "\uBE44\uAD50\uD55C \uB300\uC0C1 \uAC1C\uB150 slug \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84)").option("--note <text>", "\uD310\uB2E8 \uC694\uC57D").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+  program2.command("attest-consistency").description("check-consistency \uC2E4\uD589 \uACB0\uACFC\uB97C \uACC4\uC57D \uD574\uC2DC\uC5D0 \uBB36\uC5B4 \uAE30\uB85D (\uC99D\uBE59)").argument("<slug>").requiredOption("--result <result>", "pass|conflict").requiredOption(
+    "--compared <slugs>",
+    "\uBE44\uAD50\uD55C \uB300\uC0C1 \uAC1C\uB150 slug \uBAA9\uB85D (\uC27C\uD45C \uAD6C\uBD84) \u2014 \uB2E4\uB978 \uAC1C\uB150 \uC804\uBD80\uC5EC\uC57C \uD558\uBA70 all \uB85C \uC804\uBD80\uB97C \uC9C0\uC815\uD560 \uC218 \uC788\uB2E4"
+  ).option("--note <text>", "\uD310\uB2E8 \uC694\uC57D").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
     if (o.result !== "pass" && o.result !== "conflict") {
       throw new Error(`--result must be pass|conflict, got: ${o.result}`);
     }
     const concept = await readConcept(o.root, slug3);
     if (!concept) throw new Error(`Concept not found: ${slug3}`);
-    const compared = o.compared.split(",").map((s) => s.trim()).filter(Boolean);
-    if (compared.length === 0) {
-      throw new Error("--compared must list at least one concept slug");
+    const requested = o.compared.split(",").map((s) => s.trim()).filter(Boolean);
+    if (requested.length === 0) {
+      throw new Error('--compared must list at least one concept slug (or "all")');
     }
-    const missing = [];
-    for (const s of compared) {
-      if (s !== slug3 && !await readConcept(o.root, s)) missing.push(s);
-    }
-    if (missing.length > 0) {
-      throw new Error(`--compared has unknown concept slug(s): ${missing.join(", ")}`);
-    }
+    const knownSlugs = (await listConcepts(o.root)).map((c) => c.slug);
+    const compared = resolveComparedScope(slug3, requested, knownSlugs);
     const entry = await recordAttest(o.root, concept, o.result, {
       compared,
       note: o.note
@@ -9594,6 +9631,19 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const tests = (o.tests ?? "").split(",").map((s) => s.trim()).filter(Boolean);
     if (o.result === "updated" && tests.length === 0) {
       throw new Error("--tests must list at least one test file when --result updated");
+    }
+    const testGlobs = (await readInitConfig(o.root))?.testGlobs ?? [];
+    const invalid = [];
+    for (const t of tests) {
+      const rel = normalizeRel(relative4(resolve2(o.root), resolve2(o.root, t)));
+      const inside = rel !== "" && rel !== ".." && !rel.startsWith("../") && !isAbsolute3(rel);
+      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join21(o.root, rel));
+      if (!ok) invalid.push(t);
+    }
+    if (invalid.length > 0) {
+      throw new Error(
+        `--tests\uC5D0 \uD504\uB85C\uC81D\uD2B8 \uC548\uC758 \uC2E4\uC81C \uAC80\uC0AC \uD30C\uC77C\uC774 \uC544\uB2CC \uACBD\uB85C\uAC00 \uC788\uC2B5\uB2C8\uB2E4: ${invalid.join(", ")}`
+      );
     }
     if (o.result !== "updated" && !o.note) {
       throw new Error(`--note is required when --result ${o.result}`);

@@ -1,7 +1,7 @@
 // @concept:init-gate @concept:plugin-version-sync @concept:governance-mode
 import { Command } from 'commander';
-import { readFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { readFile, stat } from 'node:fs/promises';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
 import { syncIfStale, checkStale, findPluginRoot } from './version/autoSync.js';
@@ -26,6 +26,7 @@ import { setPendingConflict, clearPendingConflict } from './concept/pendingConfl
 import { readConcept, listConcepts, editConceptContent } from './store/conceptStore.js';
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
+import { resolveComparedScope } from './concept/attestScope.js';
 import { recordTestReview } from './concept/testReview.js';
 import { recordNoCode } from './drift/noCode.js';
 import { listReferenceFiles } from './init/reference.js';
@@ -34,6 +35,15 @@ import { addReferencePath } from './init/addReferencePath.js';
 import { snapshotReference } from './reference/lock.js';
 import { diffReference } from './reference/diff.js';
 import { CP_REL } from './paths.js';
+import { normalizeRel } from './drift/safe.js';
+
+const isFile = async (p: string): Promise<boolean> => {
+  try {
+    return (await stat(p)).isFile();
+  } catch {
+    return false;
+  }
+};
 
 type Out = (s: string) => void;
 
@@ -410,7 +420,10 @@ export async function runCli(
     .description('check-consistency 실행 결과를 계약 해시에 묶어 기록 (증빙)')
     .argument('<slug>')
     .requiredOption('--result <result>', 'pass|conflict')
-    .requiredOption('--compared <slugs>', '비교한 대상 개념 slug 목록 (쉼표 구분)')
+    .requiredOption(
+      '--compared <slugs>',
+      '비교한 대상 개념 slug 목록 (쉼표 구분) — 다른 개념 전부여야 하며 all 로 전부를 지정할 수 있다'
+    )
     .option('--note <text>', '판단 요약')
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (slug, o) => {
@@ -419,20 +432,16 @@ export async function runCli(
       }
       const concept = await readConcept(o.root, slug);
       if (!concept) throw new Error(`Concept not found: ${slug}`);
-      const compared = (o.compared as string)
+      const requested = (o.compared as string)
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
-      if (compared.length === 0) {
-        throw new Error('--compared must list at least one concept slug');
+      if (requested.length === 0) {
+        throw new Error('--compared must list at least one concept slug (or "all")');
       }
-      const missing: string[] = [];
-      for (const s of compared) {
-        if (s !== slug && !(await readConcept(o.root, s))) missing.push(s);
-      }
-      if (missing.length > 0) {
-        throw new Error(`--compared has unknown concept slug(s): ${missing.join(', ')}`);
-      }
+      // 증빙은 자기 자신이 아닌, 그때 있는 다른 모든 개념과 견준 기록이어야 한다(settled-status).
+      const knownSlugs = (await listConcepts(o.root)).map((c) => c.slug);
+      const compared = resolveComparedScope(slug, requested, knownSlugs);
       const entry = await recordAttest(o.root, concept, o.result, {
         compared,
         note: o.note,
@@ -461,6 +470,21 @@ export async function runCli(
         .filter(Boolean);
       if (o.result === 'updated' && tests.length === 0) {
         throw new Error('--tests must list at least one test file when --result updated');
+      }
+      // 고쳤다는 검사는 실제로 있어야 한다 — 없는 파일을 고쳤다고 적은 기록은 증빙이 아니다.
+      // 프로젝트 안에 있고 검사 파일 규칙(testGlobs)에 맞는 실제 파일이어야 한다.
+      const testGlobs = (await readInitConfig(o.root))?.testGlobs ?? [];
+      const invalid: string[] = [];
+      for (const t of tests) {
+        const rel = normalizeRel(relative(resolve(o.root), resolve(o.root, t)));
+        const inside = rel !== '' && rel !== '..' && !rel.startsWith('../') && !isAbsolute(rel);
+        const ok = inside && matchesAny(rel, testGlobs) && (await isFile(join(o.root, rel)));
+        if (!ok) invalid.push(t);
+      }
+      if (invalid.length > 0) {
+        throw new Error(
+          `--tests에 프로젝트 안의 실제 검사 파일이 아닌 경로가 있습니다: ${invalid.join(', ')}`
+        );
       }
       // 검사를 고치지 않기로 한 판단은 근거 없이 남길 수 없다 — 기록의 목적이 사유 보존이다.
       if (o.result !== 'updated' && !o.note) {

@@ -104,7 +104,7 @@ describe('strict 모드 (차단)', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('reference');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('계약서.md');
   });
-  it('참조 문서만 있고(위반 없음) 게이트 하나가 실행 중 실패하면, ask하되 실패한 게이트를 알린다 [규칙: 실행 실패는 findings가 비어 있어도 조용히 묻히지 않는다]', async () => {
+  it('참조 문서만 있고(위반 없음) 게이트 하나가 실행 중 실패하면, 검사하지 못한 커밋이므로 막고 실패한 게이트와 참조 문서를 함께 알린다 [규칙: 확정할 수 없으면 검사를 마친 것처럼 통과시키지 않고 강도에 맞춰 대응한다]', async () => {
     // GOVERNANCE_GATES의 어떤 검사도 정상 fixture로는 throw하지 않는다(모두 내부에서
     // best-effort로 스스로 catch하거나, 이미 계산된 report에 대한 순수 동기 접근이다) —
     // 그래서 이 시나리오는 실제 예외 상황을 재현할 프로덕션 쪽 테스트 훅이 없고, 대신
@@ -127,10 +127,36 @@ describe('strict 모드 (차단)', () => {
         root,
         commitEvent(['docs/conceptpowers/reference/계약서.md'])
       );
-      expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
       expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('reference');
-      expect(r!.hookSpecificOutput.additionalContext).toContain('실행 실패');
-      expect(r!.hookSpecificOutput.additionalContext).toContain('unknown-tags');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('unknown-tags');
+    } finally {
+      vi.doUnmock('../../src/hooks/gates/unknownTagsGate.js');
+      vi.resetModules();
+    }
+  });
+});
+
+describe('검사 실행 실패 (standard)', () => {
+  it('게이트 하나가 실패해도 뒤 게이트를 계속 돌리고, 위반이 없으면 검사하지 못한 커밋으로 묻는다 [규칙: 확정할 수 없으면 강도에 맞춰 대응한다]', async () => {
+    setEnforcement(root, 'standard');
+    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n'); // 개념 없는 코드(뒤 게이트)
+    vi.resetModules();
+    vi.doMock('../../src/hooks/gates/unknownTagsGate.js', () => ({
+      checkUnknownTags: async () => {
+        throw new Error('시뮬레이션: 게이트 실행 실패');
+      },
+    }));
+    try {
+      const { decidePreToolUse: decideWithThrowingGate } =
+        await import('../../src/hooks/preToolUse.js');
+      const withViolation = await decideWithThrowingGate(root, commitEvent(['src/foo.ts']));
+      expect(withViolation!.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(withViolation!.hookSpecificOutput.permissionDecisionReason).toContain('foo.ts');
+      expect(withViolation!.hookSpecificOutput.additionalContext).toContain('unknown-tags');
+      const clean = await decideWithThrowingGate(root, commitEvent([]));
+      expect(clean!.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(clean!.hookSpecificOutput.permissionDecisionReason).toContain('unknown-tags');
     } finally {
       vi.doUnmock('../../src/hooks/gates/unknownTagsGate.js');
       vi.resetModules();

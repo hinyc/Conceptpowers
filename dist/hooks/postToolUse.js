@@ -4507,6 +4507,12 @@ function leadingCommentBlock(content) {
   }
   return kept.join("\n");
 }
+var TRIVIAL_LINE = /^\s*(?:[;{}()[\],]*|export\s*\{\s*\}\s*;?|pass|\.\.\.|\/\/.*|#.*|\/\*.*\*\/)\s*$/;
+var DOC_STRING = /("""|''')[\s\S]*?\1/g;
+function hasCodeAfterLeadingComment(content) {
+  const rest = content.slice(leadingCommentBlock(content).length).replace(DOC_STRING, "");
+  return rest.split("\n").some((line) => !TRIVIAL_LINE.test(line));
+}
 
 // src/drift/safe.ts
 function normalizeRel(p) {
@@ -4548,7 +4554,7 @@ function matchesAny(path, globs) {
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 var TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 var NO_CONCEPT_TAG = "none";
-async function scanTags(root, files, ignoreGlobs = []) {
+async function scanTags(root, files, ignoreGlobs = [], opts = {}) {
   const result = {};
   for (const rel of files) {
     if (matchesAny(rel, ignoreGlobs)) continue;
@@ -4558,6 +4564,7 @@ async function scanTags(root, files, ignoreGlobs = []) {
     } catch {
       continue;
     }
+    if (opts.requireCode && !hasCodeAfterLeadingComment(content)) continue;
     const slugs = [];
     for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
       if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]);
@@ -4566,8 +4573,8 @@ async function scanTags(root, files, ignoreGlobs = []) {
   }
   return result;
 }
-async function buildMapping(root, files, ignoreGlobs = []) {
-  const tags = await scanTags(root, files, ignoreGlobs);
+async function buildMapping(root, files, ignoreGlobs = [], opts = {}) {
+  const tags = await scanTags(root, files, ignoreGlobs, opts);
   const mapping = {};
   for (const [file, slugs] of Object.entries(tags)) {
     for (const slug3 of slugs) mapping[slug3] = [...mapping[slug3] ?? [], file];
@@ -4731,7 +4738,7 @@ function isFollowed(relatedPaths, present) {
 async function presentTagSlugs(root, present, ignoreGlobs) {
   try {
     const files = [...present].map(normalizeRel).filter(isCodeFile);
-    const mapping = await buildMapping(root, files, ignoreGlobs);
+    const mapping = await buildMapping(root, files, ignoreGlobs, { requireCode: true });
     return new Set(Object.keys(mapping));
   } catch {
     return /* @__PURE__ */ new Set();

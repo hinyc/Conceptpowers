@@ -6,12 +6,12 @@
 //    남겨 통과시키는 것" → updated/no-impact/no-tests 기록이 저장된다
 //  - concept-driven-tests 불변 "검사를 함께 고쳤거나, 고칠 필요가 없다는 사유를 기록으로 남겼거나"
 //    → 고치지 않기로 한 판단(no-impact·no-tests)은 --note 없이 기록할 수 없다
-//    → 고쳤다(updated)는 기록은 어떤 검사를 고쳤는지 --tests 없이 남길 수 없다
+//    → 고쳤다(updated)는 기록은 어떤 검사를 고쳤는지 --tests 없이 남길 수 없고, 없는 파일·프로젝트 밖 파일·검사가 아닌 파일을 적을 수도 없다
 //  - 상위 기준 문서 "갈아 끼우기 방식"의 불변 "실패를 감추지 않는다" → 상한을 넘는 --note는 exit 1이고 기존
 //    기록이 훼손되지 않는다
 //  - "없는 slug·잘못된 --result는 exit 1"은 존재하지 않는 대상에 대한 방어다.
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '../../src/cli.js';
@@ -43,6 +43,9 @@ describe('cli: attest-test-review', () => {
   });
 
   it('검사를 고쳤다는 기록이 저장된다 [규칙: 검사를 함께 고쳤거나]', async () => {
+    await mkdir(join(root, 'tests'), { recursive: true });
+    await writeFile(join(root, 'tests/pay.test.ts'), '// @concept:cli-target\nexport {};\n');
+    await writeFile(join(root, 'tests/refund.test.ts'), '// @concept:cli-target\nexport {};\n');
     const code = await runCli(
       [
         'attest-test-review',
@@ -165,5 +168,38 @@ describe('cli: attest-test-review', () => {
     );
     expect(code).toBe(1);
     expect((await readTestReviewLog(root))['cli-target'].note).toBe('첫 기록');
+  });
+
+  it('고쳤다는 기록의 검사 경로는 실제로 있어야 한다 — 없는 파일을 고쳤다고 적을 수 없다', async () => {
+    const code = await runCli(
+      [
+        'attest-test-review',
+        'cli-target',
+        '--result',
+        'updated',
+        '--tests',
+        'tests/ghost.test.ts',
+        '--root',
+        root,
+      ],
+      out
+    );
+    expect(code).toBe(1);
+    expect(JSON.parse(output).error).toContain('tests/ghost.test.ts');
+    expect(await readTestReviewLog(root)).toEqual({});
+  });
+
+  it('고쳤다는 기록에 프로젝트 밖이나 검사가 아닌 파일은 적을 수 없다', async () => {
+    await writeFile(join(root, 'package.json'), '{}');
+    for (const bad of ['package.json', '../outside.test.ts']) {
+      output = '';
+      const code = await runCli(
+        ['attest-test-review', 'cli-target', '--result', 'updated', '--tests', bad, '--root', root],
+        out
+      );
+      expect(code, bad).toBe(1);
+      expect(JSON.parse(output).error).toContain(bad);
+    }
+    expect(await readTestReviewLog(root)).toEqual({});
   });
 });

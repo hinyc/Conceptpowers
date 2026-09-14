@@ -95,3 +95,17 @@ export function leadingCommentBlock(content: string): string {
 
   return kept.join('\n');
 }
+
+// 첫머리 주석 블록 뒤에 실제 코드가 한 글자라도 있는가. 표식만 달린 빈 파일을 "코드가 따라왔다"거나
+// "검사가 따라왔다"로 세지 않기 위한 판정이다(drift-reconcile·concept-driven-tests). leadingCommentBlock은
+// 항상 내용의 접두 부분을 그대로 돌려주므로, 그 뒤 나머지에 공백 아닌 글자가 있으면 코드다.
+// 구두점·빈 괄호·빈 내보내기·자리표시 문장·뒤따르는 주석만 있는 줄과 문서 문자열은 코드로 치지 않는다 —
+// 표식 뒤에 ';' 한 글자를 붙여 "코드가 따라왔다"를 만들 수 없게 한다. 형식적인 코드 한 줄까지 가려내지는 못한다.
+const TRIVIAL_LINE =
+  /^\s*(?:[;{}()[\],]*|export\s*\{\s*\}\s*;?|pass|\.\.\.|\/\/.*|#.*|\/\*.*\*\/)\s*$/;
+const DOC_STRING = /("""|''')[\s\S]*?\1/g;
+
+export function hasCodeAfterLeadingComment(content: string): boolean {
+  const rest = content.slice(leadingCommentBlock(content).length).replace(DOC_STRING, '');
+  return rest.split('\n').some((line) => !TRIVIAL_LINE.test(line));
+}

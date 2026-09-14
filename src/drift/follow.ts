@@ -21,6 +21,8 @@ export function isFollowed(relatedPaths: readonly string[], present: ReadonlySet
 // 스캔 전반과 같은 잣대). ignoreGlobs로 생성물(dist/** 등)의 태그 사본도 세지 않는다.
 // 스캔은 커밋될 blob이 아니라 워킹트리 현재 내용을 읽는다 — 문지기와 결산이 같은 기준을
 // 쓰므로 잣대는 갈리지 않는다. 실패하면 빈 집합 — 조용히 열리는 대신 물어보는 쪽으로 기운다.
+// 표식만 있고 코드가 없는 파일은 세지 않는다(drift-reconcile 불변) — 빈 파일에 표식 한 줄로
+// "코드가 따라왔다"를 만들 수 없다.
 export async function presentTagSlugs(
   root: string,
   present: Iterable<string>,
@@ -28,7 +30,7 @@ export async function presentTagSlugs(
 ): Promise<ReadonlySet<string>> {
   try {
     const files = [...present].map(normalizeRel).filter(isCodeFile);
-    const mapping = await buildMapping(root, files, ignoreGlobs);
+    const mapping = await buildMapping(root, files, ignoreGlobs, { requireCode: true });
     return new Set(Object.keys(mapping));
   } catch {
     return new Set();
