@@ -2451,5 +2451,16 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "3:fa21cc7e8452",
+    "prevHash": "3:fa21cc7e8452",
+    "reason": "통과 응답이 permissionDecision 'allow'로 사람의 권한 확인을 건너뛰게 해, 'git commit' 글자만 섞인 복합 명령이 자동 승인되는 통로가 됨 — 통과는 실행 허락이 아니라는 규칙 추가 (사용자 승인, 레드팀 G2)",
+    "at": "2026-09-14T13:15:13.904Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
