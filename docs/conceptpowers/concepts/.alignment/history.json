@@ -2825,5 +2825,16 @@
     "aligned": true,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "concept-provenance",
+    "hash": "3:c73c30597e37",
+    "prevHash": "3:ff307e04b551",
+    "reason": "",
+    "at": "2026-09-14T22:25:01.153Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
