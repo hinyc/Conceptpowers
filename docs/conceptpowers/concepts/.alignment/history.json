@@ -2407,5 +2407,16 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "3:0d9c99edb8ba",
+    "prevHash": "3:0d9c99edb8ba",
+    "reason": "update-concepts 분할로 편집·승인 흐름 본문이 references/edit.md·settle.md로 옮겨져 코드 연결 보강 — 약속 칸 변경 없음, 사용자 승인 2026-09-14",
+    "at": "2026-09-14T12:21:40.190Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]

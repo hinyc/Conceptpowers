@@ -276,6 +276,8 @@
         "skills/update-concepts/references/define.md",
         "skills/update-concepts/SKILL.md",
         "skills/auto/SKILL.md",
+        "skills/update-concepts/references/edit.md",
+        "skills/update-concepts/references/settle.md",
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts"
@@ -1773,6 +1775,20 @@
         "type": "file",
         "href": "",
         "title": "skills/auto/SKILL.md"
+      },
+      {
+        "id": "p:skills/update-concepts/references/edit.md",
+        "label": "edit.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-concepts/references/edit.md"
+      },
+      {
+        "id": "p:skills/update-concepts/references/settle.md",
+        "label": "settle.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-concepts/references/settle.md"
       },
       {
         "id": "p:tests/viewer/serve.test.ts",
@@ -3295,6 +3311,16 @@
       },
       {
         "source": "c:human-owns-contract",
+        "target": "p:skills/update-concepts/references/edit.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:skills/update-concepts/references/settle.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -4335,5 +4361,5 @@
       }
     ]
   },
-  "generatorVersion": "1.14.1"
+  "generatorVersion": "1.14.2"
 }
