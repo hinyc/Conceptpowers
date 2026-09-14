@@ -114,6 +114,15 @@ codex plugin add conceptpowers@conceptpowers-dev   # install the plugin
 
 Codex does not run plugin hooks until you trust them: open Codex, run `/hooks`, and trust the Conceptpowers hooks — without this the commit gate and session rules stay off. Then enable it per project exactly as above (the `init` skill). To update: `codex plugin marketplace upgrade`, then re-run `codex plugin add conceptpowers@conceptpowers-dev` (re-trust in `/hooks` if the hook definition changed).
 
+**Differences from the Claude Code build** (developer marketplace — expect rough edges):
+
+- **Hooks run unchanged.** Codex passes `CLAUDE_PLUGIN_ROOT` (alongside `PLUGIN_ROOT`) and accepts the same `Bash` / `Edit|Write` matchers, so the engine needs no Codex-specific code.
+- **The commit gate works the same.** It fires on `Bash` commands containing `git commit`.
+- **Edit-time hints are less precise.** Codex reports file edits as `apply_patch` with a patch body instead of a `file_path`, so the pre-edit reminder cannot always tell which file is being changed.
+- **Skill text still uses Claude Code notation** such as `/conceptpowers:init`. In Codex, invoke the skill by name (e.g. `init`) or describe the task in plain words.
+
+> **Maintainers (Codex):** the marketplace entry must use `"source": { "source": "url", "url": "./" }`. A `"local"` source pointing at the repository root (`"./"` or `"."`) makes Codex report `plugin not found`. The `url` form resolves against the Git snapshot Codex clones when the marketplace is added from GitHub. `.agents/plugins/marketplace.json` has no `version` field; the version Codex installs comes from `.codex-plugin/plugin.json`, which `pnpm release` keeps in sync.
+
 > **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
 
 ### Version check notifications

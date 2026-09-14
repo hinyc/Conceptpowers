@@ -114,6 +114,15 @@ codex plugin add conceptpowers@conceptpowers-dev   # 플러그인 설치
 
 Codex는 플러그인 훅을 신뢰하기 전까지 실행하지 않는다 — Codex에서 `/hooks`를 열어 Conceptpowers 훅을 신뢰(trust)해야 커밋 게이트와 세션 규칙이 켜진다. 이후 프로젝트 활성화는 위와 같다(`init` 스킬). 업데이트는 `codex plugin marketplace upgrade` 뒤 `codex plugin add conceptpowers@conceptpowers-dev`를 다시 실행한다(훅 정의가 바뀌었으면 `/hooks`에서 다시 신뢰).
 
+**Claude Code판과 다른 점** (개발자 마켓플레이스라 다듬어지지 않은 부분이 있다):
+
+- **훅은 그대로 동작한다.** Codex가 `PLUGIN_ROOT`와 함께 `CLAUDE_PLUGIN_ROOT`도 넘겨 주고 같은 `Bash` / `Edit|Write` matcher를 받아 주므로, 엔진에 Codex 전용 코드가 필요 없다.
+- **커밋 게이트는 똑같이 동작한다.** `git commit`이 들어간 `Bash` 명령에서 걸린다.
+- **파일 수정 시점의 안내는 덜 정확하다.** Codex는 파일 수정을 `file_path` 대신 패치 본문을 담은 `apply_patch`로 알리므로, 수정 전 안내가 어느 파일을 바꾸는지 항상 알아내지는 못한다.
+- **스킬 문서에는 `/conceptpowers:init` 같은 Claude Code식 표기가 남아 있다.** Codex에서는 스킬 이름(예: `init`)으로 부르거나 하려는 일을 말로 설명하면 된다.
+
+> **메인테이너 (Codex):** 마켓플레이스 항목은 `"source": { "source": "url", "url": "./" }`여야 한다. 저장소 루트(`"./"`나 `"."`)를 가리키는 `"local"` 방식은 Codex가 `plugin not found`를 낸다. `url` 방식은 GitHub에서 마켓플레이스를 추가할 때 Codex가 받아 오는 Git 스냅샷을 기준으로 경로를 푼다. `.agents/plugins/marketplace.json`에는 `version` 필드가 없고, Codex가 설치하는 버전은 `.codex-plugin/plugin.json`에서 오며 `pnpm release`가 이를 함께 맞춘다.
+
 > **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
 
 ### 새 버전 알림 (version check)
