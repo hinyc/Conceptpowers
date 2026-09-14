@@ -278,6 +278,7 @@
         "skills/auto/SKILL.md",
         "skills/update-concepts/references/edit.md",
         "skills/update-concepts/references/settle.md",
+        "skills/update-concepts/references/upgrade.md",
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts"
@@ -388,6 +389,7 @@
         "src/concept/quality.ts",
         "src/concept/attest.ts",
         "src/concept/pendingConflicts.ts",
+        "skills/update-concepts/references/settle.md",
         "assets/viewer.js",
         "tests/audit/audit.test.ts",
         "tests/cli/cli.test.ts",
@@ -1789,6 +1791,13 @@
         "type": "file",
         "href": "",
         "title": "skills/update-concepts/references/settle.md"
+      },
+      {
+        "id": "p:skills/update-concepts/references/upgrade.md",
+        "label": "upgrade.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-concepts/references/upgrade.md"
       },
       {
         "id": "p:tests/viewer/serve.test.ts",
@@ -3321,6 +3330,11 @@
       },
       {
         "source": "c:human-owns-contract",
+        "target": "p:skills/update-concepts/references/upgrade.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
         "target": "p:tests/cli/cli.test.ts",
         "kind": "concept-file"
       },
@@ -3602,6 +3616,11 @@
       {
         "source": "c:settled-status",
         "target": "p:src/concept/pendingConflicts.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:skills/update-concepts/references/settle.md",
         "kind": "concept-file"
       },
       {

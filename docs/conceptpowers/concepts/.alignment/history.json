@@ -2418,5 +2418,27 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "human-owns-contract",
+    "hash": "3:0d9c99edb8ba",
+    "prevHash": "3:0d9c99edb8ba",
+    "reason": "references/upgrade.md의 '빈 곳을 스스로 채우지 않고 구체적으로 묻는다'가 이 개념의 허용 행동에 해당해 코드 연결 보강 — 약속 칸 변경 없음, 사용자 승인 2026-09-14",
+    "at": "2026-09-14T12:25:43.389Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "settled-status",
+    "hash": "3:40d543866df8",
+    "prevHash": "2:fc493ec574f9",
+    "reason": "references/settle.md가 red 승인·pending 정착 규칙을 담아 코드 연결 보강 — 약속 칸 변경 없음, 사용자 승인 2026-09-14",
+    "at": "2026-09-14T12:25:43.461Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]

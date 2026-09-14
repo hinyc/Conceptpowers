@@ -80,7 +80,8 @@
     "src/concept/approve.ts",
     "src/concept/quality.ts",
     "src/concept/attest.ts",
-    "src/concept/pendingConflicts.ts"
+    "src/concept/pendingConflicts.ts",
+    "skills/update-concepts/references/settle.md"
   ],
   "sources": [
     {
