@@ -196,7 +196,8 @@
     "tests/cli/referenceSync.test.ts",
     "src/init/scaffold.ts",
     "tests/init/syncGenerated.test.ts",
-    "tests/hooks/preToolUse.test.ts"
+    "tests/hooks/preToolUse.test.ts",
+    "tests/hooks/gateFailure.test.ts"
   ],
   "governance-mode": [
     "src/hooks/gates/conceptSlugs.ts",
@@ -222,7 +223,12 @@
     "src/hooks/gates/qualityGate.ts",
     "src/hooks/gates/attestGate.ts",
     "src/hooks/gates/unapprovedRedGate.ts",
-    "src/hooks/sessionStart.ts"
+    "src/hooks/sessionStart.ts",
+    "src/util/isMain.ts",
+    "tests/util/isMain.test.ts",
+    "tests/hooks/gateFailure.test.ts",
+    "src/util/exitAfterWrite.ts",
+    "tests/hooks/entrypoint.e2e.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",

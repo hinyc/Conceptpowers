@@ -49,3 +49,10 @@ export function sanitizeText(s: string, max = 200): string {
   }
   return out.replace(/\s+/g, ' ').trim().slice(0, max);
 }
+
+// 예외를 LLM 컨텍스트에 실을 한 줄로 만든다 — 프로젝트 절대경로는 상대경로로 줄이고 새니타이즈한다.
+export function describeError(error: unknown, root?: string, max = 400): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  const prefix = root ? (root.endsWith('/') ? root : `${root}/`) : '';
+  return sanitizeText(prefix ? raw.split(prefix).join('') : raw, max);
+}

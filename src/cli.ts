@@ -18,6 +18,7 @@ import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
 import { defaultIgnoreGlobs } from './schema/initConfig.js';
 import { matchesAny } from './util/glob.js';
+import { isMainModule } from './util/isMain.js';
 import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
 import { noteChange } from './drift/note.js';
@@ -493,7 +494,7 @@ export async function runCli(
   return code;
 }
 
-const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   runCli(process.argv.slice(2)).then((c) => process.exit(c));
 }

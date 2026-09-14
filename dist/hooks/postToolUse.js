@@ -4945,6 +4945,18 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   return { aligned, ignored, pruned: [...pruned] };
 }
 
+// src/util/isMain.ts
+import { realpathSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+function isMainModule(moduleUrl, argv1) {
+  if (!argv1) return false;
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argv1);
+  } catch {
+    return moduleUrl === pathToFileURL(argv1).href;
+  }
+}
+
 // src/hooks/postToolUse.ts
 var execFileAsync2 = promisify2(execFile2);
 var isGitCommit = (cmd) => !!cmd && /\bgit\s+commit\b/.test(cmd);
@@ -5026,7 +5038,7 @@ async function runPostToolUse(root, ev) {
     return null;
   }
 }
-var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = "";
   process.stdin.on("data", (c) => raw += c);

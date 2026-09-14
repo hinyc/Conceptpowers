@@ -6,6 +6,7 @@ import { isInitialized } from '../init/scaffold.js';
 import { reconcileAfterCommit, type ReconcileResult } from '../drift/reconcile.js';
 import { cpPaths } from '../paths.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
+import { isMainModule } from '../util/isMain.js';
 
 const execFileAsync = promisify(execFile);
 const isGitCommit = (cmd?: string) => !!cmd && /\bgit\s+commit\b/.test(cmd);
@@ -119,7 +120,7 @@ export async function runPostToolUse(
   }
 }
 
-const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = '';
   process.stdin.on('data', (c) => (raw += c));

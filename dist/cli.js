@@ -3050,7 +3050,7 @@ var {
 // src/cli.ts
 import { readFile as readFile21 } from "node:fs/promises";
 import { dirname as dirname5 } from "node:path";
-import { fileURLToPath as fileURLToPath2 } from "node:url";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir9, writeFile as writeFile10, access as access5 } from "node:fs/promises";
@@ -8703,6 +8703,18 @@ async function listTrackedFiles(root) {
   return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
 }
 
+// src/util/isMain.ts
+import { realpathSync } from "node:fs";
+import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
+function isMainModule(moduleUrl, argv1) {
+  if (!argv1) return false;
+  try {
+    return realpathSync(fileURLToPath2(moduleUrl)) === realpathSync(argv1);
+  } catch {
+    return moduleUrl === pathToFileURL(argv1).href;
+  }
+}
+
 // src/concept/approve.ts
 async function approveConcept(root, slug3) {
   const concept = await readConcept(root, slug3);
@@ -9341,7 +9353,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     }
     if (actionCommand.name() === "version-sync") return;
     try {
-      const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath2(import.meta.url)));
+      const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath3(import.meta.url)));
       if (!pluginRoot) return;
       const syncResult = await syncIfStale(root, pluginRoot);
       if (syncResult.synced) {
@@ -9370,7 +9382,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   program2.command("version-sync").alias("sync").description(
     "\uD50C\uB7EC\uADF8\uC778 \uBC84\uC804 \uB3D9\uAE30\uD654 \u2014 \uC0DD\uC131\uBB3C(\uBDF0\uC5B4 \uC5D0\uC14B\xB7\uC2A4\uD06C\uB9BD\uD2B8)\uC744 \uC124\uCE58 \uBC84\uC804\uC73C\uB85C \uD328\uCE58 (baseline \uBD88\uBCC0)"
   ).option("--root <dir>", "project root", process.cwd()).option("--force", "\uBC84\uC804\uC774 \uAC19\uC544\uB3C4 \uC0DD\uC131\uBB3C\uC744 \uB2E4\uC2DC \uB9CC\uB4E0\uB2E4").action(async (o) => {
-    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath2(import.meta.url)));
+    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath3(import.meta.url)));
     const state = pluginRoot ? await checkStale(o.root, pluginRoot) : { installed: null, generator: null, stale: true };
     if (!o.force && !state.stale) {
       out(
@@ -9605,7 +9617,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   }
   return code;
 }
-var isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   runCli(process.argv.slice(2)).then((c) => process.exit(c));
 }
