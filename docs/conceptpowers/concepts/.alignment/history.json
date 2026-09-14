@@ -2814,5 +2814,16 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "3:77e958c1ec0f",
+    "prevHash": "3:77e958c1ec0f",
+    "reason": "레드팀 8단계: 결산 이력을 기록마다 파일로 더해 브랜치 합칠 때 충돌 제거",
+    "at": "2026-09-14T22:20:44.934Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
