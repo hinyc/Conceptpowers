@@ -2594,5 +2594,60 @@
     "aligned": false,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "concept-code-mapping",
+    "hash": "3:ab31baedd435",
+    "prevHash": "3:ab31baedd435",
+    "reason": "레드팀 5단계: 자기신고 강화 — 증빙 범위·증빙 스테이징·거버넌스 파일 확인·빈 표식 파일·개념 없음 안내",
+    "at": "2026-09-14T18:34:23.825Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "concept-driven-tests",
+    "hash": "3:9586918a0891",
+    "prevHash": "3:9586918a0891",
+    "reason": "레드팀 5단계: 자기신고 강화 — 증빙 범위·증빙 스테이징·거버넌스 파일 확인·빈 표식 파일·개념 없음 안내",
+    "at": "2026-09-14T18:34:23.825Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "3:d272172df460",
+    "prevHash": "3:d272172df460",
+    "reason": "레드팀 5단계 리뷰 반영: 삭제·이름 바꾸기·판단 기록·검사 실패·항상 묻는 항목 병합",
+    "at": "2026-09-14T18:34:23.825Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "governance-mode",
+    "hash": "3:a1cee63f539b",
+    "prevHash": "3:a1cee63f539b",
+    "reason": "레드팀 5단계 리뷰 반영: 삭제·이름 바꾸기·판단 기록·검사 실패·항상 묻는 항목 병합",
+    "at": "2026-09-14T18:34:23.825Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
+  },
+  {
+    "slug": "settled-status",
+    "hash": "3:b74494c7eb64",
+    "prevHash": "3:b74494c7eb64",
+    "reason": "레드팀 5단계: 자기신고 강화 — 증빙 범위·증빙 스테이징·거버넌스 파일 확인·빈 표식 파일·개념 없음 안내",
+    "at": "2026-09-14T18:34:23.825Z",
+    "ignored": false,
+    "aligned": true,
+    "noCode": false,
+    "note": ""
   }
 ]
