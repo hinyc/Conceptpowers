@@ -9,14 +9,19 @@
 //    → 계산한 목록이 실제 커밋 결과(git diff-tree)와 일치한다(-a 커밋으로 대조)
 //  - governance-mode 불변 "거버넌스 설정 파일의 변경·삭제, 개념 문서나 증빙 기록의 삭제가 커밋에 들어오면 … 묻는다"
 //    → 이름 바꾸기(git mv)도 옛 경로의 삭제로 센다 — 이름 바꾸기로 삭제 확인을 피할 수 없다
+//  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
+//    → 하위 폴더 기준 상대 경로 설정(diff.relative)과 -C 하위 폴더 커밋에서도 저장소 전체 목록을 받는다
+//    → include(-i) 범위에서 경로 밖 파일은 스테이징 내용이 커밋된다 — 디스크를 지워도 커밋될 내용을 읽는다
+//    → 경로 지정 커밋은 스테이징해 둔 새 파일도 담는다(git이 담는 것과 같게)
 //  - governance-mode 불변 "… 확정할 수 없으면 검사를 마친 것처럼 통과시키지 않는다"
 //    → git이 목록을 못 읽으면 빈 목록이 아니라 예외
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { resolveCommitFiles, resolveDeletedFiles } from '../../src/hooks/command/commitFiles.js';
+import { snapshotCommit } from '../../src/hooks/command/commitTree.js';
 
 let root: string;
 const git = (...args: string[]) =>
@@ -98,4 +103,56 @@ describe('resolveCommitFiles', () => {
       await resolveCommitFiles(root, { kind: 'commit', scope: 'index', pathspecs: [] })
     ).toContain('src/d.ts');
   });
+
+  it('diff.relative 설정과 -C 하위 폴더 커밋에서도 저장소 전체 기준 목록을 받는다 [규칙: 실제로 들어갈 파일 기준]', async () => {
+    write('root.md', 'r\n');
+    git('add', 'root.md');
+    git('config', 'diff.relative', 'true');
+    const files = await resolveCommitFiles(root, {
+      kind: 'commit',
+      scope: 'index',
+      pathspecs: [],
+      cwd: 'src',
+    });
+    expect(files).toContain('src/a.ts');
+    expect(files).toContain('root.md');
+  });
+
+  it('include(-i)에서 경로 밖 파일은 스테이징 내용이 커밋된다 — 디스크를 지워도 커밋될 내용을 읽는다 [규칙: 실제로 들어갈 파일 기준]', async () => {
+    write('rec.json', '{"a":1}\n');
+    git('add', 'rec.json');
+    rmSync(join(root, 'rec.json'));
+    const snap = await snapshotCommit(root, {
+      kind: 'commit',
+      scope: 'include',
+      pathspecs: ['src/b.ts'],
+    });
+    expect(snap.files).toEqual(expect.arrayContaining(['rec.json', 'src/a.ts', 'src/b.ts']));
+    expect(await snap.content.read('rec.json')).toBe('{"a":1}\n');
+  });
+
+  it('경로 지정 커밋은 스테이징해 둔 새 파일도 담는다 [규칙: 실제로 들어갈 파일 기준]', async () => {
+    write('src/new.ts', 'n\n');
+    git('add', 'src/new.ts');
+    const files = await resolveCommitFiles(root, {
+      kind: 'commit',
+      scope: 'only',
+      pathspecs: ['src/new.ts'],
+    });
+    expect(files).toEqual(['src/new.ts']);
+  });
+
+  it('경로가 아주 많은 경로 지정 커밋도 인자 길이 한도에 걸리지 않고 계산한다 [규칙: 실제로 들어갈 파일 기준]', async () => {
+    const count = 5000;
+    const long = 'x'.repeat(220);
+    mkdirSync(join(root, 'big'), { recursive: true });
+    for (let i = 0; i < count; i++) writeFileSync(join(root, 'big', `${long}-${i}.txt`), `${i}\n`);
+    git('add', 'big');
+    const files = await resolveCommitFiles(root, {
+      kind: 'commit',
+      scope: 'only',
+      pathspecs: ['big'],
+    });
+    expect(files).toHaveLength(count);
+  }, 120_000);
 });

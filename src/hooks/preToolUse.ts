@@ -20,8 +20,10 @@ import { checkEvidenceStaged } from './gates/evidenceGate.js';
 import {
   checkGovernanceFiles,
   checkHumanRecords,
+  checkPendingGovernance,
   governedEditFinding,
 } from './gates/governanceFilesGate.js';
+import { mergeAlwaysAsk } from './gates/alwaysAsk.js';
 import { noConceptReviewNote } from './gates/noConceptNote.js';
 import type { GateCheck, GateFinding, GateInput } from './gates/types.js';
 import { describeError } from '../drift/safe.js';
@@ -29,12 +31,10 @@ import { isMainModule } from '../util/isMain.js';
 import { exitAfterWrite } from '../util/exitAfterWrite.js';
 import { planCommit, type CommitPlan } from './command/commitPlan.js';
 import { findHumanRecordCommands } from './command/recordCommands.js';
+import { mayStageGovernance } from './command/stagingReach.js';
 import type { CommitTarget } from './command/commitFiles.js';
-import {
-  resolveCommitFiles,
-  resolveDeletedFiles,
-  createAliasResolver,
-} from './command/commitFiles.js';
+import { createAliasResolver } from './command/commitFiles.js';
+import { snapshotCommit, injectedContent } from './command/commitTree.js';
 
 export interface PreToolEvent {
   tool: string;
@@ -122,22 +122,6 @@ async function withReviewNotes(output: PreToolOutput, input: GateInput): Promise
       ...output.hookSpecificOutput,
       additionalContext: (output.hookSpecificOutput.additionalContext ?? '') + joined,
     },
-  };
-}
-
-// 강도와 무관하게 항상 사람에게 묻는 항목들(참고자료 기밀·거버넌스 설정 변경·개념 삭제)을 한 판정으로 합친다 —
-// 하나가 다른 하나를 가리지 않게 사유를 이어 붙인다.
-function mergeAlwaysAsk(...findings: (GateFinding | null)[]): GateFinding | null {
-  const present = findings.filter((f): f is GateFinding => f !== null);
-  if (present.length === 0) return null;
-  if (present.length === 1) return present[0];
-  return {
-    gate: present.map((f) => f.gate).join('+'),
-    reason: present.map((f) => f.reason).join(' / '),
-    context: present
-      .map((f) => f.context)
-      .filter(Boolean)
-      .join(' '),
   };
 }
 
@@ -245,9 +229,14 @@ export async function decidePreToolUse(
     const enforcement = cfg?.enforcement ?? 'standard';
     const target = confineToProject(root, plan);
     if (target.kind === 'unresolved') {
-      // 물어야 할 기록이 함께 있으면 light도 경고로 흘려보내지 않고 묻는다.
-      const level = recordAsk && enforcement === 'light' ? 'standard' : enforcement;
-      return escalateWithAsk(unresolvedCommitOutput(level, target.reason), recordAsk);
+      // 커밋될 파일을 확정할 수 없어도, 그 커밋에 들어갈 수 있는 거버넌스 변경(달라진 설정·판단 기록, 지워진 개념·기록)은
+      // 모아 함께 묻는다. 물어야 할 항목이 있으면 light도 경고로 흘려보내지 않는다.
+      const ask = mergeAlwaysAsk(
+        recordAsk,
+        await checkPendingGovernance(root, { includeWorktree: mayStageGovernance(command) })
+      );
+      const level = ask && enforcement === 'light' ? 'standard' : enforcement;
+      return escalateWithAsk(unresolvedCommitOutput(level, target.reason), ask);
     }
     return decideCommit(root, ev, target, cfg, recordAsk);
   }
@@ -337,23 +326,25 @@ async function decideCommit(
   cfg: InitConfig | null,
   recordAsk: GateFinding | null
 ): Promise<PreToolOutput> {
-  const injected = ev.changedFiles !== undefined;
-  const files = ev.changedFiles ?? (await resolveCommitFiles(root, target));
-  const deleted = injected ? (ev.deletedFiles ?? []) : await resolveDeletedFiles(root, target);
-  const scope = injected ? undefined : target.scope;
+  // 커밋될 트리를 미리 만들어 목록과 파일마다 커밋될 내용을 git에게서 받는다. 호출자가 목록을 준 경우(테스트)는
+  // 목록에 든 파일은 디스크 내용, 나머지는 마지막 커밋 내용이 커밋된다고 본다.
+  const snapshot = ev.changedFiles ? null : await snapshotCommit(root, target);
+  const files = ev.changedFiles ?? snapshot!.files;
+  const deleted = snapshot ? snapshot.deleted : (ev.deletedFiles ?? []);
+  const commit = snapshot ? snapshot.content : injectedContent(root, files);
   // 항상 사람에게 묻는 항목(기밀 확인·거버넌스 설정 변경·삭제·판단 기록)은 강도와 무관하게 계산하고,
   // 다른 검사 결과와 함께 담는다(governance-mode 불변: 지키는 대상은 같다 — 서로 가리지 않는다).
   const ref = mergeAlwaysAsk(
     checkReferenceGate(files) ?? checkReferenceLockGate(files, cfg?.referenceLock ?? 'shared'),
     checkGovernanceFiles(files, deleted),
-    await checkHumanRecords(root, files, scope),
+    await checkHumanRecords(root, files, commit),
     recordAsk
   );
   // 무시 목록의 생성물(docs/conceptpowers/** 등)에 실려 온 태그는 정합성 검사 대상이 아니다 —
   // 필터는 audit 입력에만 적용한다(드리프트·기밀 게이트는 원본 files를 봐야 한다).
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const report = await auditIntegrity(root, files, ignoreGlobs);
-  const input: GateInput = { root, files, cfg, report, ...(scope ? { scope } : {}) };
+  const input: GateInput = { root, files, cfg, report, commit };
   const enforcement = cfg?.enforcement ?? 'standard';
   if (enforcement === 'standard') return decideStandard(input, ref);
   if (enforcement === 'strict') return decideStrict(input, ref);
@@ -497,12 +488,22 @@ export async function decidePreToolUseSafe(
   } catch (error) {
     if (ev.tool !== 'Bash') return null;
     const command = ev.input.command ?? '';
+    // 판정이 무너져도 기록 명령 질문은 잃지 않는다.
+    let records: string[] = [];
+    try {
+      records = findHumanRecordCommands(command);
+    } catch {
+      records = [];
+    }
+    const recordAsk = records.length > 0 ? recordCommandFinding(records) : null;
     // 해석조차 실패하면 글자로라도 커밋 가능성을 본다(보수적으로 대응).
     const plan = await planCommit(command).catch(() => null);
     const maybeCommit = plan ? plan.kind !== 'none' : /\bgit\b[\s\S]*\bcommit\b/.test(command);
-    if (!maybeCommit) return null;
+    if (!maybeCommit) return recordAsk ? recordAskOutput(recordAsk) : null;
     const cfg = await readInitConfig(root);
-    return gateFailureOutput(cfg?.enforcement ?? 'standard', error, root);
+    const enforcement = cfg?.enforcement ?? 'standard';
+    const level = recordAsk && enforcement === 'light' ? 'standard' : enforcement;
+    return escalateWithAsk(gateFailureOutput(level, error, root), recordAsk);
   }
 }
 

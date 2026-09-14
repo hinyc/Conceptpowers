@@ -141,10 +141,10 @@
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
     "src/concept/attestScope.ts",
-    "src/hooks/gates/evidenceGate.ts",
     "tests/cli/attestScope.test.ts",
     "tests/hooks/attestGate.test.ts",
-    "tests/hooks/evidenceGate.test.ts"
+    "tests/hooks/evidenceGate.test.ts",
+    "src/hooks/gates/evidenceGate.ts"
   ],
   "concept-provenance": [
     "assets/viewer.js",
@@ -240,20 +240,24 @@
     "tests/hooks/entrypoint.e2e.test.ts",
     "src/hooks/command/shellWords.ts",
     "src/hooks/command/commitPlan.ts",
-    "src/hooks/command/commitFiles.ts",
     "tests/hooks/commitPlan.test.ts",
     "tests/hooks/commitFiles.test.ts",
     "tests/hooks/commitGate.test.ts",
     "src/hooks/command/commandKinds.ts",
     "src/hooks/command/commitArgs.ts",
     "tests/hooks/shellWords.test.ts",
-    "src/hooks/gates/evidenceGate.ts",
-    "src/hooks/gates/governanceFilesGate.ts",
     "src/hooks/gates/noConceptNote.ts",
     "tests/hooks/attestGate.test.ts",
     "tests/hooks/evidenceGate.test.ts",
     "tests/hooks/governanceFiles.test.ts",
-    "tests/hooks/noConceptNote.test.ts"
+    "tests/hooks/noConceptNote.test.ts",
+    "src/hooks/command/commitTree.ts",
+    "src/hooks/gates/alwaysAsk.ts",
+    "src/hooks/command/commitFiles.ts",
+    "src/hooks/gates/evidenceGate.ts",
+    "src/hooks/gates/governanceFilesGate.ts",
+    "src/hooks/command/stagingReach.ts",
+    "tests/hooks/stagingReach.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -288,7 +292,6 @@
     "src/drift/hash.ts",
     "src/drift/history.ts",
     "src/drift/lock.ts",
-    "src/drift/noCode.ts",
     "src/drift/note.ts",
     "src/drift/pendingDocs.ts",
     "src/drift/reconcile.ts",
@@ -312,8 +315,11 @@
     "tests/hooks/commitGate.test.ts",
     "src/hooks/command/recordCommands.ts",
     "tests/hooks/recordCommands.test.ts",
+    "tests/mapping/leadingComment.test.ts",
+    "src/hooks/command/commitTree.ts",
     "src/hooks/gates/governanceFilesGate.ts",
-    "tests/mapping/leadingComment.test.ts"
+    "tests/drift/reconcileCommitted.test.ts",
+    "src/drift/noCode.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
@@ -379,8 +385,8 @@
     "tests/cli/cli.test.ts",
     "tests/store/conceptStore.test.ts",
     "tests/viewer/serve.test.ts",
-    "src/hooks/gates/governanceFilesGate.ts",
-    "tests/hooks/governanceFiles.test.ts"
+    "tests/hooks/governanceFiles.test.ts",
+    "src/hooks/gates/governanceFilesGate.ts"
   ],
   "list-filter": [
     "tests/viewer/listLayout.test.ts",

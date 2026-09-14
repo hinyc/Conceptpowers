@@ -8,8 +8,8 @@ var __export = (target, all) => {
 };
 
 // src/hooks/postToolUse.ts
-import { execFile as execFile3 } from "node:child_process";
-import { promisify as promisify3 } from "node:util";
+import { execFile as execFile5 } from "node:child_process";
+import { promisify as promisify5 } from "node:util";
 import { readFile as readFile11 } from "node:fs/promises";
 
 // src/init/scaffold.ts
@@ -4829,7 +4829,17 @@ async function pendingConceptDocs(root) {
   try {
     const { stdout } = await execFileAsync(
       "git",
-      ["-c", "core.quotePath=false", "--no-pager", "diff", "--name-only", "-z", "HEAD", "--", dataRel],
+      [
+        "-c",
+        "core.quotePath=false",
+        "--no-pager",
+        "diff",
+        "--name-only",
+        "-z",
+        "HEAD",
+        "--",
+        dataRel
+      ],
       { cwd: root, maxBuffer: MAX_BUFFER }
     );
     return new Set(
@@ -4861,10 +4871,31 @@ async function pruneTestReviewLog(root, liveSlugs) {
 }
 
 // src/drift/noCode.ts
+import { execFile as execFile2 } from "node:child_process";
 import { readFile as readFile10 } from "node:fs/promises";
+import { relative as relative4, sep } from "node:path";
+import { promisify as promisify2 } from "node:util";
 async function readNoCodeLog(root) {
   try {
     return NoCodeLog.parse(JSON.parse(await readFile10(cpPaths(root).noCodeFile, "utf8")));
+  } catch {
+    return {};
+  }
+}
+var execFileAsync2 = promisify2(execFile2);
+async function readCommittedNoCodeLog(root) {
+  try {
+    await execFileAsync2("git", ["rev-parse", "--git-dir"], { cwd: root });
+  } catch {
+    return readNoCodeLog(root);
+  }
+  const rel = relative4(root, cpPaths(root).noCodeFile).split(sep).join("/");
+  try {
+    const { stdout } = await execFileAsync2("git", ["--no-pager", "show", `HEAD:./${rel}`], {
+      cwd: root,
+      maxBuffer: 16 * 1024 * 1024
+    });
+    return NoCodeLog.parse(JSON.parse(stdout));
   } catch {
     return {};
   }
@@ -4897,7 +4928,7 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = drift.length === 0 ? /* @__PURE__ */ new Set() : await presentTagSlugs(root, committed, ignoreGlobs);
   const pendingDocs = drift.length === 0 ? /* @__PURE__ */ new Set() : await pendingConceptDocs(root);
-  const noCodeLog = drift.length === 0 ? {} : await readNoCodeLog(root);
+  const noCodeLog = drift.length === 0 ? {} : await readCommittedNoCodeLog(root);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock = { ...lock };
   const aligned = [];
@@ -5879,15 +5910,22 @@ async function visitGitAlias(sub, args, dyn, cmd, ctx, g) {
 }
 
 // src/hooks/command/commitFiles.ts
-import { execFile as execFile2 } from "node:child_process";
-import { promisify as promisify2 } from "node:util";
-var execFileAsync2 = promisify2(execFile2);
+import { execFile as execFile4 } from "node:child_process";
+import { promisify as promisify4 } from "node:util";
+
+// src/hooks/command/commitTree.ts
+import { execFile as execFile3 } from "node:child_process";
+import { promisify as promisify3 } from "node:util";
+var execFileAsync3 = promisify3(execFile3);
 var MAX_BUFFER2 = 64 * 1024 * 1024;
+
+// src/hooks/command/commitFiles.ts
+var execFileAsync4 = promisify4(execFile4);
 function createAliasResolver(root) {
   return async (name) => {
     if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(name)) return null;
     try {
-      const { stdout } = await execFileAsync2("git", ["config", "--get", `alias.${name}`], {
+      const { stdout } = await execFileAsync4("git", ["config", "--get", `alias.${name}`], {
         cwd: root,
         timeout: 2e3
       });
@@ -5899,11 +5937,11 @@ function createAliasResolver(root) {
 }
 
 // src/hooks/postToolUse.ts
-var execFileAsync3 = promisify3(execFile3);
+var execFileAsync5 = promisify5(execFile5);
 var MAX_BUFFER3 = 64 * 1024 * 1024;
 async function git(root, args) {
   try {
-    const { stdout } = await execFileAsync3(
+    const { stdout } = await execFileAsync5(
       "git",
       ["-c", "core.quotePath=false", "--no-pager", ...args],
       { cwd: root, maxBuffer: MAX_BUFFER3 }

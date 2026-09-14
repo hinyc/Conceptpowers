@@ -2649,5 +2649,16 @@
     "aligned": true,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "drift-reconcile",
+    "hash": "3:9eae88cc8b58",
+    "prevHash": "3:d272172df460",
+    "reason": "레드팀 5단계 3차 리뷰 반영: 결산은 커밋에 정착한 코드무관 기록만 사유로 남긴다",
+    "at": "2026-09-14T19:32:39.592Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]

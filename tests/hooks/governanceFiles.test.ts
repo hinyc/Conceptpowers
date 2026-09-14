@@ -14,6 +14,7 @@
 //    커밋에 들어오면 문지기가 강도와 무관하게 사람에게 묻는다" / concept-driven-tests 제한 "사람의 확인 없이 검토
 //    기록을 남겨 통과시키는 것"
 //    → 새 기록·바뀐 기록이 커밋에 들어오면 어느 강도에서도 ask다(어떤 방법으로 썼든) / 그대로거나 지워진 기록은 묻지 않는다
+//    → include 범위로 스테이징만 된 기록, 스테이징과 커밋을 섞은 명령의 새 기록도 묻는다(strict는 막는다)
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
 //    → Edit/Write로 개념 문서·거버넌스 설정·증빙 기록을 직접 고치려 하면 ask다
 //    → 대소문자만 다른 경로(대소문자 무시 파일시스템)·바로가기 경로·MultiEdit으로도 피할 수 없다
@@ -147,6 +148,44 @@ describe('사람의 판단 기록이 커밋에 들어오면 [규칙: 사람의 �
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('kept');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('t');
+  });
+  it('include 범위(-i)로 스테이징만 된 기록을 커밋해도 묻는다 — 디스크를 되돌려 두어도 커밋될 내용으로 판정한다', async () => {
+    setEnforcement('strict');
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
+    git('add', 'src/a.ts', INIT);
+    git('commit', '-qm', 'a');
+    const original = readFileSync(join(root, NOCODE), 'utf8');
+    writeFileSync(
+      join(root, NOCODE),
+      JSON.stringify({ kept: entry('기존'), gone: entry('지울 것'), fresh: entry('새 사유') })
+    );
+    git('add', NOCODE);
+    writeFileSync(join(root, NOCODE), original);
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -i src/a.ts -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('fresh');
+  });
+  it('스테이징과 커밋을 한 명령에 섞어도 새 기록이 있으면 기록 질문을 함께 싣는다 — light도 묻고 strict는 막는다', async () => {
+    writeFileSync(
+      join(root, NOCODE),
+      JSON.stringify({ kept: entry('기존'), gone: entry('지울 것'), fresh: entry('새 사유') })
+    );
+    const mixed = { tool: 'Bash', input: { command: 'git add -A && git commit -m x' } };
+    for (const level of ['standard', 'light'] as const) {
+      setEnforcement(level);
+      const r = await decidePreToolUse(root, mixed);
+      expect(r!.hookSpecificOutput.permissionDecision, level).toBe('ask');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('HUMAN RECORD');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('fresh');
+    }
+    setEnforcement('strict');
+    const strict = await decidePreToolUse(root, mixed);
+    expect(strict!.hookSpecificOutput.permissionDecision).toBe('deny');
+    expect(strict!.hookSpecificOutput.permissionDecisionReason).toContain('HUMAN RECORD');
   });
   it('그대로거나 지워진 기록만 들어오면 묻지 않는다(결산의 정리)', async () => {
     setEnforcement('strict');

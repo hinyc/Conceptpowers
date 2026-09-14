@@ -76,7 +76,9 @@
         "tests/hooks/testScopeGate.test.ts",
         "tests/init/scaffold.test.ts",
         "src/hooks/preToolUse.ts",
-        "tests/schema/initConfig.test.ts"
+        "tests/schema/initConfig.test.ts",
+        "src/hooks/command/recordCommands.ts",
+        "tests/hooks/recordCommands.test.ts"
       ]
     },
     {
@@ -164,7 +166,11 @@
         "tests/hooks/preToolUse.test.ts",
         "tests/hooks/commitFiles.test.ts",
         "tests/hooks/commitGate.test.ts",
-        "tests/mapping/leadingComment.test.ts"
+        "src/hooks/command/recordCommands.ts",
+        "tests/hooks/recordCommands.test.ts",
+        "tests/mapping/leadingComment.test.ts",
+        "src/hooks/command/commitTree.ts",
+        "src/hooks/gates/governanceFilesGate.ts"
       ]
     },
     {
@@ -272,20 +278,22 @@
         "tests/hooks/entrypoint.e2e.test.ts",
         "src/hooks/command/shellWords.ts",
         "src/hooks/command/commitPlan.ts",
-        "src/hooks/command/commitFiles.ts",
         "tests/hooks/commitPlan.test.ts",
         "tests/hooks/commitFiles.test.ts",
         "tests/hooks/commitGate.test.ts",
         "src/hooks/command/commandKinds.ts",
         "src/hooks/command/commitArgs.ts",
         "tests/hooks/shellWords.test.ts",
-        "src/hooks/gates/evidenceGate.ts",
-        "src/hooks/gates/governanceFilesGate.ts",
         "src/hooks/gates/noConceptNote.ts",
         "tests/hooks/attestGate.test.ts",
         "tests/hooks/evidenceGate.test.ts",
         "tests/hooks/governanceFiles.test.ts",
-        "tests/hooks/noConceptNote.test.ts"
+        "tests/hooks/noConceptNote.test.ts",
+        "src/hooks/command/commitTree.ts",
+        "src/hooks/gates/alwaysAsk.ts",
+        "src/hooks/command/commitFiles.ts",
+        "src/hooks/gates/evidenceGate.ts",
+        "src/hooks/gates/governanceFilesGate.ts"
       ]
     },
     {
@@ -309,8 +317,8 @@
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts",
-        "src/hooks/gates/governanceFilesGate.ts",
-        "tests/hooks/governanceFiles.test.ts"
+        "tests/hooks/governanceFiles.test.ts",
+        "src/hooks/gates/governanceFilesGate.ts"
       ]
     },
     {
@@ -441,10 +449,10 @@
         "tests/schema/alignment.test.ts",
         "tests/hooks/preToolUse.test.ts",
         "src/concept/attestScope.ts",
-        "src/hooks/gates/evidenceGate.ts",
         "tests/cli/attestScope.test.ts",
         "tests/hooks/attestGate.test.ts",
-        "tests/hooks/evidenceGate.test.ts"
+        "tests/hooks/evidenceGate.test.ts",
+        "src/hooks/gates/evidenceGate.ts"
       ]
     },
     {
@@ -1332,6 +1340,20 @@
         "title": "src/hooks/preToolUse.ts"
       },
       {
+        "id": "p:src/hooks/command/recordCommands.ts",
+        "label": "recordCommands.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/recordCommands.ts"
+      },
+      {
+        "id": "p:tests/hooks/recordCommands.test.ts",
+        "label": "recordCommands.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/recordCommands.test.ts"
+      },
+      {
         "id": "c:concept-provenance",
         "label": "개념의 근거",
         "type": "concept",
@@ -1619,6 +1641,20 @@
         "title": "tests/hooks/commitGate.test.ts"
       },
       {
+        "id": "p:src/hooks/command/commitTree.ts",
+        "label": "commitTree.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitTree.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/governanceFilesGate.ts",
+        "label": "governanceFilesGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/governanceFilesGate.ts"
+      },
+      {
         "id": "c:feature-spec-bridge",
         "label": "기능 명세",
         "type": "concept",
@@ -1878,13 +1914,6 @@
         "title": "src/hooks/command/commitPlan.ts"
       },
       {
-        "id": "p:src/hooks/command/commitFiles.ts",
-        "label": "commitFiles.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/commitFiles.ts"
-      },
-      {
         "id": "p:tests/hooks/commitPlan.test.ts",
         "label": "commitPlan.test.ts",
         "type": "file",
@@ -1913,20 +1942,6 @@
         "title": "tests/hooks/shellWords.test.ts"
       },
       {
-        "id": "p:src/hooks/gates/evidenceGate.ts",
-        "label": "evidenceGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/evidenceGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/governanceFilesGate.ts",
-        "label": "governanceFilesGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/governanceFilesGate.ts"
-      },
-      {
         "id": "p:tests/hooks/attestGate.test.ts",
         "label": "attestGate.test.ts",
         "type": "file",
@@ -1946,6 +1961,27 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/governanceFiles.test.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/alwaysAsk.ts",
+        "label": "alwaysAsk.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/alwaysAsk.ts"
+      },
+      {
+        "id": "p:src/hooks/command/commitFiles.ts",
+        "label": "commitFiles.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitFiles.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/evidenceGate.ts",
+        "label": "evidenceGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/evidenceGate.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -3013,6 +3049,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:concept-driven-tests",
+        "target": "p:src/hooks/command/recordCommands.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/hooks/recordCommands.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:concept-provenance",
         "target": "p:src/schema/concept.ts",
         "kind": "concept-file"
@@ -3239,7 +3285,27 @@
       },
       {
         "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/recordCommands.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/recordCommands.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:tests/mapping/leadingComment.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/commitTree.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
         "kind": "concept-file"
       },
       {
@@ -3574,11 +3640,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/commitFiles.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:tests/hooks/commitPlan.test.ts",
         "kind": "concept-file"
       },
@@ -3609,16 +3670,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/evidenceGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/governanceFilesGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/hooks/gates/noConceptNote.ts",
         "kind": "concept-file"
       },
@@ -3640,6 +3691,31 @@
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/noConceptNote.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitTree.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/alwaysAsk.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/commitFiles.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/evidenceGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
         "kind": "concept-file"
       },
       {
@@ -3689,12 +3765,12 @@
       },
       {
         "source": "c:human-owns-contract",
-        "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "target": "p:tests/hooks/governanceFiles.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:human-owns-contract",
-        "target": "p:tests/hooks/governanceFiles.test.ts",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
         "kind": "concept-file"
       },
       {
@@ -4084,11 +4160,6 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:src/hooks/gates/evidenceGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
         "target": "p:tests/cli/attestScope.test.ts",
         "kind": "concept-file"
       },
@@ -4100,6 +4171,11 @@
       {
         "source": "c:settled-status",
         "target": "p:tests/hooks/evidenceGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/hooks/gates/evidenceGate.ts",
         "kind": "concept-file"
       },
       {
@@ -4764,5 +4840,5 @@
       }
     ]
   },
-  "generatorVersion": "1.15.0"
+  "generatorVersion": "1.16.0"
 }

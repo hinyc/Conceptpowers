@@ -81,13 +81,13 @@ describe('커밋 게이트 실행 실패 (fail-closed)', () => {
   });
 
   it('strict: git이 스테이징 목록을 못 읽으면 빈 목록으로 통과시키지 않고 막는다 [규칙: 엄격은 막는다]', async () => {
-    setEnforcement('strict'); // root는 git 저장소가 아니다 → git diff --cached 실패
+    setEnforcement('strict'); // root는 git 저장소가 아니다 → 커밋될 트리를 만들지 못함
     const r = await decidePreToolUseSafe(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
-    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('스테이징 목록');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('커밋될 내용');
   });
 
   it('오류 문구의 프로젝트 절대경로는 상대경로로 줄여 싣는다', async () => {

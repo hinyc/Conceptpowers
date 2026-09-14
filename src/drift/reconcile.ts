@@ -10,7 +10,7 @@ import { pendingConceptDocs } from './pendingDocs.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { pruneAttestLog } from '../concept/attest.js';
 import { pruneTestReviewLog } from '../concept/testReview.js';
-import { readNoCodeLog, freshNoCode, pruneNoCodeLog } from './noCode.js';
+import { readCommittedNoCodeLog, freshNoCode, pruneNoCodeLog } from './noCode.js';
 import { prunePendingConflicts } from '../concept/pendingConflicts.js';
 import { defaultIgnoreGlobs } from '../schema/initConfig.js';
 import type { AlignmentLock } from '../schema/alignment.js';
@@ -48,7 +48,8 @@ export async function reconcileAfterCommit(
   // git 정보를 얻을 수 없으면 전부 정착으로 기울인다 — 결산을 조용히 멈추지 않는 방향이다.
   const pendingDocs = drift.length === 0 ? new Set<string>() : await pendingConceptDocs(root);
   // 코드무관 기록: 신선한 기록이 있으면 무시함 이력에 그 사유를 함께 남긴다(문지기와 같은 잣대).
-  const noCodeLog = drift.length === 0 ? {} : await readNoCodeLog(root);
+  // 커밋에 정착한 기록만 사유로 인정한다 — 디스크에만 있는 기록은 사람이 확인한 판단이라는 보장이 없다.
+  const noCodeLog = drift.length === 0 ? {} : await readCommittedNoCodeLog(root);
   const driftBySlug = new Map(drift.map((d) => [d.slug, d]));
   const nextLock: AlignmentLock = { ...lock };
   const aligned: string[] = [];

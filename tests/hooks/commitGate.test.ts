@@ -86,8 +86,30 @@ describe('실행 전에 확정할 수 없는 커밋 [규칙: 확정할 수 없�
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
   });
 
+  it('light라도 커밋에 섞여 들어갈 수 있는 설정 변경이 있으면 묻는다 [규칙: 거버넌스 설정 변경은 강도와 무관하게 묻는다]', async () => {
+    setEnforcement('light');
+    const r = await decidePreToolUse(root, bash(cmd));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('GOVERNANCE CONFIG');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('COMMIT UNRESOLVED');
+  });
+  it('light: 설정 변경을 담지 않는 좁은 스테이징이면 디스크의 설정 변경으로 묻지 않는다 [규칙: 들어가지 않을 변경으로 묻지 않는다]', async () => {
+    setEnforcement('light');
+    const r = await decidePreToolUse(root, bash('git add src/tracked.ts && git commit -m x'));
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
+    expect(r!.hookSpecificOutput.additionalContext).toContain('COMMIT UNRESOLVED');
+  });
+  it('light: 스테이징해 둔 설정 변경은 좁은 스테이징이어도 묻는다', async () => {
+    setEnforcement('light');
+    git('add', 'docs/conceptpowers/init.json');
+    const r = await decidePreToolUse(root, bash('git add src/tracked.ts && git commit -m x'));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('GOVERNANCE CONFIG');
+  });
   it('light: 판정 없이 경고로 알린다', async () => {
     setEnforcement('light');
+    git('add', 'docs/conceptpowers/init.json');
+    git('commit', '-q', '-m', 'light');
     const r = await decidePreToolUse(root, bash(cmd));
     expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
     expect(r!.hookSpecificOutput.additionalContext).toContain('COMMIT UNRESOLVED');

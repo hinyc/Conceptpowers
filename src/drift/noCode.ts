@@ -3,7 +3,10 @@
 // 개념 수정이 코드 변경을 필요로 하지 않는다는 사람의 판단을 남기는 코드무관 기록.
 // 문서만 커밋해도 문지기(driftGate)가 막지 않는 정식 통과 근거이며, 결산(reconcile)은
 // 이 기록의 사유를 무시함(ignored) 이력에 함께 남긴다 — 검토 기록(test-review)과 같은 태도.
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { relative, sep } from 'node:path';
+import { promisify } from 'node:util';
 import { cpPaths } from '../paths.js';
 import { NoCodeEntry, NoCodeLog } from '../schema/alignment.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
@@ -13,6 +16,28 @@ import type { Concept } from '../schema/concept.js';
 export async function readNoCodeLog(root: string): Promise<NoCodeLog> {
   try {
     return NoCodeLog.parse(JSON.parse(await readFile(cpPaths(root).noCodeFile, 'utf8')));
+  } catch {
+    return {};
+  }
+}
+
+const execFileAsync = promisify(execFile);
+
+// 커밋에 정착한 기록 — 결산은 커밋되지 않은 기록을 무시함의 사유로 삼지 않는다(drift-reconcile 불변).
+// git 저장소가 아니면(커밋이라는 개념이 없는 환경) 디스크 기록을 쓴다. 저장소인데 읽지 못하면 빈 기록이다.
+export async function readCommittedNoCodeLog(root: string): Promise<NoCodeLog> {
+  try {
+    await execFileAsync('git', ['rev-parse', '--git-dir'], { cwd: root });
+  } catch {
+    return readNoCodeLog(root);
+  }
+  const rel = relative(root, cpPaths(root).noCodeFile).split(sep).join('/');
+  try {
+    const { stdout } = await execFileAsync('git', ['--no-pager', 'show', `HEAD:./${rel}`], {
+      cwd: root,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+    return NoCodeLog.parse(JSON.parse(stdout));
   } catch {
     return {};
   }

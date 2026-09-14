@@ -9,8 +9,13 @@ import { parseShellCommand } from './shellWords.js';
 export const HUMAN_RECORD_COMMANDS = ['attest-no-code', 'attest-test-review'] as const;
 const RECORDS = new Set<string>(HUMAN_RECORD_COMMANDS);
 const SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh']);
-// 엔진 CLI를 가리키는 단어 — 기록 명령 이름은 이 단어 바로 뒤에 올 때만 명령이다(vitest -t attest-no-code는 아니다).
-const CLI_WORD = /(?:^|\/)(?:cli\.(?:m?js|ts)|conceptpowers)$/;
+// 엔진 CLI를 가리키는 단어 — 기록 명령 이름은 같은 명령 단위에서 이 단어 뒤에 올 때만 명령이다(vitest -t attest-no-code는 아니다).
+const CLI_WORD = /(?:^|\/)(?:cli(?:\.(?:m?js|ts))?|conceptpowers)$/;
+// CLI 경로가 실행 대상 자리(명령 첫 단어이거나 실행기 바로 뒤)에 올 때만 엔진 CLI다 — `vitest run tests/cli`는 아니다.
+const RUNNERS = new Set(['node', 'bun', 'deno', 'tsx', 'npx', 'exec', 'dlx', 'x']);
+const baseName = (word: string): string => word.slice(word.lastIndexOf('/') + 1);
+const isCliAt = (words: string[], j: number): boolean =>
+  CLI_WORD.test(words[j]) && (j === 0 || RUNNERS.has(baseName(words[j - 1])));
 const SHELL_C_FLAG = /^-[a-z]*c[a-z]*$/;
 const MAX_DEPTH = 4;
 
@@ -20,7 +25,7 @@ function scan(command: string, depth: number, found: Set<string>): void {
     for (const sub of seg.substitutions) scan(sub, depth + 1, found);
     const words = seg.words;
     words.forEach((w, i) => {
-      if (RECORDS.has(w) && i > 0 && CLI_WORD.test(words[i - 1])) found.add(w);
+      if (RECORDS.has(w) && words.slice(0, i).some((_, j) => isCliAt(words, j))) found.add(w);
       const base = w.slice(w.lastIndexOf('/') + 1);
       if (SHELLS.has(base) && SHELL_C_FLAG.test(words[i + 1] ?? '') && words[i + 2]) {
         scan(words[i + 2], depth + 1, found);

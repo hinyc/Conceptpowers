@@ -34,6 +34,13 @@ describe('findHumanRecordCommands', () => {
     ['node cli.js attest-consistency foo --result pass --compared all', []],
     ['git commit -m "attest-no-code 안내 추가"', []],
     ['pnpm exec vitest run -t attest-no-code', []],
+    ['pnpm exec vitest run tests/cli -t attest-no-code', []],
+    ['npx conceptpowers attest-no-code foo --note x', ['attest-no-code']],
+    ['node dist/cli attest-no-code foo --note x', ['attest-no-code']],
+    [
+      'node dist/cli.js --root . attest-test-review foo --result no-tests --note x',
+      ['attest-test-review'],
+    ],
     ['./dist/cli.js attest-no-code foo --note x', ['attest-no-code']],
     ['bash -lc "node cli.js attest-no-code foo --note x"', ['attest-no-code']],
     [

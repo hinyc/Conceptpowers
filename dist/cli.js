@@ -8906,7 +8906,9 @@ async function recordTestReview(root, concept, result, evidence = {}) {
 }
 
 // src/drift/noCode.ts
+import { execFile as execFile2 } from "node:child_process";
 import { readFile as readFile18 } from "node:fs/promises";
+import { promisify as promisify2 } from "node:util";
 async function readNoCodeLog(root) {
   try {
     return NoCodeLog.parse(JSON.parse(await readFile18(cpPaths(root).noCodeFile, "utf8")));
@@ -8914,6 +8916,7 @@ async function readNoCodeLog(root) {
     return {};
   }
 }
+var execFileAsync2 = promisify2(execFile2);
 async function recordNoCode(root, concept, note) {
   const entry = NoCodeEntry.parse({
     hash: contractHash(concept),
