@@ -10,6 +10,8 @@
 //    → 앞선 명령이 파일·색인·저장소를 바꾸거나 다른 명령을 실행할 수 있으면, 또는 인자가 셸 확장으로
 //      정해지면 확정 불가로 표시한다
 //    → 커밋을 실행할 수 있는 어떤 우회 형태도 "커밋 아님"으로 판정되지 않는다(우회 회귀 표)
+//    → git 내장 명령은 설정이 주입돼도 alias로 풀리지 않으므로 커밋 아님이다 / 분류되지 않은 내장 명령 뒤의 커밋은
+//      커밋될 파일을 바꿀 수 있어 확정 불가다
 import { describe, it, expect } from 'vitest';
 import { planCommit } from '../../src/hooks/command/commitPlan.js';
 
@@ -27,6 +29,9 @@ describe('커밋이 아닌 명령 [규칙: 문지기는 커밋을 검사한다]'
     'git commit --dry -m x',
     'git status && git diff --cached',
     'git frobnicate',
+    'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.pager GIT_CONFIG_VALUE_0=cat git diff-tree -r HEAD',
+    'export GIT_CONFIG_GLOBAL=/dev/null && git write-tree && git diff-index HEAD',
+    'git checkout-index -a',
     'gh pr create --title "fix: git hook" --body "$(cat <<\'EOF\'\n- commit gate\nEOF\n)"',
     'find . -name "*.ts" | xargs grep -l "git commit"',
     'pnpm vitest run tests/hooks/commitGate.test.ts -t "git commit"',
@@ -192,6 +197,8 @@ describe('실행 전에 커밋 파일을 확정할 수 없음 [규칙: 확정할
     'git --icase-pathspecs commit -m x SRC/A.ts',
     'GIT_ICASE_PATHSPECS=1 git commit -m x SRC/A.ts',
     'git diff --output=src/a.ts HEAD~1 && git commit -am x',
+    'git checkout-index -a -f && git commit -am x',
+    'git merge-file a.ts base.ts b.ts && git commit -am x',
     'git commit -m x & git add -A',
     'git commit -m x | git add -A',
     '(( x = 1<<2 ))\ngit commit -a -m x',

@@ -25,6 +25,7 @@ import {
   SHELLS,
   WRAPPERS,
   classifyGitCall,
+  GIT_BUILTINS,
 } from './commandKinds.js';
 
 export type { CommitScope };
@@ -430,6 +431,12 @@ async function visitGitAlias(
   const alias =
     g.aliases.get(sub) ?? (ctx.deps.resolveAlias ? await ctx.deps.resolveAlias(sub) : null);
   if (!alias) {
+    // 내장 명령은 alias로 덮어쓸 수 없다 — 설정이 주입돼도 커밋으로 풀리지 않는다. 다만 읽기·변경 분류에
+    // 없는 내장 명령은 무엇을 바꿀지 모르므로, 뒤따르는 커밋의 파일을 확정할 수 없게 표시한다.
+    if (GIT_BUILTINS.has(sub)) {
+      markImpure(ctx.state, '분류되지 않은 git 내장 명령');
+      return null;
+    }
     return g.configInjected
       ? unresolved('같은 명령에서 주입·변경된 설정으로 정해질 수 있는 git 명령')
       : null;

@@ -104,6 +104,17 @@ export const GIT_PATHSPEC_OPTIONS = new Set([
 ]);
 export const GIT_PATHSPEC_ENV = /^GIT_(ICASE|GLOB|NOGLOB|LITERAL)_PATHSPECS(=|$)/;
 
+/**
+ * git 내장 하위 명령 이름(git 2.50 `git --list-cmds=main,nohelpers`). git은 내장 이름을 alias로 덮어쓰지 못하므로
+ * 이 이름들은 설정이 주입돼도 alias로 풀릴 수 없다. 읽기·변경 분류에 없는 내장 명령은 무엇을 바꿀지 모르는
+ * 명령으로 본다(뒤따르는 커밋의 파일을 확정할 수 없다).
+ */
+export const GIT_BUILTINS = new Set(
+  'add am annotate apply archive backfill bisect blame branch bugreport bundle cat-file check-attr check-ignore check-mailmap check-ref-format checkout checkout-index cherry cherry-pick clean clone column commit commit-graph commit-tree config count-objects credential credential-cache credential-store daemon describe diagnose diff diff-files diff-index diff-pairs diff-tree difftool fast-export fast-import fetch fetch-pack filter-branch fmt-merge-msg for-each-ref for-each-repo format-patch fsck fsck-objects gc get-tar-commit-id grep hash-object help hook http-backend http-fetch http-push imap-send index-pack init init-db interpret-trailers log ls-files ls-remote ls-tree mailinfo mailsplit maintenance merge merge-base merge-file merge-index merge-octopus merge-one-file merge-ours merge-recursive merge-recursive-ours merge-recursive-theirs merge-resolve merge-subtree merge-tree mergetool mktag mktree multi-pack-index mv name-rev notes p4 pack-objects pack-redundant pack-refs patch-id pickaxe prune prune-packed pull push quiltimport range-diff read-tree rebase receive-pack reflog refs remote remote-ext remote-fd remote-ftp remote-ftps remote-http remote-https repack replace replay request-pull rerere reset restore rev-list rev-parse revert rm send-email send-pack shell shortlog show show-branch show-index show-ref sparse-checkout stage stash status stripspace submodule subtree switch symbolic-ref tag unpack-file unpack-objects update-index update-ref update-server-info upload-archive upload-pack var verify-commit verify-pack verify-tag version whatchanged worktree write-tree'.split(
+    ' '
+  )
+);
+
 export type GitCallKind =
   'commit' | 'read' | 'writeFiles' | 'mutateIndex' | 'mutateConfig' | 'execute' | 'unknown';
 
@@ -124,7 +135,7 @@ const GIT_MUTATE_INDEX = new Set(
 );
 /** 색인·설정을 바꾸지 않고 명령도 실행하지 않는 하위 명령 */
 const GIT_READ = new Set(
-  'status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref commit-tree hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean'.split(
+  'diff-tree diff-index diff-files show-ref check-ref-format check-mailmap verify-pack show-index patch-id column stripspace get-tar-commit-id status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref commit-tree hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean'.split(
     ' '
   )
 );
