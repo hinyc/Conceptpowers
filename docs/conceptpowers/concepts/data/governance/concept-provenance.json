@@ -73,7 +73,7 @@
     "src/concept/quality.ts",
     "src/store/conceptStore.ts",
     "assets/viewer.js",
-    "skills/define-concept/SKILL.md"
+    "skills/update-concepts/references/define.md"
   ],
   "sources": [
     {

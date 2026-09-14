@@ -8,16 +8,16 @@
 | --------------- | ----------------------------------------------------- | ---------------------------------------------- |
 | 아이디어 → 스펙 | brainstorming                                         | (스펙에서 핵심 **개념** 식별)                  |
 | 스펙 → 계획     | writing-plans                                         | —                                              |
-| 구현(TDD)       | test-driven-development / subagent-driven-development | check-concept으로 변경의 개념 위배 검증        |
-| 개념 정의       | —                                                     | define-concept (+ check-consistency)           |
-| 커밋            | —                                                     | 커밋 게이트(check-concept + check-consistency) |
-| 점검            | requesting-code-review                                | audit(개념 구멍·정합성)                        |
+| 구현(TDD)       | test-driven-development / subagent-driven-development | review(변경 전 검사)로 변경의 개념 위배 검증   |
+| 개념 정의       | —                                                     | update-concepts(정의 + 정합성 검사)            |
+| 커밋            | —                                                     | 커밋 게이트(review + 정합성 검사)              |
+| 점검            | requesting-code-review                                | scan(개념 구멍) · review 전체(코드↔개념)       |
 
 ## 권장 흐름
 
 1. superpowers `brainstorming`으로 스펙을 만든다.
-2. 스펙의 핵심 역할·권한·용어·기능을 Conceptpowers `define-concept`로 개념화한다(거버넌스 대상일 때).
-3. superpowers `writing-plans` → TDD로 구현하되, 새 기능·동작 변경 시 Conceptpowers `check-concept`가 게이트한다.
+2. 스펙의 핵심 역할·권한·용어·기능을 Conceptpowers `update-concepts`로 개념화한다(거버넌스 대상일 때).
+3. superpowers `writing-plans` → TDD로 구현하되, 새 기능·동작 변경 시 Conceptpowers `review`(변경 전 검사)가 게이트한다.
 4. 커밋 시 Conceptpowers 커밋 게이트가 코드·개념 정합성을 최종 확인한다.
 
 ## 충돌이 없는 이유

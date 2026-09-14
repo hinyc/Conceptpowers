@@ -1,12 +1,7 @@
----
-name: check-consistency
-description: Use when defining or modifying a concept in a governance-active project, and as the commit gate. Compares the new/changed concept against all existing concepts to detect conflicts or violations; only passes when zero conflicts.
----
+# Update Concepts — 정합성 검사 (references/consistency.md, concept ↔ concept)
 
-# Conceptpowers: Check Consistency (concept ↔ concept)
-
-> **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
-> until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
+This file is loaded by `conceptpowers:update-concepts` after any concept is written or changed, and by
+the commit gate guidance. It is not a skill of its own.
 
 When adding or modifying a concept, verify there is no conflict or violation against all existing concepts (rule 7, D11/D17).
 
@@ -55,8 +50,8 @@ When adding or modifying a concept, verify there is no conflict or violation aga
 ## Commit gate (D17)
 
 - On `git commit`, if the staged set (`git diff --cached --name-only`) includes concept-data changes, run this check.
-- check-concept covers code changes and this skill covers concept changes, so the commit is verified **with no gaps**.
+- `review` covers code changes and this procedure covers concept changes, so the commit is verified **with no gaps**.
 - **Unapproved (red) concepts do not hard-block a commit**, but the commit gate surfaces them with an
   emphasized warning (`⚠️ UNAPPROVED CONCEPTS`). When you see it, show the warning prominently and ask
   the user "commit anyway?" — proceed only on explicit confirmation. Approving the concepts first
-  (manual edit, or the `conceptpowers:update-baseline` approve flow on explicit user request) is preferred.
+  (manual edit, or the `update-concepts` approve flow (D) on explicit user request) is preferred.

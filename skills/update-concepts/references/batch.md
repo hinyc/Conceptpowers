@@ -1,15 +1,16 @@
 # Define Concept — Batch flow (전체 일괄 정의)
 
-This file is loaded on demand when the user picks batch mode in
-`conceptpowers:define-concept`. The single-flow steps, quality self-check, and status rules in
-SKILL.md still apply to every concept defined here.
+This file is loaded on demand when the user picks batch mode in `conceptpowers:update-concepts`
+(계기 B), and its candidate-enumeration rules are reused for `newMaterial` in 계기 A. The single-flow
+steps, quality self-check, and status rules in `define.md` (next to this file) still apply to every
+concept defined here.
 
 ## Batch flow (전체 일괄 정의)
 
 Human-owns-contract still applies: the AI drafts and asks; the user confirms. Batch reduces the
 interaction to two checkpoints, not zero.
 
-**자격 기준 관문도 그대로 적용된다** (SKILL.md의 「자격 기준 관문」 절, 개념 `concept-scope`).
+**자격 기준 관문도 그대로 적용된다** (`define.md`의 「자격 기준 관문」 절, 개념 `concept-scope`).
 일괄 정의는 **후보를 많이 모으는 것**이지 후보를 전부 개념으로 만드는 것이 아니다 — 관문을
 통과하지 못한 후보는 기능 명세나 상위 기준 문서로 내려가고, 그 판정은 checkpoint 1에서
 사용자가 확인한다.
@@ -31,7 +32,7 @@ interaction to two checkpoints, not zero.
      Present the merged result as a numbered candidate list — one line each
      ("결제 불변성 — 결제 후 가격·수량 변경 금지", …) with the source marked
      (reference doc / UI surface / code logic).
-2. **자격 기준 관문 일괄 적용**: 모은 후보를 SKILL.md의 「자격 기준 관문」 여섯 물음에 차례로
+2. **자격 기준 관문 일괄 적용**: 모은 후보를 `define.md`의 「자격 기준 관문」 여섯 물음에 차례로
    걸어, 각 후보를 **개념 후보 / 기능 명세 / 상위 기준 문서 / 기존 개념으로 흡수** 중 하나로
    분류한다. 목적이 같은 후보끼리는 이 단계에서 한 줄로 합친다. 판정과 근거(어느 물음에서
    막혔는지)를 후보 줄에 적어 둔다 — 조용히 지우지 않는다.
@@ -57,10 +58,10 @@ interaction to two checkpoints, not zero.
    - Dropped drafts → do not save.
 6. Wire each saved concept to a feature spec (single-flow step 1) and `@concept` tags, then
    regenerate the viewer once at the end: `node "<cli>" render --root .`
-   관문에서 **기능 명세로 내려간 후보**도 이때 함께 기록한다 (`conceptpowers:define-feature`) —
+   관문에서 **기능 명세로 내려간 후보**도 이때 함께 기록한다 (`conceptpowers:scan`의 기능 명세 기록) —
    개념이 되지 못했다고 지식 지도에서 사라지면 안 된다. **상위 기준 문서로 내려간 후보**는
    `architecture.md` / `infra.md`에 한 줄로 남기자고 사용자에게 제안한다(기준선 수정이므로
-   저장은 `conceptpowers:update-baseline`으로, 사용자 승인 아래에서만).
+   저장은 `update-concepts`의 계기 C로, 사용자 승인 아래에서만).
 
 ### 화면 접점에서 나온 개념 (짧아도 되지만, 약속이어야 한다)
 

@@ -66,13 +66,13 @@
   "sources": [
     {
       "kind": "code",
-      "path": "skills/check-concept/SKILL.md",
+      "path": "skills/review/SKILL.md",
       "locator": "\"## Judgment basis: concepts ONLY (do not read reference/)\" 절 (약 17-20줄)",
       "supports": "코드 판단 단계에서는 참고자료를 읽지 않고 적혀 있는 개념의 규칙만 근거로 삼는다"
     },
     {
       "kind": "code",
-      "path": "skills/define-concept/SKILL.md",
+      "path": "skills/update-concepts/references/define.md",
       "locator": "\"Reference first (필수)\" 지시문 및 \"Precedence when reference contradicts a settled concept\" 절 (약 34-51줄)",
       "supports": "개념을 만들거나 고치거나 검사할 때는 참고자료 확인을 건너뛰지 않는다 / 참고자료가 확정된 개념과 어긋나면 개념이 우선이며, 그 사실을 사람에게 알린다"
     },

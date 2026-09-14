@@ -39,7 +39,8 @@ function cpPaths(root) {
     pendingConflicts: join(base, "concepts", ".alignment", "pending-conflicts.json"),
     attestFile: join(base, "concepts", ".alignment", "attest.json"),
     testReviewFile: join(base, "concepts", ".alignment", "test-review.json"),
-    noCodeFile: join(base, "concepts", ".alignment", "no-code.json")
+    noCodeFile: join(base, "concepts", ".alignment", "no-code.json"),
+    referenceLock: join(base, "concepts", ".alignment", "reference.lock.json")
   };
 }
 
@@ -4270,11 +4271,7 @@ function findConceptReferences(concept, knownSlugs) {
     ...scanList2("actions.allow", concept.actions.allow, others),
     ...scanList2("actions.restrict", concept.actions.restrict, others),
     ...scanList2("principle.immutableRules", concept.principle.immutableRules, others),
-    ...scanText2(
-      "principle.operationalPrinciple",
-      concept.principle.operationalPrinciple,
-      others
-    )
+    ...scanText2("principle.operationalPrinciple", concept.principle.operationalPrinciple, others)
   ];
 }
 function describeConceptReference(f) {
@@ -4324,6 +4321,20 @@ function checkConceptQuality(c, knownSlugs = []) {
 import { readFile as readFile2 } from "node:fs/promises";
 
 // src/schema/alignment.ts
+var ReferenceLockEntry = external_exports.object({
+  hash: external_exports.string(),
+  // sha256 앞 12 hex
+  size: external_exports.number().int().nonnegative(),
+  mtime: external_exports.string()
+  // ISO
+});
+var ReferenceLock = external_exports.object({
+  version: external_exports.literal(1).default(1),
+  at: external_exports.string(),
+  files: external_exports.record(external_exports.string(), ReferenceLockEntry).default({}),
+  // 상한에 걸려 일부만 훑은 등록 경로(paths.md에 적힌 그대로)
+  truncated: external_exports.array(external_exports.string()).default([])
+});
 var LockEntry = external_exports.object({ hash: external_exports.string(), at: external_exports.string() });
 var AlignmentLock = external_exports.record(external_exports.string(), LockEntry);
 var HistoryEntry = external_exports.object({
@@ -4492,12 +4503,12 @@ async function setConceptStatus(root, slug3, status) {
     const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
-        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
+        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (update-concepts), then retry.`
       );
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }
@@ -4709,6 +4720,9 @@ var InitConfigSchema = external_exports.object({
     "**/test_*.py"
   ]),
   enforcement: EnforcementSchema.default("standard"),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
   // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
   // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).

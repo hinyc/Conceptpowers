@@ -1,7 +1,7 @@
 // @concept:settled-status @concept:concept-scope @concept:concept-provenance
 // src/concept/quality.ts
 // green 승격의 결정론적 최소치. 규칙의 "의미적" 품질(위반 판별 가능한 문장인가)은
-// define-concept 스킬(LLM 루브릭)이 담당하고, 여기서는 기계 검증 가능한 결격만 거른다.
+// update-concepts 스킬(LLM 루브릭)이 담당하고, 여기서는 기계 검증 가능한 결격만 거른다.
 import type { Concept } from '../schema/concept.js';
 import { findImplementationLeaks, describeLeak } from './implementationLeak.js';
 import { findConceptReferences, describeConceptReference } from './conceptReference.js';

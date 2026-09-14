@@ -10,6 +10,6 @@ export const checkUnknownTags: GateCheck = async ({ report }) => {
     .join(', ');
   return {
     gate: 'unknown-tags',
-    reason: `[WARNING] 정의되지 않은 개념 태그 — ${detail}. define-concept로 개념을 정의하거나 태그를 고치세요.`,
+    reason: `[WARNING] 정의되지 않은 개념 태그 — ${detail}. update-concepts로 개념을 정의하거나 태그를 고치세요.`,
   };
 };

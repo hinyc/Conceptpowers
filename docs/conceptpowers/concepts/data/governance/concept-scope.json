@@ -81,7 +81,7 @@
     ]
   },
   "codeLinks": [
-    "skills/define-concept/SKILL.md",
+    "skills/update-concepts/references/define.md",
     "src/schema/concept.ts",
     "src/concept/quality.ts",
     "src/concept/conceptReference.ts",

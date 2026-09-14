@@ -42,17 +42,17 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
      `added`/`skipped` and **warn about any `external[].status` that is not `ok`** — `missing`
      (경로 없음) or `empty` (경로는 있으나 참고할 자료가 없음).
    - If the user skips: tell them once that they can register paths anytime with
-     `/conceptpowers:add-reference`, or by writing one path per line in
+     `/conceptpowers:update-concepts` (참고자료 경로 등록), or by writing one path per line in
      `docs/conceptpowers/reference/paths.md`, and that material can also be dropped straight into
      `docs/conceptpowers/reference/`. Do not ask again.
-   - See `/conceptpowers:add-reference` for the full flow.
-8. **Offer define-concept as the immediate next step.** Explain it in one line — "define-concept는
+   - See the 경로 등록(E) flow of `/conceptpowers:update-concepts` for the full flow.
+8. **Offer update-concepts as the immediate next step.** Explain it in one line — "update-concepts는
    프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
    작성하는 단계입니다. 참고자료를 reference/에 넣어두거나 `reference/paths.md`에 외부 로컬
    경로(여러 개 가능)를 등록해두면 그걸 근거로 함께 작성합니다." — then
-   **ask the user whether to continue with `/conceptpowers:define-concept` right now.** Proceed only
+   **ask the user whether to continue with `/conceptpowers:update-concepts` right now.** Proceed only
    on yes; if they decline, remind them it is available anytime.
-9. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:audit`.
+9. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:scan`.
 
 ## Full-scan procedure (strict)
 
@@ -64,10 +64,10 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 2. **Enumerate features by screen**: analyze what each screen/view renders and list the features it
    exposes to the user. Merge with step 1 into a deduplicated feature list.
 3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
-   implementing `codePaths` filled in (the _feature → code_ link) via `conceptpowers:define-feature`.
+   implementing `codePaths` filled in (the _feature → code_ link) via the 기능 명세 기록 procedure of `conceptpowers:scan`.
 4. **Infer concepts and wire features to them**: 기능은 접점마다 하나씩이지만 **개념은 접점마다
    하나가 아니다.** 기능에서 그 기능이 사용자에게 하는 **약속**을 뽑고, 그 약속을
-   `conceptpowers:define-concept`의 「자격 기준 관문」 여섯 물음(목적·관리 대상·작동 원리·약속·
+   `conceptpowers:update-concepts`(references/define.md)의 「자격 기준 관문」 여섯 물음(목적·관리 대상·작동 원리·약속·
    독립·표기)에 걸어 통과한 것만 개념으로 세운다.
    - 이미 같은 약속을 담은 개념이 있으면 **새로 만들지 않고** 그 개념의 slug를 그 기능의
      `concepts`에 적는다 — 여러 기능이 한 개념을 가리키는 것이 정상이다.
@@ -78,7 +78,7 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
    concept applies (utils/types/config/scripts, etc.), write **`@concept:none`** explicitly rather than
-   leaving them untagged. Then run `conceptpowers:update-mapping` (`node "<cli>" map ...`) so concept and
+   leaving them untagged. Then run the 태그·매핑 step of `conceptpowers:scan` (`node "<cli>" map ...`) so concept and
    feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
    real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.)
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
@@ -86,14 +86,14 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 
 ## Notes
 
-- `docs/conceptpowers/` is a **read-only baseline** afterward. Modify it only via update-baseline.
+- `docs/conceptpowers/` is a **read-only baseline** afterward. Modify it only via `update-concepts` on explicit user request.
 - **Reference doctrine**: `reference/` is read only when authoring/upgrading concepts
-  (define-concept / check-consistency); verification skills judge against concept rules alone.
+  (`update-concepts`); verification skills (`review`, `scan`) judge against concept rules alone.
 - The language can be changed later by editing `locale` in `init.json`.
 - If `init.json` already exists, it is not overwritten (user settings are preserved).
 - Concept `status` (3-state model):
   - `green` — user-approved and consistent; source of truth.
   - `pending` — user-authored draft; auto-promotes to `green` after a passing consistency check,
-    else stays pending until resolved. See `conceptpowers:define-concept`.
+    else stays pending until resolved. See `conceptpowers:update-concepts`.
   - `red` — auto-inferred (full scan) proposal awaiting user review and approval.
-    See the approve flow of `conceptpowers:update-baseline`.
+    See the approve flow (D) of `conceptpowers:update-concepts`.

@@ -75,7 +75,9 @@ describe('findImplementationLeaks', () => {
 
   it('코드 연결 목록에 적힌 경로는 지적하지 않는다', () => {
     const leaks = findImplementationLeaks(
-      makeConcept({ codeLinks: ['src/concept/quality.ts', 'skills/define-concept/SKILL.md'] })
+      makeConcept({
+        codeLinks: ['src/concept/quality.ts', 'skills/update-concepts/references/define.md'],
+      })
     );
     expect(leaks).toEqual([]);
   });

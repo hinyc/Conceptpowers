@@ -4271,11 +4271,7 @@ function findConceptReferences(concept, knownSlugs) {
     ...scanList2("actions.allow", concept.actions.allow, others),
     ...scanList2("actions.restrict", concept.actions.restrict, others),
     ...scanList2("principle.immutableRules", concept.principle.immutableRules, others),
-    ...scanText2(
-      "principle.operationalPrinciple",
-      concept.principle.operationalPrinciple,
-      others
-    )
+    ...scanText2("principle.operationalPrinciple", concept.principle.operationalPrinciple, others)
   ];
 }
 function describeConceptReference(f) {
@@ -4507,12 +4503,12 @@ async function setConceptStatus(root, slug3, status) {
     const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
-        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
+        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (update-concepts), then retry.`
       );
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }

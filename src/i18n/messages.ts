@@ -23,7 +23,7 @@ const REFERENCE_README_KO = `# 참고자료 (reference)
 - 자료를 이 폴더에 복사하는 대신, **이미 만들어진 \`paths.md\`**(안내 주석 포함)에 **참고할 로컬 경로 목록**을 적으면 됩니다.
 - 한 줄에 하나씩(또는 불릿), 파일/폴더 모두 가능하며 **여러 개** 등록할 수 있습니다.
 - **경로 형태**: 저장소 밖 자료는 **절대 경로**로 적되 홈 아래라면 \`~/…\`를 쓰세요(paths.md는 커밋되므로 \`/Users/이름/…\`은 본인 머신에서만 해석됩니다). 저장소 안 자료는 **저장소 루트 기준** 상대 경로입니다(현재 작업 디렉터리 기준이 아닙니다).
-- 직접 편집 대신 **\`/conceptpowers:add-reference\`** 로 경로를 불러주면 바로 등록되고, 등록된 경로에 실제로 읽을 자료가 있는지도 함께 확인해 줍니다.
+- 직접 편집 대신 **\`/conceptpowers:update-concepts\`** (참고자료 경로 등록)로 경로를 불러주면 바로 등록되고, 등록된 경로에 실제로 읽을 자료가 있는지도 함께 확인해 줍니다.
 - 에이전트는 이 폴더의 파일과 paths.md에 적힌 위치를 똑같이 참고자료로 취급합니다.
 - **이 폴더의 파일은 기본적으로 커밋되지 않습니다** (폴더 전용 .gitignore) — 공유되는 것은
   paths.md 하나뿐입니다. 기밀 문서를 넣어도 저장소에 올라가지 않고, 팀과 공유할
@@ -52,7 +52,7 @@ Put materials here for the agent to consult during concept work.
 - Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
 - One per line (or bullets); files or folders; **multiple entries** allowed.
 - **Which form**: material outside the repo takes an **absolute** path — prefer \`~/…\` under your home, since paths.md is committed and \`/Users/<you>/…\` resolves only on your machine. Material inside the repo takes a path relative to the **repo root** (not to your current working directory).
-- Instead of editing by hand, just tell **\`/conceptpowers:add-reference\`** the path — it registers the entry and reports whether the location actually holds readable material.
+- Instead of editing by hand, just tell **\`/conceptpowers:update-concepts\`** (reference path registration) the path — it registers the entry and reports whether the location actually holds readable material.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) — only paths.md
   is shared. Confidential documents stay local; to share material with the team,
@@ -92,10 +92,10 @@ export interface InitHintStrings {
   next: string;
   fillDocs: string;
   reference: string; // reference/ 폴더 용도 안내
-  referencePaths: string; // 외부 참고자료 경로 등록 수단 안내(paths.md / add-reference)
+  referencePaths: string; // 외부 참고자료 경로 등록 수단 안내(paths.md / update-concepts)
   viewerScript: string; // 뒤에 실행 명령(npm run …)이 붙는다
   viewerFile: string; // package.json이 없어 스크립트를 못 넣은 경우: 파일 경로 직접 안내
-  defineConcept: string; // 다음 단계인 define-concept 설명 + 바로 이어갈지 묻는 안내
+  defineConcept: string; // 다음 단계인 update-concepts 설명 + 바로 이어갈지 묻는 안내
 }
 
 export const initHintStrings: Record<Locale, InitHintStrings> = {
@@ -108,11 +108,11 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     reference:
       '참고자료(용어집·외부 명세·기획 문서 등)는 reference/ 폴더에 넣으면 개념 작업 시 참고합니다',
     referencePaths:
-      '폴더 밖의 자료는 경로만 등록하면 됩니다: /conceptpowers:add-reference 로 추가하거나 reference/paths.md에 한 줄씩 직접 적으세요 (건너뛰어도 나중에 언제든 가능)',
+      '폴더 밖의 자료는 경로만 등록하면 됩니다: /conceptpowers:update-concepts 로 추가하거나 reference/paths.md에 한 줄씩 직접 적으세요 (건너뛰어도 나중에 언제든 가능)',
     viewerScript: '뷰어 열기:',
     viewerFile: '뷰어를 직접 여세요:',
     defineConcept:
-      '개념 정의 시작: /conceptpowers:define-concept — 프로젝트의 규칙과 의도를 검사 가능한 계약(개념)으로 작성합니다. 바로 이어서 진행할지 사용자에게 물어보세요',
+      '개념 정의 시작: /conceptpowers:update-concepts — 프로젝트의 규칙과 의도를 검사 가능한 계약(개념)으로 작성합니다. 바로 이어서 진행할지 사용자에게 물어보세요',
   },
   en: {
     done: 'Conceptpowers initialized',
@@ -123,11 +123,11 @@ export const initHintStrings: Record<Locale, InitHintStrings> = {
     reference:
       'Drop reference material (glossary, external specs, PRDs) into reference/ — it is consulted during concept work',
     referencePaths:
-      'Material outside that folder only needs its path: register it with /conceptpowers:add-reference, or list one path per line in reference/paths.md (skippable — you can add it anytime)',
+      'Material outside that folder only needs its path: register it with /conceptpowers:update-concepts, or list one path per line in reference/paths.md (skippable — you can add it anytime)',
     viewerScript: 'Open the viewer:',
     viewerFile: 'Open the viewer file directly:',
     defineConcept:
-      "Start defining concepts: /conceptpowers:define-concept — turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away",
+      "Start defining concepts: /conceptpowers:update-concepts — turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away",
   },
 };
 

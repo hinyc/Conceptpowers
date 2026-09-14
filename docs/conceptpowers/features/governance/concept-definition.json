@@ -10,7 +10,7 @@
     "concept-provenance"
   ],
   "codePaths": [
-    "skills/define-concept/SKILL.md",
+    "skills/update-concepts/references/define.md",
     "src/concept/quality.ts",
     "src/schema/concept.ts",
     "src/store/conceptStore.ts"

@@ -52,7 +52,7 @@ describe('buildSessionStartOutput', () => {
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain('Conceptpowers');
     expect(ctx).toContain('/plugin/dist/cli.js');
-    expect(ctx).toContain('check-concept');
+    expect(ctx).toContain('conceptpowers:review');
   });
   it('활성화 컨텍스트에 커밋 패키징 규칙(스테이징 단위 게이트)을 담는다', async () => {
     await scaffoldInit(root, {});
@@ -61,7 +61,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('Commit packaging');
     expect(ctx).toContain('--diff-filter=ACMR');
     expect(ctx).toContain('SAME commit');
-    expect(ctx).toContain('update-mapping');
+    expect(ctx).toContain('conceptpowers:scan');
     expect(ctx).toContain('Drift Ignored');
     // 따라옴 판정은 '연결 코드 전부'가 아니라 '하나라도'다 — 안내문도 같은 잣대를 말해야 한다.
     expect(ctx).toContain('at least one');

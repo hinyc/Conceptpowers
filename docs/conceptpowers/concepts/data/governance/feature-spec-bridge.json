@@ -86,7 +86,7 @@
     },
     {
       "kind": "code",
-      "path": "skills/define-concept/SKILL.md",
+      "path": "skills/update-concepts/references/define.md",
       "locator": "\"Check the related feature spec in features/...\" 단계 (약 106-109줄)",
       "supports": "개념을 정의하는 자리에서 그 개념을 가리키는 기능 기록을 함께 만든다 — \"a concept with no feature pointing at it is an orphan in the knowledge graph\""
     },

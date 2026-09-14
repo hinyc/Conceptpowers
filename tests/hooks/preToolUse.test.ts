@@ -78,7 +78,7 @@ describe('decidePreToolUse', () => {
       tool: 'Edit',
       input: { file_path: join(root, 'src/a.ts') },
     });
-    expect(r!.hookSpecificOutput.additionalContext).toContain('check-concept');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('conceptpowers:review');
   });
   it('git commit이면서 unknownTag가 있으면 ask한다 (changedFiles 제공)', async () => {
     await scaffoldInit(root, {});
@@ -112,7 +112,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: [],
     });
-    expect(r!.hookSpecificOutput.additionalContext).toContain('check-consistency');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('update-concepts');
   });
   it('staged 파일이 미승인(red) 개념을 참조하면 경고하며 ask로 확인을 요구한다', async () => {
     await scaffoldInit(root, {});

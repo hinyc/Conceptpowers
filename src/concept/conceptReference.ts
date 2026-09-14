@@ -22,7 +22,11 @@ function slugPattern(slug: string): RegExp {
   return new RegExp(`(?<![A-Za-z0-9-])${escapeRegExp(slug)}(?![A-Za-z0-9-])`);
 }
 
-function scanText(field: string, text: string, slugs: readonly string[]): ConceptReferenceFinding[] {
+function scanText(
+  field: string,
+  text: string,
+  slugs: readonly string[]
+): ConceptReferenceFinding[] {
   return slugs.filter((s) => slugPattern(s).test(text)).map((slug) => ({ field, slug }));
 }
 
@@ -53,11 +57,7 @@ export function findConceptReferences(
     ...scanList('actions.allow', concept.actions.allow, others),
     ...scanList('actions.restrict', concept.actions.restrict, others),
     ...scanList('principle.immutableRules', concept.principle.immutableRules, others),
-    ...scanText(
-      'principle.operationalPrinciple',
-      concept.principle.operationalPrinciple,
-      others
-    ),
+    ...scanText('principle.operationalPrinciple', concept.principle.operationalPrinciple, others),
   ];
 }
 

@@ -7191,7 +7191,7 @@ var REFERENCE_README_KO = `# \uCC38\uACE0\uC790\uB8CC (reference)
 - \uC790\uB8CC\uB97C \uC774 \uD3F4\uB354\uC5D0 \uBCF5\uC0AC\uD558\uB294 \uB300\uC2E0, **\uC774\uBBF8 \uB9CC\uB4E4\uC5B4\uC9C4 \`paths.md\`**(\uC548\uB0B4 \uC8FC\uC11D \uD3EC\uD568)\uC5D0 **\uCC38\uACE0\uD560 \uB85C\uCEEC \uACBD\uB85C \uBAA9\uB85D**\uC744 \uC801\uC73C\uBA74 \uB429\uB2C8\uB2E4.
 - \uD55C \uC904\uC5D0 \uD558\uB098\uC529(\uB610\uB294 \uBD88\uB9BF), \uD30C\uC77C/\uD3F4\uB354 \uBAA8\uB450 \uAC00\uB2A5\uD558\uBA70 **\uC5EC\uB7EC \uAC1C** \uB4F1\uB85D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.
 - **\uACBD\uB85C \uD615\uD0DC**: \uC800\uC7A5\uC18C \uBC16 \uC790\uB8CC\uB294 **\uC808\uB300 \uACBD\uB85C**\uB85C \uC801\uB418 \uD648 \uC544\uB798\uB77C\uBA74 \`~/\u2026\`\uB97C \uC4F0\uC138\uC694(paths.md\uB294 \uCEE4\uBC0B\uB418\uBBC0\uB85C \`/Users/\uC774\uB984/\u2026\`\uC740 \uBCF8\uC778 \uBA38\uC2E0\uC5D0\uC11C\uB9CC \uD574\uC11D\uB429\uB2C8\uB2E4). \uC800\uC7A5\uC18C \uC548 \uC790\uB8CC\uB294 **\uC800\uC7A5\uC18C \uB8E8\uD2B8 \uAE30\uC900** \uC0C1\uB300 \uACBD\uB85C\uC785\uB2C8\uB2E4(\uD604\uC7AC \uC791\uC5C5 \uB514\uB809\uD130\uB9AC \uAE30\uC900\uC774 \uC544\uB2D9\uB2C8\uB2E4).
-- \uC9C1\uC811 \uD3B8\uC9D1 \uB300\uC2E0 **\`/conceptpowers:add-reference\`** \uB85C \uACBD\uB85C\uB97C \uBD88\uB7EC\uC8FC\uBA74 \uBC14\uB85C \uB4F1\uB85D\uB418\uACE0, \uB4F1\uB85D\uB41C \uACBD\uB85C\uC5D0 \uC2E4\uC81C\uB85C \uC77D\uC744 \uC790\uB8CC\uAC00 \uC788\uB294\uC9C0\uB3C4 \uD568\uAED8 \uD655\uC778\uD574 \uC90D\uB2C8\uB2E4.
+- \uC9C1\uC811 \uD3B8\uC9D1 \uB300\uC2E0 **\`/conceptpowers:update-concepts\`** (\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uB4F1\uB85D)\uB85C \uACBD\uB85C\uB97C \uBD88\uB7EC\uC8FC\uBA74 \uBC14\uB85C \uB4F1\uB85D\uB418\uACE0, \uB4F1\uB85D\uB41C \uACBD\uB85C\uC5D0 \uC2E4\uC81C\uB85C \uC77D\uC744 \uC790\uB8CC\uAC00 \uC788\uB294\uC9C0\uB3C4 \uD568\uAED8 \uD655\uC778\uD574 \uC90D\uB2C8\uB2E4.
 - \uC5D0\uC774\uC804\uD2B8\uB294 \uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uACFC paths.md\uC5D0 \uC801\uD78C \uC704\uCE58\uB97C \uB611\uAC19\uC774 \uCC38\uACE0\uC790\uB8CC\uB85C \uCDE8\uAE09\uD569\uB2C8\uB2E4.
 - **\uC774 \uD3F4\uB354\uC758 \uD30C\uC77C\uC740 \uAE30\uBCF8\uC801\uC73C\uB85C \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4** (\uD3F4\uB354 \uC804\uC6A9 .gitignore) \u2014 \uACF5\uC720\uB418\uB294 \uAC83\uC740
   paths.md \uD558\uB098\uBFD0\uC785\uB2C8\uB2E4. \uAE30\uBC00 \uBB38\uC11C\uB97C \uB123\uC5B4\uB3C4 \uC800\uC7A5\uC18C\uC5D0 \uC62C\uB77C\uAC00\uC9C0 \uC54A\uACE0, \uD300\uACFC \uACF5\uC720\uD560
@@ -7219,7 +7219,7 @@ Put materials here for the agent to consult during concept work.
 - Instead of copying material here, list **local paths to consult** in the **pre-created \`paths.md\`** (it ships with usage comments).
 - One per line (or bullets); files or folders; **multiple entries** allowed.
 - **Which form**: material outside the repo takes an **absolute** path \u2014 prefer \`~/\u2026\` under your home, since paths.md is committed and \`/Users/<you>/\u2026\` resolves only on your machine. Material inside the repo takes a path relative to the **repo root** (not to your current working directory).
-- Instead of editing by hand, just tell **\`/conceptpowers:add-reference\`** the path \u2014 it registers the entry and reports whether the location actually holds readable material.
+- Instead of editing by hand, just tell **\`/conceptpowers:update-concepts\`** (reference path registration) the path \u2014 it registers the entry and reports whether the location actually holds readable material.
 - The agent treats files in this folder and the locations listed in paths.md the same way.
 - **Files in this folder are NOT committed by default** (folder-level .gitignore) \u2014 only paths.md
   is shared. Confidential documents stay local; to share material with the team,
@@ -7254,10 +7254,10 @@ var initHintStrings = {
     next: "\uB2E4\uC74C \uB2E8\uACC4",
     fillDocs: "architecture.md / infra.md\uB97C \uCC44\uC6CC \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900\uC744 \uC791\uC131\uD558\uC138\uC694",
     reference: "\uCC38\uACE0\uC790\uB8CC(\uC6A9\uC5B4\uC9D1\xB7\uC678\uBD80 \uBA85\uC138\xB7\uAE30\uD68D \uBB38\uC11C \uB4F1)\uB294 reference/ \uD3F4\uB354\uC5D0 \uB123\uC73C\uBA74 \uAC1C\uB150 \uC791\uC5C5 \uC2DC \uCC38\uACE0\uD569\uB2C8\uB2E4",
-    referencePaths: "\uD3F4\uB354 \uBC16\uC758 \uC790\uB8CC\uB294 \uACBD\uB85C\uB9CC \uB4F1\uB85D\uD558\uBA74 \uB429\uB2C8\uB2E4: /conceptpowers:add-reference \uB85C \uCD94\uAC00\uD558\uAC70\uB098 reference/paths.md\uC5D0 \uD55C \uC904\uC529 \uC9C1\uC811 \uC801\uC73C\uC138\uC694 (\uAC74\uB108\uB6F0\uC5B4\uB3C4 \uB098\uC911\uC5D0 \uC5B8\uC81C\uB4E0 \uAC00\uB2A5)",
+    referencePaths: "\uD3F4\uB354 \uBC16\uC758 \uC790\uB8CC\uB294 \uACBD\uB85C\uB9CC \uB4F1\uB85D\uD558\uBA74 \uB429\uB2C8\uB2E4: /conceptpowers:update-concepts \uB85C \uCD94\uAC00\uD558\uAC70\uB098 reference/paths.md\uC5D0 \uD55C \uC904\uC529 \uC9C1\uC811 \uC801\uC73C\uC138\uC694 (\uAC74\uB108\uB6F0\uC5B4\uB3C4 \uB098\uC911\uC5D0 \uC5B8\uC81C\uB4E0 \uAC00\uB2A5)",
     viewerScript: "\uBDF0\uC5B4 \uC5F4\uAE30:",
     viewerFile: "\uBDF0\uC5B4\uB97C \uC9C1\uC811 \uC5EC\uC138\uC694:",
-    defineConcept: "\uAC1C\uB150 \uC815\uC758 \uC2DC\uC791: /conceptpowers:define-concept \u2014 \uD504\uB85C\uC81D\uD2B8\uC758 \uADDC\uCE59\uACFC \uC758\uB3C4\uB97C \uAC80\uC0AC \uAC00\uB2A5\uD55C \uACC4\uC57D(\uAC1C\uB150)\uC73C\uB85C \uC791\uC131\uD569\uB2C8\uB2E4. \uBC14\uB85C \uC774\uC5B4\uC11C \uC9C4\uD589\uD560\uC9C0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694"
+    defineConcept: "\uAC1C\uB150 \uC815\uC758 \uC2DC\uC791: /conceptpowers:update-concepts \u2014 \uD504\uB85C\uC81D\uD2B8\uC758 \uADDC\uCE59\uACFC \uC758\uB3C4\uB97C \uAC80\uC0AC \uAC00\uB2A5\uD55C \uACC4\uC57D(\uAC1C\uB150)\uC73C\uB85C \uC791\uC131\uD569\uB2C8\uB2E4. \uBC14\uB85C \uC774\uC5B4\uC11C \uC9C4\uD589\uD560\uC9C0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694"
   },
   en: {
     done: "Conceptpowers initialized",
@@ -7265,10 +7265,10 @@ var initHintStrings = {
     next: "Next steps",
     fillDocs: "Fill in architecture.md / infra.md \u2014 the high-level basis for concepts",
     reference: "Drop reference material (glossary, external specs, PRDs) into reference/ \u2014 it is consulted during concept work",
-    referencePaths: "Material outside that folder only needs its path: register it with /conceptpowers:add-reference, or list one path per line in reference/paths.md (skippable \u2014 you can add it anytime)",
+    referencePaths: "Material outside that folder only needs its path: register it with /conceptpowers:update-concepts, or list one path per line in reference/paths.md (skippable \u2014 you can add it anytime)",
     viewerScript: "Open the viewer:",
     viewerFile: "Open the viewer file directly:",
-    defineConcept: "Start defining concepts: /conceptpowers:define-concept \u2014 turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away"
+    defineConcept: "Start defining concepts: /conceptpowers:update-concepts \u2014 turn the project's rules and intent into checkable contracts (concepts). Ask the user whether to continue with it right away"
   }
 };
 function buildInitHint(locale, opts) {
@@ -7569,11 +7569,7 @@ function findConceptReferences(concept, knownSlugs) {
     ...scanList2("actions.allow", concept.actions.allow, others),
     ...scanList2("actions.restrict", concept.actions.restrict, others),
     ...scanList2("principle.immutableRules", concept.principle.immutableRules, others),
-    ...scanText2(
-      "principle.operationalPrinciple",
-      concept.principle.operationalPrinciple,
-      others
-    )
+    ...scanText2("principle.operationalPrinciple", concept.principle.operationalPrinciple, others)
   ];
 }
 function describeConceptReference(f) {
@@ -7821,12 +7817,12 @@ async function setConceptStatus(root, slug3, status) {
     const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
-        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (define-concept), then retry.`
+        `Cannot promote to green \u2014 quality deficiencies for ${slug3}: ${quality.deficiencies.join("; ")}. Fill the missing parts together with the user (update-concepts), then retry.`
       );
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
-        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run conceptpowers:check-consistency, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
+        `Cannot promote to green \u2014 no fresh passing consistency attestation for ${slug3}. Run the consistency check of conceptpowers:update-concepts, then record it: attest-consistency ${slug3} --result pass --compared <\uBE44\uAD50\uD55C slug\uB4E4>`
       );
     }
   }
@@ -8324,7 +8320,7 @@ var PATHS_TEMPLATE = [
   "# so this file registers nothing until you add real (uncommented) entries.",
   "#",
   "# These are read ONLY while defining, upgrading, or verifying a concept",
-  "# (define-concept / check-consistency) \u2014 never during ordinary code checks.",
+  "# (the update-concepts skill) \u2014 never during ordinary code checks.",
   "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
   "#",
   "# Which form to use:",
@@ -8336,7 +8332,7 @@ var PATHS_TEMPLATE = [
   "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
   "#       docs/legal/contract.pdf",
   "#",
-  "# Or skip the editing: run /conceptpowers:add-reference and give it the path \u2014 it appends the",
+  "# Or skip the editing: run /conceptpowers:update-concepts and give it the path \u2014 it appends the",
   "# entry here and warns if the location holds no readable material.",
   "#",
   "# Uncomment and edit the examples below, or add your own:",

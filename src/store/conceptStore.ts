@@ -146,13 +146,13 @@ export async function setConceptStatus(
       throw new Error(
         `Cannot promote to green — quality deficiencies for ${slug}: ` +
           `${quality.deficiencies.join('; ')}. ` +
-          `Fill the missing parts together with the user (define-concept), then retry.`
+          `Fill the missing parts together with the user (update-concepts), then retry.`
       );
     }
     if (!freshPassAttest(await readAttestLog(root), concept)) {
       throw new Error(
         `Cannot promote to green — no fresh passing consistency attestation for ${slug}. ` +
-          `Run conceptpowers:check-consistency, then record it: ` +
+          `Run the consistency check of conceptpowers:update-concepts, then record it: ` +
           `attest-consistency ${slug} --result pass --compared <비교한 slug들>`
       );
     }

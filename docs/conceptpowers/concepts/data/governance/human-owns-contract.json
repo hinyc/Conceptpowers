@@ -56,8 +56,8 @@
     ]
   },
   "codeLinks": [
-    "skills/define-concept/SKILL.md",
-    "skills/update-baseline/SKILL.md",
+    "skills/update-concepts/references/define.md",
+    "skills/update-concepts/SKILL.md",
     "skills/auto/SKILL.md"
   ],
   "sources": [
@@ -69,7 +69,7 @@
     },
     {
       "kind": "code",
-      "path": "skills/define-concept/SKILL.md",
+      "path": "skills/update-concepts/references/define.md",
       "locator": "Step 7 — \"Auto-inferred during a full scan → status: red (unapproved; user approves later)\"",
       "supports": "\"AI는 개념의 규칙을 스스로 만들어 저장하지 않는다\" — 에이전트가 자동 추론한 개념은 곧바로 확정(green)되지 않고 항상 사람의 승인을 기다리는 red로 태어남"
     },
