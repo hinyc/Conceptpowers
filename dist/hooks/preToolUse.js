@@ -5363,7 +5363,7 @@ function sameJsonText(a, b) {
 
 // src/hooks/command/commitTree.ts
 import { execFile as execFile4 } from "node:child_process";
-import { copyFile, mkdtemp, readFile as readFile13, rm } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile as readFile13, rm, stat as stat2, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as join8, resolve as resolve2 } from "node:path";
 import { promisify as promisify4 } from "node:util";
@@ -5432,6 +5432,8 @@ async function prepareIndex(plan, cwd, env, hasHead) {
     const realIndex = resolve2(cwd, (await git(["rev-parse", "--git-path", "index"], cwd)).trim());
     try {
       await copyFile(realIndex, env.GIT_INDEX_FILE);
+      const { atime, mtime } = await stat2(realIndex);
+      await utimes(env.GIT_INDEX_FILE, atime, mtime);
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
       await git(["read-tree", "--empty"], cwd, env);

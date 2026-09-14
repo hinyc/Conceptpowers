@@ -1,7 +1,8 @@
 // @concept:generated-not-hand-edited @concept:plugin-version-sync
-// 릴리스 절차를 한 번에 강제한다: 버전 4곳 동기화 → dist 재빌드 → 커밋 + 태그.
-// Claude Code·Codex 자동 업데이트는 plugin.json의 version 문자열이 바뀔 때만 사용자에게 반영되므로,
-// "버전만 올리고 dist를 안 빌드"하거나 "커밋만 하고 버전을 안 올리는" 실수를 구조적으로 막는다.
+// 릴리스 절차를 한 번에 강제한다: 검증(타입 검사·커버리지 기준 테스트) → 버전 4곳 동기화 → 재빌드 →
+// 생성물 전부를 담은 커밋 + 태그. Claude Code·Codex 자동 업데이트는 plugin.json의 version 문자열이 바뀔 때만
+// 사용자에게 반영되므로, "버전만 올리고 빌드를 안 담거나" "검증 없이 올리는" 실수를 구조적으로 막는다.
+// 무엇을 담고 무엇에서 멈추는지는 releaseSteps.mjs가 정한다.
 //
 // 사용법: pnpm release <patch|minor|major|x.y.z>
 // 예) pnpm release patch   pnpm release minor   pnpm release 1.2.0
@@ -9,19 +10,16 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import {
+  MANIFESTS,
+  RELEASE_PATHS,
+  RENDER_COMMAND,
+  VERIFY_COMMANDS,
+  changesOutsideRelease,
+  nextVersion,
+} from './releaseSteps.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-// 버전 문자열을 담은 모든 매니페스트. 모두 항상 동일한 값이어야 한다.
-// Codex 마켓플레이스(.agents/plugins/marketplace.json)는 version 필드가 없어 대상이 아니다.
-const MANIFESTS = [
-  'package.json',
-  '.claude-plugin/plugin.json',
-  '.claude-plugin/marketplace.json',
-  '.codex-plugin/plugin.json',
-];
-
-const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
 
 function parseBumpArg(argv) {
   const arg = argv[2];
@@ -31,28 +29,7 @@ function parseBumpArg(argv) {
   return arg;
 }
 
-function nextVersion(current, bump) {
-  const match = SEMVER.exec(current);
-  if (!match) {
-    throw new Error(`현재 버전이 SemVer 형식이 아닙니다: "${current}"`);
-  }
-  const [major, minor, patch] = match.slice(1).map(Number);
-  switch (bump) {
-    case 'major':
-      return `${major + 1}.0.0`;
-    case 'minor':
-      return `${major}.${minor + 1}.0`;
-    case 'patch':
-      return `${major}.${minor}.${patch + 1}`;
-    default:
-      if (!SEMVER.test(bump)) {
-        throw new Error(`알 수 없는 버전 인자: "${bump}" (patch|minor|major 또는 x.y.z)`);
-      }
-      return bump;
-  }
-}
-
-// 매니페스트에서 현재 버전을 읽고, 셋이 일치하는지 검증한다.
+// 매니페스트에서 현재 버전을 읽고, 모두 일치하는지 검증한다.
 async function readCurrentVersion() {
   const versions = await Promise.all(
     MANIFESTS.map(async (rel) => {
@@ -94,11 +71,16 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function git(args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+// 출력 앞뒤 공백을 지우지 않는 원본 호출 — porcelain 출력은 첫 글자가 공백일 수 있다.
+function gitRaw(args) {
+  return execFileSync('git', args, { cwd: root, encoding: 'utf8' });
 }
 
-// 릴리스 커밋이 "버전 + dist"만 담도록, 시작 시점의 워킹 트리는 깨끗해야 한다.
+function git(args) {
+  return gitRaw(args).trim();
+}
+
+// 릴리스 커밋이 "버전 + 생성물"만 담도록, 시작 시점의 워킹 트리는 깨끗해야 한다.
 function assertCleanTree() {
   const status = git(['status', '--porcelain']);
   if (status) {
@@ -110,6 +92,26 @@ function assertTagAbsent(tag) {
   const existing = git(['tag', '--list', tag]);
   if (existing) {
     throw new Error(`태그 ${tag}가 이미 존재합니다.`);
+  }
+}
+
+// 검증은 버전을 올리기 전에 한다 — 실패하면 아무 파일도 바뀌지 않은 채 멈춘다.
+function verify() {
+  for (const [command, args] of VERIFY_COMMANDS) {
+    console.log(`검증: ${command} ${args.join(' ')}`);
+    execFileSync(command, args, { cwd: root, stdio: 'inherit' });
+  }
+}
+
+// 빌드 뒤 릴리스 경로 밖에 변경이 남았으면 커밋하지 않는다.
+function assertOnlyReleaseChanges() {
+  const outside = changesOutsideRelease(
+    gitRaw(['status', '--porcelain=v1', '-z', '--untracked-files=all'])
+  );
+  if (outside.length > 0) {
+    throw new Error(
+      `릴리스 경로 밖의 파일이 바뀌었습니다(생성물 목록이나 빌드를 확인하세요): ${outside.join(', ')}`
+    );
   }
 }
 
@@ -126,16 +128,21 @@ async function run() {
     const tag = `v${next}`;
     assertTagAbsent(tag);
 
+    verify();
     console.log(`릴리스: ${current} → ${next}`);
 
     await syncVersion(current, next);
     console.log('버전 동기화 완료 (package.json / plugin.json / marketplace.json)');
 
-    // 훅은 dist/*.js를 직접 실행하므로 배포본에는 최신 빌드가 반드시 포함돼야 한다.
-    console.log('dist 재빌드 중...');
+    // 훅은 dist/*.js를, 뷰어는 assets/serve.mjs를 직접 실행하므로 배포본에는 최신 빌드가 반드시 포함돼야 한다.
+    console.log('재빌드 중...');
     execFileSync('pnpm', ['build'], { cwd: root, stdio: 'inherit' });
+    // 이 저장소의 뷰어 사본을 새 버전 도장으로 다시 렌더한다(빌드는 사본을 만들지 않는다).
+    const [renderCommand, renderArgs] = RENDER_COMMAND;
+    execFileSync(renderCommand, renderArgs, { cwd: root, stdio: 'inherit' });
+    assertOnlyReleaseChanges();
 
-    git(['add', ...MANIFESTS, 'dist']);
+    git(['add', ...RELEASE_PATHS]);
     git(['commit', '-m', `chore(release): ${tag}`]);
     // annotated 태그로 만든다: `git push --follow-tags`는 annotated 태그만 밀기 때문에,
     // lightweight 태그로 두면 안내대로 푸시해도 태그가 조용히 누락된다.

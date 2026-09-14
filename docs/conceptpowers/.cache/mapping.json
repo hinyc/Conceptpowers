@@ -1,6 +1,5 @@
 {
   "plugin-version-sync": [
-    "scripts/release.mjs",
     "src/init/ensureConfigDefaults.ts",
     "src/init/packageScript.ts",
     "src/version/autoSync.ts",
@@ -17,7 +16,9 @@
     "tests/init/syncGenerated.test.ts",
     "tests/schema/initConfig.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "scripts/release.mjs",
+    "scripts/releaseSteps.mjs"
   ],
   "globally-unique-slug": [
     "assets/concept.css",
@@ -72,7 +73,6 @@
     "tests/hooks/sessionStart.test.ts"
   ],
   "generated-not-hand-edited": [
-    "scripts/release.mjs",
     "scripts/build.mjs",
     "src/viewer/manifest.ts",
     "src/viewer/render.ts",
@@ -84,7 +84,10 @@
     "tests/viewer/renderDisk.test.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "scripts/release.mjs",
+    "scripts/releaseSteps.mjs",
+    "tests/scripts/release.test.ts"
   ],
   "knowledge-graph-view": [
     "assets/concept.css",
@@ -236,11 +239,9 @@
     "tests/util/isMain.test.ts",
     "tests/hooks/gateFailure.test.ts",
     "src/util/exitAfterWrite.ts",
-    "tests/hooks/entrypoint.e2e.test.ts",
     "src/hooks/command/shellWords.ts",
     "src/hooks/command/commitPlan.ts",
     "tests/hooks/commitPlan.test.ts",
-    "tests/hooks/commitFiles.test.ts",
     "tests/hooks/commitGate.test.ts",
     "src/hooks/command/commandKinds.ts",
     "src/hooks/command/commitArgs.ts",
@@ -250,7 +251,6 @@
     "tests/hooks/evidenceGate.test.ts",
     "tests/hooks/governanceFiles.test.ts",
     "tests/hooks/noConceptNote.test.ts",
-    "src/hooks/command/commitTree.ts",
     "src/hooks/gates/alwaysAsk.ts",
     "src/hooks/command/commitFiles.ts",
     "src/hooks/gates/evidenceGate.ts",
@@ -258,7 +258,10 @@
     "src/hooks/command/stagingReach.ts",
     "tests/hooks/stagingReach.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/hooks/entrypoint.e2e.test.ts",
+    "src/hooks/command/commitTree.ts",
+    "tests/hooks/commitFiles.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -313,16 +316,17 @@
     "src/schema/alignment.ts",
     "tests/schema/alignment.test.ts",
     "tests/hooks/preToolUse.test.ts",
-    "tests/hooks/commitFiles.test.ts",
     "tests/hooks/commitGate.test.ts",
     "src/hooks/command/recordCommands.ts",
     "tests/hooks/recordCommands.test.ts",
     "tests/mapping/leadingComment.test.ts",
-    "src/hooks/command/commitTree.ts",
     "src/hooks/gates/governanceFilesGate.ts",
     "tests/drift/reconcileCommitted.test.ts",
     "src/drift/noCode.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/hooks/entrypoint.e2e.test.ts",
+    "src/hooks/command/commitTree.ts",
+    "tests/hooks/commitFiles.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
@@ -389,7 +393,8 @@
     "tests/store/conceptStore.test.ts",
     "tests/viewer/serve.test.ts",
     "tests/hooks/governanceFiles.test.ts",
-    "src/hooks/gates/governanceFilesGate.ts"
+    "src/hooks/gates/governanceFilesGate.ts",
+    "tests/hooks/entrypoint.e2e.test.ts"
   ],
   "list-filter": [
     "tests/viewer/listLayout.test.ts",

@@ -6,7 +6,7 @@
 // diff.relative 같은 설정에 흔들리지 않는다. 계산에 쓴 blob·tree 객체는 저장소에 남는다(참조되지 않는 객체라
 // git gc가 정리한다). 계산하지 못하면 던진다 — "검사할 파일 없음 = 통과"가 되지 않도록(fail-closed).
 import { execFile } from 'node:child_process';
-import { copyFile, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, stat, utimes } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -127,6 +127,11 @@ async function prepareIndex(
     const realIndex = resolve(cwd, (await git(['rev-parse', '--git-path', 'index'], cwd)).trim());
     try {
       await copyFile(realIndex, env.GIT_INDEX_FILE);
+      // 색인 파일의 시각을 원본과 같게 둔다. git은 색인 파일보다 늦게(같은 시각 포함) 기록된 항목을 다시 해시해
+      // 같은 초 안에 고친 파일도 잡는데(racy git), 복사로 색인 시각이 새로워지면 그 파일을 바뀌지 않은 것으로
+      // 믿어 커밋될 파일에서 빠뜨린다. 밀리초로 잘린 시각은 원본보다 이르거나 같으므로 더 많이 다시 해시하는 쪽이다.
+      const { atime, mtime } = await stat(realIndex);
+      await utimes(env.GIT_INDEX_FILE, atime, mtime);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
       await git(['read-tree', '--empty'], cwd, env); // 아직 색인이 없는 새 저장소
