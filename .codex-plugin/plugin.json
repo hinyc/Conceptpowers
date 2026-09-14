@@ -1,0 +1,32 @@
+{
+  "name": "conceptpowers",
+  "version": "1.14.3",
+  "description": "Concept-driven development governance: define concepts before code, enforce that changes never violate them",
+  "author": {
+    "name": "inyeol Hong",
+    "email": "dlsduf@gmail.com",
+    "url": "https://github.com/hinyc"
+  },
+  "homepage": "https://github.com/hinyc/Conceptpowers",
+  "repository": "https://github.com/hinyc/Conceptpowers",
+  "license": "MIT",
+  "keywords": ["concept", "governance", "skills", "consistency", "guardrails"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Conceptpowers",
+    "shortDescription": "Concept-first governance that keeps code aligned with its concepts",
+    "longDescription": "Define concepts (allow / restrict / immutable rules) before writing code, verify changes against them, and gate commits when code drifts from its concepts. Dormant until a project opts in with docs/conceptpowers/init.json.",
+    "developerName": "inyeol Hong",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/hinyc/Conceptpowers",
+    "defaultPrompt": [
+      "Enable concept governance on this project.",
+      "Check whether this change follows its concepts.",
+      "Find code that is not covered by any concept."
+    ],
+    "brandColor": "#4F46E5",
+    "screenshots": []
+  }
+}

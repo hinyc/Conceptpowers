@@ -103,7 +103,18 @@ Claude Code then refreshes the plugin at startup and prompts `/reload-plugins` w
 /plugin update conceptpowers@conceptpowers-dev  # update the plugin
 ```
 
-> **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `plugin.json` / `marketplace.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
+### Codex (OpenAI) — developer marketplace
+
+The same repository also ships a Codex plugin (`.codex-plugin/plugin.json`, marketplace at `.agents/plugins/marketplace.json`). Skills and hooks are shared with the Claude Code build. From your shell:
+
+```bash
+codex plugin marketplace add hinyc/Conceptpowers   # register the conceptpowers-dev marketplace
+codex plugin add conceptpowers@conceptpowers-dev   # install the plugin
+```
+
+Codex does not run plugin hooks until you trust them: open Codex, run `/hooks`, and trust the Conceptpowers hooks — without this the commit gate and session rules stay off. Then enable it per project exactly as above (the `init` skill). To update: `codex plugin marketplace upgrade`, then re-run `codex plugin add conceptpowers@conceptpowers-dev` (re-trust in `/hooks` if the hook definition changed).
+
+> **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
 
 ### Version check notifications
 

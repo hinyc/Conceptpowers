@@ -1,0 +1,20 @@
+{
+  "name": "conceptpowers-dev",
+  "interface": {
+    "displayName": "Conceptpowers Dev"
+  },
+  "plugins": [
+    {
+      "name": "conceptpowers",
+      "source": {
+        "source": "url",
+        "url": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

@@ -103,7 +103,18 @@ Conceptpowers는 서드파티 마켓플레이스에서 배포되며, **자동 �
 /plugin update conceptpowers@conceptpowers-dev  # 플러그인 업데이트
 ```
 
-> **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `plugin.json` / `marketplace.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
+### Codex (OpenAI) — 개발자 마켓플레이스
+
+같은 저장소가 Codex 플러그인도 함께 배포한다(`.codex-plugin/plugin.json`, 마켓플레이스는 `.agents/plugins/marketplace.json`). 스킬과 훅은 Claude Code판과 같은 것을 쓴다. 셸에서:
+
+```bash
+codex plugin marketplace add hinyc/Conceptpowers   # conceptpowers-dev 마켓플레이스 등록
+codex plugin add conceptpowers@conceptpowers-dev   # 플러그인 설치
+```
+
+Codex는 플러그인 훅을 신뢰하기 전까지 실행하지 않는다 — Codex에서 `/hooks`를 열어 Conceptpowers 훅을 신뢰(trust)해야 커밋 게이트와 세션 규칙이 켜진다. 이후 프로젝트 활성화는 위와 같다(`init` 스킬). 업데이트는 `codex plugin marketplace upgrade` 뒤 `codex plugin add conceptpowers@conceptpowers-dev`를 다시 실행한다(훅 정의가 바뀌었으면 `/hooks`에서 다시 신뢰).
+
+> **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
 
 ### 새 버전 알림 (version check)
 
