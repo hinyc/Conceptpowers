@@ -196,15 +196,37 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "governance-mode": {
-    "hash": "3:be0910589a5f",
+    "hash": "3:fa21cc7e8452",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.370Z",
+    "at": "2026-09-14T13:14:45.670Z",
     "compared": [
-      "settled-status",
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
       "drift-reconcile",
-      "reference-privacy"
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "새 불변 규칙(통과는 명령 실행 허락이 아니다)을 전 개념과 대조: concept-code-mapping(표식 없음으로 막지 않음)·drift-reconcile(무관 커밋 안 막음)은 '막지 않음'이지 '대신 승인'이 아니므로 충돌 없음. settled-status의 승인은 개념 승인으로 대상이 다름(규칙이 '명령'을 명시). concept-scope 문장 규칙(코드 표기·타 개념명 없음) 충족. 참고자료에 훅 권한 관련 내용 없음."
   },
   "concept-scope": {
     "hash": "3:fad8db1c941f",

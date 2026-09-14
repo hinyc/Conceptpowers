@@ -52,7 +52,7 @@ describe('end-to-end', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['src/a.ts'],
     });
-    expect(ok!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(ok!.hookSpecificOutput.permissionDecision).toBeUndefined();
 
     writeFileSync(join(root, 'src/b.ts'), '// @concept:ghost\n');
     const blocked = await decidePreToolUse(root, {

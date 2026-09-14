@@ -102,7 +102,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: [rel],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('home-search');
   });
   it('git commit이고 정합성 OK면 검증 리마인더만 주입(allow 유지)', async () => {
@@ -271,7 +271,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['README.md'],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
     const ctx = r!.hookSpecificOutput.additionalContext ?? '';
     expect(ctx).toContain('DRIFT REVIEW');
     expect(ctx).toContain('auth-token');
@@ -434,7 +434,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['docs/conceptpowers/concepts/data/auth-token.json'],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
   it('개념 drift인데 맵핑된 코드만 스테이징되고 개념 문서가 빠지면 ask로 잡는다 (규칙: 개념 문서 동반 필수)', async () => {
@@ -529,7 +529,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['src/login.ts', 'docs/conceptpowers/concepts/data/auth-token.json'],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
   it('drift여도 연결 코드 하나와 개념 문서가 스테이지에 있으면 막지 않는다 (규칙: 따라옴 = 하나라도 + 문서 동반)', async () => {
@@ -585,7 +585,7 @@ describe('decidePreToolUse', () => {
       input: { command: 'git commit -m x' },
       changedFiles: ['src/session.ts', 'docs/conceptpowers/concepts/data/auth-token.json'],
     });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
   it('충돌 기록이 있는 pending 개념을 참조하면 강한 알림(ask)', async () => {
@@ -733,9 +733,9 @@ describe('decidePreToolUse', () => {
     expect(out?.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain(
       '충돌 검사 미실행'
     );
-    // 아키텍처상 이 픽스처는 다른 게이트를 전혀 건드리지 않아야 한다(allow) —
+    // 아키텍처상 이 픽스처는 다른 게이트를 전혀 건드리지 않아야 한다(통과 — 판정 없음) —
     // 실패하면 픽스처를 조정하지 말고 실제로 온 decision을 보고할 것.
-    expect(out?.hookSpecificOutput.permissionDecision).toBe('allow');
+    expect(out?.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
   it('group 하위 경로(behavior/<slug>.json)로 스테이징된 개념도 파일명에서 slug를 뽑아 증빙을 요구한다', async () => {
@@ -929,5 +929,5 @@ it('git 저장소가 아니면 stale 산출물 검사는 조용히 통과한다 
     input: { command: 'git commit -m x' },
     changedFiles: [],
   });
-  expect(r!.hookSpecificOutput.permissionDecision).toBe('allow');
+  expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
 });

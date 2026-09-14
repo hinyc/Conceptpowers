@@ -258,7 +258,12 @@
         "src/hooks/gates/qualityGate.ts",
         "src/hooks/gates/attestGate.ts",
         "src/hooks/gates/unapprovedRedGate.ts",
-        "src/hooks/sessionStart.ts"
+        "src/hooks/sessionStart.ts",
+        "src/util/isMain.ts",
+        "tests/util/isMain.test.ts",
+        "tests/hooks/gateFailure.test.ts",
+        "src/util/exitAfterWrite.ts",
+        "tests/hooks/entrypoint.e2e.test.ts"
       ]
     },
     {
@@ -474,7 +479,8 @@
         "tests/version/autoSync.test.ts",
         "tests/cli/referenceSync.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/gateFailure.test.ts"
       ]
     },
     {
@@ -1756,6 +1762,41 @@
         "type": "file",
         "href": "",
         "title": "src/hooks/gates/unapprovedRedGate.ts"
+      },
+      {
+        "id": "p:src/util/isMain.ts",
+        "label": "isMain.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/isMain.ts"
+      },
+      {
+        "id": "p:tests/util/isMain.test.ts",
+        "label": "isMain.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/util/isMain.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/gateFailure.test.ts",
+        "label": "gateFailure.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/gateFailure.test.ts"
+      },
+      {
+        "id": "p:src/util/exitAfterWrite.ts",
+        "label": "exitAfterWrite.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/exitAfterWrite.ts"
+      },
+      {
+        "id": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "label": "entrypoint.e2e.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/entrypoint.e2e.test.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -3304,6 +3345,31 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:governance-mode",
+        "target": "p:src/util/isMain.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/util/isMain.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/gateFailure.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/util/exitAfterWrite.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-concepts/references/define.md",
         "kind": "concept-file"
@@ -3919,6 +3985,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/gateFailure.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:plugin-version-sync",
         "target": "p:src/init/syncGenerated.ts",
         "kind": "concept-file"
@@ -4380,5 +4451,5 @@
       }
     ]
   },
-  "generatorVersion": "1.14.3"
+  "generatorVersion": "1.15.0"
 }
