@@ -27,7 +27,7 @@ instead of the whole `define.md`; open `define.md` only when the concept must be
      `warnings`는 사람이 볼 후보.
 4. **근거 갱신** — `sources[]`의 참고자료 좌표가 낡았으면 새 좌표로, 자료가 사라졌으면 근거를 빼거나 `decision`으로.
    원문은 옮겨 적지 않는다(위치만).
-5. **적용** — 승인된 문장을 `update-concepts` C의 `edit-concept --reason "<해소한 모호성 / 반영한 자료 변경>"`으로
+5. **적용** — 승인된 문장을 `references/edit.md`의 `edit-concept --reason "<해소한 모호성 / 반영한 자료 변경>"`으로
    적용한다(green → pending). 지문이 바뀌어 옛 증빙·테스트 검토 기록은 자동으로 실효된다.
-6. **공통 마무리** — `references/consistency.md` + `attest-consistency`, 테스트 검토(`attest-test-review` 또는 수정),
-   사용자 확인 후 green 재정착, `render`.
+6. **공통 마무리** — `SKILL.md`의 공통 마무리: `references/consistency.md` + `attest-consistency`, 테스트 검토
+   (`attest-test-review` 또는 수정), 사용자 확인 후 green 재정착, `render`.

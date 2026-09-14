@@ -16,7 +16,7 @@
       "영향 개념: 변경·삭제된 자료를 근거 목록에 적은 개념",
       "새 자료: 어떤 개념도 근거로 삼지 않은 추가 자료 — 새 개념 후보"
     ],
-    "example": "세미나 발표 자료를 고쳐 저장하면 다음 세션 시작 때 \"자료 1건 변경, 영향 개념: globally-unique-slug\"가 뜬다. 그 개념을 사람과 함께 다시 보고 갱신을 마친 뒤 기준점을 찍으면 알림이 사라진다."
+    "example": "세미나 발표 자료를 고쳐 저장하면 다음 세션 시작 때 \"자료 1건 변경, 영향 개념 1개\"와 그 개념의 이름이 뜬다. 그 개념을 사람과 함께 다시 보고 갱신을 마친 뒤 기준점을 찍으면 알림이 사라진다."
   },
   "state": {
     "managed": [
@@ -92,7 +92,8 @@
     "src/hooks/sessionStart.ts",
     "src/init/referenceLockIgnore.ts",
     "src/schema/initConfig.ts",
-    "src/hooks/gates/referenceGate.ts"
+    "src/hooks/gates/referenceGate.ts",
+    "src/reference/canonical.ts"
   ],
   "sources": [
     {

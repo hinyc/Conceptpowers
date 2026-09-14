@@ -248,7 +248,6 @@
         "tests/hooks/postToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/integration/smoke.test.ts",
-        "src/hooks/sessionStart.ts",
         "src/cli.ts",
         "src/init/scaffold.ts",
         "src/hooks/gates/referenceGate.ts",
@@ -258,7 +257,8 @@
         "src/hooks/gates/unknownTagsGate.ts",
         "src/hooks/gates/qualityGate.ts",
         "src/hooks/gates/attestGate.ts",
-        "src/hooks/gates/unapprovedRedGate.ts"
+        "src/hooks/gates/unapprovedRedGate.ts",
+        "src/hooks/sessionStart.ts"
       ]
     },
     {
@@ -352,6 +352,7 @@
         "src/init/referenceLockIgnore.ts",
         "src/schema/initConfig.ts",
         "src/hooks/gates/referenceGate.ts",
+        "src/reference/canonical.ts",
         "tests/reference/enumerate.test.ts",
         "tests/reference/fingerprint.test.ts",
         "tests/reference/lock.test.ts",
@@ -360,7 +361,12 @@
         "tests/cli/referenceSync.test.ts",
         "tests/hooks/sessionStartReference.test.ts",
         "tests/schema/alignment.test.ts",
-        "tests/init/referenceLockIgnore.test.ts"
+        "tests/init/referenceLockIgnore.test.ts",
+        "tests/reference/canonical.test.ts",
+        "tests/reference/canonicalEdge.test.ts",
+        "tests/reference/canonicalSymlink.test.ts",
+        "tests/hooks/sessionStartLookups.test.ts",
+        "tests/reference/canonicalFinal.test.ts"
       ]
     },
     {
@@ -530,13 +536,13 @@
         "tests/hooks/sessionStartReference.test.ts",
         "src/init/referenceWalk.ts",
         "src/reference/fingerprint.ts",
-        "src/reference/lock.ts",
         "src/reference/sessionBlock.ts",
         "tests/init/referenceLockIgnore.test.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/schema/initConfig.test.ts",
         "tests/hooks/preToolUse.test.ts",
-        "tests/i18n/messages.test.ts"
+        "tests/i18n/messages.test.ts",
+        "src/reference/lock.ts"
       ]
     },
     {
@@ -1958,6 +1964,13 @@
         "title": "src/init/referenceLockIgnore.ts"
       },
       {
+        "id": "p:src/reference/canonical.ts",
+        "label": "canonical.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/reference/canonical.ts"
+      },
+      {
         "id": "p:tests/reference/fingerprint.test.ts",
         "label": "fingerprint.test.ts",
         "type": "file",
@@ -1984,6 +1997,41 @@
         "type": "file",
         "href": "",
         "title": "tests/init/referenceLockIgnore.test.ts"
+      },
+      {
+        "id": "p:tests/reference/canonical.test.ts",
+        "label": "canonical.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/canonical.test.ts"
+      },
+      {
+        "id": "p:tests/reference/canonicalEdge.test.ts",
+        "label": "canonicalEdge.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/canonicalEdge.test.ts"
+      },
+      {
+        "id": "p:tests/reference/canonicalSymlink.test.ts",
+        "label": "canonicalSymlink.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/canonicalSymlink.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/sessionStartLookups.test.ts",
+        "label": "sessionStartLookups.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/sessionStartLookups.test.ts"
+      },
+      {
+        "id": "p:tests/reference/canonicalFinal.test.ts",
+        "label": "canonicalFinal.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/canonicalFinal.test.ts"
       },
       {
         "id": "c:settled-status",
@@ -3177,11 +3225,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/sessionStart.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/cli.ts",
         "kind": "concept-file"
       },
@@ -3228,6 +3271,11 @@
       {
         "source": "c:governance-mode",
         "target": "p:src/hooks/gates/unapprovedRedGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/sessionStart.ts",
         "kind": "concept-file"
       },
       {
@@ -3432,6 +3480,11 @@
       },
       {
         "source": "c:reference-sync",
+        "target": "p:src/reference/canonical.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
         "target": "p:tests/reference/enumerate.test.ts",
         "kind": "concept-file"
       },
@@ -3473,6 +3526,31 @@
       {
         "source": "c:reference-sync",
         "target": "p:tests/init/referenceLockIgnore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonical.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalEdge.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalSymlink.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/hooks/sessionStartLookups.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalFinal.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3987,11 +4065,6 @@
       },
       {
         "source": "c:reference-privacy",
-        "target": "p:src/reference/lock.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
         "target": "p:src/reference/sessionBlock.ts",
         "kind": "concept-file"
       },
@@ -4018,6 +4091,11 @@
       {
         "source": "c:reference-privacy",
         "target": "p:tests/i18n/messages.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/reference/lock.ts",
         "kind": "concept-file"
       },
       {
@@ -4257,5 +4335,5 @@
       }
     ]
   },
-  "generatorVersion": "1.14.0"
+  "generatorVersion": "1.14.1"
 }

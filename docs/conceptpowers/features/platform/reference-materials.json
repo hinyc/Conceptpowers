@@ -19,6 +19,7 @@
     "src/reference/lock.ts",
     "src/reference/affected.ts",
     "src/reference/diff.ts",
-    "src/reference/sessionBlock.ts"
+    "src/reference/sessionBlock.ts",
+    "src/reference/canonical.ts"
   ]
 }

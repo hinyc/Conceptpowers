@@ -2396,5 +2396,16 @@
     "aligned": true,
     "noCode": false,
     "note": ""
+  },
+  {
+    "slug": "reference-sync",
+    "hash": "3:2766aa2fbad0",
+    "prevHash": "3:2766aa2fbad0",
+    "reason": "기능·개념 연결 보강(canonical.ts)과 예시 문구에서 다른 개념 이름 제거 — 약속 칸 변경 없음, 사용자 승인 2026-09-14",
+    "at": "2026-09-14T12:15:13.759Z",
+    "ignored": false,
+    "aligned": false,
+    "noCode": false,
+    "note": ""
   }
 ]
