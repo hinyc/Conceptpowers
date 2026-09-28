@@ -4,6 +4,29 @@
 
 _Read this in [한국어](README.ko.md)._
 
+## At a glance
+
+**What it is.** A plugin for Claude Code (Codex is supported through its developer marketplace): skills, hooks, a CLI and a concept viewer. It activates only in projects that have `docs/conceptpowers/init.json` — no marker, no hooks. It runs on JSON + git alone and adds no runtime dependency to your app.
+
+**Purpose.** Capture the "why" your code must respect — purpose, allowed/restricted actions, immutable rules — as a **concept**: a contract owned by a human, and keep that contract alive while the codebase grows and AI writes most of it.
+
+**Role.** **Before** a change, session rules tell the agent to look up the related concepts and judge whether the change violates them. **At commit**, a gate inspects the staged changes and asks or blocks when a concept changed but its linked code and evidence did not come along in the same commit, or when concept-less code or unapproved concepts are mixed in. Humans own and settle concepts; the tool checks every commit the agent runs.
+
+**What you gain.**
+
+- 🧠 Intent survives as a written, versioned contract instead of tribal knowledge.
+- 🤖 AI stops changing code without knowing the rules.
+- 🚨 A commit that changes a concept without its code is caught on the spot — with the recorded *reason* it changed.
+- 🧭 When a related concept exists, the agent gets its bearings on vague requests first, which can cut wasted exploration and rework.
+- 🔍 The unwritten rule is now written and checked at review time, so reviewers spend their time on judgment, not rule-recall.
+- 🗺️ The concept viewer and the concept·feature·code knowledge graph show what each part *means* and how it connects, which helps onboarding.
+
+**What it costs.** An `@concept` marker in every governed code file, agent calls and tokens for the checks on each change and commit, and the habit of staging and committing as separate commands. With no concepts, or stale ones, there is nothing to gain.
+
+**What it is not.** Not a spec tool that generates code. A concept *judges* code; it never *produces* it. Whether code obeys a rule is decided by the review skill as an LLM judgment, not by the gate and not as a proof. Commits made outside the agent (terminal, IDE) are invisible to the gate.
+
+**Built for.** Individuals and teams shipping fast with AI coding agents, especially repositories where the answer to "why is it like this?" lives only in someone's head.
+
 ---
 
 ## Why Conceptpowers?
@@ -26,17 +49,6 @@ Conceptpowers treats a **concept as a first-class, versioned contract** that sit
 1. **Concept before code.** Define purpose, allowed/restricted actions, and immutable rules as structured data _first_; code is downstream and must conform.
 2. **The human owns the contract by authoring it.** The agent may _draft_ concepts — a user-authored draft starts 🟡 pending and settles to 🟢 green after a passing consistency check and your confirmation; a concept the agent _infers_ without a human starts 🔴 red, and only a person promotes it. The agent never blesses a concept no human authored.
 3. **Guardrails whose strength you choose.** Gates surface undefined concepts, unapproved concepts, and concept↔code drift at commit time (edits get a review reminder; governance files ask before they are written). The commit gate's `enforcement` setting decides what happens next — `standard` (default) asks on the first violation, `strict` collects every violation and blocks the commit, `light` lets the commit through with every violation reported as a warning — but the set of things the gates check never changes, and a drift override is recorded in the history.
-
-### What you gain
-
-- 🧠 **Intent survives.** The "why" becomes a written, versioned contract instead of tribal knowledge.
-- 🤖 **AI stays on-rails.** Agents are told to check the concept _before_ writing code, and the commit gate won't let concept changes, code links, and evidence drift apart silently. Whether code actually obeys a rule is decided by the review step — an LLM judgment, not a proof.
-- 🚨 **Drift is caught early.** When a concept's contract changes but its code hasn't caught up in the same commit, the commit gate flags it — with the recorded _reason_ it changed — instead of letting them diverge in silence.
-- 🔍 **Lighter reviews.** The unwritten rule is now written down and checked at review time, so reviewers spend their time on judgment, not rule-recall.
-- 🗺️ **Faster onboarding.** A browsable concept viewer and a concept·feature·code knowledge graph show what each part _means_ and how it all connects.
-- 🔓 **Opt-in, no lock-in.** One marker file switches it on per project; no marker, no hooks. Just JSON + git, with zero runtime dependency added to your app.
-
-The "why" stops being tribal knowledge and becomes a written contract with a gate around it.
 
 ### A concept is not a spec
 
