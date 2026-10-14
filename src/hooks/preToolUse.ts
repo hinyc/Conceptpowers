@@ -376,12 +376,20 @@ async function decideStandard(input: GateInput, ref: GateFinding | null): Promis
   return withReviewNotes(PASS_DEFAULT, input);
 }
 
+// strict에서도 그것만으로는 막지 않는 발견 — 표식 없음은 개념 연결이 애초에 없는 별개의 문제라
+// 강도가 무엇이든 커밋을 막지 않는다(concept-code-mapping 제한). 다른 위반으로 막을 때는 함께 보여준다.
+const NON_BLOCKING_GATES = new Set(['conceptless-code']);
+
 // strict: 위반 전부를 모아 막는다. 검사하지 못한 게이트가 있으면 위반이 없어도 막는다.
 async function decideStrict(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
   const { findings, failedGates } = await runGates(input);
+  const blocking = findings.filter((f) => !NON_BLOCKING_GATES.has(f.gate));
   // 항상 묻는 항목이 있어도 위반이 있으면 ask로 내려가지 않고 deny에 함께 담는다.
-  if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
+  if (blocking.length > 0) return denyOutput(findings, { ref, failedGates });
   if (failedGates.length > 0) return escalateWithAsk(failedGatesOutput('strict', failedGates), ref);
+  if (findings.length > 0) {
+    return withReviewNotes(askOutput(mergeAlwaysAsk(ref, findings[0]) ?? findings[0]), input);
+  }
   if (ref) return withReviewNotes(askOutput(ref), input);
   const stale = await checkStaleArtifacts(input);
   if (stale) return withReviewNotes(askOutput(stale), input); // 정리용 게이트는 strict에서도 차단하지 않는다

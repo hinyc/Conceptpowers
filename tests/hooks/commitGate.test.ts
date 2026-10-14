@@ -42,8 +42,8 @@ beforeEach(async () => {
   git('init', '-q');
   git('add', '-A');
   git('commit', '-q', '-m', 'base');
-  // 추적 중인 파일에서 표식을 지운 미스테이징 수정 — -a 커밋에만 실린다
-  writeFileSync(join(root, 'src/tracked.ts'), 'export const t = 2\n');
+  // 추적 중인 파일에 정의되지 않은 개념 표식을 단 미스테이징 수정 — -a 커밋에만 실린다
+  writeFileSync(join(root, 'src/tracked.ts'), '// @concept:ghost\nexport const t = 2\n');
 });
 
 const bash = (command: string) => ({ tool: 'Bash', input: { command } });

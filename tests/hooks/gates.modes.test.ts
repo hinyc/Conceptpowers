@@ -9,6 +9,8 @@
 //  - governance-mode 불변 "강도가 무엇이든 지키는 대상(검사 항목)은 같다 — 바뀌는 것은 대응뿐이다"
 //    → 위반이 없으면 통과 / 참조 문서와 위반이 함께 있어도 위반이 가려지지 않는다(strict·light 양쪽)
 //    → stale 산출물만 있으면 strict에서도 deny가 아니라 ask (대응만 다르다)
+//  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것"
+//    → strict에서도 표식 없는 파일만 있으면 deny가 아니라 ask다(다른 위반으로 막을 때는 함께 보여준다)
 //  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → strict에서도 ignoreGlobs 경로에 실려 온 미지 태그는 deny 사유가 되지 않는다
 //  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
@@ -70,6 +72,14 @@ describe('strict 모드 (차단)', () => {
     const r = await decidePreToolUse(root, commitEvent(['src/a.ts', 'src/foo.ts']));
     expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('foo.ts');
+  });
+  it('표식 없는 파일만 있으면 strict여도 막지 않고 묻는다 [규칙: 표식이 없다는 이유만으로 커밋을 막지 않는다]', async () => {
+    setEnforcement(root, 'strict');
+    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
+    const r = await decidePreToolUse(root, commitEvent(['src/foo.ts']));
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('개념 없는 코드');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('foo.ts');
   });
   it('기밀 reference 문서는 strict여도 차단이 아니라 ask다 [규칙: 기밀 확인은 항상 묻는다]', async () => {

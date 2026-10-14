@@ -109,7 +109,7 @@ describe('커밋 게이트 실행 실패 (fail-closed)', () => {
 
   it('검사가 정상이면 기존 판정을 그대로 돌려준다 [규칙: 지키는 대상은 같다]', async () => {
     setEnforcement('strict');
-    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n'); // 개념 없는 코드
+    writeFileSync(join(root, 'src/foo.ts'), '// @concept:ghost\nexport const foo = 1\n'); // 미정의 태그
     const r = await decidePreToolUseSafe(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },

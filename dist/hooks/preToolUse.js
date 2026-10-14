@@ -7076,10 +7076,15 @@ async function decideStandard(input, ref) {
   if (stale) return withReviewNotes(askOutput(stale), input);
   return withReviewNotes(PASS_DEFAULT, input);
 }
+var NON_BLOCKING_GATES = /* @__PURE__ */ new Set(["conceptless-code"]);
 async function decideStrict(input, ref) {
   const { findings, failedGates } = await runGates(input);
-  if (findings.length > 0) return denyOutput(findings, { ref, failedGates });
+  const blocking = findings.filter((f) => !NON_BLOCKING_GATES.has(f.gate));
+  if (blocking.length > 0) return denyOutput(findings, { ref, failedGates });
   if (failedGates.length > 0) return escalateWithAsk(failedGatesOutput("strict", failedGates), ref);
+  if (findings.length > 0) {
+    return withReviewNotes(askOutput(mergeAlwaysAsk(ref, findings[0]) ?? findings[0]), input);
+  }
   if (ref) return withReviewNotes(askOutput(ref), input);
   const stale = await checkStaleArtifacts(input);
   if (stale) return withReviewNotes(askOutput(stale), input);
