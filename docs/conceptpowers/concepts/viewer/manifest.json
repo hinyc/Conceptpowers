@@ -22,7 +22,7 @@
       "slug": "concept-code-mapping",
       "group": "governance",
       "title": "개념↔코드 연결",
-      "status": "pending",
+      "status": "green",
       "category": [
         "term",
         "behavior"
@@ -314,7 +314,7 @@
       "slug": "human-owns-contract",
       "group": "governance",
       "title": "소유권 원칙",
-      "status": "pending",
+      "status": "green",
       "category": [
         "behavior",
         "permission"
