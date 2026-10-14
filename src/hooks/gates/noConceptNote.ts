@@ -12,7 +12,12 @@ const MAX_LISTED = 8;
 
 export async function noConceptReviewNote({ root, files, cfg }: GateInput): Promise<string | null> {
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
-  const { none, total } = await findNoConceptFiles(root, files, ignoreGlobs);
+  const { none, total } = await findNoConceptFiles(
+    root,
+    files,
+    ignoreGlobs,
+    cfg?.noConceptGlobs ?? []
+  );
   if (none.length < MIN_NONE || none.length * 2 < total) return null;
   const shown = none.slice(0, MAX_LISTED).map((p) => sanitizeText(p));
   const more = none.length > shown.length ? ` and ${none.length - shown.length} more` : '';

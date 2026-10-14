@@ -11,6 +11,8 @@
 //    → 기본 locale은 ko / en 허용 / 알 수 없는 locale 거부
 //  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 누락 시 합리적 기본값 / 스캐폴드 산출물 경로를 제외 / 사용자 지정 목록으로 덮어쓴다
+//  - concept-code-mapping 허용 "따를 개념이 없는 코드가 모인 폴더를 사람이 개념 없음 영역으로 정하는 것"
+//    → noConceptGlobs 누락 시 빈 목록(사람이 정하기 전엔 영역이 없다) / 적은 목록을 그대로 쓴다 / 문자열 배열이 아니면 거부
 //  - plugin-version-sync 허용 "버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
 //    → versionCheck 누락 시 true / false로 명시하면 false
 //  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / backfillMode 기본 incremental
@@ -65,6 +67,19 @@ describe('ignoreGlobs', () => {
   it('사용자 지정 목록으로 덮어쓴다', () => {
     const g = parseInitConfig({ ...base, ignoreGlobs: ['**/*.test.*'] }).ignoreGlobs;
     expect(g).toEqual(['**/*.test.*']);
+  });
+});
+
+describe('noConceptGlobs', () => {
+  const base = { version: '0.1.0', enabled: true } as const;
+  it('누락 시 빈 목록 — 사람이 정하기 전엔 개념 없음 영역이 없다', () => {
+    expect(parseInitConfig({ ...base }).noConceptGlobs).toEqual([]);
+  });
+  it('적은 목록을 그대로 쓰고, 문자열 배열이 아니면 거부한다', () => {
+    expect(parseInitConfig({ ...base, noConceptGlobs: ['src/ui/**'] }).noConceptGlobs).toEqual([
+      'src/ui/**',
+    ]);
+    expect(() => parseInitConfig({ ...base, noConceptGlobs: 'src/ui/**' })).toThrow();
   });
 });
 

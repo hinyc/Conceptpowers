@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:governance-mode @concept:reference-sync
+// @concept:concept-driven-tests @concept:governance-mode @concept:reference-sync @concept:concept-code-mapping
 import { z } from 'zod';
 
 export const LocaleSchema = z.enum(['ko', 'en']);
@@ -48,6 +48,10 @@ export const InitConfigSchema = z.object({
     'node_modules/**', // 외부 의존성
     '**/*.generated.*', // 코드 생성물
   ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: z.array(z.string()).default([]),
   project: z
     .object({ name: z.string().default(''), description: z.string().default('') })
     .default({}),

@@ -128,9 +128,9 @@
     "note": "8단계 규칙 추가(이력은 더하기만) — 다른 25개 개념과 대조. 무시함 기록 의무·기준선 규칙과 같은 방향, 허용·제한·불변 충돌 없음"
   },
   "concept-code-mapping": {
-    "hash": "3:ab31baedd435",
+    "hash": "3:6c4fa8ad241b",
     "result": "pass",
-    "at": "2026-09-14T16:08:54.530Z",
+    "at": "2026-10-14T04:27:54.885Z",
     "compared": [
       "concept-code-binding",
       "concept-driven-tests",
@@ -157,8 +157,7 @@
       "list-filter",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "레드팀 5단계 규칙 추가 — 다른 25개 개념과 대조, 허용/제한/불변 충돌 없음(문지기 강도·소유권·어긋남 결산·개념 기반 테스트·연결 개념의 역할 경계 유지)"
+    ]
   },
   "feature-spec-bridge": {
     "hash": "3:70491ad40129",

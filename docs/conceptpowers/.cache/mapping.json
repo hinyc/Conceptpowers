@@ -184,7 +184,10 @@
     "src/hooks/gates/noConceptNote.ts",
     "tests/hooks/noConceptNote.test.ts",
     "tests/mapping/leadingComment.test.ts",
-    "tests/cli/audit.test.ts"
+    "tests/cli/audit.test.ts",
+    "src/schema/initConfig.ts",
+    "src/audit/unlinked.ts",
+    "tests/audit/unlinked.test.ts"
   ],
   "init-gate": [
     "tests/cli/cli.test.ts",
@@ -230,7 +233,6 @@
     "src/init/scaffold.ts",
     "src/hooks/gates/referenceGate.ts",
     "src/hooks/preToolUse.ts",
-    "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts",
     "tests/hooks/preToolUse.test.ts",
     "src/hooks/gates/conceptlessGate.ts",
@@ -264,7 +266,8 @@
     "src/hooks/command/commitTree.ts",
     "tests/hooks/commitFiles.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/schema/initConfig.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -287,13 +290,13 @@
     "tests/init/scaffold.test.ts",
     "src/schema/alignment.ts",
     "src/hooks/preToolUse.ts",
-    "src/schema/initConfig.ts",
     "tests/schema/initConfig.test.ts",
     "src/hooks/gates/testScopeGate.ts",
     "src/hooks/command/recordCommands.ts",
     "tests/hooks/recordCommands.test.ts",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/schema/initConfig.ts"
   ],
   "drift-reconcile": [
     "src/drift/detect.ts",
@@ -417,7 +420,6 @@
     "tests/schema/alignment.test.ts",
     "src/init/referenceLockIgnore.ts",
     "src/hooks/gates/referenceGate.ts",
-    "src/schema/initConfig.ts",
     "src/reference/fingerprint.ts",
     "src/reference/sessionBlock.ts",
     "tests/init/referenceLockIgnore.test.ts",
@@ -431,7 +433,8 @@
     "src/reference/diff.ts",
     "src/reference/affected.ts",
     "tests/reference/canonicalFinal.test.ts",
-    "src/hooks/sessionStart.ts"
+    "src/hooks/sessionStart.ts",
+    "src/schema/initConfig.ts"
   ],
   "skill-surface": [
     "tests/compat/skillFrontmatter.test.ts",

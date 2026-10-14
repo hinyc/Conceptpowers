@@ -4130,6 +4130,10 @@ var InitConfigSchema = external_exports.object({
     "**/*.generated.*"
     // 코드 생성물
   ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function defaultIgnoreGlobs() {

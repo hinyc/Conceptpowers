@@ -24,7 +24,8 @@ export interface DriftItem {
 const hasOwn = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
 
 // 개념에 연결된 코드 경로 — 표식 스캔(mapping) ∪ 기능 기록의 codePaths.
-function collectRelatedPaths(
+// 감사의 '연결 코드 없는 개념' 판정도 같은 잣대로 쓴다(concept-code-mapping).
+export function collectRelatedPaths(
   slug: string,
   features: Feature[],
   mapping: Record<string, string[]>

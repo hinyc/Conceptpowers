@@ -11,6 +11,8 @@
 //    → 태그 없는 신규 코드 파일은 경고(ask) / 손으로 쓴 util도 마커 없으면 경고 / @concept:none 이면
 //      경고 없음 / 재생성물 경로(dist/**)는 대상이 아니라 경고 없음 / 태그가 있으면 경고 없음
 //  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 표식 없음은 deny가 아니라 ask다
+//  - concept-code-mapping 구성요소 "개념 없음 영역: … 그 안에서 표식이 없는 파일은 \"없음\" 표식을 단 것으로 친다"
+//    → 사람이 정한 영역(noConceptGlobs) 안의 표식 없는 파일은 경고하지 않는다
 //  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 경로(docs/conceptpowers/** 등)에 실려 온 태그는 unknown으로 잡지 않는다
 //  - settled-status 구성요소 "빨강(red): AI 추측 또는 미승인"
@@ -212,6 +214,22 @@ describe('decidePreToolUse', () => {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
       changedFiles: ['src/utils/bar.ts'],
+    });
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
+  });
+  it('개념 없음 영역 안의 파일은 마커가 없어도 경고하지 않는다', async () => {
+    await scaffoldInit(root, {});
+    const p = join(root, 'docs/conceptpowers/init.json');
+    writeFileSync(
+      p,
+      JSON.stringify({ ...JSON.parse(readFileSync(p, 'utf8')), noConceptGlobs: ['src/ui/**'] })
+    );
+    mkdirSync(join(root, 'src/ui'), { recursive: true });
+    writeFileSync(join(root, 'src/ui/Modal.ts'), 'export const Modal = 1\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['src/ui/Modal.ts'],
     });
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });

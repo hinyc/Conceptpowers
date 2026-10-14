@@ -31,6 +31,9 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    - `unknownTags`: 없는 개념을 가리키는 태그.
    - `conceptless`: `@concept` 마커가 전혀 없는 파일 — 2번 격차 판단의 결정적 출발점이다.
    - `unapproved`: 🔴 red 개념 전부, `unapprovedRefs`: 스캔한 파일이 가리키는 red.
+   - `unlinkedConcepts`: 표식으로도 기능 명세로도 연결된 코드가 하나도 없는 🟢 green 개념. 이런 개념은 문서만
+     고쳐도 커밋 게이트가 따라올 코드를 묻지 않으므로, 약속을 지키는 코드에 태그를 달거나 기능 명세를 잇자고
+     권한다. 정말 코드가 필요 없는 개념(용어·운영 원칙)이면 그대로 둔다 — 이것만으로는 exit 1이 아니다.
    - (파일 인자를 주면 태그 정합성만 검사하고 격차 탐지는 건너뛴다 — 전체 점검엔 인자 없이.)
 2. **격차 처리 (의미 판단)**: `conceptless` 목록의 파일마다 무엇이 필요한지 가린다. 개념이 필요한 기능·동작·역할·
    권한·용어인데 태그가 없는 것을 찾는다.
@@ -40,12 +43,16 @@ description: Use when the user wants to find what is NOT yet covered by concepts
      자료 없이 작성됩니다"라고 알린 뒤 ① 그대로 진행 ② 파일 추가 ③ 바깥 경로 등록(`update-concepts` E)을 묻는다.
    - **개념과 무관한 코드**(utils/types/config/scripts, 여러 기능이 함께 쓰는 공통 UI — 버튼·모달·레이아웃·
      디자인 시스템) → 명시적 **`@concept:none`**(침묵이 아니라). 공통 UI에 개념을 붙여 화면의 자유도를 묶지 않는다.
+     그런 파일이 한 폴더에 모여 있으면 파일마다 `none`을 다는 대신 사용자에게 **개념 없음 영역**
+     (`init.json`의 `noConceptGlobs`, 예: `src/components/ui/**`)을 제안한다 — 설정 파일은 사용자가 고친다.
+     영역 안에서도 표식을 단 파일은 그 표식을 따르므로, 어떤 약속을 지키는 파일이 섞인 폴더는 영역으로 정하지 않는다.
    - **특정 기능만을 위한 화면·모달**(예: 관리자 삭제 확인 창) → 그 기능의 개념 태그를 단다. 모달 하나를 떼어
      따로 개념으로 세우지 않는다(한 개념의 일부 동작은 별도 개념이 아니다).
    - **공통 UI의 동작 자체가 사용자에게 하는 약속**일 때만(예: 저장하지 않은 입력은 확인 없이 버려지지 않는다) 그
      약속을 개념 후보로 넘긴다 — 생김새·배치·글자는 개념이 아니라 상위 기준 문서 몫이다.
    - 커밋 게이트도 마커 없는 코드를 잡는다(`[WARNING] 개념 없는 코드`). `@concept:none`은 마커로 친다.
-     `init.json`의 `ignoreGlobs`(`dist/**`, `**/*.generated.*` …)에 맞는 재생성물·외부 코드만 예외다.
+     `init.json`의 `ignoreGlobs`(`dist/**`, `**/*.generated.*` …)에 맞는 재생성물·외부 코드만 예외이고,
+     `noConceptGlobs` 안의 표식 없는 파일은 `none`으로 친다. 이 경고는 어느 강도에서도 이것만으로 커밋을 막지 않는다.
 3. **기능 커버리지 (지식 지도)**: 사용자가 기능을 쓰는 입구(폼 제출·메뉴·라우트·명령 등 기능 단위)마다 `features/`에 기능 명세가 있고
    `concepts`(기능 → 개념)와 `codePaths`(기능 → 코드)가 채워졌는지 본다. 없거나 비었으면 아래 **기능 명세
    기록** 절차로 만든다. 이것이 `#/graph`를 연결된 상태로 유지한다. 버튼·모달 같은 공통 UI 요소 하나하나에
@@ -69,7 +76,8 @@ description: Use when the user wants to find what is NOT yet covered by concepts
      `'use client';`, docstring, `<template>`이 먼저 오면 마커가 보이지 않는다. slug는 개념 slug와 정확히
      같아야 한다. 한 파일이 여러 개념에 걸치면 태그를 여럿 단다(개념 `concept-code-binding`의 분리 검토 뒤).
    - 개념이 없으면 같은 자리에 **`@concept:none`**. 예약어라 게이트는 통과하지만 개념으로 취급되지 않는다.
-   - `ignoreGlobs`는 재생성물·외부 코드만 자동 제외한다. 손으로 쓴 코드는 예외 없이 마커가 필요하다.
+   - `ignoreGlobs`는 재생성물·외부 코드만 자동 제외한다. 손으로 쓴 코드는 마커가 필요하다 — 사용자가
+     `noConceptGlobs`로 정한 개념 없음 영역 안이면 마커 없이 `none`으로 친다.
      `ignoreGlobs`에 경로를 더하는 것은 진짜 생성물일 때만 — 감사를 피하려고 넓히지 않는다.
 2. 매핑 캐시 갱신:
    `node "<cli>" map --root . <changed files...>`

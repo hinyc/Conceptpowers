@@ -1,0 +1,11 @@
+{
+  "slug": "concept-code-mapping",
+  "hash": "3:6c4fa8ad241b",
+  "prevHash": "3:ab31baedd435",
+  "reason": "공통 UI 등 개념 없는 코드를 폴더 단위로 선언하는 개념 없음 영역 추가, 연결 코드 없는 확정 개념을 감사 격차로 알림(사용자 결정 2026-10-14)",
+  "at": "2026-10-14T04:24:17.613Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

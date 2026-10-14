@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
 import { syncIfStale, checkStale, findPluginRoot } from './version/autoSync.js';
-import { writeFeature } from './store/featureStore.js';
+import { writeFeature, listFeatures } from './store/featureStore.js';
 import { syncGenerated } from './init/syncGenerated.js';
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
 import { buildInitHint } from './i18n/messages.js';
@@ -15,6 +15,7 @@ import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/s
 import { auditIntegrity } from './audit/audit.js';
 import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
+import { findUnlinkedConcepts } from './audit/unlinked.js';
 import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
 import { defaultIgnoreGlobs } from './schema/initConfig.js';
@@ -239,7 +240,7 @@ export async function runCli(
   program
     .command('audit')
     .description(
-      '파일 지정: 태그 정합성 검사 / 인자 없음: 전체 스캔 + 개념 없는 코드(gap)·깨진 코드 자리(근거·코드 연결) 탐지'
+      '파일 지정: 태그 정합성 검사 / 인자 없음: 전체 스캔 + 개념 없는 코드(gap)·깨진 코드 자리(근거·코드 연결)·연결 코드 없는 green 개념 탐지'
     )
     .option('--root <dir>', 'project root', process.cwd())
     .argument('[files...]')
@@ -263,10 +264,24 @@ export async function runCli(
       // 텍스트나 비코드 파일에 우연히 등장하는 @concept: 리터럴은 태그가 아니다.
       const codeScanned = scanned.filter(isCodeFile);
       const r = await auditIntegrity(o.root, codeScanned);
-      const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
+      const conceptless = await findConceptlessFiles(
+        o.root,
+        scanned,
+        ignoreGlobs,
+        cfg?.noConceptGlobs ?? []
+      );
+      const concepts = await listConcepts(o.root);
       // 개념의 근거·코드 연결 목록이 가리키는 코드 자리가 지금도 실재하는지(파일·짚은 심볼·줄 범위).
-      const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, await listConcepts(o.root));
-      out(JSON.stringify({ ...r, conceptless, brokenCodeLinks }));
+      const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, concepts);
+      // 연결 코드가 하나도 없는 green 개념 — 알리기만 하고 실패 코드에는 반영하지 않는다.
+      const unlinkedConcepts = await findUnlinkedConcepts(
+        o.root,
+        concepts,
+        await listFeatures(o.root),
+        codeScanned,
+        ignoreGlobs
+      );
+      out(JSON.stringify({ ...r, conceptless, brokenCodeLinks, unlinkedConcepts }));
       if (!r.ok || conceptless.length > 0 || brokenCodeLinks.length > 0) code = 1;
     });
 

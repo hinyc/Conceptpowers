@@ -7171,6 +7171,10 @@ var InitConfigSchema = external_exports.object({
     "**/*.generated.*"
     // 코드 생성물
   ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
   project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
 });
 function defaultIgnoreGlobs() {
@@ -8683,11 +8687,11 @@ var TAG_RE2 = /@concept:[a-z0-9]+(?:-[a-z0-9]+)*/;
 function isCodeFile(rel) {
   return CODE_EXT.has(extname(rel).toLowerCase());
 }
-async function findConceptlessFiles(root, files, ignoreGlobs) {
+async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = []) {
   const conceptless = [];
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
-    if (matchesAny(rel, ignoreGlobs)) continue;
+    if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
     let content;
     try {
       content = await readFile14(join17(root, rel), "utf8");
@@ -8754,43 +8758,6 @@ async function findBrokenCodeCoordinates(root, concepts) {
   ]);
   const results = await Promise.all(checks);
   return results.flat();
-}
-
-// src/audit/tracked.ts
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-var execFileAsync = promisify(execFile);
-var MAX_BUFFER = 64 * 1024 * 1024;
-async function listTrackedFiles(root) {
-  const { stdout } = await execFileAsync("git", ["-c", "core.quotePath=false", "ls-files", "-z"], {
-    cwd: root,
-    maxBuffer: MAX_BUFFER
-  });
-  return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
-}
-
-// src/util/isMain.ts
-import { realpathSync } from "node:fs";
-import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
-function isMainModule(moduleUrl, argv1) {
-  if (!argv1) return false;
-  try {
-    return realpathSync(fileURLToPath2(moduleUrl)) === realpathSync(argv1);
-  } catch {
-    return moduleUrl === pathToFileURL(argv1).href;
-  }
-}
-
-// src/concept/approve.ts
-async function approveConcept(root, slug3) {
-  const concept = await readConcept(root, slug3);
-  if (!concept) throw new Error(`Concept not found: ${slug3}`);
-  if (concept.status !== "red") {
-    throw new Error(
-      concept.status === "green" ? `Concept already approved (green): ${slug3}` : `Cannot approve a pending concept: ${slug3} \u2014 approve promotes red\u2192green; a pending concept settles to green via a passing consistency check and the user's confirmation.`
-    );
-  }
-  return setConceptStatus(root, slug3, "green");
 }
 
 // src/drift/lock.ts
@@ -8941,6 +8908,58 @@ async function computeDrift(root) {
     // 탐색이 찾은 실제 파일 위치 — group 필드로 재구성하지 않아, 손으로 옮겨진 문서도 정확히 가리킨다.
     docPath: normalizeRel(x.rel)
   }));
+}
+
+// src/audit/unlinked.ts
+async function findUnlinkedConcepts(root, concepts, features, codeFiles, ignoreGlobs) {
+  const green = concepts.filter((c) => c.status === "green");
+  if (green.length === 0) return [];
+  const mapping = await buildMapping(root, codeFiles, ignoreGlobs, { requireCode: true });
+  const related = green.map((c) => ({
+    slug: c.slug,
+    paths: collectRelatedPaths(c.slug, features, mapping)
+  }));
+  const alive = new Set(
+    await pruneMissingPaths(root, [...new Set(related.flatMap((r) => r.paths))])
+  );
+  return related.filter((r) => !r.paths.some((p) => alive.has(p))).map((r) => r.slug);
+}
+
+// src/audit/tracked.ts
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+var execFileAsync = promisify(execFile);
+var MAX_BUFFER = 64 * 1024 * 1024;
+async function listTrackedFiles(root) {
+  const { stdout } = await execFileAsync("git", ["-c", "core.quotePath=false", "ls-files", "-z"], {
+    cwd: root,
+    maxBuffer: MAX_BUFFER
+  });
+  return stdout.split("\0").map((l) => l.trim()).filter(Boolean);
+}
+
+// src/util/isMain.ts
+import { realpathSync } from "node:fs";
+import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
+function isMainModule(moduleUrl, argv1) {
+  if (!argv1) return false;
+  try {
+    return realpathSync(fileURLToPath2(moduleUrl)) === realpathSync(argv1);
+  } catch {
+    return moduleUrl === pathToFileURL(argv1).href;
+  }
+}
+
+// src/concept/approve.ts
+async function approveConcept(root, slug3) {
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  if (concept.status !== "red") {
+    throw new Error(
+      concept.status === "green" ? `Concept already approved (green): ${slug3}` : `Cannot approve a pending concept: ${slug3} \u2014 approve promotes red\u2192green; a pending concept settles to green via a passing consistency check and the user's confirmation.`
+    );
+  }
+  return setConceptStatus(root, slug3, "green");
 }
 
 // src/drift/note.ts
@@ -9587,7 +9606,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     else await updateMappingCache(o.root, files, ignoreGlobs);
   });
   program2.command("audit").description(
-    "\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap)\xB7\uAE68\uC9C4 \uCF54\uB4DC \uC790\uB9AC(\uADFC\uAC70\xB7\uCF54\uB4DC \uC5F0\uACB0) \uD0D0\uC9C0"
+    "\uD30C\uC77C \uC9C0\uC815: \uD0DC\uADF8 \uC815\uD569\uC131 \uAC80\uC0AC / \uC778\uC790 \uC5C6\uC74C: \uC804\uCCB4 \uC2A4\uCE94 + \uAC1C\uB150 \uC5C6\uB294 \uCF54\uB4DC(gap)\xB7\uAE68\uC9C4 \uCF54\uB4DC \uC790\uB9AC(\uADFC\uAC70\xB7\uCF54\uB4DC \uC5F0\uACB0)\xB7\uC5F0\uACB0 \uCF54\uB4DC \uC5C6\uB294 green \uAC1C\uB150 \uD0D0\uC9C0"
   ).option("--root <dir>", "project root", process.cwd()).argument("[files...]").action(async (files, o) => {
     if (files.length > 0) {
       const r2 = await auditIntegrity(o.root, files);
@@ -9601,9 +9620,22 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const scanned = all.filter((rel) => !matchesAny(rel, ignoreGlobs));
     const codeScanned = scanned.filter(isCodeFile);
     const r = await auditIntegrity(o.root, codeScanned);
-    const conceptless = await findConceptlessFiles(o.root, scanned, ignoreGlobs);
-    const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, await listConcepts(o.root));
-    out(JSON.stringify({ ...r, conceptless, brokenCodeLinks }));
+    const conceptless = await findConceptlessFiles(
+      o.root,
+      scanned,
+      ignoreGlobs,
+      cfg?.noConceptGlobs ?? []
+    );
+    const concepts = await listConcepts(o.root);
+    const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, concepts);
+    const unlinkedConcepts = await findUnlinkedConcepts(
+      o.root,
+      concepts,
+      await listFeatures(o.root),
+      codeScanned,
+      ignoreGlobs
+    );
+    out(JSON.stringify({ ...r, conceptless, brokenCodeLinks, unlinkedConcepts }));
     if (!r.ok || conceptless.length > 0 || brokenCodeLinks.length > 0) code = 1;
   });
   program2.command("drift").option("--root <dir>", "project root", process.cwd()).action(async (o) => {

@@ -13,11 +13,14 @@
 //  - 불변규칙 "표식은 파일 첫머리(첫 코드 줄이 나오기 전 주석 부분)에서만 읽는다 — 본문 속 문자열이나
 //    예시에 등장하는 표식 모양 글자는 표식이 아니다"
 //    → 선행 블록의 @concept:none 은 인정 안 함
+//  - 구성요소 "개념 없음 영역: 사람이 설정에 적어 둔 폴더 — 그 안에서 표식이 없는 파일은 \"없음\" 표식을 단 것으로 친다"
+//    → 영역 안의 표식 없는 파일은 격차가 아니다 / 영역 밖은 그대로 격차
+//    → '없음' 다수 안내는 사람이 정한 영역 안의 파일을 세지 않는다(파일마다 단 '없음'만 센다)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findConceptlessFiles } from '../../src/audit/gaps.js';
+import { findConceptlessFiles, findNoConceptFiles } from '../../src/audit/gaps.js';
 
 let root: string;
 beforeEach(() => {
@@ -76,5 +79,23 @@ describe('findConceptlessFiles', () => {
   it('@concept:none이 본문(코드 줄 뒤)에만 있으면 개념 없는 코드로 검출된다 (불변규칙: 본문에 등장하는 표식 모양 글자는 표식이 아니다)', async () => {
     writeFileSync(join(root, 'src/n2.ts'), 'export const n2 = 1\n// @concept:none\n');
     expect(await findConceptlessFiles(root, ['src/n2.ts'], DEFAULT_IGNORE)).toEqual(['src/n2.ts']);
+  });
+});
+
+describe('개념 없음 영역 [구성요소: 영역 안에서 표식이 없는 파일은 "없음"을 단 것으로 친다]', () => {
+  beforeEach(() => mkdirSync(join(root, 'src/ui'), { recursive: true }));
+  it('영역 안의 표식 없는 파일은 격차가 아니고, 영역 밖은 그대로 격차다', async () => {
+    writeFileSync(join(root, 'src/ui/Modal.ts'), 'export const Modal = 1\n');
+    writeFileSync(join(root, 'src/pay.ts'), 'export const pay = 1\n');
+    expect(
+      await findConceptlessFiles(root, ['src/ui/Modal.ts', 'src/pay.ts'], [], ['src/ui/**'])
+    ).toEqual(['src/pay.ts']);
+  });
+  it("'없음' 다수 안내는 영역 안의 파일을 세지 않는다 — 파일마다 단 '없음'만 센다", async () => {
+    writeFileSync(join(root, 'src/ui/Button.ts'), '// @concept:none\nexport const B = 1\n');
+    writeFileSync(join(root, 'src/glue.ts'), '// @concept:none\nexport const g = 1\n');
+    expect(
+      await findNoConceptFiles(root, ['src/ui/Button.ts', 'src/glue.ts'], [], ['src/ui/**'])
+    ).toEqual({ none: ['src/glue.ts'], total: 1 });
   });
 });

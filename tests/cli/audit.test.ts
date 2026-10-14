@@ -11,15 +11,22 @@
 //    커밋 경로가 아니다 (이 명령은 보고 수단이다)
 //  - concept-provenance 허용 "근거와 코드 연결 목록에 적힌 코드 자리가 지금도 실재하는지 … 감사에서 확인해 알리는 것"
 //    → 전체 스캔이 없는 파일을 가리키는 코드 연결을 brokenCodeLinks로 알리고 exit 1이다
+//  - concept-code-mapping 허용 "확정된 개념 가운데 연결된 코드가 하나도 없는 것을 감사에서 격차로 알리는 것"
+//    + 제한 "연결된 코드가 없다는 이유만으로 개념을 낮추거나 커밋을 막는 것"
+//    → 전체 스캔이 unlinkedConcepts로 알리되 그것만으로는 exit 1이 아니다
+//  - concept-code-mapping 불변 "개념 없음 영역 안의 파일도 표식을 달면 그 표식을 따른다" + "영역 안의 파일도
+//    손으로 쓴 코드로서 표식 검사를 받는다" → 영역 안 표식 없는 파일은 conceptless가 아니고, 영역 안의 미정의 태그는 unknownTags다
 //  - "파일 지정 모드는 기존 동작 그대로"는 개념 규칙이 아니라 호출 형태의 하위 호환 계약이다.
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCli } from '../../src/cli.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 import { writeConcept } from '../../src/store/conceptStore.js';
+
+const COMMIT_ALL = 'git add -A && git commit -m init';
 
 function conceptInput() {
   return {
@@ -68,6 +75,30 @@ describe('cli: audit 전체 스캔 모드', () => {
     expect(r.brokenCodeLinks).toEqual([
       expect.objectContaining({ slug: 'known-one', path: 'src/gone.ts', problem: 'missing-file' }),
     ]);
+  });
+
+  it('연결 코드가 없는 green 개념은 unlinkedConcepts로 알리되 그것만으로 exit 1이 아니다 [허용: 격차로 알린다 · 제한: 그 이유만으로 막지 않는다]', async () => {
+    await writeConcept(root, { ...conceptInput(), status: 'green' });
+    writeFileSync(join(root, 'src/n.ts'), '// @concept:none\nexport const n = 1;\n');
+    execSync(COMMIT_ALL, { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    expect(code).toBe(0);
+    expect(JSON.parse(output).unlinkedConcepts).toEqual(['known-one']);
+  });
+
+  it('개념 없음 영역 안의 표식 없는 파일은 conceptless가 아니고, 영역 안의 미정의 태그는 그대로 잡는다 [불변: 영역 안도 표식 검사를 받는다]', async () => {
+    const p = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(readFileSync(p, 'utf8'));
+    writeFileSync(p, JSON.stringify({ ...cfg, noConceptGlobs: ['src/ui/**'] }));
+    mkdirSync(join(root, 'src/ui'), { recursive: true });
+    writeFileSync(join(root, 'src/ui/Modal.ts'), 'export const Modal = 1;\n');
+    writeFileSync(join(root, 'src/ui/Pay.ts'), '// @concept:ghost\nexport const Pay = 1;\n');
+    execSync(COMMIT_ALL, { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    expect(code).toBe(1);
+    const r = JSON.parse(output);
+    expect(r.conceptless).not.toContain('src/ui/Modal.ts');
+    expect(JSON.stringify(r.unknownTags)).toContain('ghost');
   });
 
   it('비-ASCII 파일명도 전체 스캔 대상에 포함되어 conceptless로 보고된다', async () => {

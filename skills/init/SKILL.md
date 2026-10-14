@@ -81,7 +81,9 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    design-system components — etc.), write **`@concept:none`** explicitly rather than
    leaving them untagged. Then run the 태그·매핑 step of `conceptpowers:scan` (`node "<cli>" map ...`) so concept and
    feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
-   real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.)
+   real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.
+   When such conceptless files share a folder — e.g. a shared UI kit — suggest the user declare it once as a
+   no-concept area in `init.json` `noConceptGlobs` instead of tagging each file; the user edits that file.)
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
    (red) concepts + the wired graph, and tell the user to review and approve the red concepts.
 
