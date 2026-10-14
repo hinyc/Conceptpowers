@@ -376,6 +376,9 @@ async function visitGit(
   const kind = classifyGitCall(sub, rest);
   if (kind === 'unknown') return visitGitAlias(sub, args, dyn, cmd, ctx, g);
   if (kind === 'read') return null;
+  if (kind === 'otherCommit') {
+    return unresolved(`git commit이 아닌 명령(git ${sub})이 만드는 커밋`);
+  }
   if (kind === 'writeFiles') {
     markImpure(state, '파일을 쓰는 git 명령');
     return null;

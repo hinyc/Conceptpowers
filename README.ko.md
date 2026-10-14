@@ -238,8 +238,10 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 **무엇이 커밋인지는 명령을 해석해 가린다.** 게이트는 명령 글자가 아니라 실제로 실행될 `git … commit` 호출을 찾는다 —
 전역 옵션(`-C`·`-c`), `sh -c`, git alias를 거쳐도 잡고, `grep "git commit"`처럼 인자로만 든 글자는 커밋으로 보지 않는다.
 검사 대상은 **실제로 커밋될 파일**이다 — 커밋이 만들 트리를 임시 색인으로 미리 만들어 목록과 파일마다 커밋될 내용을 git에게서 받으므로, 경로 지정·`-i`/`-o`·clean filter·`diff.relative` 같은 설정으로 엉뚱한 내용을 보게 할 수 없다: `git commit -a`는 추적 중인 파일의 미스테이징 변경까지, 경로를 지정한 커밋은
-그 경로의 변경만 본다. 셸 스크립트 파일이나 다른 프로그램 안에서 실행되는 커밋, Claude Code 밖(터미널·IDE)의 커밋은
-여전히 게이트가 보지 못한다.
+그 경로의 변경만 본다. `git commit`이 아닌 git 명령이 만드는 커밋 — `cherry-pick`·`revert`·`am`·`commit-tree`, 그리고
+merge·rebase·cherry-pick·revert·am의 `--continue` — 은 실행하면서 내용이 정해지므로 실행 전에 파일을 확정할 수 없는
+커밋으로 다룬다(`--no-commit`으로 적용한 뒤 `git commit`을 따로 실행한다). 셸 스크립트 파일이나 다른 프로그램(`pnpm release`
+같은 패키지 스크립트 포함) 안에서 실행되는 커밋, Claude Code 밖(터미널·IDE)의 커밋은 여전히 게이트가 보지 못한다.
 
 **거버넌스 파일은 쓰기 전에도 묻는다.** `Edit`/`Write`/`MultiEdit` 훅은 에이전트가 `init.json`, `concepts/data/` 아래 개념 문서,
 `concepts/.alignment/` 아래 기록을 쓰려 할 때 묻는다 — 개념 모델이 요구하는 "사람의 확인"이 스킬 문장이 아니라 권한

@@ -3,13 +3,16 @@
 // Bash 명령을 해석해 "무엇이 커밋되는가"를 가려내는 planCommit을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
 //  - governance-mode 정의 "커밋을 검사하는 문지기"
-//    → 커밋이 아닌 명령(따옴표 속 글자를 다루는 읽기 명령, commit-tree, dry-run)은 검사 대상이 아니다
+//    → 커밋이 아닌 명령(따옴표 속 글자를 다루는 읽기 명령, dry-run, 커밋 없이 색인에만 반영하거나 멈추는
+//      cherry-pick·revert·merge 제어 옵션)은 검사 대상이 아니다
 //  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다 — 명령을 실행하기 전에
 //    그 파일들을 확정할 수 없으면 검사를 마친 것처럼 통과시키지 않고 강도에 맞춰 대응한다"
 //    → 전역 옵션·래퍼·예약어·셸 -c·alias를 거쳐도 실제 커밋 호출과 범위(index·all·only·include)·위치를 찾는다
 //    → 앞선 명령이 파일·색인·저장소를 바꾸거나 다른 명령을 실행할 수 있으면, 또는 인자가 셸 확장으로
 //      정해지면 확정 불가로 표시한다
 //    → 커밋을 실행할 수 있는 어떤 우회 형태도 "커밋 아님"으로 판정되지 않는다(우회 회귀 표)
+//    → git commit이 아닌 명령이 만드는 커밋(cherry-pick·revert·am·commit-tree, merge·rebase 등의 --continue)은
+//      무엇이 커밋될지 실행하면서 정해지므로 확정 불가다
 //    → git 내장 명령은 설정이 주입돼도 alias로 풀리지 않으므로 커밋 아님이다 / 분류되지 않은 내장 명령 뒤의 커밋은
 //      커밋될 파일을 바꿀 수 있어 확정 불가다
 import { describe, it, expect } from 'vitest';
@@ -24,8 +27,13 @@ describe('커밋이 아닌 명령 [규칙: 문지기는 커밋을 검사한다]'
     'grep -rn "git commit" .',
     "echo 'git commit -m x'",
     'git log --grep="git commit"',
-    'git commit-tree abc123 -m x',
     'git commit --dry-run -m x',
+    'git cherry-pick --no-commit abc123',
+    'git cherry-pick -n abc123',
+    'git revert --abort',
+    'git cherry-pick --quit',
+    'git am --show-current-patch',
+    'git rebase --abort',
     'git commit --dry -m x',
     'git status && git diff --cached',
     'git frobnicate',
@@ -216,6 +224,25 @@ describe('실행 전에 커밋 파일을 확정할 수 없음 [규칙: 확정할
       name === 'ship' ? '!git add -A && git commit' : null;
     expect((await planCommit('git ship -m x', { resolveAlias })).kind).toBe('unresolved');
   });
+});
+
+describe('git commit이 아닌 명령이 만드는 커밋 [규칙: 확정할 수 없으면 통과시키지 않는다]', () => {
+  const cases = [
+    'git cherry-pick abc123',
+    'git revert HEAD',
+    'git am 0001-fix.patch',
+    'git commit-tree abc123 -m x',
+    'git update-ref refs/heads/main $(git commit-tree HEAD^{tree} -p HEAD -m x)',
+    'git merge --continue',
+    'git rebase --continue',
+    'git cherry-pick --continue',
+    'git -C . cherry-pick abc123',
+  ];
+  for (const cmd of cases) {
+    it(`unresolved: ${label(cmd)}`, async () => {
+      expect((await planCommit(cmd, noAlias)).kind).toBe('unresolved');
+    });
+  }
 });
 
 describe('우회 회귀 표 — 커밋을 실행할 수 있으면 "커밋 아님"이 아니다 [규칙: 확정할 수 없으면 통과시키지 않는다]', () => {

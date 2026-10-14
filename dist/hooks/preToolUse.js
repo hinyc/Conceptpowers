@@ -6369,6 +6369,21 @@ var GIT_BUILTINS = new Set(
     " "
   )
 );
+var GIT_OTHER_COMMIT = /* @__PURE__ */ new Set(["cherry-pick", "revert", "am", "commit-tree"]);
+var GIT_CONTINUABLE = /* @__PURE__ */ new Set(["merge", "rebase", "cherry-pick", "revert", "am"]);
+var NO_COMMIT_FLAGS = /* @__PURE__ */ new Set([
+  "--abort",
+  "--quit",
+  "--skip",
+  "--show-current-patch",
+  "-n",
+  "--no-commit"
+]);
+function createsOtherCommit(sub, args) {
+  if (GIT_CONTINUABLE.has(sub) && args.includes("--continue")) return true;
+  if (!GIT_OTHER_COMMIT.has(sub)) return false;
+  return !args.some((a) => NO_COMMIT_FLAGS.has(a.split("=")[0]));
+}
 var GIT_EXECUTE = /* @__PURE__ */ new Set([
   "rebase",
   "bisect",
@@ -6383,7 +6398,7 @@ var GIT_MUTATE_INDEX = new Set(
   )
 );
 var GIT_READ = new Set(
-  "diff-tree diff-index diff-files show-ref check-ref-format check-mailmap verify-pack show-index patch-id column stripspace get-tar-commit-id status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref commit-tree hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean".split(
+  "diff-tree diff-index diff-files show-ref check-ref-format check-mailmap verify-pack show-index patch-id column stripspace get-tar-commit-id status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean".split(
     " "
   )
 );
@@ -6398,6 +6413,7 @@ var CONFIG_READ_FLAGS = /* @__PURE__ */ new Set([
 ]);
 function classifyGitCall(sub, args) {
   if (sub === "commit") return "commit";
+  if (createsOtherCommit(sub, args)) return "otherCommit";
   if (sub === "stash") return args[0] === "list" || args[0] === "show" ? "read" : "mutateIndex";
   if ((sub === "checkout" || sub === "switch") && args.length === 2) {
     if (["-b", "-B", "-c", "-C"].includes(args[0])) return "read";
@@ -6662,6 +6678,9 @@ async function visitGit(args, dyn, cmd, ctx, aliases) {
   const kind = classifyGitCall(sub, rest);
   if (kind === "unknown") return visitGitAlias(sub, args, dyn, cmd, ctx, g);
   if (kind === "read") return null;
+  if (kind === "otherCommit") {
+    return unresolved(`git commit\uC774 \uC544\uB2CC \uBA85\uB839(git ${sub})\uC774 \uB9CC\uB4DC\uB294 \uCEE4\uBC0B`);
+  }
   if (kind === "writeFiles") {
     markImpure(state, "\uD30C\uC77C\uC744 \uC4F0\uB294 git \uBA85\uB839");
     return null;
@@ -7159,7 +7178,7 @@ function gateFailureOutput(enforcement, error, root) {
 function unresolvedCommitOutput(enforcement, reason) {
   return unverifiedCommitOutput(enforcement, {
     reason: `[COMMIT UNRESOLVED] \uC2E4\uD589 \uC804\uC5D0 \uCEE4\uBC0B\uB420 \uD30C\uC77C\uC744 \uD655\uC815\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 ${reason}`,
-    context: "The commit gate checks the files that will actually be committed, but this command changes or hides what gets committed while it runs (staging and committing in one command, eval/command substitution, several commits, or options pointing git at another repository/index), so those files were NOT checked. Run staging (git add/rm/restore \u2026) as its own command first, then run git commit on its own so the gate can inspect the real set. Do not bypass the gate."
+    context: "The commit gate checks the files that will actually be committed, but this command changes or hides what gets committed while it runs (staging and committing in one command, eval/command substitution, several commits, or options pointing git at another repository/index), so those files were NOT checked. Run staging (git add/rm/restore \u2026) as its own command first, then run git commit on its own so the gate can inspect the real set. A commit made by another git command (cherry-pick, revert, am, commit-tree, or a --continue) is decided while it runs: apply it without committing (e.g. --no-commit), inspect the staged result, then run git commit on its own. Do not bypass the gate."
   });
 }
 function confineToProject(root, plan) {

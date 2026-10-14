@@ -474,7 +474,7 @@ function unresolvedCommitOutput(enforcement: EnforcementLevel, reason: string): 
   return unverifiedCommitOutput(enforcement, {
     reason: `[COMMIT UNRESOLVED] 실행 전에 커밋될 파일을 확정할 수 없습니다 — ${reason}`,
     context:
-      'The commit gate checks the files that will actually be committed, but this command changes or hides what gets committed while it runs (staging and committing in one command, eval/command substitution, several commits, or options pointing git at another repository/index), so those files were NOT checked. Run staging (git add/rm/restore …) as its own command first, then run git commit on its own so the gate can inspect the real set. Do not bypass the gate.',
+      'The commit gate checks the files that will actually be committed, but this command changes or hides what gets committed while it runs (staging and committing in one command, eval/command substitution, several commits, or options pointing git at another repository/index), so those files were NOT checked. Run staging (git add/rm/restore …) as its own command first, then run git commit on its own so the gate can inspect the real set. A commit made by another git command (cherry-pick, revert, am, commit-tree, or a --continue) is decided while it runs: apply it without committing (e.g. --no-commit), inspect the staged result, then run git commit on its own. Do not bypass the gate.',
   });
 }
 

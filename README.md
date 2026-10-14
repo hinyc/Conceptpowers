@@ -245,8 +245,11 @@ settings. A compound command that merely contains `git commit` can't ride a pass
 **What counts as a commit is parsed, not pattern-matched.** The gate looks for the `git … commit` invocation that will
 actually run — through global options (`-C`, `-c`), `sh -c`, and git aliases — and ignores the words when they are only an
 argument (`grep "git commit"`). It checks the **files that will actually be committed** — it builds the tree the commit would produce in a temporary index and reads both the file list and each file's committed content from git, so pathspecs, `-i`/`-o`, clean filters, and settings like `diff.relative` cannot make it look at the wrong content: `git commit -a` includes
-unstaged changes to tracked files, and a commit with pathspecs covers only those paths. Commits run from inside a script
-file or another program, and commits made outside Claude Code (terminal, IDE), are still out of the gate's reach.
+unstaged changes to tracked files, and a commit with pathspecs covers only those paths. A commit made by another git
+command — `cherry-pick`, `revert`, `am`, `commit-tree`, or a `--continue` of merge/rebase/cherry-pick/revert/am — is
+decided while it runs, so it is treated like any commit whose files can't be determined beforehand (apply it with
+`--no-commit`, then `git commit` on its own). Commits run from inside a script file or another program (including
+package scripts such as `pnpm release`), and commits made outside Claude Code (terminal, IDE), are still out of the gate's reach.
 
 **Governance files ask before they are written, too.** The `Edit`/`Write`/`MultiEdit` hook asks when the agent is about to write
 `init.json`, a concept document under `concepts/data/`, or a record under `concepts/.alignment/` — the human confirmation

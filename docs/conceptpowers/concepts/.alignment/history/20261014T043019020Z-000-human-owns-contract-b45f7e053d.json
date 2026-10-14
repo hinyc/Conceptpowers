@@ -1,0 +1,11 @@
+{
+  "slug": "human-owns-contract",
+  "hash": "3:bdfa1f3770ca",
+  "prevHash": "3:bdfa1f3770ca",
+  "reason": "명령으로 개념을 고칠 때 사유를 필수로 함(레드팀 지적, 사용자 결정 2026-10-14)",
+  "at": "2026-10-14T04:30:19.020Z",
+  "ignored": false,
+  "aligned": true,
+  "noCode": false,
+  "note": ""
+}

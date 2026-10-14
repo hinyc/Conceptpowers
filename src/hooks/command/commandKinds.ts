@@ -116,7 +116,35 @@ export const GIT_BUILTINS = new Set(
 );
 
 export type GitCallKind =
-  'commit' | 'read' | 'writeFiles' | 'mutateIndex' | 'mutateConfig' | 'execute' | 'unknown';
+  | 'commit'
+  | 'otherCommit'
+  | 'read'
+  | 'writeFiles'
+  | 'mutateIndex'
+  | 'mutateConfig'
+  | 'execute'
+  | 'unknown';
+
+/** commit 말고도 새 커밋을 만드는 하위 명령 — 무엇이 커밋될지는 실행하면서 정해져 미리 확정할 수 없다 */
+const GIT_OTHER_COMMIT = new Set(['cherry-pick', 'revert', 'am', 'commit-tree']);
+/** 멈춘 작업을 이어 가며 스테이징된 내용을 커밋하는 하위 명령(`--continue`) */
+const GIT_CONTINUABLE = new Set(['merge', 'rebase', 'cherry-pick', 'revert', 'am']);
+/** 진행 중인 작업을 멈추거나 보기만 하거나, 커밋 없이 색인에만 반영하는 옵션 */
+const NO_COMMIT_FLAGS = new Set([
+  '--abort',
+  '--quit',
+  '--skip',
+  '--show-current-patch',
+  '-n',
+  '--no-commit',
+]);
+
+// 새 커밋을 만드는 다른 git 명령인가 — 커밋을 만들지 않는 제어 옵션을 함께 쓰면 아니다.
+function createsOtherCommit(sub: string, args: string[]): boolean {
+  if (GIT_CONTINUABLE.has(sub) && args.includes('--continue')) return true;
+  if (!GIT_OTHER_COMMIT.has(sub)) return false;
+  return !args.some((a) => NO_COMMIT_FLAGS.has(a.split('=')[0]));
+}
 
 /** 다른 명령을 실행할 수 있는 하위 명령(rebase -x, bisect run, submodule foreach 등) */
 const GIT_EXECUTE = new Set([
@@ -135,7 +163,7 @@ const GIT_MUTATE_INDEX = new Set(
 );
 /** 색인·설정을 바꾸지 않고 명령도 실행하지 않는 하위 명령 */
 const GIT_READ = new Set(
-  'diff-tree diff-index diff-files show-ref check-ref-format check-mailmap verify-pack show-index patch-id column stripspace get-tar-commit-id status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref commit-tree hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean'.split(
+  'diff-tree diff-index diff-files show-ref check-ref-format check-mailmap verify-pack show-index patch-id column stripspace get-tar-commit-id status diff log show fetch push branch tag remote blame grep ls-files ls-tree rev-parse rev-list cat-file describe shortlog reflog help version archive bundle format-patch range-diff whatchanged show-branch for-each-ref hash-object write-tree mktree merge-base name-rev count-objects verify-commit verify-tag var annotate cherry request-pull check-ignore check-attr ls-remote interpret-trailers credential clone init gc prune repack fsck maintenance replace notes worktree clean'.split(
     ' '
   )
 );
@@ -152,6 +180,7 @@ const CONFIG_READ_FLAGS = new Set([
 
 export function classifyGitCall(sub: string, args: string[]): GitCallKind {
   if (sub === 'commit') return 'commit';
+  if (createsOtherCommit(sub, args)) return 'otherCommit';
   if (sub === 'stash') return args[0] === 'list' || args[0] === 'show' ? 'read' : 'mutateIndex';
   if ((sub === 'checkout' || sub === 'switch') && args.length === 2) {
     if (['-b', '-B', '-c', '-C'].includes(args[0])) return 'read'; // 새 브랜치만 만든다 — 색인 그대로
