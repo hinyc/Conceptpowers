@@ -5756,7 +5756,7 @@ function governedEditFinding(root, filePath) {
     return {
       gate: "governance-files",
       reason: `[CONCEPT DOC] \uAC1C\uB150 \uBB38\uC11C(${shown})\uB97C \uC9C1\uC811 \uACE0\uCE58\uB824 \uD569\uB2C8\uB2E4 \u2014 \uAC1C\uB150 \uBB38\uC11C\uC758 \uB0B4\uC6A9 \uBCC0\uACBD\uC740 \uC0AC\uB78C\uC758 \uD655\uC778\uC744 \uAC70\uCE69\uB2C8\uB2E4.`,
-      context: "The agent is about to write a concept document. Concept content changes require explicit user approval of the exact change (conceptpowers:update-concepts \u2014 edit-concept for edits, the define flow for new concepts). If the user approved this exact content, proceed; otherwise show the draft and ask first. Editing a green concept drops it to pending until a fresh consistency check is attested and the user confirms settling."
+      context: "The agent is about to write a concept document. Concept content changes require explicit user approval of the exact change (conceptpowers:update-concepts \u2014 edit-concept for edits, the define flow for new concepts). If the user approved this exact content, proceed; otherwise show the draft and ask first. Edit an existing concept through edit-concept (or the viewer), which drops a green concept to pending until a fresh consistency check is attested and the user confirms settling; a direct Edit/Write keeps whatever status it writes, and the commit gate then checks the changed concept."
     };
   }
   return null;

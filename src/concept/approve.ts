@@ -15,7 +15,7 @@ export async function approveConcept(root: string, slug: string): Promise<Concep
       concept.status === 'green'
         ? `Concept already approved (green): ${slug}`
         : `Cannot approve a pending concept: ${slug} — approve promotes red→green; ` +
-            `a pending concept settles to green via a passing consistency check.`
+            `a pending concept settles to green via a passing consistency check and the user's confirmation.`
     );
   }
   return setConceptStatus(root, slug, 'green');

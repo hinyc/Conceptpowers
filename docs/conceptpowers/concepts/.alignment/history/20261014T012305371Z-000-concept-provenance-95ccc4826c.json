@@ -1,0 +1,11 @@
+{
+  "slug": "concept-provenance",
+  "hash": "3:c73c30597e37",
+  "prevHash": "3:c73c30597e37",
+  "reason": "감사가 코드 자리를 확인하게 된 뒤에도 '기계가 잡아내지 않는다'고 적힌 tradeoffs를 실제 확인 범위(파일·분명한 이름·줄 범위)에 맞춤 — 허용 규칙과의 모순 해소",
+  "at": "2026-10-14T01:23:05.371Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

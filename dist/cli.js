@@ -8702,21 +8702,26 @@ async function findConceptlessFiles(root, files, ignoreGlobs) {
 // src/audit/codeCoordinates.ts
 import { readFile as readFile15, stat as stat3 } from "node:fs/promises";
 import { join as join18 } from "node:path";
-var CALL = /([A-Za-z_$][\w$]*)\s*\(/g;
-var CONSTANT = /\b([A-Z][A-Z0-9_]{2,})\b/g;
-var MIXED = /\b([A-Za-z_$][a-z0-9_$]*[A-Z][\w$]*)\b/g;
-var LINE_RANGE = /(\d+)\s*[~\-–]\s*(\d+)\s*행|\bL(\d+)(?:\s*-\s*L?(\d+))?\b/g;
+var BACKTICKED = /`\s*([A-Za-z_$][\w$]*)\s*(?:\(\s*\))?\s*`/g;
+var CALL = /(?<![\w$-])([A-Za-z_$][\w$]*)\((?![^)]*[가-힣])/g;
+var CONSTANT = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9])\b/g;
+var LOWER_CAMEL = /\b([a-z][a-z0-9]+[A-Z][a-z0-9]+[A-Za-z0-9]*)\b/g;
+var QUOTED = /"[^"]*"|(?<![A-Za-z])'[^']*'(?![A-Za-z])|“[^”]*”|‘[^’]*’/g;
+var LINE_RANGE = /(\d+)\s*(?:[~\-–]\s*(\d+)\s*)?(?:행|줄)|\bL(\d+)(?:\s*[-–~]\s*L?(\d+))?\b/g;
 function locatorSymbols(locator) {
-  const found = /* @__PURE__ */ new Set();
-  for (const pattern of [CALL, CONSTANT, MIXED]) {
-    for (const match of locator.matchAll(pattern)) found.add(match[1]);
-  }
-  return [...found];
+  const backticked = [...locator.matchAll(BACKTICKED)].map((m) => m[1]);
+  const prose = locator.replace(QUOTED, " ");
+  const patterned = [CALL, CONSTANT, LOWER_CAMEL].flatMap(
+    (pattern) => [...prose.matchAll(pattern)].map((m) => m[1])
+  );
+  return [.../* @__PURE__ */ new Set([...backticked, ...patterned])];
 }
 function locatorMaxLine(locator) {
   const numbers = [...locator.matchAll(LINE_RANGE)].flatMap((m) => [m[1], m[2], m[3], m[4]]).filter((n) => n !== void 0).map(Number);
   return numbers.length > 0 ? Math.max(...numbers) : null;
 }
+var escapeRegExp2 = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var containsSymbol = (text, symbol) => new RegExp(`(?<![\\w$])${escapeRegExp2(symbol)}(?![\\w$])`).test(text);
 var cleanPath = (path) => path.split("#")[0].trim();
 async function readTarget(root, path) {
   try {
@@ -8729,36 +8734,26 @@ async function readTarget(root, path) {
 }
 async function checkSource(root, slug3, path, locator) {
   const target2 = await readTarget(root, path);
-  if (target2 === null) return { slug: slug3, field: "sources", path, locator, problem: "missing-file" };
-  if (target2 === "dir" || !locator.trim()) return null;
-  const missing = locatorSymbols(locator).filter((symbol) => !target2.includes(symbol));
-  if (missing.length > 0) {
-    return { slug: slug3, field: "sources", path, locator, problem: "missing-symbol", detail: missing };
-  }
+  if (target2 === null) return [{ slug: slug3, field: "sources", path, locator, problem: "missing-file" }];
+  if (target2 === "dir" || !locator.trim()) return [];
+  const base = { slug: slug3, field: "sources", path, locator };
+  const missing = locatorSymbols(locator).filter((symbol) => !containsSymbol(target2, symbol));
   const maxLine = locatorMaxLine(locator);
   const lineCount = target2.split("\n").length;
-  if (maxLine !== null && maxLine > lineCount) {
-    return {
-      slug: slug3,
-      field: "sources",
-      path,
-      locator,
-      problem: "line-out-of-range",
-      detail: [`${maxLine} > ${lineCount}`]
-    };
-  }
-  return null;
+  const symbolProblems = missing.length > 0 ? [{ ...base, problem: "missing-symbol", detail: missing }] : [];
+  const lineProblems = maxLine !== null && maxLine > lineCount ? [{ ...base, problem: "line-out-of-range", detail: [`${maxLine} > ${lineCount}`] }] : [];
+  return [...symbolProblems, ...lineProblems];
 }
 async function findBrokenCodeCoordinates(root, concepts) {
   const checks = concepts.flatMap((concept) => [
     ...(concept.codeLinks ?? []).map(async (link) => {
       const path = cleanPath(link);
-      return await readTarget(root, path) === null ? { slug: concept.slug, field: "codeLinks", path, problem: "missing-file" } : null;
+      return await readTarget(root, path) === null ? [{ slug: concept.slug, field: "codeLinks", path, problem: "missing-file" }] : [];
     }),
     ...(concept.sources ?? []).filter((source) => source.kind === "code").map((source) => checkSource(root, concept.slug, cleanPath(source.path), source.locator))
   ]);
   const results = await Promise.all(checks);
-  return results.filter((r) => r !== null);
+  return results.flat();
 }
 
 // src/audit/tracked.ts
@@ -8792,7 +8787,7 @@ async function approveConcept(root, slug3) {
   if (!concept) throw new Error(`Concept not found: ${slug3}`);
   if (concept.status !== "red") {
     throw new Error(
-      concept.status === "green" ? `Concept already approved (green): ${slug3}` : `Cannot approve a pending concept: ${slug3} \u2014 approve promotes red\u2192green; a pending concept settles to green via a passing consistency check.`
+      concept.status === "green" ? `Concept already approved (green): ${slug3}` : `Cannot approve a pending concept: ${slug3} \u2014 approve promotes red\u2192green; a pending concept settles to green via a passing consistency check and the user's confirmation.`
     );
   }
   return setConceptStatus(root, slug3, "green");

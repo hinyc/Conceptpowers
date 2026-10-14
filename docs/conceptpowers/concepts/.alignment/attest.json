@@ -431,7 +431,7 @@
   "concept-provenance": {
     "hash": "3:c73c30597e37",
     "result": "pass",
-    "at": "2026-09-14T22:24:02.161Z",
+    "at": "2026-10-14T01:24:31.156Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",
@@ -458,8 +458,7 @@
       "list-filter",
       "viewer-navigation",
       "viewer-readability"
-    ],
-    "note": "8단계 허용 추가(코드 자리 실재 확인) — 다른 25개 개념과 대조. 근거를 준수 판정에 쓰지 않는다는 불변·지어낸 좌표 금지와 같은 방향, 충돌 없음"
+    ]
   },
   "reference-sync": {
     "hash": "3:2766aa2fbad0",

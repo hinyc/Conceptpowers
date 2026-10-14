@@ -20,19 +20,29 @@ export interface BrokenCodeCoordinate {
   detail?: string[];
 }
 
-const CALL = /([A-Za-z_$][\w$]*)\s*\(/g;
-const CONSTANT = /\b([A-Z][A-Z0-9_]{2,})\b/g;
-// 첫 글자 뒤에 대문자가 섞인 이름(camelCase·PascalCase 약어) — 문장 첫 단어(Their)는 제외된다.
-const MIXED = /\b([A-Za-z_$][a-z0-9_$]*[A-Z][\w$]*)\b/g;
-const LINE_RANGE = /(\d+)\s*[~\-–]\s*(\d+)\s*행|\bL(\d+)(?:\s*-\s*L?(\d+))?\b/g;
+// 코드 표기로 확신할 수 있는 모양만 심볼로 본다. 약어(CSRF·JSON)·제품명(GitHub·iOS)처럼 설명 문장에도 흔한
+// 모양은 뽑지 않는다 — 꼭 확인받고 싶은 이름은 백틱(`CONTENT`)으로 감싸 적는다.
+const BACKTICKED = /`\s*([A-Za-z_$][\w$]*)\s*(?:\(\s*\))?\s*`/g;
+// 이름 바로 뒤의 여는 괄호 — "FeatureSchema (필드)"처럼 띄어 쓴 괄호, "README.md(설치 절차)"처럼 안에 한글
+// 설명을 단 괄호, "eslint-disable(rules)"처럼 하이픈으로 이어진 낱말은 설명으로 본다.
+const CALL = /(?<![\w$-])([A-Za-z_$][\w$]*)\((?![^)]*[가-힣])/g;
+// 밑줄이 든 대문자 상수(MAX_BODY) — 밑줄 없는 대문자 단어는 약어와 구별되지 않는다.
+const CONSTANT = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9])\b/g;
+// 소문자 두 자 이상으로 시작해 대문자 뒤에 소문자가 이어지는 이름(saveBtn) — iOS·macOS·iPhone은 제외된다.
+const LOWER_CAMEL = /\b([a-z][a-z0-9]+[A-Z][a-z0-9]+[A-Za-z0-9]*)\b/g;
+// 인용문은 코드가 아니라 문장이다 — 그 안의 단어는 판정하지 않는다.
+// 낱말 속 아포스트로피(user's)는 인용 부호가 아니다.
+const QUOTED = /"[^"]*"|(?<![A-Za-z])'[^']*'(?![A-Za-z])|“[^”]*”|‘[^’]*’/g;
+const LINE_RANGE = /(\d+)\s*(?:[~\-–]\s*(\d+)\s*)?(?:행|줄)|\bL(\d+)(?:\s*[-–~]\s*L?(\d+))?\b/g;
 
 // 자리 설명에서 코드 표기로 보이는 심볼만 뽑는다.
 export function locatorSymbols(locator: string): string[] {
-  const found = new Set<string>();
-  for (const pattern of [CALL, CONSTANT, MIXED]) {
-    for (const match of locator.matchAll(pattern)) found.add(match[1]);
-  }
-  return [...found];
+  const backticked = [...locator.matchAll(BACKTICKED)].map((m) => m[1]);
+  const prose = locator.replace(QUOTED, ' ');
+  const patterned = [CALL, CONSTANT, LOWER_CAMEL].flatMap((pattern) =>
+    [...prose.matchAll(pattern)].map((m) => m[1])
+  );
+  return [...new Set([...backticked, ...patterned])];
 }
 
 // 자리 설명에 적힌 줄 번호 가운데 가장 큰 값. 없으면 null.
@@ -43,6 +53,12 @@ export function locatorMaxLine(locator: string): number | null {
     .map(Number);
   return numbers.length > 0 ? Math.max(...numbers) : null;
 }
+
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// 이름 단위로 찾는다 — saveBtn이 남아 있다고 사라진 save를 있다고 보지 않는다.
+const containsSymbol = (text: string, symbol: string): boolean =>
+  new RegExp(`(?<![\\w$])${escapeRegExp(symbol)}(?![\\w$])`).test(text);
 
 const cleanPath = (path: string): string => path.split('#')[0].trim();
 
@@ -56,32 +72,27 @@ async function readTarget(root: string, path: string): Promise<string | null | '
   }
 }
 
+// 심볼과 줄 범위는 따로 본다 — 한쪽 문제가 다른 쪽 문제를 가리지 않게 둘 다 알린다.
 async function checkSource(
   root: string,
   slug: string,
   path: string,
   locator: string
-): Promise<BrokenCodeCoordinate | null> {
+): Promise<BrokenCodeCoordinate[]> {
   const target = await readTarget(root, path);
-  if (target === null) return { slug, field: 'sources', path, locator, problem: 'missing-file' };
-  if (target === 'dir' || !locator.trim()) return null;
-  const missing = locatorSymbols(locator).filter((symbol) => !target.includes(symbol));
-  if (missing.length > 0) {
-    return { slug, field: 'sources', path, locator, problem: 'missing-symbol', detail: missing };
-  }
+  if (target === null) return [{ slug, field: 'sources', path, locator, problem: 'missing-file' }];
+  if (target === 'dir' || !locator.trim()) return [];
+  const base = { slug, field: 'sources' as const, path, locator };
+  const missing = locatorSymbols(locator).filter((symbol) => !containsSymbol(target, symbol));
   const maxLine = locatorMaxLine(locator);
   const lineCount = target.split('\n').length;
-  if (maxLine !== null && maxLine > lineCount) {
-    return {
-      slug,
-      field: 'sources',
-      path,
-      locator,
-      problem: 'line-out-of-range',
-      detail: [`${maxLine} > ${lineCount}`],
-    };
-  }
-  return null;
+  const symbolProblems: BrokenCodeCoordinate[] =
+    missing.length > 0 ? [{ ...base, problem: 'missing-symbol', detail: missing }] : [];
+  const lineProblems: BrokenCodeCoordinate[] =
+    maxLine !== null && maxLine > lineCount
+      ? [{ ...base, problem: 'line-out-of-range', detail: [`${maxLine} > ${lineCount}`] }]
+      : [];
+  return [...symbolProblems, ...lineProblems];
 }
 
 export async function findBrokenCodeCoordinates(
@@ -92,13 +103,13 @@ export async function findBrokenCodeCoordinates(
     ...(concept.codeLinks ?? []).map(async (link) => {
       const path = cleanPath(link);
       return (await readTarget(root, path)) === null
-        ? ({ slug: concept.slug, field: 'codeLinks', path, problem: 'missing-file' } as const)
-        : null;
+        ? [{ slug: concept.slug, field: 'codeLinks', path, problem: 'missing-file' } as const]
+        : [];
     }),
     ...(concept.sources ?? [])
       .filter((source) => source.kind === 'code')
       .map((source) => checkSource(root, concept.slug, cleanPath(source.path), source.locator)),
   ]);
-  const results = await Promise.all(checks);
-  return results.filter((r): r is BrokenCodeCoordinate => r !== null);
+  const results: BrokenCodeCoordinate[][] = await Promise.all(checks);
+  return results.flat();
 }

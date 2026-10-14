@@ -243,7 +243,7 @@ export function governedEditFinding(
       gate: 'governance-files',
       reason: `[CONCEPT DOC] 개념 문서(${shown})를 직접 고치려 합니다 — 개념 문서의 내용 변경은 사람의 확인을 거칩니다.`,
       context:
-        'The agent is about to write a concept document. Concept content changes require explicit user approval of the exact change (conceptpowers:update-concepts — edit-concept for edits, the define flow for new concepts). If the user approved this exact content, proceed; otherwise show the draft and ask first. Editing a green concept drops it to pending until a fresh consistency check is attested and the user confirms settling.',
+        'The agent is about to write a concept document. Concept content changes require explicit user approval of the exact change (conceptpowers:update-concepts — edit-concept for edits, the define flow for new concepts). If the user approved this exact content, proceed; otherwise show the draft and ask first. Edit an existing concept through edit-concept (or the viewer), which drops a green concept to pending until a fresh consistency check is attested and the user confirms settling; a direct Edit/Write keeps whatever status it writes, and the commit gate then checks the changed concept.',
     };
   }
   return null;

@@ -26,7 +26,8 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    `node "<cli>" audit --root .`
    전체 스캔 결과의 `brokenCodeLinks`는 개념의 근거·코드 연결 목록이 가리키는 코드 자리 가운데 지금 실재하지
    않는 것(없는 파일·사라진 심볼·파일 길이를 넘는 줄 범위)이다. 개념 문서는 기준선이므로 고치지 말고 목록을
-   보고해 사용자가 `update-concepts`로 근거를 바로잡게 한다.
+   보고해 사용자가 `update-concepts`로 근거를 바로잡게 한다. `brokenCodeLinks`가 있어도 exit 1이며 이 역시
+   진단 데이터다.
    - `unknownTags`: 없는 개념을 가리키는 태그.
    - `conceptless`: `@concept` 마커가 전혀 없는 파일 — 2번 격차 판단의 결정적 출발점이다.
    - `unapproved`: 🔴 red 개념 전부, `unapprovedRefs`: 스캔한 파일이 가리키는 red.

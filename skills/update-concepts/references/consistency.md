@@ -51,7 +51,9 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    concept change — the commit gate (`evidence-staged`) catches a record left unstaged. A record that
    exists only on disk is not evidence.
 6. Proceed with save/commit only when there are zero unresolved conflicts. Green promotion
-   is engine-gated: it requires a fresh `pass` attestation for that concept.
+   through the engine (`approve` / `setConceptStatus`) requires a fresh `pass` attestation for that
+   concept; a concept written to disk as `green` directly (define.md step 7) skips that check and is
+   backstopped at the commit gate instead.
 
 ## Commit gate (D17)
 
