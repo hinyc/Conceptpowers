@@ -17,9 +17,10 @@ sentence is applied. The common wrap-up (공통 마무리) and prohibitions stay
      같은 커밋에 넣고, 정말 코드 변경이 필요 없으면 사용자 확인 후 기록한다:
      `node "<cli>" attest-no-code <slug> --note "<why>" --root .`
    - **같은 커밋에서 그 개념의 테스트를 검토한다**(conceptDrivenTests): 새 규칙에서 시나리오를 다시 뽑아
-     옛 규칙을 검증하던 테스트를 고쳐 함께 스테이징한다. 고칠 것이 없거나 테스트가 아직 없으면 사용자 확인 후
-     기록한다:
-     `node "<cli>" attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>" --root .`
+     옛 규칙을 검증하던 테스트를 고쳐 함께 스테이징한다 — 스테이징된 테스트만으로 게이트를 통과하므로 기록은
+     남기지 않는다. 고칠 것이 없거나 테스트가 아직 없을 때만 사용자 확인 후 기록한다(이 기록은 남길 때와 커밋할 때
+     사람에게 묻는다):
+     `node "<cli>" attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>" --root .`
      테스트는 개념 범위 안에 머문다 — 개념에 없는 검사가 필요하면 그것은 또 하나의 개념 수정이다.
 3. **기능 명세·architecture·infra를 고칠 때** — 상위 기준이 하위 개념을 제약하므로, 이 변경이 어떤 개념을 함께
    바꿔야 하는지 사용자와 검토한다. 저장은 사용자 확인 뒤에만.

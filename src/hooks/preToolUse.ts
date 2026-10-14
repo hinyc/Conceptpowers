@@ -265,10 +265,16 @@ export async function decidePreToolUse(
   return null;
 }
 
+// 기록마다 무엇을 승인하는지 — 검토 기록은 검사를 고친 경우(updated)도 있어 "고치지 않고"로 뭉뚱그리지 않는다.
+const recordMeaning = (record: string): string =>
+  record === 'attest-no-code'
+    ? '코드를 고치지 않고 바뀐 개념을 통과시키는 판단 기록'
+    : '바뀐 개념에 맞춰 검사를 검토했다는 판단 기록(고침·고칠 필요 없음·검사 없음) — 고친 검사 파일을 같은 커밋에 넣으면 이 기록 없이도 통과합니다';
+
 function recordCommandFinding(records: string[]): GateFinding {
   return {
     gate: 'human-record',
-    reason: `[HUMAN RECORD] ${records.join(', ')} — 코드·검사를 고치지 않고 개념을 통과시키는 판단 기록입니다. 사람의 확인을 거쳐 남겨야 합니다 — 사유가 맞는지 확인한 뒤 진행하세요.`,
+    reason: `[HUMAN RECORD] ${records.join(', ')} — ${records.map(recordMeaning).join(' / ')}. 사람의 확인을 거쳐 남겨야 합니다 — 사유가 맞는지 확인한 뒤 진행하세요.`,
     context:
       "This command records a human judgment that lets a changed concept pass the commit gate without code or test changes (attest-no-code / attest-test-review). The record must reflect the user's confirmation, so it asks every time in every enforcement mode. State the concept and the exact reason to the user; proceed only if they confirm.",
   };

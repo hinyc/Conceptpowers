@@ -83,6 +83,13 @@ describe('기록 명령 실행 전 확인 [규칙: 사람의 확인 없이 기�
       }
     });
   }
+  it('묻는 문구는 기록 종류마다 무엇을 승인하는지 밝힌다 — 검토 기록을 "고치지 않고"로 뭉뚱그리지 않는다', async () => {
+    const review = await run('node cli.js attest-test-review foo --result updated --note x');
+    expect(review!.hookSpecificOutput.permissionDecisionReason).toContain('검사를 검토했다는');
+    expect(review!.hookSpecificOutput.permissionDecisionReason).not.toContain('고치지 않고');
+    const noCode = await run('node cli.js attest-no-code foo --note x');
+    expect(noCode!.hookSpecificOutput.permissionDecisionReason).toContain('코드를 고치지 않고');
+  });
   it('인자로만 든 글자나 검사 증빙 명령은 묻지 않는다', async () => {
     expect(await run('grep -rn "attest-no-code" src')).toBeNull();
     expect(await run('node cli.js attest-consistency foo --result pass --compared all')).toBeNull();

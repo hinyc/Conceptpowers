@@ -77,7 +77,8 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
      `concepts`에 기록한다 (the _feature → concept_ link).
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
-   concept applies (utils/types/config/scripts, etc.), write **`@concept:none`** explicitly rather than
+   concept applies (utils/types/config/scripts, shared UI used across features — buttons, modals, layouts,
+   design-system components — etc.), write **`@concept:none`** explicitly rather than
    leaving them untagged. Then run the 태그·매핑 step of `conceptpowers:scan` (`node "<cli>" map ...`) so concept and
    feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
    real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.)

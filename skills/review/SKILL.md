@@ -111,9 +111,10 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 1. 그 개념의 테스트를 찾는다(매핑 캐시 / `@concept` 태그 → 테스트 파일).
 2. **새** 규칙에서 시나리오 목록을 다시 뽑아 현재 테스트가 단언하는 것과 견준다. 바뀌거나 사라지거나 새로 생긴
    규칙마다 고치거나 지우거나 더할 테스트가 하나씩 대응된다.
-3. 고친 테스트를 개념 변경과 함께 스테이징한다.
-4. 정말 고칠 것이 없거나(문구만 바뀜) 테스트가 아직 없으면 사용자 확인 후 사유를 기록한다:
-   `node "<cli>" attest-test-review <slug> --result updated|no-impact|no-tests --tests <paths> --note "<why>" --root .`
+3. 고친 테스트를 개념 변경과 함께 스테이징한다 — 이것만으로 게이트를 통과하므로 기록은 남기지 않는다.
+4. 정말 고칠 것이 없거나(문구만 바뀜) 테스트가 아직 없을 때만 사용자 확인 후 사유를 기록한다
+   (`--result updated`는 테스트를 이미 앞선 커밋에서 고친 경우에만 쓴다):
+   `node "<cli>" attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>" --root .`
    기록은 개념 지문에 묶여 개념을 다시 고치면 효력을 잃는다.
 
 커밋 게이트 `concept-test-follow`가 정확히 이것을 강제한다: 테스트도 기록도 없는 어긋난 개념은 `strict`에서
