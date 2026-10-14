@@ -250,6 +250,9 @@ command — `cherry-pick`, `revert`, `am`, `commit-tree`, or a `--continue` of m
 decided while it runs, so it is treated like any commit whose files can't be determined beforehand (apply it with
 `--no-commit`, then `git commit` on its own). Commits run from inside a script file or another program (including
 package scripts such as `pnpm release`), and commits made outside Claude Code (terminal, IDE), are still out of the gate's reach.
+When such a script runs from a Claude Code Bash command, the post-commit hook still notices afterwards: if a command that didn't look like a commit
+left new commits in the HEAD reflog, it settles them like any commit and tells the agent they skipped the gate (it can't
+undo them).
 
 **Governance files ask before they are written, too.** The `Edit`/`Write`/`MultiEdit` hook asks when the agent is about to write
 `init.json`, a concept document under `concepts/data/`, or a record under `concepts/.alignment/` — the human confirmation

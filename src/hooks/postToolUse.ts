@@ -9,6 +9,11 @@ import { writeFileAtomic } from '../util/atomicWrite.js';
 import { isMainModule } from '../util/isMain.js';
 import { planCommit } from './command/commitPlan.js';
 import { createAliasResolver } from './command/commitFiles.js';
+import {
+  takeUngatedCommits,
+  ungatedCommitNotice,
+  type UngatedCommit,
+} from './command/headWatch.js';
 
 const execFileAsync = promisify(execFile);
 // 대형 커밋(수천 파일)에서도 잘리지 않도록 execFile 기본 1MB를 넉넉히 늘린다.
@@ -18,6 +23,8 @@ export interface PostToolEvent {
   tool: string;
   input: { command?: string };
   committedFiles?: string[];
+  /** 커밋 명령으로 보이지 않던 이번 명령이 실행 중에 만든 커밋(headWatch) — 있으면 그 커밋도 결산한다 */
+  ungatedCommits?: UngatedCommit[];
 }
 
 // core.quotePath=false: 비-ASCII 경로(예: src/認証.ts)를 git이 따옴표로 감싸 사람이 읽기 좋게
@@ -92,7 +99,8 @@ export async function runPostToolUse(
   const plan = await planCommit(ev.input.command ?? '', {
     resolveAlias: createAliasResolver(root),
   });
-  if (plan.kind === 'none') return null;
+  // 커밋 명령이 아니어도 실행 중에 커밋이 생겼으면 결산한다 — 어긋난 채 통과한 커밋도 이력에 남긴다.
+  if (plan.kind === 'none' && !ev.ungatedCommits?.length) return null;
 
   // 명시적 파일목록(테스트/프로그램 경로)은 그대로 신뢰한다.
   if (ev.committedFiles) {
@@ -126,6 +134,23 @@ export async function runPostToolUse(
   }
 }
 
+/**
+ * 커밋 명령으로 보이지 않던 Bash 명령이 실행 중에 만든 커밋. 커밋 명령이면 문지기가 이미 봤으므로 기록만 치운다.
+ */
+export async function ungatedCommitsOf(
+  root: string,
+  tool: string | undefined,
+  toolUseId: unknown,
+  input: { command?: string }
+): Promise<UngatedCommit[]> {
+  if (tool !== 'Bash' || typeof toolUseId !== 'string') return [];
+  if (!(await isInitialized(root))) return [];
+  const commits = await takeUngatedCommits(root, toolUseId);
+  if (!commits.length) return [];
+  const plan = await planCommit(input.command ?? '', { resolveAlias: createAliasResolver(root) });
+  return plan.kind === 'none' ? commits : [];
+}
+
 const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = '';
@@ -133,10 +158,20 @@ if (isMain) {
   process.stdin.on('end', async () => {
     try {
       const payload = JSON.parse(raw || '{}');
-      await runPostToolUse(process.cwd(), {
-        tool: payload.tool_name,
-        input: payload.tool_input ?? {},
-      });
+      const root = process.cwd();
+      const input = payload.tool_input ?? {};
+      const ungated = await ungatedCommitsOf(root, payload.tool_name, payload.tool_use_id, input);
+      await runPostToolUse(root, { tool: payload.tool_name, input, ungatedCommits: ungated });
+      if (ungated.length) {
+        process.stdout.write(
+          JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: 'PostToolUse',
+              additionalContext: ungatedCommitNotice(ungated),
+            },
+          })
+        );
+      }
     } catch {
       /* no-op */
     }

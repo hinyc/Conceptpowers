@@ -8,9 +8,9 @@ var __export = (target, all) => {
 };
 
 // src/hooks/postToolUse.ts
-import { execFile as execFile5 } from "node:child_process";
-import { promisify as promisify5 } from "node:util";
-import { readFile as readFile11 } from "node:fs/promises";
+import { execFile as execFile6 } from "node:child_process";
+import { promisify as promisify6 } from "node:util";
+import { readFile as readFile12 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
@@ -5994,12 +5994,84 @@ function createAliasResolver(root) {
   };
 }
 
-// src/hooks/postToolUse.ts
+// src/hooks/command/headWatch.ts
+import { execFile as execFile5 } from "node:child_process";
+import { promisify as promisify5 } from "node:util";
+import { mkdir as mkdir4, readdir as readdir4, readFile as readFile11, rm as rm2, stat as stat2 } from "node:fs/promises";
+import { join as join8 } from "node:path";
 var execFileAsync5 = promisify5(execFile5);
-var MAX_BUFFER3 = 64 * 1024 * 1024;
+var RECORD_DIR = join8("conceptpowers", "head-before");
+var STALE_MS = 24 * 60 * 60 * 1e3;
+var MAX_ENTRIES = 50;
+var COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am):/;
 async function git(root, args) {
   try {
-    const { stdout } = await execFileAsync5(
+    const { stdout } = await execFileAsync5("git", ["--no-pager", ...args], {
+      cwd: root,
+      maxBuffer: 4 * 1024 * 1024
+    });
+    return stdout;
+  } catch {
+    return null;
+  }
+}
+async function recordDir(root) {
+  const gitDir = await git(root, ["rev-parse", "--absolute-git-dir"]);
+  return gitDir ? join8(gitDir.trim(), RECORD_DIR) : null;
+}
+function recordName(toolUseId) {
+  const safe = toolUseId.replace(/[^A-Za-z0-9_-]/g, "");
+  return safe ? safe.slice(0, 128) : null;
+}
+async function reflogLines(root, count) {
+  const out = await git(root, [
+    "reflog",
+    `-${count}`,
+    "--format=%H%x09%gd%x09%gs",
+    "--date=unix",
+    "HEAD"
+  ]);
+  return out ? out.split("\n").filter(Boolean) : [];
+}
+async function takeUngatedCommits(root, toolUseId) {
+  const name = recordName(toolUseId);
+  const dir = name ? await recordDir(root) : null;
+  if (!name || !dir) return [];
+  const path = join8(dir, name);
+  let before;
+  try {
+    before = (await readFile11(path, "utf8")).replace(/\n$/, "");
+  } catch {
+    return [];
+  }
+  await rm2(path, { force: true }).catch(() => void 0);
+  const fresh = [];
+  for (const line of await reflogLines(root, MAX_ENTRIES)) {
+    if (line === before) break;
+    const [sha, , subject = ""] = line.split("	");
+    if (COMMIT_ENTRY.test(subject)) fresh.push({ sha, subject });
+  }
+  return fresh;
+}
+function ungatedCommitNotice(commits) {
+  const list = commits.slice(0, 5).map((c) => `- ${c.sha.slice(0, 7)} ${c.subject}`).join("\n");
+  const more = commits.length > 5 ? `
+- \u2026\uC678 ${commits.length - 5}\uAC1C` : "";
+  return [
+    "<CONCEPTPOWERS-UNGATED-COMMIT>",
+    `\uBC29\uAE08 \uC2E4\uD589\uD55C \uBA85\uB839\uC740 \uCEE4\uBC0B \uBA85\uB839\uC73C\uB85C \uBCF4\uC774\uC9C0 \uC54A\uC558\uC9C0\uB9CC \uC2E4\uD589 \uC911\uC5D0 \uCEE4\uBC0B ${commits.length}\uAC1C\uAC00 \uC0DD\uACBC\uC2B5\uB2C8\uB2E4 \u2014 \uC2A4\uD06C\uB9BD\uD2B8\uB098 \uB2E4\uB978 \uD504\uB85C\uADF8\uB7A8 \uC548\uC5D0\uC11C \uB9CC\uB4E4\uC5B4\uC9C4 \uCEE4\uBC0B\uC740 \uCEE4\uBC0B \uC804 \uBB38\uC9C0\uAE30\uC758 \uAC80\uC0AC\uB97C \uAC70\uCE58\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.`,
+    list + more,
+    "\uAC19\uC740 \uB54C \uB530\uB85C \uC2E4\uD589\uD55C \uCEE4\uBC0B\uC774 \uC11E\uC600\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uCEE4\uBC0B \uACB0\uC0B0\uC740 \uC774\uBBF8 \uD588\uC73C\uB2C8 `audit`\uC640 conceptpowers:review\uB85C \uC774 \uCEE4\uBC0B\uB4E4\uC744 \uD655\uC778\uD558\uACE0, \uBB38\uC81C\uAC00 \uC788\uC73C\uBA74 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uC54C\uB9AC\uC138\uC694. \uCEE4\uBC0B\uC744 \uC784\uC758\uB85C \uB418\uB3CC\uB9AC\uC9C0\uB294 \uB9C8\uC138\uC694.",
+    "</CONCEPTPOWERS-UNGATED-COMMIT>"
+  ].join("\n");
+}
+
+// src/hooks/postToolUse.ts
+var execFileAsync6 = promisify6(execFile6);
+var MAX_BUFFER3 = 64 * 1024 * 1024;
+async function git2(root, args) {
+  try {
+    const { stdout } = await execFileAsync6(
       "git",
       ["-c", "core.quotePath=false", "--no-pager", ...args],
       { cwd: root, maxBuffer: MAX_BUFFER3 }
@@ -6010,16 +6082,16 @@ async function git(root, args) {
   }
 }
 async function headSha(root) {
-  const out = await git(root, ["rev-parse", "HEAD"]);
+  const out = await git2(root, ["rev-parse", "HEAD"]);
   return out ? out.trim() : null;
 }
 async function isMergeCommit(root) {
-  const out = await git(root, ["rev-list", "--parents", "-n", "1", "HEAD"]);
+  const out = await git2(root, ["rev-list", "--parents", "-n", "1", "HEAD"]);
   if (!out) return false;
   return out.trim().split(/\s+/).length > 2;
 }
 async function committedFiles(root) {
-  const out = await git(root, [
+  const out = await git2(root, [
     "diff-tree",
     "--root",
     "--no-commit-id",
@@ -6033,7 +6105,7 @@ async function committedFiles(root) {
 }
 async function readLastCommit(root) {
   try {
-    return (await readFile11(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile12(cpPaths(root).alignmentLastCommit, "utf8")).trim();
   } catch {
     return "";
   }
@@ -6050,7 +6122,7 @@ async function runPostToolUse(root, ev) {
   const plan = await planCommit(ev.input.command ?? "", {
     resolveAlias: createAliasResolver(root)
   });
-  if (plan.kind === "none") return null;
+  if (plan.kind === "none" && !ev.ungatedCommits?.length) return null;
   if (ev.committedFiles) {
     try {
       return await reconcileAfterCommit(root, ev.committedFiles);
@@ -6078,6 +6150,14 @@ async function runPostToolUse(root, ev) {
     return null;
   }
 }
+async function ungatedCommitsOf(root, tool, toolUseId, input) {
+  if (tool !== "Bash" || typeof toolUseId !== "string") return [];
+  if (!await isInitialized(root)) return [];
+  const commits = await takeUngatedCommits(root, toolUseId);
+  if (!commits.length) return [];
+  const plan = await planCommit(input.command ?? "", { resolveAlias: createAliasResolver(root) });
+  return plan.kind === "none" ? commits : [];
+}
 var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = "";
@@ -6085,16 +6165,27 @@ if (isMain) {
   process.stdin.on("end", async () => {
     try {
       const payload = JSON.parse(raw || "{}");
-      await runPostToolUse(process.cwd(), {
-        tool: payload.tool_name,
-        input: payload.tool_input ?? {}
-      });
+      const root = process.cwd();
+      const input = payload.tool_input ?? {};
+      const ungated = await ungatedCommitsOf(root, payload.tool_name, payload.tool_use_id, input);
+      await runPostToolUse(root, { tool: payload.tool_name, input, ungatedCommits: ungated });
+      if (ungated.length) {
+        process.stdout.write(
+          JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: "PostToolUse",
+              additionalContext: ungatedCommitNotice(ungated)
+            }
+          })
+        );
+      }
     } catch {
     }
     process.exit(0);
   });
 }
 export {
-  runPostToolUse
+  runPostToolUse,
+  ungatedCommitsOf
 };
 //# sourceMappingURL=postToolUse.js.map

@@ -35,6 +35,7 @@ import { mayStageGovernance } from './command/stagingReach.js';
 import type { CommitTarget } from './command/commitFiles.js';
 import { createAliasResolver } from './command/commitFiles.js';
 import { snapshotCommit, injectedContent } from './command/commitTree.js';
+import { recordHeadBefore } from './command/headWatch.js';
 
 export interface PreToolEvent {
   tool: string;
@@ -521,6 +522,20 @@ export async function decidePreToolUseSafe(
   }
 }
 
+// 실행될 Bash 명령 직전의 HEAD reflog를 적어 둔다 — 커밋 명령으로 보이지 않던 명령이 커밋을 만들면 사후 훅이 알아챈다.
+// 막는 판정이면 명령이 실행되지 않으므로 적지 않는다.
+async function recordBeforeBash(
+  root: string,
+  tool: string,
+  toolUseId: unknown,
+  out: Awaited<ReturnType<typeof decidePreToolUseSafe>>
+): Promise<void> {
+  if (tool !== 'Bash' || typeof toolUseId !== 'string') return;
+  if (out?.hookSpecificOutput?.permissionDecision === 'deny') return;
+  if (!(await isInitialized(root))) return;
+  await recordHeadBefore(root, toolUseId);
+}
+
 const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = '';
@@ -535,6 +550,9 @@ if (isMain) {
       };
       const out = await decidePreToolUseSafe(process.cwd(), ev);
       if (out) text = JSON.stringify(out);
+      await recordBeforeBash(process.cwd(), ev.tool, payload.tool_use_id, out).catch(
+        () => undefined
+      );
     } catch {
       text = null; // 페이로드조차 해석하지 못하면 커밋 여부를 알 수 없다
     }

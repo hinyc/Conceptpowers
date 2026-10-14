@@ -267,7 +267,9 @@
     "src/hooks/sessionStart.ts",
     "tests/hooks/sessionStart.test.ts",
     "src/schema/initConfig.ts",
-    "src/cli.ts"
+    "src/cli.ts",
+    "src/hooks/command/headWatch.ts",
+    "tests/hooks/headWatch.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -334,7 +336,8 @@
     "tests/hooks/sessionStart.test.ts",
     "src/drift/history.ts",
     "tests/drift/historyMerge.test.ts",
-    "tests/drift/history.test.ts"
+    "tests/drift/history.test.ts",
+    "tests/hooks/headWatch.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",

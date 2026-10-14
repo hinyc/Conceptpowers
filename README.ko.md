@@ -242,6 +242,8 @@ green 개념이 다른 개념과 충돌할 때: **green이 우선**하고 red가
 merge·rebase·cherry-pick·revert·am의 `--continue` — 은 실행하면서 내용이 정해지므로 실행 전에 파일을 확정할 수 없는
 커밋으로 다룬다(`--no-commit`으로 적용한 뒤 `git commit`을 따로 실행한다). 셸 스크립트 파일이나 다른 프로그램(`pnpm release`
 같은 패키지 스크립트 포함) 안에서 실행되는 커밋, Claude Code 밖(터미널·IDE)의 커밋은 여전히 게이트가 보지 못한다.
+다만 Claude Code 안에서 실행된 경우는 사후 훅이 뒤늦게라도 알아챈다 — 커밋 명령으로 보이지 않던 Bash 명령이 HEAD reflog에
+새 커밋을 남겼으면 여느 커밋처럼 결산하고, 문지기를 거치지 않은 커밋이라고 에이전트에게 알린다(되돌리지는 않는다).
 
 **거버넌스 파일은 쓰기 전에도 묻는다.** `Edit`/`Write`/`MultiEdit` 훅은 에이전트가 `init.json`, `concepts/data/` 아래 개념 문서,
 `concepts/.alignment/` 아래 기록을 쓰려 할 때 묻는다 — 개념 모델이 요구하는 "사람의 확인"이 스킬 문장이 아니라 권한

@@ -11,7 +11,7 @@ var __export = (target, all) => {
 import { isAbsolute as isAbsolute3, relative as relative5, resolve as resolve4, sep } from "node:path";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
+import { mkdir as mkdir3, writeFile as writeFile3, access } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4145,6 +4145,22 @@ function parseInitConfig(input) {
 import { readFile as readFile3, readdir } from "node:fs/promises";
 import { join as join2, relative } from "node:path";
 
+// src/util/atomicWrite.ts
+import { writeFile, rename, mkdir, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+var counter = 0;
+async function writeFileAtomic(target, data) {
+  await mkdir(dirname(target), { recursive: true });
+  const tmp = `${target}.${process.pid}.${counter++}.tmp`;
+  try {
+    await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
+    await rename(tmp, target);
+  } catch (error) {
+    await rm(tmp, { force: true });
+    throw error;
+  }
+}
+
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
@@ -4535,8 +4551,8 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir, writeFile } from "node:fs/promises";
-import { join as join4, dirname } from "node:path";
+import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
 
 // src/mapping/leadingComment.ts
 var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
@@ -5398,7 +5414,7 @@ function sameJsonText(a, b) {
 
 // src/hooks/command/commitTree.ts
 import { execFile as execFile4 } from "node:child_process";
-import { copyFile, mkdtemp, readFile as readFile13, rm, stat as stat2, utimes } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile as readFile13, rm as rm2, stat as stat2, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join as join9, resolve as resolve2 } from "node:path";
 import { promisify as promisify4 } from "node:util";
@@ -5517,7 +5533,7 @@ async function snapshotCommit(root, plan) {
   } catch (error) {
     throw new Error(`\uCEE4\uBC0B\uB420 \uB0B4\uC6A9\uC744 \uACC4\uC0B0\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 \u2014 ${error.message}`);
   } finally {
-    await rm(dir, { recursive: true, force: true });
+    await rm2(dir, { recursive: true, force: true });
   }
 }
 
@@ -5579,7 +5595,7 @@ var checkEvidenceStaged = async (input) => {
 // src/hooks/gates/governanceFilesGate.ts
 import { execFile as execFile6 } from "node:child_process";
 import { realpathSync } from "node:fs";
-import { basename, dirname as dirname2, isAbsolute as isAbsolute2, join as join10, relative as relative4, resolve as resolve3 } from "node:path";
+import { basename, dirname as dirname3, isAbsolute as isAbsolute2, join as join10, relative as relative4, resolve as resolve3 } from "node:path";
 import { promisify as promisify6 } from "node:util";
 
 // src/hooks/gates/alwaysAsk.ts
@@ -5732,7 +5748,7 @@ function canonicalPath(path) {
     try {
       return join10(realpathSync(current), ...tail);
     } catch {
-      const parent = dirname2(current);
+      const parent = dirname3(current);
       if (parent === current) return resolve3(path);
       tail = [basename(current), ...tail];
       current = parent;
@@ -6877,6 +6893,64 @@ function createAliasResolver(root) {
   };
 }
 
+// src/hooks/command/headWatch.ts
+import { execFile as execFile8 } from "node:child_process";
+import { promisify as promisify8 } from "node:util";
+import { mkdir as mkdir4, readdir as readdir4, readFile as readFile14, rm as rm3, stat as stat3 } from "node:fs/promises";
+import { join as join11 } from "node:path";
+var execFileAsync8 = promisify8(execFile8);
+var RECORD_DIR = join11("conceptpowers", "head-before");
+var STALE_MS = 24 * 60 * 60 * 1e3;
+async function git2(root, args) {
+  try {
+    const { stdout } = await execFileAsync8("git", ["--no-pager", ...args], {
+      cwd: root,
+      maxBuffer: 4 * 1024 * 1024
+    });
+    return stdout;
+  } catch {
+    return null;
+  }
+}
+async function recordDir(root) {
+  const gitDir = await git2(root, ["rev-parse", "--absolute-git-dir"]);
+  return gitDir ? join11(gitDir.trim(), RECORD_DIR) : null;
+}
+function recordName(toolUseId) {
+  const safe = toolUseId.replace(/[^A-Za-z0-9_-]/g, "");
+  return safe ? safe.slice(0, 128) : null;
+}
+async function reflogLines(root, count) {
+  const out = await git2(root, [
+    "reflog",
+    `-${count}`,
+    "--format=%H%x09%gd%x09%gs",
+    "--date=unix",
+    "HEAD"
+  ]);
+  return out ? out.split("\n").filter(Boolean) : [];
+}
+async function removeStaleRecords(dir) {
+  const now = Date.now();
+  for (const name of await readdir4(dir).catch(() => [])) {
+    const p = join11(dir, name);
+    const info = await stat3(p).catch(() => null);
+    if (info && now - info.mtimeMs > STALE_MS) await rm3(p, { force: true });
+  }
+}
+async function recordHeadBefore(root, toolUseId) {
+  const name = recordName(toolUseId);
+  const dir = name ? await recordDir(root) : null;
+  if (!name || !dir) return;
+  try {
+    await mkdir4(dir, { recursive: true });
+    await removeStaleRecords(dir);
+    const [top] = await reflogLines(root, 1);
+    await writeFileAtomic(join11(dir, name), (top ?? "") + "\n");
+  } catch {
+  }
+}
+
 // src/hooks/preToolUse.ts
 var GOVERNANCE_GATES = [
   { name: "unknown-tags", check: checkUnknownTags },
@@ -7211,6 +7285,12 @@ async function decidePreToolUseSafe(root, ev) {
     return escalateWithAsk(gateFailureOutput(level, error, root), recordAsk);
   }
 }
+async function recordBeforeBash(root, tool, toolUseId, out) {
+  if (tool !== "Bash" || typeof toolUseId !== "string") return;
+  if (out?.hookSpecificOutput?.permissionDecision === "deny") return;
+  if (!await isInitialized(root)) return;
+  await recordHeadBefore(root, toolUseId);
+}
 var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
   let raw = "";
@@ -7225,6 +7305,9 @@ if (isMain) {
       };
       const out = await decidePreToolUseSafe(process.cwd(), ev);
       if (out) text = JSON.stringify(out);
+      await recordBeforeBash(process.cwd(), ev.tool, payload.tool_use_id, out).catch(
+        () => void 0
+      );
     } catch {
       text = null;
     }
