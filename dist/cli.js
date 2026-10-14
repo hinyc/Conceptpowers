@@ -9573,7 +9573,16 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
   });
   program2.command("edit-concept").description(
     "\uAC1C\uB150 \uBCF8\uBB38 \uC218\uC815 \u2014 \uC0AC\uC6A9\uC790 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC2E4\uD589\uD55C\uB2E4. green \uAC1C\uB150\uC740 \uC790\uB3D9\uC73C\uB85C pending\uC73C\uB85C \uB0B4\uB824\uAC00\uBA70, \uC815\uD569\uC131 \uAC80\uC0AC \uC99D\uBE59\uACFC \uC0AC\uC6A9\uC790 \uD655\uC778\uC744 \uAC70\uCCD0 green\uC73C\uB85C \uC7AC\uC815\uCC29\uD574\uC57C \uAC1C\uB150\uC73C\uB85C \uC7AC\uD65C\uC131\uD654\uB41C\uB2E4 \u2014 approve\uB294 red \uC804\uC6A9 (human-owns-contract\xB7settled-status)."
-  ).argument("<slug>").requiredOption("--file <path>", "\uC218\uC815\uD560 \uD544\uB4DC\uB9CC \uB2F4\uC740 \uD328\uCE58 JSON \uACBD\uB85C").option("--reason <reason>", "\uBCC0\uACBD \uC0AC\uC720 (drift \uC774\uB825\uC5D0 \uAE30\uB85D)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+  ).argument("<slug>").requiredOption("--file <path>", "\uC218\uC815\uD560 \uD544\uB4DC\uB9CC \uB2F4\uC740 \uD328\uCE58 JSON \uACBD\uB85C").option("--reason <reason>", "\uBCC0\uACBD \uC0AC\uC720 (\uD544\uC218, drift \uC774\uB825\uC5D0 \uAE30\uB85D)").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    if (typeof o.reason !== "string" || o.reason.trim() === "") {
+      out(
+        JSON.stringify({
+          error: "--reason\uC774 \uD544\uC694\uD569\uB2C8\uB2E4 \u2014 \uC65C \uACE0\uCE58\uB294\uC9C0 \uD55C \uBB38\uC7A5\uC73C\uB85C \uC801\uC5B4 \uC8FC\uC138\uC694(\uC5B4\uAE0B\uB0A8 \uC548\uB0B4\uC640 \uC774\uB825\uC5D0 \uB0A8\uC2B5\uB2C8\uB2E4)."
+        })
+      );
+      code = 1;
+      return;
+    }
     const before = await readConcept(o.root, slug3);
     if (!before) {
       out(JSON.stringify({ error: `Concept not found: ${slug3}` }));
@@ -9583,7 +9592,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const wasGreen = before.status === "green";
     const patch = JSON.parse(await readFile22(o.file, "utf8"));
     const concept = await editConceptContent(o.root, slug3, patch);
-    if (o.reason) await noteChange(o.root, slug3, o.reason);
+    await noteChange(o.root, slug3, o.reason);
     await renderViewerToDisk(o.root);
     out(
       JSON.stringify({

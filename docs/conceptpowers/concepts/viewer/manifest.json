@@ -271,7 +271,6 @@
         "tests/hooks/gates.modes.test.ts",
         "tests/hooks/postToolUse.test.ts",
         "tests/integration/smoke.test.ts",
-        "src/cli.ts",
         "src/init/scaffold.ts",
         "src/hooks/gates/referenceGate.ts",
         "tests/schema/initConfig.test.ts",
@@ -307,14 +306,15 @@
         "src/hooks/command/commitTree.ts",
         "tests/hooks/commitFiles.test.ts",
         "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "src/cli.ts"
       ]
     },
     {
       "slug": "human-owns-contract",
       "group": "governance",
       "title": "소유권 원칙",
-      "status": "green",
+      "status": "pending",
       "category": [
         "behavior",
         "permission"
@@ -328,6 +328,7 @@
         "skills/update-concepts/references/edit.md",
         "skills/update-concepts/references/settle.md",
         "skills/update-concepts/references/upgrade.md",
+        "src/cli.ts",
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts",
@@ -563,12 +564,12 @@
         "tests/version/autoSync.test.ts",
         "tests/version/checkUpdate.test.ts",
         "tests/version/compareSemver.test.ts",
-        "src/cli.ts",
         "tests/init/syncGenerated.test.ts",
         "tests/schema/initConfig.test.ts",
         "scripts/release.mjs",
         "scripts/releaseSteps.mjs",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/hooks/sessionStart.test.ts",
+        "src/cli.ts"
       ]
     },
     {
@@ -1877,13 +1878,6 @@
         "title": "src/hooks/gates/types.ts"
       },
       {
-        "id": "p:src/cli.ts",
-        "label": "cli.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/cli.ts"
-      },
-      {
         "id": "p:src/init/scaffold.ts",
         "label": "scaffold.ts",
         "type": "file",
@@ -2057,6 +2051,13 @@
         "type": "file",
         "href": "",
         "title": "tests/hooks/stagingReach.test.ts"
+      },
+      {
+        "id": "p:src/cli.ts",
+        "label": "cli.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/cli.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -3694,11 +3695,6 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/cli.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
         "target": "p:src/init/scaffold.ts",
         "kind": "concept-file"
       },
@@ -3878,6 +3874,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:governance-mode",
+        "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-concepts/references/define.md",
         "kind": "concept-file"
@@ -3905,6 +3906,11 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-concepts/references/upgrade.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:src/cli.ts",
         "kind": "concept-file"
       },
       {
@@ -4624,11 +4630,6 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:src/cli.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
         "target": "p:tests/init/syncGenerated.test.ts",
         "kind": "concept-file"
       },
@@ -4650,6 +4651,11 @@
       {
         "source": "c:plugin-version-sync",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/cli.ts",
         "kind": "concept-file"
       },
       {

@@ -1,4 +1,4 @@
-// @concept:init-gate @concept:plugin-version-sync @concept:governance-mode
+// @concept:init-gate @concept:plugin-version-sync @concept:governance-mode @concept:human-owns-contract
 import { Command } from 'commander';
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
@@ -188,9 +188,20 @@ export async function runCli(
     )
     .argument('<slug>')
     .requiredOption('--file <path>', '수정할 필드만 담은 패치 JSON 경로')
-    .option('--reason <reason>', '변경 사유 (drift 이력에 기록)')
+    .option('--reason <reason>', '변경 사유 (필수, drift 이력에 기록)')
     .option('--root <dir>', 'project root', process.cwd())
     .action(async (slug, o) => {
+      // 명령으로 고칠 때는 사유가 있어야 한다(human-owns-contract) — 비었으면 아무것도 바꾸지 않는다.
+      if (typeof o.reason !== 'string' || o.reason.trim() === '') {
+        out(
+          JSON.stringify({
+            error:
+              '--reason이 필요합니다 — 왜 고치는지 한 문장으로 적어 주세요(어긋남 안내와 이력에 남습니다).',
+          })
+        );
+        code = 1;
+        return;
+      }
       const before = await readConcept(o.root, slug);
       if (!before) {
         out(JSON.stringify({ error: `Concept not found: ${slug}` }));
@@ -200,7 +211,7 @@ export async function runCli(
       const wasGreen = before.status === 'green';
       const patch = JSON.parse(await readFile(o.file, 'utf8'));
       const concept = await editConceptContent(o.root, slug, patch);
-      if (o.reason) await noteChange(o.root, slug, o.reason);
+      await noteChange(o.root, slug, o.reason);
       await renderViewerToDisk(o.root);
       out(
         JSON.stringify({

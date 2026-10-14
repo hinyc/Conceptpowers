@@ -1,12 +1,35 @@
 {
   "human-owns-contract": {
-    "hash": "3:0d9c99edb8ba",
+    "hash": "3:bdfa1f3770ca",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.415Z",
+    "at": "2026-10-14T04:29:57.154Z",
     "compared": [
-      "settled-status"
-    ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
+    ]
   },
   "settled-status": {
     "hash": "3:ef837556c633",

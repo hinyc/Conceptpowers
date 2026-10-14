@@ -12,6 +12,8 @@
 //    → approve가 red 개념을 green으로 승인한다
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
 //    → edit-concept는 green 개념을 수정하면 pending으로 내린다 / red·pending의 상태는 유지한다
+//  - human-owns-contract 불변 "명령으로 개념 내용을 고칠 때는 왜 고치는지 사유가 함께 있어야 한다 — 사유가 비어
+//    있으면 고치지 않는다" → --reason이 없거나 공백뿐이면 exit 1이고 개념은 그대로다
 //  - drift-reconcile 허용 "지문을 마지막으로 맞춰둔 지문과 견주어 어긋남을 판정하는 것"
 //    → status가 drift 개수를 포함한다 / drift가 JSON 배열을 출력한다
 //  - drift-reconcile 불변 "무시하고 넘어간 개념은 예외 없이 무시했다는 기록을 남긴다"
@@ -112,7 +114,10 @@ describe('runCli', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상이다'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
       status: 'red',
     };
@@ -140,7 +145,10 @@ describe('runCli', () => {
       purpose: { reason: 'r' },
       actions: {},
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상이다'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       status: 'green',
     };
     await writeConcept(root, concept);
@@ -183,12 +191,47 @@ describe('runCli', () => {
     writeFileSync(patchFile, JSON.stringify({ title: 'Draft2' }));
     let captured = '';
     const code = await runCli(
-      ['edit-concept', 'draft-role', '--file', patchFile, '--root', root],
+      [
+        'edit-concept',
+        'draft-role',
+        '--file',
+        patchFile,
+        '--reason',
+        '초안 다듬기',
+        '--root',
+        root,
+      ],
       (s) => (captured += s)
     );
     expect(code).toBe(0);
     expect(JSON.parse(captured)).toMatchObject({ status: 'red', downgradedToPending: false });
     expect((await readConcept(root, 'draft-role'))?.title).toBe('Draft2');
+  });
+  it('edit-concept는 사유가 없거나 공백뿐이면 고치지 않고 exit 1이다 [규칙: 사유가 비어 있으면 고치지 않는다]', async () => {
+    await runCli(['init', '--root', root]);
+    await writeConcept(root, {
+      slug: 'keep-role',
+      category: ['role'],
+      title: 'Keep',
+      description: { definition: 'd' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+      status: 'green',
+    } as any);
+    const patchFile = join(root, 'patch-noreason.json');
+    writeFileSync(patchFile, JSON.stringify({ title: 'Changed' }));
+    for (const extra of [[], ['--reason', '   ']]) {
+      let captured = '';
+      const code = await runCli(
+        ['edit-concept', 'keep-role', '--file', patchFile, ...extra, '--root', root],
+        (s) => (captured += s)
+      );
+      expect(code).toBe(1);
+      expect(JSON.parse(captured).error).toContain('--reason');
+    }
+    const c = await readConcept(root, 'keep-role');
+    expect(c).toMatchObject({ title: 'Keep', status: 'green' });
   });
   it('edit-concept는 없는 개념에 에러+exit 1', async () => {
     await runCli(['init', '--root', root]);
@@ -196,7 +239,7 @@ describe('runCli', () => {
     writeFileSync(patchFile, JSON.stringify({ title: 'x' }));
     let captured = '';
     const code = await runCli(
-      ['edit-concept', 'ghost', '--file', patchFile, '--root', root],
+      ['edit-concept', 'ghost', '--file', patchFile, '--reason', 'x', '--root', root],
       (s) => (captured += s)
     );
     expect(code).toBe(1);

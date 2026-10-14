@@ -10,6 +10,7 @@ sentence is applied. The common wrap-up (공통 마무리) and prohibitions stay
    - 바뀌는 항목만 담은 패치 JSON을 만든다(최상위 항목은 통째로 바뀐다 — 건드리는 절 전체를 넣는다).
    - 엔진으로 적용해 pending 강등과 사유 기록을 보장한다:
      `node "<cli>" edit-concept <slug> --file <patch.json> --reason "<왜 바뀌는지>" --root .`
+     `--reason`은 필수다 — 비었으면 엔진이 아무것도 고치지 않는다. 사유는 어긋남 안내와 이력에 그대로 남는다.
      green이면 `pending`으로 내려가고(`"downgradedToPending": true`) 뷰어가 다시 그려진다.
    - **green을 유지하려고 JSON을 손으로 고치지 않는다.** `SKILL.md`의 공통 마무리(정합성 검사 → 증빙 → 사용자
      확인 후 green 재정착)를 거친다.

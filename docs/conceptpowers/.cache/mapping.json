@@ -11,14 +11,14 @@
     "tests/version/autoSync.test.ts",
     "tests/version/checkUpdate.test.ts",
     "tests/version/compareSemver.test.ts",
-    "src/cli.ts",
     "src/init/syncGenerated.ts",
     "tests/init/syncGenerated.test.ts",
     "tests/schema/initConfig.test.ts",
     "scripts/release.mjs",
     "scripts/releaseSteps.mjs",
     "src/hooks/sessionStart.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/cli.ts"
   ],
   "globally-unique-slug": [
     "assets/concept.css",
@@ -208,7 +208,6 @@
     "tests/init/scaffold.test.ts",
     "tests/integration/smoke.test.ts",
     "tests/version/autoSync.test.ts",
-    "src/cli.ts",
     "tests/cli/referenceSync.test.ts",
     "src/init/scaffold.ts",
     "tests/init/syncGenerated.test.ts",
@@ -216,7 +215,8 @@
     "tests/hooks/gateFailure.test.ts",
     "tests/cli/attestScope.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/cli/audit.test.ts"
+    "tests/cli/audit.test.ts",
+    "src/cli.ts"
   ],
   "governance-mode": [
     "src/hooks/gates/conceptSlugs.ts",
@@ -229,7 +229,6 @@
     "tests/hooks/gates.modes.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/integration/smoke.test.ts",
-    "src/cli.ts",
     "src/init/scaffold.ts",
     "src/hooks/gates/referenceGate.ts",
     "src/hooks/preToolUse.ts",
@@ -267,7 +266,8 @@
     "tests/hooks/commitFiles.test.ts",
     "src/hooks/sessionStart.ts",
     "tests/hooks/sessionStart.test.ts",
-    "src/schema/initConfig.ts"
+    "src/schema/initConfig.ts",
+    "src/cli.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -402,7 +402,8 @@
     "tests/viewer/serve.test.ts",
     "tests/hooks/governanceFiles.test.ts",
     "src/hooks/gates/governanceFilesGate.ts",
-    "tests/hooks/entrypoint.e2e.test.ts"
+    "tests/hooks/entrypoint.e2e.test.ts",
+    "src/cli.ts"
   ],
   "list-filter": [
     "tests/viewer/listLayout.test.ts",
