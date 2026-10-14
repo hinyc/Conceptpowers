@@ -32,6 +32,9 @@ const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // 서버가 내주지 않는 폴더(대소문자 무시) — 참고자료는 개념 작업용 기밀 자료다(reference-privacy).
 const PRIVATE_DIRS = new Set(['reference']);
 const MAX_BODY = 256 * 1024; // 256KB
+// 거절한 요청의 남은 본문을 버리며 기다려 줄 한도 — 넘거나 늦으면 응답을 못 받더라도 끊는다.
+const DRAIN_LIMIT = 4 * MAX_BODY;
+const DRAIN_TIMEOUT_MS = 2000;
 
 // 확장자 → Content-Type. 알 수 없으면 octet-stream.
 export function contentType(pathname: string): string {
@@ -230,9 +233,10 @@ function readBody(req: IncomingMessage): Promise<string> {
       if (aborted) return;
       size += c.length;
       if (size > MAX_BODY) {
+        // 더 쌓지 않고 멈춘다 — 남은 본문과 연결은 거절 응답을 보낸 뒤 sendJsonAndClose가 정리한다.
         aborted = true;
-        reject(new Error('body too large'));
-        req.destroy();
+        req.pause();
+        reject(new BodyTooLargeError());
       } else chunks.push(c);
     });
     req.on('end', () => resolvePromise(Buffer.concat(chunks).toString('utf8')));
@@ -247,6 +251,40 @@ const STATIC_SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
 } as const;
+
+class BodyTooLargeError extends Error {
+  constructor() {
+    super('body too large');
+  }
+}
+
+// 거절 응답을 보낸 뒤 연결을 정리한다. 읽지 않은 본문이 남은 채 닫으면 연결이 강제로 끊겨 받는 쪽이 이미 온
+// 응답까지 잃으므로, 남은 본문은 쌓지 않고 버리며 한도(DRAIN_LIMIT·DRAIN_TIMEOUT_MS)까지만 기다렸다 닫는다.
+function sendJsonAndClose(
+  req: IncomingMessage,
+  res: ServerResponse,
+  status: number,
+  json: unknown
+): void {
+  res.on('finish', () => {
+    let drained = 0;
+    const timer = setTimeout(() => req.socket.destroy(), DRAIN_TIMEOUT_MS);
+    timer.unref();
+    req.on('data', (c: Buffer) => {
+      drained += c.length;
+      if (drained > DRAIN_LIMIT) {
+        clearTimeout(timer);
+        req.socket.destroy();
+      }
+    });
+    req.on('end', () => {
+      clearTimeout(timer);
+      req.socket.end();
+    });
+    req.resume();
+  });
+  sendJson(res, status, json);
+}
 
 function sendJson(res: ServerResponse, status: number, json: unknown): void {
   res.writeHead(status, {
@@ -278,8 +316,9 @@ async function handle(
     }
     // 고치는 요청은 본문을 받기 전에 출처를 확인한다 — 다른 사이트 화면이 큰 본문을 흘려 넣지 못하게.
     if (req.method !== 'GET' && !isSameOriginWrite(req.headers)) {
-      sendJson(res, 403, { error: 'forbidden: write must come from this viewer as JSON' });
-      req.destroy();
+      sendJsonAndClose(req, res, 403, {
+        error: 'forbidden: write must come from this viewer as JSON',
+      });
       return;
     }
     try {
@@ -292,7 +331,9 @@ async function handle(
       });
       sendJson(res, result.status, result.json);
     } catch (error) {
-      sendJson(res, 400, { error: (error as Error).message });
+      if (error instanceof BodyTooLargeError)
+        sendJsonAndClose(req, res, 400, { error: error.message });
+      else sendJson(res, 400, { error: (error as Error).message });
     }
     return;
   }
@@ -323,6 +364,8 @@ async function handle(
     res.end('Forbidden');
     return;
   }
+  // 확인과 읽기 사이에 경로를 바로가기로 바꿔치기하려면 이 컴퓨터의 쓰기 권한이 있어야 하고, 그 권한이면
+  // 파일을 직접 읽을 수 있다 — 막아서 얻는 것이 없어 받아들인 틈이다.
   try {
     const file = await readFile(real);
     res.writeHead(200, { 'Content-Type': contentType(real), ...STATIC_SECURITY_HEADERS });

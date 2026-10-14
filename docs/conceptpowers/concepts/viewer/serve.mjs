@@ -4824,6 +4824,8 @@ var MIME = {
 var SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 var PRIVATE_DIRS = /* @__PURE__ */ new Set(["reference"]);
 var MAX_BODY = 256 * 1024;
+var DRAIN_LIMIT = 4 * MAX_BODY;
+var DRAIN_TIMEOUT_MS = 2e3;
 function contentType(pathname) {
   return MIME[extname(pathname).toLowerCase()] ?? "application/octet-stream";
 }
@@ -4968,8 +4970,8 @@ function readBody(req) {
       size += c.length;
       if (size > MAX_BODY) {
         aborted = true;
-        reject(new Error("body too large"));
-        req.destroy();
+        req.pause();
+        reject(new BodyTooLargeError());
       } else chunks.push(c);
     });
     req.on("end", () => resolvePromise(Buffer.concat(chunks).toString("utf8")));
@@ -4980,6 +4982,31 @@ var STATIC_SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 };
+var BodyTooLargeError = class extends Error {
+  constructor() {
+    super("body too large");
+  }
+};
+function sendJsonAndClose(req, res, status, json) {
+  res.on("finish", () => {
+    let drained = 0;
+    const timer = setTimeout(() => req.socket.destroy(), DRAIN_TIMEOUT_MS);
+    timer.unref();
+    req.on("data", (c) => {
+      drained += c.length;
+      if (drained > DRAIN_LIMIT) {
+        clearTimeout(timer);
+        req.socket.destroy();
+      }
+    });
+    req.on("end", () => {
+      clearTimeout(timer);
+      req.socket.end();
+    });
+    req.resume();
+  });
+  sendJson(res, status, json);
+}
 function sendJson(res, status, json) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -5000,8 +5027,9 @@ async function handle(root, projectRoot, req, res) {
       return;
     }
     if (req.method !== "GET" && !isSameOriginWrite(req.headers)) {
-      sendJson(res, 403, { error: "forbidden: write must come from this viewer as JSON" });
-      req.destroy();
+      sendJsonAndClose(req, res, 403, {
+        error: "forbidden: write must come from this viewer as JSON"
+      });
       return;
     }
     try {
@@ -5014,7 +5042,9 @@ async function handle(root, projectRoot, req, res) {
       });
       sendJson(res, result.status, result.json);
     } catch (error) {
-      sendJson(res, 400, { error: error.message });
+      if (error instanceof BodyTooLargeError)
+        sendJsonAndClose(req, res, 400, { error: error.message });
+      else sendJson(res, 400, { error: error.message });
     }
     return;
   }

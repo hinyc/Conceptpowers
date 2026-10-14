@@ -264,6 +264,86 @@ describe('startServer — 주소·출처·폴더 경계', () => {
     }
   });
 
+  // 원시 소켓으로 요청 머리와 본문 일부를 보내고, 서버가 끊을 때까지 받은 응답 전체를 돌려준다.
+  const rawExchange = (port: number, head: string, bodyBytes: number): Promise<string> =>
+    new Promise<string>((resolveAll, reject) => {
+      const sock = connect(port, '127.0.0.1');
+      let got = '';
+      sock.on('data', (d) => (got += d));
+      sock.on('error', () => resolveAll(got));
+      sock.on('close', () => resolveAll(got));
+      sock.setTimeout(3000, () => reject(new Error('no response')));
+      sock.write(head);
+      sock.write('x'.repeat(bodyBytes));
+    });
+
+  it('출처 거절 응답은 본문까지 온전히 보낸다 [규칙: 고치는 요청은 이 뷰어 화면이 보낸 것만]', async () => {
+    const project = mkdtempSync(join(tmpdir(), 'cp-proj-'));
+    const { server, port } = await startServer({
+      root: site,
+      projectRoot: project,
+      ports: [0],
+      open: false,
+    });
+    try {
+      const all = await rawExchange(
+        port,
+        'POST /api/concept/admin-role/status HTTP/1.1\r\nHost: localhost\r\nOrigin: https://evil.example\r\n' +
+          'Content-Type: text/plain\r\nContent-Length: 1048576\r\n\r\n',
+        65536
+      );
+      expect(all.startsWith('HTTP/1.1 403')).toBe(true);
+      expect(all).toContain('{"error":"forbidden: write must come from this viewer as JSON"}');
+    } finally {
+      server.close();
+    }
+  });
+
+  it('본문 제한을 넘는 요청에는 거절 응답을 보낸다 [규칙: 요청 본문의 크기를 제한한다]', async () => {
+    const project = mkdtempSync(join(tmpdir(), 'cp-proj-'));
+    const { server, port } = await startServer({
+      root: site,
+      projectRoot: project,
+      ports: [0],
+      open: false,
+    });
+    try {
+      const all = await rawExchange(
+        port,
+        'PUT /api/concept/admin-role HTTP/1.1\r\nHost: localhost\r\nOrigin: http://localhost\r\n' +
+          'Content-Type: application/json\r\nSec-Fetch-Site: same-origin\r\nContent-Length: 1048576\r\n\r\n',
+        300 * 1024
+      );
+      expect(all.startsWith('HTTP/1.1 400')).toBe(true);
+      expect(all).toContain('body too large');
+    } finally {
+      server.close();
+    }
+  });
+
+  it('본문을 끝까지 계속 보내는 요청도 거절 응답을 받는다 [규칙: 요청 본문의 크기를 제한한다]', async () => {
+    const project = mkdtempSync(join(tmpdir(), 'cp-proj-'));
+    const { server, port } = await startServer({
+      root: site,
+      projectRoot: project,
+      ports: [0],
+      open: false,
+    });
+    try {
+      for (let i = 0; i < 5; i++) {
+        const all = await rawExchange(
+          port,
+          'PUT /api/concept/admin-role HTTP/1.1\r\nHost: localhost\r\nOrigin: http://localhost\r\n' +
+            'Content-Type: application/json\r\nSec-Fetch-Site: same-origin\r\nContent-Length: 1048576\r\n\r\n',
+          1024 * 1024
+        );
+        expect(all).toContain('body too large');
+      }
+    } finally {
+      server.close();
+    }
+  });
+
   it('참고자료 폴더의 파일은 내주지 않는다 [규칙: 참고자료 폴더는 거절]', async () => {
     const { server, port } = await startServer({ root: site, ports: [0], open: false });
     try {
