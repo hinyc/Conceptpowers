@@ -1,6 +1,6 @@
 ---
 name: auto
-description: Use after init when the user wants guided operation ("auto", "다음 뭐하면 돼?", "알아서 순서대로 진행해줘") in a governance-active project, or when the viewer / concepts:view script looks stale after a plugin update. Diagnoses the current stage and walks baseline → update-concepts (reference changes + definitions) → scan (gaps + mapping) → review (code vs concepts) in the right order, then offers an optional redteam critique, asking at every stage boundary.
+description: Use after init when the user wants guided operation ("auto", "다음 뭐하면 돼?", "알아서 순서대로 진행해줘") in a governance-active project, or when the viewer / concepts:view script looks stale after a plugin update. Diagnoses the current stage and walks baseline → update-concepts (reference changes + definitions) → scan (gaps + mapping) → review (code vs concepts) in the right order, then offers a redteam critique that runs only if the user picks it, asking at every stage boundary.
 ---
 
 # Conceptpowers: Auto (단계 안내 오케스트레이터)
@@ -83,7 +83,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 위반 → 사용자가 고른다: 코드 수정(TDD, 개념 안에서) / 개념 수정(`update-concepts` C) / 기능 분리.
 - 판단 불가(개념 모호) → `update-concepts`(F) 업그레이드 권장(Stage 2 루프백 — 그때 reference를 읽는다).
 - 루프백으로 개념이 바뀌었으면, 그 개념이 green으로 재정착했는지 먼저 확인한 뒤 review를 한 번 더 돌려 수렴을 확인한다. 아직 pending/red면 전체 모드의 판정 대상이 아니므로 "정착 전이라 판정 대상 아님"으로 남긴다.
-- review가 끝나면 선택지로 한 번 묻는다: "끝낸 작업을 레드팀(비판적 점검)까지 할까요? (`conceptpowers:redteam`)" — 강제하지 않는다. 하면 그 스킬의 흐름을 따르고, 건너뛰면 최종 리포트에 "건너뜀"으로 남긴다.
+- review가 끝나면 선택지로 한 번 묻는다: "끝낸 작업을 레드팀(비판적 점검)까지 할까요? (`conceptpowers:redteam`)". **사용자가 하겠다고 고른 경우에만** 그 스킬을 실행한다 — 답이 없거나, 애매하거나, 다른 답이면 실행하지 않고 최종 리포트에 "건너뜀"으로 남긴다. auto가 스스로 판단해 실행하지 않는다.
 
 ## Final report
 
