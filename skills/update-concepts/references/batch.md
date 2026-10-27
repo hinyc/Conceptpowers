@@ -88,8 +88,9 @@ interaction to two checkpoints, not zero.
 ## 자동 추론 모드 (init strict 전체 스캔 전용)
 
 `conceptpowers:init`의 전체 스캔(strict)이 부를 때만 쓰는 변형이다. 사람이 고르는 두 checkpoint를 건너뛰는 대신,
-결과는 **미승인 제안(🔴 red)으로만** 저장된다 — 개념 `human-owns-contract`의 예외("red 자동 추론안은 미승인
-제안으로만 저장되며, green이 되려면 사람이 승인한다")가 근거다. 사용자가 직접 고른 일괄 정의에는 쓰지 않는다.
+결과는 **미승인 제안(🔴 red)으로만** 저장된다. 개념 `human-owns-contract`대로 red 제안은 **규칙이 아니다** —
+사용자가 승인(update-concepts 계기 D)해야만 개념의 규칙이 되고, 승인 전에는 코드를 다스리지 않는다. 그래서 AI가
+규칙을 스스로 만들어 저장하는 것이 아니다. 사용자가 직접 고른 일괄 정의에는 쓰지 않는다.
 
 1. 위 step 1(후보 모으기)을 그대로 한다 — **`reference/` 문서와 `reference/paths.md`의 바깥 자료도 빠짐없이**
    후보 출처로 쓴다. 자동 추론이라고 참고자료 확인을 건너뛰지 않는다(개념 `reference-first-duty`).

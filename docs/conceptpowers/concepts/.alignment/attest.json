@@ -1,8 +1,8 @@
 {
   "human-owns-contract": {
-    "hash": "3:1c8ee78e73e5",
+    "hash": "3:a8600222f527",
     "result": "pass",
-    "at": "2026-10-27T04:42:55.691Z",
+    "at": "2026-10-27T04:56:19.260Z",
     "compared": [
       "concept-code-binding",
       "concept-code-mapping",

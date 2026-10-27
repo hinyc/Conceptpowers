@@ -67,8 +67,8 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    implementing `codePaths` filled in (the _feature → code_ link) via the 기능 명세 기록 procedure of `conceptpowers:scan`.
 4. **Infer concepts and wire features to them**: run the **자동 추론 모드** of `conceptpowers:update-concepts`
    (its batch procedure) — it reads the reference material too, applies the 「자격 기준 관문」, and saves every
-   new concept as `status: red` (an unapproved proposal; concept `human-owns-contract` allows only that without
-   user review). 기능은 접점마다 하나씩이지만 **개념은 접점마다 하나가 아니다** — 여러 기능이 한 개념을
+   new concept as `status: red` — an unapproved proposal, not a rule: per concept `human-owns-contract` it becomes
+   a rule only after the user approves it, and governs no code before that. 기능은 접점마다 하나씩이지만 **개념은 접점마다 하나가 아니다** — 여러 기능이 한 개념을
    가리키는 것이 정상이다. Then write each concept slug (new or existing) into the matching feature's
    `concepts` (the _feature → concept_ link). Candidates that fail the gate go to feature specs or a one-line
    proposal for `architecture.md` / `infra.md`.

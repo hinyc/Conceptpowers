@@ -1,0 +1,11 @@
+{
+  "slug": "human-owns-contract",
+  "hash": "3:a8600222f527",
+  "prevHash": "3:1c8ee78e73e5",
+  "reason": "AI가 규칙을 스스로 만들어 저장하지 않는다는 원칙을 예외 없이 지키도록, red 자동 추론안을 저장 허용이 아니라 '승인 전에는 규칙이 아닌 제안'으로 다시 정의 (사용자 결정)",
+  "at": "2026-10-27T04:55:50.019Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

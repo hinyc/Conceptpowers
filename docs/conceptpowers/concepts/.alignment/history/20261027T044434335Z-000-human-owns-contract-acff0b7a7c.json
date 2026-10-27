@@ -1,0 +1,11 @@
+{
+  "slug": "human-owns-contract",
+  "hash": "3:1c8ee78e73e5",
+  "prevHash": "3:1c8ee78e73e5",
+  "reason": "자동 추론 예외를 실행하는 init 전체 스캔과 batch 자동 추론 모드를 코드 연결에 추가",
+  "at": "2026-10-27T04:44:34.335Z",
+  "ignored": false,
+  "aligned": true,
+  "noCode": false,
+  "note": ""
+}
