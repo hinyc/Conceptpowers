@@ -26,11 +26,12 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    `node "<cli>" audit --root .`
    전체 스캔 결과의 `brokenCodeLinks`는 개념의 근거·코드 연결 목록이 가리키는 코드 자리 가운데 지금 실재하지
    않는 것(없는 파일·사라진 심볼·파일 길이를 넘는 줄 범위)이다. 개념 문서는 기준선이므로 고치지 말고 목록을
-   보고해 사용자가 `update-concepts`로 근거를 바로잡게 한다. `brokenCodeLinks`가 있어도 exit 1이며 이 역시
+   보고해 사용자가 `update-concepts`(계기 C, 근거 좌표만 — 계약 지문 밖이라 정합성 재검사 없이 재정착)로 근거를 바로잡게 한다. `brokenCodeLinks`가 있어도 exit 1이며 이 역시
    진단 데이터다.
    - `unknownTags`: 없는 개념을 가리키는 태그.
    - `conceptless`: `@concept` 마커가 전혀 없는 파일 — 2번 격차 판단의 결정적 출발점이다.
    - `unapproved`: 🔴 red 개념 전부, `unapprovedRefs`: 스캔한 파일이 가리키는 red.
+   - `pending`: 🟡 pending 개념 전부, `pendingRefs`: 스캔한 파일이 가리키는 pending — 4번의 목록 출처다.
    - `unlinkedConcepts`: 표식으로도 기능 명세로도 연결된 코드가 하나도 없는 🟢 green 개념. 이런 개념은 문서만
      고쳐도 커밋 게이트가 따라올 코드를 묻지 않으므로, 약속을 지키는 코드에 태그를 달거나 기능 명세를 잇자고
      권한다. 정말 코드가 필요 없는 개념(용어·운영 원칙)이면 그대로 둔다 — 이것만으로는 exit 1이 아니다.
@@ -38,9 +39,9 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 2. **격차 처리 (의미 판단)**: `conceptless` 목록의 파일마다 무엇이 필요한지 가린다. 개념이 필요한 기능·동작·역할·
    권한·용어인데 태그가 없는 것을 찾는다.
    - **기존 개념이 이미 있음** → 태그를 제안한다(아래 태그 규칙).
-   - **개념이 없음** → `conceptpowers:update-concepts`(B, 새 개념 정의)로 넘긴다. 넘기기 전에 reference가
+   - **개념이 없음** → `conceptpowers:update-concepts`(계기 B, 새 개념 정의)로 넘긴다. 넘기기 전에 reference가
      비어 있는지 확인(존재 확인만)하고, 비었으면 "reference/가 비어 있습니다 — 이 상태로 개념을 정의하면 근거
-     자료 없이 작성됩니다"라고 알린 뒤 ① 그대로 진행 ② 파일 추가 ③ 바깥 경로 등록(`update-concepts` E)을 묻는다.
+     자료 없이 작성됩니다"라고 알린 뒤 ① 그대로 진행 ② 파일 추가 ③ 바깥 경로 등록(`update-concepts` 계기 E)을 묻는다.
    - **개념과 무관한 코드**(utils/types/config/scripts, 여러 기능이 함께 쓰는 공통 UI — 버튼·모달·레이아웃·
      디자인 시스템) → 명시적 **`@concept:none`**(침묵이 아니라). 공통 UI에 개념을 붙여 화면의 자유도를 묶지 않는다.
      그런 파일이 한 폴더에 모여 있으면 파일마다 `none`을 다는 대신 사용자에게 **개념 없음 영역**
@@ -58,9 +59,9 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    기록** 절차로 만든다. 이것이 `#/graph`를 연결된 상태로 유지한다. 버튼·모달 같은 공통 UI 요소 하나하나에
    명세를 만들지 않는다 — 명세는 기능 단위다.
 4. **red / pending (상태)**:
-   - 🔴 red(자동 추론, 미승인) → 목록을 보이고 사용자가 검토·승인을 원하면 `conceptpowers:update-concepts`(D)로.
+   - 🔴 red(자동 추론, 미승인) → 목록을 보이고 사용자가 검토·승인을 원하면 `conceptpowers:update-concepts`(계기 D)로.
      **scan이 스스로 승인하지 않는다.**
-   - 🟡 pending(사람이 쓴 초안, 미정착) → 목록을 보이고 `update-concepts`의 정합성 검사 재실행을 권한다.
+   - 🟡 pending(사람이 쓴 초안, 미정착) → 목록을 보이고 `update-concepts`(계기 G, 정합성 재검사·정착)를 권한다.
      pending을 "미승인"이라 부르지 않는다 — 초안이지 추론이 아니다.
 5. **green 품질 최소치**: `node "<cli>" quality --root .`(slug 없이 전수). 결격이 있으면 보고하고 사용자와 함께
    채우자고 권한다(자동 채움 금지, 강등도 사람 판단).
@@ -84,7 +85,7 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    - 기본은 증분: 넘긴 파일의 항목만 바꾸고 나머지는 보존한다. **삭제한 파일도 인자에 넣어야** 낡은 항목이 빠진다.
    - 처음부터 다시 만들려면(캐시 손상 복구) `--full`: `node "<cli>" map --full --root . <all source files...>`.
    - 이어서 `node "<cli>" render --root .`.
-3. 태그가 없는 개념을 가리키면(`unknownTags`) 개념을 정의하거나(`update-concepts`) 태그를 고친다.
+3. 태그가 없는 개념을 가리키면(`unknownTags`) 개념을 정의하거나(`update-concepts` 계기 B) 태그를 고친다.
 4. 파일을 옮기거나 지울 때는 **같은 커밋**에서 태그를 옮기고 매핑을 갱신한다.
 5. `mapping.json`은 **캐시**이지 기준선이 아니다. 진실은 코드의 `@concept` 태그다.
 
@@ -95,7 +96,7 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 
 1. **기능 식별** — 구체적 사용자 접점 하나: 버튼, 폼 제출, 메뉴 동작, 라우트, 명령. 짧은 `title`과 한 줄 `description`.
 2. **기능 → 코드**(`codePaths`): 구현 파일 목록.
-3. **기능 → 개념**(`concepts`): 이 기능이 실현하는 개념 slug. 없으면 `update-concepts`로 먼저 정의하고 돌아온다.
+3. **기능 → 개념**(`concepts`): 이 기능이 실현하는 개념 slug. 없으면 `update-concepts`(계기 B)로 먼저 정의하고 돌아온다.
 4. slug(kebab-case, 유일)와 `group`(선택) 결정.
 5. 엔진으로 검증·기록(스키마 검사, 중복 slug 거부):
    `node "<cli>" feature --root . --file <feature.json>`

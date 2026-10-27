@@ -182,7 +182,8 @@
         "src/hooks/sessionStart.ts",
         "tests/hooks/sessionStart.test.ts",
         "tests/drift/historyMerge.test.ts",
-        "tests/drift/history.test.ts"
+        "tests/drift/history.test.ts",
+        "tests/hooks/headWatch.test.ts"
       ]
     },
     {
@@ -307,7 +308,9 @@
         "tests/hooks/commitFiles.test.ts",
         "src/hooks/sessionStart.ts",
         "tests/hooks/sessionStart.test.ts",
-        "src/cli.ts"
+        "src/cli.ts",
+        "src/hooks/command/headWatch.ts",
+        "tests/hooks/headWatch.test.ts"
       ]
     },
     {
@@ -329,6 +332,8 @@
         "skills/update-concepts/references/settle.md",
         "skills/update-concepts/references/upgrade.md",
         "src/cli.ts",
+        "skills/init/SKILL.md",
+        "skills/update-concepts/references/batch.md",
         "tests/cli/cli.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/serve.test.ts",
@@ -1724,6 +1729,13 @@
         "title": "tests/drift/history.test.ts"
       },
       {
+        "id": "p:tests/hooks/headWatch.test.ts",
+        "label": "headWatch.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/headWatch.test.ts"
+      },
+      {
         "id": "c:feature-spec-bridge",
         "label": "기능 명세",
         "type": "concept",
@@ -2060,6 +2072,13 @@
         "title": "src/cli.ts"
       },
       {
+        "id": "p:src/hooks/command/headWatch.ts",
+        "label": "headWatch.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/headWatch.ts"
+      },
+      {
         "id": "c:human-owns-contract",
         "label": "소유권 원칙",
         "type": "concept",
@@ -2100,6 +2119,20 @@
         "type": "file",
         "href": "",
         "title": "skills/update-concepts/references/upgrade.md"
+      },
+      {
+        "id": "p:skills/init/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/init/SKILL.md"
+      },
+      {
+        "id": "p:skills/update-concepts/references/batch.md",
+        "label": "batch.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/update-concepts/references/batch.md"
       },
       {
         "id": "p:tests/viewer/serve.test.ts",
@@ -2618,13 +2651,6 @@
         "type": "concept",
         "href": "#/concept/skill-surface",
         "title": "skill-surface"
-      },
-      {
-        "id": "p:skills/init/SKILL.md",
-        "label": "SKILL.md",
-        "type": "file",
-        "href": "",
-        "title": "skills/init/SKILL.md"
       },
       {
         "id": "p:tests/compat/skillFrontmatter.test.ts",
@@ -3459,6 +3485,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/headWatch.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:feature-spec-bridge",
         "target": "p:src/schema/feature.ts",
         "kind": "concept-file"
@@ -3879,6 +3910,16 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/headWatch.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/headWatch.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:human-owns-contract",
         "target": "p:skills/update-concepts/references/define.md",
         "kind": "concept-file"
@@ -3911,6 +3952,16 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:skills/init/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:skills/update-concepts/references/batch.md",
         "kind": "concept-file"
       },
       {

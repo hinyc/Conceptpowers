@@ -21,7 +21,7 @@ Write the concept content in the project's output language (the `locale` from `i
 Batch mode → read `references/batch.md` **next to this file** and follow it. It enumerates
 candidates from reference docs + UI surfaces + domain logic, puts every candidate through the
 qualification gate below, runs two user checkpoints (scope, review), then loops the single-flow
-steps 5-10 per confirmed concept. Surfaces that fail the gate become feature specs or lines in the
+steps 5-9 per confirmed concept. Surfaces that fail the gate become feature specs or lines in the
 baseline document — never a concept per button.
 
 ## Steps (interactive, single flow)
@@ -46,7 +46,7 @@ baseline document — never a concept per button.
 > **Precedence when reference contradicts a settled concept:** a defined green concept is the
 > operative contract. If reference material contradicts an existing **green** concept, do NOT silently
 > adopt either side — report the contradiction to the user. Until the user updates the concept
-> (via the upgrade entry point below, recorded with `note-change`), **the concept wins**.
+> (via the upgrade entry point below, applied with `edit-concept --reason`), **the concept wins**.
 
 ### 자격 기준 관문 (개념 `concept-scope` — 단계 1보다 먼저)
 
@@ -66,8 +66,8 @@ baseline document — never a concept per button.
 추가로 **매번** 확인한다:
 
 - **중복 확인 (필수)**: 새 개념을 세우기 전에 **목적이 같은 기존 개념이 있는지 먼저 찾는다.**
-  있으면 새로 세우지 않고 **그 개념을 넓힌다** (그 경우 이 스킬은 redefine 플로우 — step 10의
-  `note-change`가 적용된다). 정합성 검사(step 6)는 충돌을 잡는 자리이지 목적 중복을 흡수하는
+  있으면 새로 세우지 않고 **그 개념을 `references/edit.md`의 `edit-concept --reason`으로 넓힌다** — 사유 기록과
+  pending 강등이 함께 일어나므로 `note-change`를 따로 부르지 않는다. 정합성 검사(step 6)는 충돌을 잡는 자리이지 목적 중복을 흡수하는
   자리가 아니다 — 중복 확인은 여기서 끝내 둔다.
 - **화면 요소 배제**: 특정 화면 요소의 생김새·배치·글자 표기만 정하는 규칙은 개념으로 두지 않는다.
 - **부분 분리 금지**: 한 개념의 일부 동작을 떼어내 별도 개념으로 세우지 않는다.
@@ -78,7 +78,7 @@ baseline document — never a concept per button.
 | ------------------------------------- | ---------------------------------------------------- |
 | 4번(방법) · 6번(표기) · 화면 요소     | 상위 기준 문서(`architecture.md` / `infra.md`) 한 줄 |
 | 1번(목적) — 그저 사용자 접점일 뿐     | 기능 명세(`conceptpowers:scan`의 기능 명세 기록)     |
-| 중복 — 목적이 같은 개념이 이미 있음   | 그 개념을 넓히는 redefine                            |
+| 중복 — 목적이 같은 개념이 이미 있음   | 그 개념을 넓히는 수정(`references/edit.md`)          |
 | 5번(독립) — 다른 개념에 기대야만 성립 | 그 개념의 `actions.interaction`에 맞물림으로         |
 
 관문 결과는 **사용자에게 보고**한다 — 개념을 세울지 내릴지는 경계에 걸릴 때마다 사람이 정한다
@@ -99,8 +99,9 @@ changed/removed file), this is a **redefinition** of that concept, focused:
 - Sharpen or add the rule(s) **with the user** so the blocked judgment becomes decidable
   (violation-decidable sentence, per the quality self-check below). Do not broaden scope beyond
   the ambiguity unless the user asks.
-- This is a redefinition → single-flow step 10 applies: record why via
-  `node "<cli>" note-change <slug> --reason "<ambiguity fixed>" --root .`; the contract
+- This is a redefinition → apply the approved text with `references/edit.md`
+  (`edit-concept <slug> --file <patch.json> --reason "<ambiguity fixed>"`). It records why and demotes green →
+  pending in one step — do **not** also call `note-change` or write the JSON directly. The contract
   fingerprint changes and auto-invalidates the old attestation (re-run `references/consistency.md` + attest).
 
 1. Check the related feature spec in `features/`. If none exists, create it with the
@@ -220,8 +221,9 @@ changed/removed file), this is a **redefinition** of that concept, focused:
    - If a previously-recorded conflict for this slug is now resolved (status set to green),
      clear it: `node "<cli>" resolve-conflict <slug> --root .`
 9. Guide the user to link the concept to code with a `@concept:<slug>` tag.
-10. If this **redefines an existing** concept (not a brand-new one), record why it changed so drift is
-    traceable: `node "<cli>" note-change <slug> --reason "<why it changed>" --root .`
+10. Steps 5-9 save **brand-new** concepts only. An **existing** concept is never saved through this flow —
+    redefinitions go through `references/edit.md` (`edit-concept --reason`), which records why it changed and
+    demotes green → pending. Do not write its JSON directly or add a separate `note-change`.
 
 ## Outputs
 

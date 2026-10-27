@@ -20,7 +20,7 @@ When adding or modifying a concept, verify there is no conflict or violation aga
 > **Precedence when reference contradicts a settled concept:** a defined green concept is the
 > operative contract. If reference material contradicts an existing **green** concept, do NOT silently
 > adopt either side — report the contradiction to the user (which document, which rule, how they
-> disagree). Until the user updates the concept (recorded via `note-change`), **the concept wins**;
+> disagree). Until the user updates the concept (applied with `edit-concept --reason`, which records why), **the concept wins**;
 > the reference may be stale or superseded, and only the human knows which.
 
 1. Load all concepts in `concepts/data/` (or obtain the list as the step before `node "<cli>" render`).

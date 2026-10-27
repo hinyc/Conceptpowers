@@ -17,7 +17,8 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 | ② **특정 개념**    | 개념 slug 하나 → 그 개념에 매핑된 파일 전부 | 사용자                                          |
 | ③ **전체**         | 모든 green 개념 → 각각 ②                    | 사용자, `auto`                                  |
 
-사용자가 모드를 말하지 않고 불렀으면 **②/③ 중 무엇을 원하는지 묻는다**.
+에이전트가 코드 작업 전에 스스로(또는 Edit/Write 훅 안내로) 부른 것이면 **①**이다 — 묻지 않는다. 사용자가 모드를
+말하지 않고 불렀을 때만 **②/③ 중 무엇을 원하는지 묻는다**.
 
 ## Scope (①)
 
@@ -51,20 +52,12 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
    manifest가 없거나 낡았으면 `docs/conceptpowers/.cache/mapping.json`(slug → files).
 3. **대상 읽기** — 인덱스가 낸 후보 개념 파일 1~3개만 연다(`concepts/data/<group>/<slug>.json`).
 4. **최후 수단** — 후보가 없을 때만 `concepts/data/`를 키워드로 grep. 그래도 없으면 "관련 개념 없음" →
-   `conceptpowers:update-concepts`로 먼저 정의한다. 판정 뒤 태그 없던 파일에 개념이 맞았으면 `@concept` 태그를
+   `conceptpowers:update-concepts`(계기 B)로 먼저 정의한다. 판정 뒤 태그 없던 파일에 개념이 맞았으면 `@concept` 태그를
    달고 `map`으로 매핑을 갱신한다(다음부터는 1번으로 끝난다).
 
-### ② 개념 → 파일
+### ② 개념 → 파일 · ③ 전체
 
-- `docs/conceptpowers/.cache/mapping.json`의 `slug → files` + 그 개념을 가리키는 feature의 `codePaths`
-  (`docs/conceptpowers/features/**`). 디스크에 없는 경로는 건너뛴다.
-- 파일이 많으면 규칙과 맞닿는 파일부터(허용·제한 행동이 바꾸는 관리 대상을 다루는 파일) 보고, 나머지는
-  표본 검사한다고 사용자에게 밝힌다.
-
-### ③ 전체
-
-- `node "<cli>" audit --root .`로 매핑 무결성(`unknownTags`)을 먼저 확인하고, green 개념마다 ②를 돈다.
-  red/pending 개념은 코드를 다스리지 않으므로 판정 대상이 아니다(목록만 보고).
+대상 파일을 모으는 방법과 보고 형식은 `references/whole.md`에 있다 — ②/③으로 왔을 때만 읽는다.
 
 ## Judgment (모든 모드 공통)
 
@@ -75,19 +68,13 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 - **② 위반** → **코드를 임의로 고치지 않는다.** 사용자에게 보고하고 고르게 한다:
   (a) **개념 수정** — 사용자가 정확한 변경을 승인할 때만 `conceptpowers:update-concepts`(C 흐름, `edit-concept`).
   green이 pending으로 내려가 정합성 검사와 사용자 확인 뒤에야 다시 코드를 다스린다.
-  (b) **기능/개념 분리** — 새 기능 명세나 개념으로 나눈다. 코드를 통과시키려고 개념을 조용히 고치지 않는다.
+  (b) **기능/개념 분리** — 새 기능 명세(`conceptpowers:scan`의 기능 명세 기록)나 개념(`update-concepts` 계기 B, 기존 개념을 좁히면 계기 C)으로 나눈다. 코드를 통과시키려고 개념을 조용히 고치지 않는다.
 - **③ 판단 불가(개념 모호)** — 규칙만으로 "이 코드가 어기는가"에 답할 수 없다 → 추측하지 않고 reference도
   읽지 않는다. "개념 `<slug>`의 규칙만으로는 판단할 수 없습니다"라고 어느 규칙·어떤 해석 차이인지 밝히고
-  `conceptpowers:update-concepts` **계기 F(개념 업그레이드)** — reference는 **거기서** 읽고 변경은 `note-change`로
+  `conceptpowers:update-concepts` **계기 F(개념 업그레이드)** — reference는 **거기서** 읽고 변경은 `edit-concept --reason`으로
   기록된다 — 를 권한다. 지금 올릴지는 사용자가 정한다.
 
 테스트가 개념과 충돌하면 조용히 통과시키지 않는다 — 테스트 오류인지 개념이 낡았는지 사용자에게 묻는다.
-
-## Report (②/③)
-
-개념별로: 검사한 파일 수 / 위반 목록(파일·규칙·근거) / 판단 불가 목록(어느 규칙이 모호한지) / 표본 검사로
-넘긴 파일. 권장 조치는 위 판정표의 (a)/(b)/업그레이드 가운데 하나로 적는다. 기준선은 읽기 전용이므로 개념
-생성·수정은 사용자 확인 뒤 `update-concepts`에서만 한다.
 
 ## Test scenarios from concepts (conceptDrivenTests)
 
@@ -106,19 +93,8 @@ description: Use BEFORE writing/modifying code (including tests) that adds a fea
 
 ### When the concept itself changed (test-follow duty)
 
-개념 수정은 그 개념에서 파생된 모든 테스트를 의심하게 한다. 개념 변경과 **같은 커밋**에서:
-
-1. 그 개념의 테스트를 찾는다(매핑 캐시 / `@concept` 태그 → 테스트 파일).
-2. **새** 규칙에서 시나리오 목록을 다시 뽑아 현재 테스트가 단언하는 것과 견준다. 바뀌거나 사라지거나 새로 생긴
-   규칙마다 고치거나 지우거나 더할 테스트가 하나씩 대응된다.
-3. 고친 테스트를 개념 변경과 함께 스테이징한다 — 이것만으로 게이트를 통과하므로 기록은 남기지 않는다.
-4. 정말 고칠 것이 없거나(문구만 바뀜) 테스트가 아직 없을 때만 사용자 확인 후 사유를 기록한다
-   (`--result updated`는 테스트를 이미 앞선 커밋에서 고친 경우에만 쓴다):
-   `node "<cli>" attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>" --root .`
-   기록은 개념 지문에 묶여 개념을 다시 고치면 효력을 잃는다.
-
-커밋 게이트 `concept-test-follow`가 정확히 이것을 강제한다: 테스트도 기록도 없는 어긋난 개념은 `strict`에서
-차단, `standard`에서 질문, `light`에서 경고.
+개념을 고칠 때 그 개념에서 파생된 테스트를 같은 커밋에서 검토하는 의무(커밋 게이트 `concept-test-follow`)는
+`conceptpowers:update-concepts`의 개념 수정 절차(계기 C)가 정한다 — 개념 수정은 그 스킬에서만 일어나기 때문이다.
 
 ## Prohibited
 

@@ -11,6 +11,9 @@
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다" +
 //    concept-inline-edit 불변 "확정된 개념을 고치면 예외 없이 검토 중 상태로 내려간다"
 //    → editConceptContent: green을 편집하면 pending으로 내려간다 / pending·red는 상태를 유지한다
+//  - human-owns-contract 불변 "red 자동 추론안은 미승인 제안으로만 저장되며, green이 되려면 사람이 승인한다"
+//    → red는 편집해도 red로 남는다(편집이 승인을 대신하지 않는다) / settled red는 pending으로 되돌릴 수 없다
+//    (red가 벗어나는 길은 승인으로 green이 되는 것뿐) — 승인 명령 자체의 가드는 approve 테스트가 맡는다
 //  - concept-inline-edit 구성요소 "고칠 수 없는 것: 이름표와 묶음(주소가 되는 값), 승인 상태" +
 //    제한 "고칠 수 없는 것으로 정해진 값을 저장에 끼워 넣는 것"
 //    → slug/group/status 변경 시도는 무시한다 / 런타임 임의 키는 무시한다

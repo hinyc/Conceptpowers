@@ -194,6 +194,19 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('개념 없는 코드');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('foo.ts');
   });
+
+  it('개념 없는 코드 경고는 기존 개념이면 scan(태그), 없으면 update-concepts 계기 B로 안내한다', async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['src/foo.ts'],
+    });
+    const reason = r!.hookSpecificOutput.permissionDecisionReason ?? '';
+    expect(reason).toContain('scan');
+    expect(reason).toContain('계기 B');
+  });
   it('손으로 쓴 util 파일도 마커가 없으면 경고한다(이제 자동 제외 아님)', async () => {
     await scaffoldInit(root, {});
     mkdirSync(join(root, 'src/utils'), { recursive: true });

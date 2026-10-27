@@ -32,9 +32,9 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
    사용자가 명시적으로 요청할 때만(같은 버전 재생성은 로컬 산출물 수정을 되돌릴 수 있다).
 2. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿 그대로인지.
 3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
-   그리고 `node "<cli>" reference-diff --root .` — `unlocked`(기준점 없음), `changed/removed`(변경),
+   그리고 `node "<cli>" reference-diff --quick --root .` — `unlocked`(기준점 없음), `changed/removed`(변경), `added`(새 파일), `truncated`(비교가 일부만 됨),
    `affected`(영향 개념), `newMaterial`(새 개념 후보 자료), `unreachable`.
-4. **개념**: `concepts/data/` 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red).
+4. **개념**: 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red) — `concepts/viewer/manifest.json`의 `concepts[].status`(또는 #6 audit의 `unapproved`/`pending`).
 5. **feature**: `features/` 명세 개수.
 6. **무결성**: `node "<cli>" audit --root .` — **파일 인자 없이**(전체 스캔: `unknownTags` + `conceptless`).
    exit 1은 진단 데이터이지 실패가 아니다.
@@ -59,7 +59,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 
 `conceptpowers:update-concepts` 호출. 진단 결과에 따라 계기가 정해진다:
 
-- `changed/removed`가 있으면 **A(참고자료 변경 반영)** — 영향 개념부터. 끝나면 사용자 확인 후 기준점 기록.
+- `changed/removed` 또는 `added`가 있으면 **A(참고자료 변경 반영)** — 영향 개념부터. 끝나면 사용자 확인 후 기준점 기록.
 - 개념이 없거나 적으면 **B 일괄 정의(batch)**. 실행 전 reference가 비었으면 그 스킬의 안내대로 ① 진행 ② 파일
   추가 ③ 바깥 경로 등록을 묻는다 — 조용히 건너뛰지 않는다. 개념 정의가 reference를 읽는 **유일한** 시점이다.
 - `unlocked`(기준점 없음)이고 개념이 이미 있으면, 정의·검토가 끝난 뒤 기준점을 한 번 찍자고 제안한다.
@@ -70,7 +70,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 `conceptpowers:scan` 호출 — 개념 없는 코드·깨진 태그·기능 명세 누락·red/pending·품질 결격을 목록으로 받고,
 항목마다 어떻게 처리할지 묻는다:
 
-- 개념 없는 코드 → 기존 개념 태그 / `update-concepts`로 정의(Stage 2 루프백) / `@concept:none` / 보류.
+- 개념 없는 코드 → 기존 개념 태그 / `update-concepts`(계기 B)로 정의(Stage 2 루프백) / `@concept:none` / 보류.
 - 🔴 red → 사용자가 원하면 `update-concepts`(D) 승인 흐름(사용자 게이트 — auto가 스스로 승인하지 않는다).
 - 🟡 pending → `update-concepts`(G) 재검사로 정착 시도 / 수정·분리 논의(C) / 보류.
 - 품질 미달 green → 사용자에게 물어 채운다(자동 채움 금지).
@@ -82,7 +82,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 
 - 위반 → 사용자가 고른다: 코드 수정(TDD, 개념 안에서) / 개념 수정(`update-concepts` C) / 기능 분리.
 - 판단 불가(개념 모호) → `update-concepts`(F) 업그레이드 권장(Stage 2 루프백 — 그때 reference를 읽는다).
-- 루프백으로 개념이 바뀌었으면 review를 한 번 더 돌려 수렴을 확인한다.
+- 루프백으로 개념이 바뀌었으면, 그 개념이 green으로 재정착했는지 먼저 확인한 뒤 review를 한 번 더 돌려 수렴을 확인한다. 아직 pending/red면 전체 모드의 판정 대상이 아니므로 "정착 전이라 판정 대상 아님"으로 남긴다.
 
 ## Final report
 

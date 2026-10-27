@@ -1,0 +1,11 @@
+{
+  "slug": "human-owns-contract",
+  "hash": "3:1c8ee78e73e5",
+  "prevHash": "3:bdfa1f3770ca",
+  "reason": "전체 스캔(init strict)의 자동 추론 개념 저장을 사람 확정 원칙의 명시적 예외로 둔다 — 미승인 red로만 저장되고 green은 사람 승인 뒤에만",
+  "at": "2026-10-27T04:41:13.762Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

@@ -35,7 +35,8 @@ interaction to two checkpoints, not zero.
 2. **자격 기준 관문 일괄 적용**: 모은 후보를 `define.md`의 「자격 기준 관문」 여섯 물음에 차례로
    걸어, 각 후보를 **개념 후보 / 기능 명세 / 상위 기준 문서 / 기존 개념으로 흡수** 중 하나로
    분류한다. 목적이 같은 후보끼리는 이 단계에서 한 줄로 합친다. 판정과 근거(어느 물음에서
-   막혔는지)를 후보 줄에 적어 둔다 — 조용히 지우지 않는다.
+   막혔는지)를 후보 줄에 적어 둔다 — 조용히 지우지 않는다. **기존 개념으로 흡수**한 후보는 이 일괄 흐름에서
+   저장하지 않고, 사용자가 고르면 `references/edit.md`(`edit-concept --reason`)로 그 개념을 넓힌다.
 3. **Scope confirmation (checkpoint 1)**: ask which candidates to proceed with. **관문을 통과한
    개념 후보와 탈락 후보(어디로 내려가는지 포함)를 함께 보여주고**, 판정을 사용자가 뒤집을 수
    있게 한다 — 경계에 걸친 것은 사람이 정한다. The choices
@@ -48,7 +49,7 @@ interaction to two checkpoints, not zero.
    모두 채우고, 약속이 좁은 개념은 짧아도 된다 (see below) — a brief definition plus one or two
    decidable rules is a complete draft, not a lazy one.
 5. **Batch review (checkpoint 2)**: the user confirms / edits / drops each draft.
-   - **Confirmed** drafts → continue with the single-flow steps 5-10 per concept (quality self-check
+   - **Confirmed** drafts of **new** concepts → continue with the single-flow steps 5-9 per concept (quality self-check
      already done in drafting; run consistency check across the whole batch at once, attest each,
      then promote to `green`).
    - Drafts the user wants to **keep but not review now** → keep them `pending` (사람이 쓴 초안은
@@ -83,3 +84,19 @@ interaction to two checkpoints, not zero.
 
 접점을 조용히 흘려보내지 않는다 — 개념이 안 되면 **어디로 갔는지**(기능 명세 / 상위 기준 문서 /
 기존 개념으로 흡수) 후보 줄에 남기고 checkpoint에서 사용자가 확인하게 한다.
+
+## 자동 추론 모드 (init strict 전체 스캔 전용)
+
+`conceptpowers:init`의 전체 스캔(strict)이 부를 때만 쓰는 변형이다. 사람이 고르는 두 checkpoint를 건너뛰는 대신,
+결과는 **미승인 제안(🔴 red)으로만** 저장된다 — 개념 `human-owns-contract`의 예외("red 자동 추론안은 미승인
+제안으로만 저장되며, green이 되려면 사람이 승인한다")가 근거다. 사용자가 직접 고른 일괄 정의에는 쓰지 않는다.
+
+1. 위 step 1(후보 모으기)을 그대로 한다 — **`reference/` 문서와 `reference/paths.md`의 바깥 자료도 빠짐없이**
+   후보 출처로 쓴다. 자동 추론이라고 참고자료 확인을 건너뛰지 않는다(개념 `reference-first-duty`).
+2. step 2(자격 기준 관문)를 그대로 한다. 판정과 근거는 후보 줄에 남긴다.
+3. 관문을 통과한 새 후보만 초안을 쓰고 `define.md`의 품질 자가점검을 거쳐 `status: red`로 저장한다(define.md
+   step 8). 근거(`sources`)에 참고자료 좌표를 남긴다.
+4. **기존 개념으로 흡수**된 후보는 기존 개념을 고치지 않는다 — 그 slug를 기능 명세의 `concepts`에 적기만 한다.
+   기존 개념을 넓혀야 할 것 같으면 보고 목록에 남겨 사용자가 나중에 계기 C로 정한다.
+5. 관문에서 막힌 후보(기능 명세 / 상위 기준 문서)와 저장한 red 목록을 함께 보고한다. green 승격은 사용자가
+   검토 후 승인을 요청할 때 계기 D로만 한다.

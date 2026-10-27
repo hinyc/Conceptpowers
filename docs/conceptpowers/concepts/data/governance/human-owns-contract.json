@@ -43,7 +43,8 @@
     "immutableRules": [
       "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다",
       "AI는 개념의 규칙을 스스로 만들어 저장하지 않는다 — 부족하면 채우는 게 아니라 사람에게 묻는다",
-      "명령으로 개념 내용을 고칠 때는 왜 고치는지 사유가 함께 있어야 한다 — 사유가 비어 있으면 고치지 않는다. 화면에서 사람이 직접 고칠 때는 고치는 사람이 곧 사유의 주인이므로 따로 요구하지 않는다"
+      "명령으로 개념 내용을 고칠 때는 왜 고치는지 사유가 함께 있어야 한다 — 사유가 비어 있으면 고치지 않는다. 화면에서 사람이 직접 고칠 때는 고치는 사람이 곧 사유의 주인이므로 따로 요구하지 않는다",
+      "red 자동 추론안은 미승인 제안으로만 저장되며, green이 되려면 사람이 승인한다"
     ],
     "operationalPrinciple": "AI가 개념 초안을 만들어 사람에게 보여주면, 사람이 읽고 확정했을 때에만 그 내용이 개념으로 저장된다.",
     "tradeoffs": "사람의 확인이 병목이 될 수 있지만, 그 병목이 바로 이 도구의 존재 이유다.",
@@ -63,7 +64,9 @@
     "skills/update-concepts/references/edit.md",
     "skills/update-concepts/references/settle.md",
     "skills/update-concepts/references/upgrade.md",
-    "src/cli.ts"
+    "src/cli.ts",
+    "skills/init/SKILL.md",
+    "skills/update-concepts/references/batch.md"
   ],
   "sources": [
     {

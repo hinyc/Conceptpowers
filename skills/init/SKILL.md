@@ -45,12 +45,12 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
      `/conceptpowers:update-concepts` (참고자료 경로 등록), or by writing one path per line in
      `docs/conceptpowers/reference/paths.md`, and that material can also be dropped straight into
      `docs/conceptpowers/reference/`. Do not ask again.
-   - See the 경로 등록(E) flow of `/conceptpowers:update-concepts` for the full flow.
+   - See the 경로 등록(계기 E) flow of `/conceptpowers:update-concepts` for the full flow.
 8. **Offer update-concepts as the immediate next step.** Explain it in one line — "update-concepts는
    프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
    작성하는 단계입니다. 참고자료를 reference/에 넣어두거나 `reference/paths.md`에 외부 로컬
    경로(여러 개 가능)를 등록해두면 그걸 근거로 함께 작성합니다." — then
-   **ask the user whether to continue with `/conceptpowers:update-concepts` right now.** Proceed only
+   **ask the user whether to continue with `/conceptpowers:update-concepts` (계기 B — 새 개념 정의) right now.** Proceed only
    on yes; if they decline, remind them it is available anytime.
 9. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:scan`.
 
@@ -65,16 +65,13 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    exposes to the user. Merge with step 1 into a deduplicated feature list.
 3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
    implementing `codePaths` filled in (the _feature → code_ link) via the 기능 명세 기록 procedure of `conceptpowers:scan`.
-4. **Infer concepts and wire features to them**: 기능은 접점마다 하나씩이지만 **개념은 접점마다
-   하나가 아니다.** 기능에서 그 기능이 사용자에게 하는 **약속**을 뽑고, 그 약속을
-   `conceptpowers:update-concepts`(그 스킬의 define 절차)의 「자격 기준 관문」 여섯 물음(목적·관리 대상·작동 원리·약속·
-   독립·표기)에 걸어 통과한 것만 개념으로 세운다.
-   - 이미 같은 약속을 담은 개념이 있으면 **새로 만들지 않고** 그 개념의 slug를 그 기능의
-     `concepts`에 적는다 — 여러 기능이 한 개념을 가리키는 것이 정상이다.
-   - 관문에서 막힌 것(생김새·배치만 정하는 규칙, 약속이 아니라 방법인 것)은 개념으로 만들지 않고
-     상위 기준 문서(`architecture.md` / `infra.md`)에 한 줄로 남기자고 사용자에게 제안한다.
-   - 새로 세운 개념은 자동 추론이므로 `status: red`(미승인)로 저장하고, 그 slug를 해당 기능의
-     `concepts`에 기록한다 (the _feature → concept_ link).
+4. **Infer concepts and wire features to them**: run the **자동 추론 모드** of `conceptpowers:update-concepts`
+   (its batch procedure) — it reads the reference material too, applies the 「자격 기준 관문」, and saves every
+   new concept as `status: red` (an unapproved proposal; concept `human-owns-contract` allows only that without
+   user review). 기능은 접점마다 하나씩이지만 **개념은 접점마다 하나가 아니다** — 여러 기능이 한 개념을
+   가리키는 것이 정상이다. Then write each concept slug (new or existing) into the matching feature's
+   `concepts` (the _feature → concept_ link). Candidates that fail the gate go to feature specs or a one-line
+   proposal for `architecture.md` / `infra.md`.
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
    concept applies (utils/types/config/scripts, shared UI used across features — buttons, modals, layouts,
