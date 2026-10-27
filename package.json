@@ -1,7 +1,7 @@
 {
   "name": "conceptpowers",
   "version": "1.17.0",
-  "description": "Concept-driven development governance for Claude Code",
+  "description": "Concept-driven development governance for AI coding agents",
   "type": "module",
   "packageManager": "pnpm@10.12.1",
   "engines": {

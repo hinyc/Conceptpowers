@@ -1,12 +1,17 @@
 # Conceptpowers
 
-> **Define the concept before you change the code.** Concept-Driven Development (CDD) governance for Claude Code — your concepts become explicit rules the agent checks code against, backed by a commit gate that keeps concepts, code links, and evidence in step.
+> **Define the concept before you change the code.** Concept-Driven Development (CDD) governance for AI coding agents — not an agent itself, but a guardrail layer on top of one (Claude Code, Codex). Your concepts become explicit rules the agent checks code against, backed by a commit gate that keeps concepts, code links, and evidence in step.
 
 _Read this in [한국어](README.ko.md)._
 
 ## At a glance
 
-**What it is.** A plugin for Claude Code (Codex is supported through its developer marketplace): skills, hooks, a CLI and a concept viewer. It activates only in projects that have `docs/conceptpowers/init.json` — no marker, no hooks. It runs on JSON + git alone and adds no runtime dependency to your app.
+**What it is.** A governance plugin that sits on top of your coding agent. Skills teach the agent how to work with concepts, hooks step in at fixed points (session start, before edits, at commit), and a CLI and concept viewer keep the records. The thinking and editing are done by your agent; Conceptpowers itself calls no LLM. It activates only in projects that have `docs/conceptpowers/init.json` — no marker, no hooks. It runs on JSON + git alone and adds no runtime dependency to your app.
+
+**Supported agents.**
+
+- Claude Code (via its developer marketplace)
+- Codex (via its developer marketplace)
 
 **Purpose.** Capture the "why" your code must respect — purpose, allowed/restricted actions, immutable rules — as a **concept**: a contract owned by a human, and keep that contract alive while the codebase grows and AI writes most of it.
 
@@ -23,7 +28,7 @@ _Read this in [한국어](README.ko.md)._
 
 **What it costs.** An `@concept` marker in every governed code file, agent calls and tokens for the checks on each change and commit, and the habit of staging and committing as separate commands. With no concepts, or stale ones, there is nothing to gain.
 
-**What it is not.** Not a spec tool that generates code. A concept _judges_ code; it never _produces_ it. Whether code obeys a rule is decided by the review skill as an LLM judgment, not by the gate and not as a proof. Commits made outside the agent (terminal, IDE) are invisible to the gate.
+**What it is not.** Not an agent: it never plans or writes code on its own. Not a spec tool that generates code. A concept _judges_ code; it never _produces_ it. Whether code obeys a rule is decided by the review skill as an LLM judgment, not by the gate and not as a proof. Commits made outside the agent (terminal, IDE) are invisible to the gate.
 
 **Built for.** Individuals and teams shipping fast with AI coding agents, especially repositories where the answer to "why is it like this?" lives only in someone's head.
 
