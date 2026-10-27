@@ -29,5 +29,6 @@
     "**/*_spec.*",
     "**/test_*.py"
   ],
-  "referenceLock": "shared"
+  "referenceLock": "shared",
+  "noConceptGlobs": []
 }
