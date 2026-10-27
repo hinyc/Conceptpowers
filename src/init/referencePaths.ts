@@ -1,13 +1,15 @@
-// @concept:reference-first-duty @concept:reference-privacy
+// @concept:reference-first-duty @concept:reference-privacy @concept:output-locale
 // src/init/referencePaths.ts
 // reference/paths.md — 사용자가 등록한 외부 참고자료 경로 목록(여러 개, 절대/상대, 파일/폴더).
 // 여기서는 그 목록을 파싱·검증만 한다(내용은 읽지 않는다 — 내용 읽기는 개념 정의 시점의
-// 에이전트 몫). 검증 결과는 세션 시작 알림과 `reference` CLI가 사용한다.
+// 에이전트 몫). 검증 결과는 세션 시작 알림과 `reference-add` CLI가 사용한다.
 import { readFile, stat, access, mkdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { cpPaths } from '../paths.js';
 import { walkUsableFiles } from './referenceWalk.js';
+import { readInitConfig } from './readConfig.js';
+import { seedTemplates } from '../i18n/messages.js';
 
 export type ReferencePathStatus = 'ok' | 'missing' | 'empty';
 export interface ReferencePathCheck {
@@ -17,37 +19,6 @@ export interface ReferencePathCheck {
 }
 
 export const PATHS_FILE = 'paths.md';
-
-// init 시 reference/paths.md에 깔아두는 안내 템플릿(영어 주석).
-// 모든 줄이 주석(#)/빈 줄이라 parseReferencePaths는 빈 목록을 반환한다 —
-// 사용자가 실제 경로를 넣기 전까지 "경로 없음" 경고를 내지 않는다.
-export const PATHS_TEMPLATE = [
-  '# Reference paths — external documents to consult when authoring concepts.',
-  '#',
-  '# List one path per line. Lines starting with "#" are comments and are ignored,',
-  '# so this file registers nothing until you add real (uncommented) entries.',
-  '#',
-  '# These are read ONLY while defining, upgrading, or verifying a concept',
-  '# (the update-concepts skill) — never during ordinary code checks.',
-  '# Point them at domain glossaries, specs, contracts, planning docs, and so on.',
-  '#',
-  '# Which form to use:',
-  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
-  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
-  '#     (teammates would see it reported as missing).',
-  '#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)',
-  '#       /Volumes/team-share/specs      absolute path outside home',
-  '#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).',
-  '#       docs/legal/contract.pdf',
-  '#',
-  '# Or skip the editing: run /conceptpowers:update-concepts and give it the path — it appends the',
-  '# entry here and warns if the location holds no readable material.',
-  '#',
-  '# Uncomment and edit the examples below, or add your own:',
-  '#   ~/work/product-specs/',
-  '#   /absolute/path/to/domain-rules.md',
-  '',
-].join('\n');
 
 // reference/paths.md 템플릿을 보장한다(없을 때만 생성 — 사용자 편집 보존).
 // paths.md는 gitignore 화이트리스트라 커밋 가능하다. 생성했으면 true.
@@ -61,7 +32,9 @@ export async function ensureReferencePaths(root: string): Promise<boolean> {
     /* 없으면 생성 */
   }
   await mkdir(dir, { recursive: true });
-  await writeFile(target, PATHS_TEMPLATE, 'utf8');
+  // 안내 템플릿은 사람이 읽는 산출물이라 프로젝트 설정 언어로 쓴다(output-locale).
+  const locale = (await readInitConfig(root))?.locale ?? 'ko';
+  await writeFile(target, seedTemplates[locale].referencePaths, 'utf8');
   return true;
 }
 

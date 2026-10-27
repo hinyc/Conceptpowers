@@ -37,7 +37,7 @@
 //      아니면 조용히 통과(best-effort)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { execSync, execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
@@ -71,11 +71,12 @@ beforeEach(() => {
 });
 
 // 연결 코드 경로는 디스크에 실제로 있어야 판정 대상이 된다(사라진 경로는 제외되므로).
-// 개념 없는 코드 경고에 걸리지 않도록 표식을 붙인 파일로 만든다.
+// 개념 없는 코드 경고에 걸리지 않도록 표식을 붙인 파일로 만든다. 표식만 있는 파일은 따라온 코드로
+// 세지 않으므로(drift-reconcile) 코드 한 줄을 함께 둔다.
 function touch(rel: string, slug = 'auth-token') {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
-  writeFileSync(p, `// @concept:${slug}\n`);
+  writeFileSync(p, `// @concept:${slug}\nexport const x = 1;\n`);
 }
 
 describe('decidePreToolUse', () => {
@@ -918,6 +919,17 @@ describe('참고자료 기준점 커밋 확인', () => {
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('referenceLock');
   });
+  it('설정을 읽지 못하면 공유를 택했다고 보지 않고 기준점 스테이징을 묻는다 (안전한 쪽)', async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(join(root, 'docs/conceptpowers/init.json'), '{ broken');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: [LOCK],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('referenceLock');
+  });
   it('설정이 shared(기본)면 기준점 스테이징을 묻지 않는다', async () => {
     await scaffoldInit(root, {});
     const r = await decidePreToolUse(root, {
@@ -977,4 +989,48 @@ it('git 저장소가 아니면 stale 산출물 검사는 조용히 통과한다 
     changedFiles: [],
   });
   expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
+});
+
+// governance-mode 불변 "항상 사람에게 묻는 항목이 있어도 다른 검사 결과는 가려지지 않는다 — 한 번의 질문이나
+// 차단에 함께 담는다" / "강도가 무엇이든 지키는 대상(검사 항목)은 같다"
+describe('standard·strict에서 결과가 서로 가려지지 않는다', () => {
+  it('standard: 첫 발견으로 묻되 뒤 검사도 실행해 그 결과를 같은 질문의 컨텍스트에 싣는다', async () => {
+    await scaffoldInit(root, {});
+    mkdirSync(join(root, 'src'), { recursive: true });
+    writeFileSync(join(root, 'src/ghost.ts'), '// @concept:ghost-rule\nexport const g = 1;\n');
+    writeFileSync(join(root, 'src/plain.ts'), 'export const p = 1;\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['src/ghost.ts', 'src/plain.ts'],
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost-rule');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('plain.ts');
+  });
+
+  for (const level of ['standard', 'strict'] as const) {
+    it(`${level}: 항상 묻는 항목(설정 변경)이 정리 안내(미커밋 생성 산출물)를 가리지 않는다`, async () => {
+      await scaffoldInit(root, {});
+      const initFile = join(root, 'docs/conceptpowers/init.json');
+      const cfg = JSON.parse(readFileSync(initFile, 'utf8'));
+      writeFileSync(initFile, JSON.stringify({ ...cfg, enforcement: level }, null, 2) + '\n');
+      execSync('git config user.email "test@test.com"', { cwd: root });
+      execSync('git config user.name "Test"', { cwd: root });
+      execSync('git add -A', { cwd: root });
+      execFileSync('git', ['commit', '-q', '-m', 'init'], { cwd: root });
+      writeFileSync(
+        join(root, 'docs/conceptpowers/concepts/viewer/manifest.json'),
+        '{"generatorVersion":"9.9.9"}\n'
+      );
+      const r = await decidePreToolUse(root, {
+        tool: 'Bash',
+        input: { command: 'git commit -m x' },
+        changedFiles: ['docs/conceptpowers/init.json'],
+      });
+      expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('manifest.json');
+    });
+  }
 });

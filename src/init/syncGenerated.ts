@@ -12,13 +12,25 @@ import { ensureReferencePaths } from './referencePaths.js';
 import { ensureAlignmentGitignore } from './alignmentGitignore.js';
 import { ensureReferenceGitignore } from './referenceGitignore.js';
 import { ensureInitConfigDefaults } from './ensureConfigDefaults.js';
-import { readInitConfig } from './readConfig.js';
-import {
-  applyReferenceLockIgnore,
-  type ReferenceLockMode,
-  type ReferenceLockIgnoreStatus,
-} from './referenceLockIgnore.js';
+import type { ReferenceLockMode, ReferenceLockIgnoreStatus } from './referenceLockIgnore.js';
+import { syncReferenceLockIgnore } from '../reference/lock.js';
 import { cpPaths } from '../paths.js';
+
+export type SyncStep =
+  | 'referenceGitignore'
+  | 'reference'
+  | 'referencePaths'
+  | 'alignmentGitignore'
+  | 'configDefaults'
+  | 'referenceLockIgnore'
+  | 'legacyViewerCleanup'
+  | 'packageScript'
+  | 'viewer';
+
+export interface SyncStepFailure {
+  step: SyncStep;
+  error: string;
+}
 
 export interface SyncResult {
   scriptStatus: ViewerScriptStatus;
@@ -30,8 +42,11 @@ export interface SyncResult {
   // 새 버전에서 생겨 이번에 기본값으로 채운 설정 항목 이름들.
   configFieldsAdded: string[];
   // 참고자료 기준점의 공유 설정과, 그에 맞춰 .alignment/.gitignore를 손본 결과.
-  referenceLockMode: ReferenceLockMode;
+  // 설정을 읽지 못하면 null이고 .gitignore는 건드리지 않는다(unchanged).
+  referenceLockMode: ReferenceLockMode | null;
   referenceLockIgnore: ReferenceLockIgnoreStatus;
+  // 실패한 단계들. 비어 있지 않으면 버전 도장을 새로 찍지 않아 다음 동기화가 다시 시도한다.
+  failedSteps: SyncStepFailure[];
 }
 
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
@@ -72,27 +87,73 @@ export interface SyncOpts {
   stampVersion?: string;
 }
 
+interface StepOutcome<T> {
+  value: T;
+  failure?: SyncStepFailure;
+}
+
+// 한 단계를 따로 실행한다. 실패해도 던지지 않고 기본값과 실패 사유를 돌려줘 뒤 단계를 막지 않는다.
+async function runStep<T>(
+  step: SyncStep,
+  fn: () => Promise<T>,
+  fallback: T
+): Promise<StepOutcome<T>> {
+  try {
+    return { value: await fn() };
+  } catch (error) {
+    return { value: fallback, failure: { step, error: (error as Error).message } };
+  }
+}
+
+const VIEWER_SKIPPED =
+  'skipped: earlier steps failed — viewer and version stamp left as-is so the next sync retries';
+
+// 뷰어 앞의 단계들. 참고자료 추적 제외(reference/.gitignore)를 가장 먼저 보장한다.
+async function runPreparationSteps(root: string) {
+  const refIgnore = await runStep(
+    'referenceGitignore',
+    () => ensureReferenceGitignore(root),
+    false
+  );
+  const readme = await runStep('reference', () => ensureReference(root), false);
+  const paths = await runStep('referencePaths', () => ensureReferencePaths(root), false);
+  const alignIgnore = await runStep(
+    'alignmentGitignore',
+    () => ensureAlignmentGitignore(root),
+    false
+  );
+  const noFields: string[] = [];
+  const config = await runStep('configDefaults', () => ensureInitConfigDefaults(root), noFields);
+  const lockIgnore = await runStep('referenceLockIgnore', () => syncReferenceLockIgnore(root), {
+    mode: null,
+    status: 'unchanged',
+  } as const);
+  const viewerDir = cpPaths(root).conceptsViewer;
+  const orphans = await runStep('legacyViewerCleanup', () => cleanLegacyViewerHtml(viewerDir), 0);
+  const noPackage: ViewerScriptStatus = 'no-package';
+  const script = await runStep('packageScript', () => upsertViewerScript(root), noPackage);
+  return { refIgnore, readme, paths, alignIgnore, config, lockIgnore, orphans, script };
+}
+
+// 뷰어(버전 도장 포함)는 앞 단계가 모두 성공했을 때만 마지막에 쓴다 — 실패가 있으면 도장을
+// 그대로 둬 다음 동기화가 다시 시도하게 한다.
 export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<SyncResult> {
-  await renderViewerToDisk(root, opts.stampVersion); // 에셋 + manifest를 최신 플러그인 기준으로 재생성
-  const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
-  const scriptStatus = await upsertViewerScript(root);
-  const referenceReadmeCreated = await ensureReference(root); // reference/ 폴더 + 안내 README 보장
-  const referencePathsCreated = await ensureReferencePaths(root); // reference/paths.md 안내 템플릿 보장
-  const alignmentGitignoreCreated = await ensureAlignmentGitignore(root); // last-commit 추적 제외 보장
-  const referenceGitignoreCreated = await ensureReferenceGitignore(root); // 기밀 기본 로컬 전용 보장
-  const configFieldsAdded = await ensureInitConfigDefaults(root); // 새로 생긴 설정 항목만 기본값 보충
-  // 참고자료 기준점을 올릴지(shared)/내 컴퓨터에만 둘지(local)는 설정이 정한다 — 설정에 맞춰 .gitignore를 맞춘다.
-  const referenceLockMode = (await readInitConfig(root))?.referenceLock ?? 'shared';
-  const referenceLockIgnore = await applyReferenceLockIgnore(root, referenceLockMode);
+  const steps = await runPreparationSteps(root);
+  const earlier = Object.values(steps).flatMap((o) => (o.failure ? [o.failure] : []));
+  const viewer: StepOutcome<void> =
+    earlier.length > 0
+      ? { value: undefined, failure: { step: 'viewer', error: VIEWER_SKIPPED } }
+      : await runStep('viewer', () => renderViewerToDisk(root, opts.stampVersion), undefined);
   return {
-    scriptStatus,
-    orphansRemoved,
-    referenceReadmeCreated,
-    referencePathsCreated,
-    alignmentGitignoreCreated,
-    referenceGitignoreCreated,
-    configFieldsAdded,
-    referenceLockMode,
-    referenceLockIgnore,
+    scriptStatus: steps.script.value,
+    orphansRemoved: steps.orphans.value,
+    referenceReadmeCreated: steps.readme.value,
+    referencePathsCreated: steps.paths.value,
+    alignmentGitignoreCreated: steps.alignIgnore.value,
+    referenceGitignoreCreated: steps.refIgnore.value,
+    configFieldsAdded: steps.config.value,
+    referenceLockMode: steps.lockIgnore.value.mode,
+    referenceLockIgnore: steps.lockIgnore.value.status,
+    failedSteps: viewer.failure ? [...earlier, viewer.failure] : earlier,
   };
 }

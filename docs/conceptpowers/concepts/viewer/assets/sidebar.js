@@ -1,7 +1,8 @@
-// @concept:home-search @concept:viewer-navigation @concept:viewer-readability
+// @concept:list-filter @concept:viewer-navigation @concept:viewer-readability
 // assets/sidebar.js — 개념 상세 화면 좌측 곁 목록(넓은 화면 전용) 열고/닫기.
 // 좁은 화면에서는 곁 목록 대신 상단 묶음 메뉴(topnav.js, viewer-navigation)가 목록 역할을 한다.
-// viewer.js가 정의하는 h()/state/displayName/conceptListSections와
+// 곁 목록의 검색 칸은 이미 떠 있는 목록을 좁힐 뿐이다(list-filter) — 찾아오기(home-search)가 아니다.
+// viewer.js가 정의하는 h()/state/displayName/conceptListSections/statusLegend와
 // topnav.js의 CPTopnav에 의존한다. 로드 순서: index.html에서 sidebar.js를 viewer.js보다
 // 먼저 로드한다(전역 의존은 호출 시점에만 필요하므로 순서 자체는 안전하다).
 'use strict';
@@ -164,6 +165,8 @@ var CPSidebar = (function () {
       h('div', { class: 'side__search' }, [searchIn]),
       listNode,
       noResultsNode,
+      // 곁 목록의 상태 동그라미 색 뜻을 같은 화면에서 알려준다(viewer-readability).
+      h('div', { class: 'side__legend' }, statusLegend()),
     ]);
     var body = h('div', { class: 'shell__body' }, [aside, wrapNode]);
     var topbar = h('div', { class: 'shell__topbar' }, [

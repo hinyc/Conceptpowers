@@ -1,14 +1,17 @@
 // @concept:drift-reconcile
 import { stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve } from 'node:path';
-import { isCodeFile } from '../audit/gaps.js';
+import { diskReader, isCodeFile, type ReadContent } from '../audit/gaps.js';
 import { buildMapping } from '../mapping/scan.js';
+import { hasCodeAfterLeadingComment } from '../mapping/leadingComment.js';
 import { normalizeRel } from './safe.js';
 
 // 따라옴 판정의 단일 잣대 — 커밋 전 문지기(driftGate)와 커밋 뒤 결산(reconcile)이 함께 쓴다.
 // 개념과 연결된 코드 가운데 하나라도 목록(present)에 있으면 따라온 것으로 본다.
 // 어느 파일을 고쳐야 하는지는 사람만 알 수 있으므로 연결된 코드 전부를 요구하지 않는다.
 // 연결된 코드가 없으면 따라올 것이 없으므로 따라옴이다.
+// 목록(present)에는 코드가 있는 파일만 넘긴다(presentWithCode) — 경로가 일치해도 표식만 있고 코드가 없는
+// 파일은 따라온 코드가 아니다(drift-reconcile 불변).
 export function isFollowed(relatedPaths: readonly string[], present: ReadonlySet<string>): boolean {
   const paths = relatedPaths.map(normalizeRel);
   return paths.length === 0 || paths.some((p) => present.has(p));
@@ -37,6 +40,37 @@ export async function presentTagSlugs(
   }
 }
 
+// 목록 가운데 코드가 있는 파일만 남긴다 — 경로가 연결 목록과 일치해도 첫머리 표식만 있거나 빈 파일은
+// 따라온 코드로 세지 않는다(drift-reconcile 불변 "첫머리 표식만 있고 코드가 없는 파일은 따라온 코드로 세지
+// 않는다"). 읽을 수 없는 파일(이번 커밋에서 지워진 연결 코드 등)은 내용이 없는 파일이 아니라 바뀐 파일이므로
+// 남긴다. read를 넘기면 디스크 대신 그 내용(커밋될 내용)으로 본다.
+export async function presentWithCode(
+  root: string,
+  present: Iterable<string>,
+  read: ReadContent = diskReader(root)
+): Promise<ReadonlySet<string>> {
+  const files = [...new Set([...present].map(normalizeRel))];
+  const contents = await Promise.all(files.map((rel) => read(rel)));
+  return new Set(
+    files.filter((_, i) => contents[i] === null || hasCodeAfterLeadingComment(contents[i]!))
+  );
+}
+
+// 목록 가운데 어긋난 개념의 연결 코드이면서 코드가 있는 파일 — 문지기(driftGate)와 결산(reconcile)이 함께 쓰는
+// 따라옴 재료(drift-reconcile "문지기와 결산은 같은 잣대"). 연결 코드만 읽어 비용을 커밋 크기에 묶는다.
+// read를 넘기면 디스크 대신 그 내용(커밋될 내용)으로 본다.
+export async function relatedPresentWithCode(
+  root: string,
+  present: Iterable<string>,
+  drift: readonly { relatedPaths: readonly string[] }[],
+  read?: ReadContent
+): Promise<ReadonlySet<string>> {
+  if (drift.length === 0) return new Set();
+  const related = new Set(drift.flatMap((d) => d.relatedPaths.map(normalizeRel)));
+  const candidates = [...present].map(normalizeRel).filter((p) => related.has(p));
+  return presentWithCode(root, candidates, read);
+}
+
 // 문지기(driftGate)와 결산(reconcile)이 함께 쓰는 확장 잣대(drift-reconcile 불변 규칙:
 // 같은 잣대) — 연결 코드가 함께 들어왔거나, 들어온 파일의 첫머리 태그가 이 개념을 가리킨다.
 export function isFollowedWithTags(
@@ -49,6 +83,7 @@ export function isFollowedWithTags(
 
 // 연결 코드가 "실제로" 들어왔는가 — isFollowed와 달리 연결 코드가 없으면(빈 목록) 거짓이다.
 // 맞물림 판정의 재료: 따라올 것이 없는 상태를 '코드가 들어옴'으로 세지 않는다.
+// present에는 코드가 있는 파일만 넘긴다(presentWithCode) — 표식만 있는 파일은 들어온 코드가 아니다.
 export function hasFollowedCode(
   d: { slug: string; relatedPaths: readonly string[] },
   present: ReadonlySet<string>,
@@ -61,12 +96,14 @@ export function hasFollowedCode(
 // 맞물림(drift-reconcile 구성요소): 어긋난 개념의 문서나 연결된 코드 가운데 하나라도
 // 이번 커밋(목록)에 들어온 경우. 맞물린 개념만 문지기 판정과 결산의 대상이 된다 —
 // 맞물리지 않은 개념은 막지도 결산하지도 않고 어긋난 채 남겨 둔다.
+// codePresent: 코드가 있는 파일만 남긴 목록(presentWithCode) — 문서 판정은 전체 목록(present)으로 한다.
 export function isEngagedWithTags(
   d: { slug: string; relatedPaths: readonly string[]; docPath: string },
   present: ReadonlySet<string>,
-  taggedSlugs: ReadonlySet<string>
+  taggedSlugs: ReadonlySet<string>,
+  codePresent: ReadonlySet<string> = present
 ): boolean {
-  return present.has(normalizeRel(d.docPath)) || hasFollowedCode(d, present, taggedSlugs);
+  return present.has(normalizeRel(d.docPath)) || hasFollowedCode(d, codePresent, taggedSlugs);
 }
 
 // 목록(present)에 들어오지 않은 연결 코드 — 안내문에 쓴다.

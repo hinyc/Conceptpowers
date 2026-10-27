@@ -1,12 +1,13 @@
-// @concept:concept-driven-tests @concept:drift-reconcile
+// @concept:concept-driven-tests @concept:drift-reconcile @concept:settled-status
 // src/hooks/command/recordCommands.ts
-// 사람의 판단을 기록하는 CLI 명령(검토 기록·코드무관 기록)을 실행하려는지 가려낸다. 이 기록은 커밋 문지기를
+// 사람의 판단을 기록하는 CLI 명령(검토 기록·코드무관 기록·빨강→초록 승인)을 실행하려는지 가려낸다. 이 기록은 커밋 문지기를
 // 통과시키는 근거라 에이전트 혼자 남기면 문지기가 자기신고 한 줄로 사라진다 — 실행 전에 사람에게 묻는 재료다.
 // 명령 단위의 단어로 본다: 따옴표 속 인자(grep "attest-no-code")는 명령 이름이 아니다. 셸 -c·eval·명령 치환 안도 본다.
 // 실행 전 조기 안내일 뿐이다 — 어떤 방법으로 썼든 새 기록이 커밋에 들어오면 커밋 문지기가 다시 묻는다.
 import { parseShellCommand } from './shellWords.js';
 
-export const HUMAN_RECORD_COMMANDS = ['attest-no-code', 'attest-test-review'] as const;
+// approve: 빨강을 초록으로 올리는 것은 사람이 명시적으로 요청했을 때만이다(settled-status) — 실행 전에 묻는다.
+export const HUMAN_RECORD_COMMANDS = ['attest-no-code', 'attest-test-review', 'approve'] as const;
 const RECORDS = new Set<string>(HUMAN_RECORD_COMMANDS);
 const SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh']);
 // 엔진 CLI를 가리키는 단어 — 기록 명령 이름은 같은 명령 단위에서 이 단어 뒤에 올 때만 명령이다(vitest -t attest-no-code는 아니다).

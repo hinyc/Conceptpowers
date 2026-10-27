@@ -1,14 +1,14 @@
 // @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug @concept:concept-provenance
 // src/store/conceptStore.ts
-import { readFile, readdir } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join, relative, resolve } from 'node:path';
 import { cpPaths } from '../paths.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { parseConcept, type Concept, type ConceptStatus } from '../schema/concept.js';
 import { clearPendingConflict } from '../concept/pendingConflicts.js';
 import { checkConceptQuality } from '../concept/quality.js';
 import { readAttestLog, freshPassAttest } from '../concept/attest.js';
+import { walkJson } from './walkJson.js';
 
 function fileFor(root: string, c: Concept): string {
   const dataDir = cpPaths(root).conceptsData;
@@ -20,15 +20,15 @@ function fileFor(root: string, c: Concept): string {
 // 자기 자신(같은 파일)의 별칭은 겹침으로 보지 않는다 — 다시 저장하는 경우다.
 function assertAliasesFree(
   concept: Concept,
-  existing: Concept[],
+  existing: ConceptEntry[],
   target: string,
   root: string
 ): void {
-  const slugs = new Set([concept.slug, ...existing.map((c) => c.slug)]);
+  const slugs = new Set([concept.slug, ...existing.map((e) => e.concept.slug)]);
   const takenBy = new Map<string, string>();
   for (const other of existing) {
-    if (fileFor(root, other) === target) continue;
-    for (const alias of other.aliases) takenBy.set(alias, other.slug);
+    if (resolve(root, other.rel) === target) continue;
+    for (const alias of other.concept.aliases) takenBy.set(alias, other.concept.slug);
   }
   const seen = new Set<string>();
   for (const alias of concept.aliases) {
@@ -44,36 +44,6 @@ function assertAliasesFree(
       throw new Error(`Duplicate alias: "${alias}" is already used by ${owner}`);
     }
   }
-}
-
-export async function writeConcept(root: string, input: unknown): Promise<Concept> {
-  const concept = parseConcept(input);
-  const target = fileFor(root, concept);
-  const existing = await listConcepts(root);
-  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
-  if (duplicate) {
-    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
-  }
-  assertAliasesFree(concept, existing, target, root);
-  // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
-  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + '\n');
-  return concept;
-}
-
-async function walkJson(dir: string): Promise<string[]> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out: string[] = [];
-  for (const e of entries) {
-    const full = join(dir, e.name);
-    if (e.isDirectory()) out.push(...(await walkJson(full)));
-    else if (e.name.endsWith('.json')) out.push(full);
-  }
-  return out;
 }
 
 export interface ConceptEntry {
@@ -104,6 +74,82 @@ export async function listConcepts(root: string): Promise<Concept[]> {
   return (await listConceptEntries(root)).map((e) => e.concept);
 }
 
+// 같은 이름표가 실제로 놓인 위치들(globally-unique-slug). 둘 이상이면 어느 쪽이 진짜인지 정할 수 없다.
+function locationsOf(root: string, entries: ConceptEntry[], slug: string): string[] {
+  return entries.filter((e) => e.concept.slug === slug).map((e) => resolve(root, e.rel));
+}
+
+function duplicateError(slug: string, root: string, paths: string[]): Error {
+  const where = paths.map((p) => relative(root, p)).join(', ');
+  return new Error(
+    `Duplicate slug: ${slug} exists in more than one file (${where}) — ` +
+      `globally unique; merge them into one file before writing`
+  );
+}
+
+// 정해진 위치(target)에 개념을 쓴다. 같은 이름표가 target 밖에도 있으면 쓰지 않는다 —
+// 쓰면 같은 이름표 파일이 둘로 갈라져 읽는 순서에 따라 다른 내용이 보인다.
+async function persistConcept(
+  root: string,
+  concept: Concept,
+  target: string,
+  entries: ConceptEntry[]
+): Promise<Concept> {
+  const all = locationsOf(root, entries, concept.slug);
+  if (all.length > 1) throw duplicateError(concept.slug, root, all);
+  if (all.length === 1 && all[0] !== target) {
+    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
+  }
+  assertAliasesFree(concept, entries, target, root);
+  // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
+  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + '\n');
+  return concept;
+}
+
+// 새로 쓰거나 같은 자리에 다시 쓴다 — 자리는 group/slug로 정한다.
+export async function writeConcept(root: string, input: unknown): Promise<Concept> {
+  const concept = parseConcept(input);
+  return persistConcept(root, concept, fileFor(root, concept), await listConceptEntries(root));
+}
+
+interface FoundEntry {
+  entry: ConceptEntry;
+  entries: ConceptEntry[];
+}
+
+// 이미 있는 개념 하나를 찾는다. 같은 이름표가 둘이면 어느 쪽을 고칠지 정할 수 없으므로 거부한다.
+async function readSingleEntry(root: string, slug: string): Promise<FoundEntry | null> {
+  const entries = await listConceptEntries(root);
+  const matches = entries.filter((e) => e.concept.slug === slug);
+  if (matches.length === 0) return null;
+  if (matches.length > 1) throw duplicateError(slug, root, locationsOf(root, entries, slug));
+  return { entry: matches[0], entries };
+}
+
+// 이미 있는 개념을 고쳐 쓸 때는 탐색이 찾은 실제 위치에 쓴다 — 손으로 옮겨져 group 필드와 어긋난
+// 파일도 그 자리에서 바뀌고, group/slug로 재구성한 옛 자리에 새 파일이 생기지 않는다.
+async function rewriteConcept(root: string, found: FoundEntry, input: unknown): Promise<Concept> {
+  const target = resolve(root, found.entry.rel);
+  return persistConcept(root, parseConcept(input), target, found.entries);
+}
+
+export interface DuplicateSlug {
+  slug: string;
+  /** 같은 이름표를 가진 파일들의 루트 기준 상대 경로 */
+  rels: string[];
+}
+
+// 같은 이름표가 두 파일 이상에 있는 경우를 모두 찾는다(globally-unique-slug) — 감사가 보고에 쓴다.
+export async function findDuplicateSlugs(root: string): Promise<DuplicateSlug[]> {
+  const bySlug = new Map<string, string[]>();
+  for (const e of await listConceptEntries(root)) {
+    bySlug.set(e.concept.slug, [...(bySlug.get(e.concept.slug) ?? []), e.rel]);
+  }
+  return [...bySlug.entries()]
+    .filter(([, rels]) => rels.length > 1)
+    .map(([slug, rels]) => ({ slug, rels }));
+}
+
 export async function readConcept(root: string, slug: string): Promise<Concept | null> {
   return (await listConcepts(root)).find((c) => c.slug === slug) ?? null;
 }
@@ -115,7 +161,7 @@ export async function slugExists(root: string, slug: string): Promise<boolean> {
 // 허용 상태 전이(programmatic). green/red는 settled — 이 헬퍼로는 변경 불가.
 // red→green은 사람의 승인(approve), pending→green은 일관성 통과, pending→red는 거부.
 // (사용자가 직접 JSON을 다시 작성하는 writeConcept 경로는 이 가드의 대상이 아니다.)
-const ALLOWED_STATUS_TRANSITIONS: Record<ConceptStatus, readonly ConceptStatus[]> = {
+export const ALLOWED_STATUS_TRANSITIONS: Record<ConceptStatus, readonly ConceptStatus[]> = {
   red: ['red', 'green'],
   pending: ['pending', 'green', 'red'],
   green: ['green'],
@@ -128,8 +174,9 @@ export async function setConceptStatus(
   slug: string,
   status: ConceptStatus
 ): Promise<Concept> {
-  const concept = await readConcept(root, slug);
-  if (!concept) throw new Error(`Concept not found: ${slug}`);
+  const found = await readSingleEntry(root, slug);
+  if (!found) throw new Error(`Concept not found: ${slug}`);
+  const concept = found.entry.concept;
   const from = concept.status;
   if (!ALLOWED_STATUS_TRANSITIONS[from].includes(status)) {
     throw new Error(
@@ -140,7 +187,7 @@ export async function setConceptStatus(
   // green 승격 전제조건: 결정론적 품질 최소치 + 신선한 충돌 검사 증빙.
   // (증빙은 자기신고 — 검사의 성실성까지 보증하지 않고, 단계 생략만 막는다.)
   if (status === 'green' && from !== 'green') {
-    const knownSlugs = (await listConcepts(root)).map((c) => c.slug);
+    const knownSlugs = found.entries.map((e) => e.concept.slug);
     const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
@@ -157,7 +204,7 @@ export async function setConceptStatus(
       );
     }
   }
-  const updated = await writeConcept(root, { ...concept, status });
+  const updated = await rewriteConcept(root, found, { ...concept, status });
   if (status === 'green') await clearPendingConflict(root, slug);
   return updated;
 }
@@ -191,8 +238,9 @@ export async function editConceptContent(
   slug: string,
   patch: ConceptContentPatch
 ): Promise<Concept> {
-  const concept = await readConcept(root, slug);
-  if (!concept) throw new Error(`Concept not found: ${slug}`);
+  const found = await readSingleEntry(root, slug);
+  if (!found) throw new Error(`Concept not found: ${slug}`);
+  const concept = found.entry.concept;
   const safe: Partial<Concept> = {};
   for (const key of EDITABLE_FIELDS) {
     if (Object.prototype.hasOwnProperty.call(patch, key) && patch[key] !== undefined) {
@@ -200,7 +248,7 @@ export async function editConceptContent(
     }
   }
   const nextStatus: ConceptStatus = concept.status === 'green' ? 'pending' : concept.status;
-  return writeConcept(root, {
+  return rewriteConcept(root, found, {
     ...concept,
     ...safe,
     slug: concept.slug,

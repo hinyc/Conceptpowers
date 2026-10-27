@@ -15,19 +15,25 @@
 //    → noConceptGlobs 누락 시 빈 목록(사람이 정하기 전엔 영역이 없다) / 적은 목록을 그대로 쓴다 / 문자열 배열이 아니면 거부
 //  - plugin-version-sync 허용 "버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
 //    → versionCheck 누락 시 true / false로 명시하면 false
-//  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / backfillMode 기본 incremental
+//  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / 옛 설정 키가 남아 있어도 검증 통과
 import { describe, it, expect } from 'vitest';
 import { parseInitConfig } from '../../src/schema/initConfig.js';
 
 describe('InitConfig', () => {
-  it('기본 backfillMode는 incremental', () => {
-    const c = parseInitConfig({ version: '0.1.0', enabled: true });
-    expect(c.backfillMode).toBe('incremental');
-  });
-  it('strict를 허용한다', () => {
-    expect(
-      parseInitConfig({ version: '0.1.0', enabled: true, backfillMode: 'strict' }).backfillMode
-    ).toBe('strict');
+  // 읽히지 않던 옛 설정 키(backfillMode·enforceScope·project)는 스키마에서 빠졌다.
+  // 기존 사용자 init.json에 남아 있어도 검증이 깨지면 안 된다(init-gate: 초기화 표시가 계속 유효).
+  it('옛 설정 키가 남아 있어도 검증을 통과하고 결과에는 싣지 않는다', () => {
+    const c = parseInitConfig({
+      version: '0.1.0',
+      enabled: true,
+      backfillMode: 'strict',
+      enforceScope: 'new-feature-behavior',
+      project: { name: 'demo', description: '' },
+    }) as Record<string, unknown>;
+    expect(c.enabled).toBe(true);
+    expect(c).not.toHaveProperty('backfillMode');
+    expect(c).not.toHaveProperty('enforceScope');
+    expect(c).not.toHaveProperty('project');
   });
   it('enabled가 true가 아니면 거부한다', () => {
     expect(() => parseInitConfig({ version: '0.1.0', enabled: false })).toThrow();

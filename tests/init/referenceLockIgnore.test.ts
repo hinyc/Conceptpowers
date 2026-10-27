@@ -76,4 +76,15 @@ describe('snapshotReference와 설정', () => {
     expect(r.mode).toBe('local');
     expect(await lines()).toContain('reference.lock.json');
   });
+
+  // reference-privacy 불변 "기준점은 프로젝트 설정으로 공유를 택했을 때만 함께 올린다" —
+  // 설정을 읽지 못하면 공유를 택했다고 볼 수 없으므로 .gitignore의 제외 줄을 빼지 않는다.
+  it('설정을 읽지 못하면 기준점을 찍어도 .gitignore에 손대지 않는다', async () => {
+    await applyReferenceLockIgnore(root, 'local');
+    await writeFile(cpPaths(root).initFile, '{ broken', 'utf8');
+    await writeFile(join(cpPaths(root).reference, 'a.md'), '자료');
+    const r = await snapshotReference(root, '2026-09-14T00:00:00.000Z');
+    expect(r.mode).toBeNull();
+    expect(await lines()).toContain('reference.lock.json');
+  });
 });

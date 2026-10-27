@@ -5,18 +5,13 @@
 // 직접 알려준다. 디스크와 색인 가운데 어느 쪽이 커밋될지 추측하지 않으므로 경로 지정·include 범위·clean filter·
 // diff.relative 같은 설정에 흔들리지 않는다. 계산에 쓴 blob·tree 객체는 저장소에 남는다(참조되지 않는 객체라
 // git gc가 정리한다). 계산하지 못하면 던진다 — "검사할 파일 없음 = 통과"가 되지 않도록(fail-closed).
-import { execFile } from 'node:child_process';
-import { copyFile, mkdtemp, readFile, rm, stat, utimes } from 'node:fs/promises';
+import { copyFile, mkdtemp, rm, stat, utimes } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { promisify } from 'node:util';
 import { normalizeRel } from '../../drift/safe.js';
+import { diskReader, type ReadContent } from '../../audit/gaps.js';
+import { git, tryGit } from '../../util/git.js';
 import type { CommitPlan } from './commitPlan.js';
-
-const execFileAsync = promisify(execFile);
-const MAX_BUFFER = 64 * 1024 * 1024;
-// 목록 출력을 바꾸는 사용자 설정을 무력화한다(비ASCII 경로 따옴표, 하위 폴더 기준 상대 경로).
-const SAFE_CONFIG = ['-c', 'core.quotePath=false', '-c', 'diff.relative=false'];
 
 export type CommitTarget = Extract<CommitPlan, { kind: 'commit' }>;
 
@@ -36,52 +31,23 @@ export interface CommitSnapshot {
   content: CommitContent;
 }
 
-async function git(args: string[], cwd: string, env?: Record<string, string>): Promise<string> {
-  const { stdout } = await execFileAsync('git', [...SAFE_CONFIG, '--no-pager', ...args], {
-    cwd,
-    maxBuffer: MAX_BUFFER,
-    env: env ? { ...process.env, ...env } : process.env,
-  });
-  return stdout;
-}
+// 목록 출력을 바꾸는 사용자 설정(비ASCII 경로 따옴표, 하위 폴더 기준 상대 경로)은 공용 래퍼(util/git)가 무력화한다.
 
-// 경로가 많아도 인자 길이 한도(E2BIG)에 걸리지 않게 목록을 stdin으로 넘기는 호출.
-function gitWithInput(
-  args: string[],
-  cwd: string,
-  env: Record<string, string>,
-  input: string
-): Promise<string> {
-  return new Promise((resolveOutput, reject) => {
-    const child = execFile(
-      'git',
-      [...SAFE_CONFIG, '--no-pager', ...args],
-      { cwd, maxBuffer: MAX_BUFFER, env: { ...process.env, ...env } },
-      (error, stdout) => (error ? reject(error) : resolveOutput(stdout))
-    );
-    child.stdin?.end(input);
-  });
-}
-
-async function tryGit(args: string[], cwd: string): Promise<string | null> {
-  try {
-    return await git(args, cwd);
-  } catch {
-    return null;
-  }
-}
+// 문지기가 쓰는 판독기: 커밋될 내용이 있으면 그것으로, 없으면 undefined(호출 쪽 기본값 — 디스크)로 둔다.
+export const commitReader = (commit?: CommitContent): ReadContent | undefined =>
+  commit ? (rel) => commit.read(rel) : undefined;
 
 const names = (out: string): string[] => out.split('\0').filter(Boolean);
 
 // treeish:경로로 내용을 읽는다. treeish가 ''이면 색인(:경로), 'HEAD'면 마지막 커밋, tree id면 그 트리.
 function treeContent(root: string, treeish: string): CommitContent {
   const blobId = async (path: string): Promise<string> =>
-    ((await tryGit(['rev-parse', '-q', '--verify', `${treeish}:${path}`], root)) ?? '').trim();
+    ((await tryGit(root, ['rev-parse', '-q', '--verify', `${treeish}:${path}`])) ?? '').trim();
   return {
     blobId,
     read: async (path) => {
       const id = await blobId(path);
-      return id ? tryGit(['cat-file', 'blob', id], root) : null;
+      return id ? tryGit(root, ['cat-file', 'blob', id]) : null;
     },
   };
 }
@@ -94,8 +60,8 @@ export const indexContent = (root: string): CommitContent => treeContent(root, '
 export function diskContent(root: string): CommitContent {
   return {
     blobId: async (path) =>
-      ((await tryGit(['hash-object', '--no-filters', '--', path], root)) ?? '').trim(),
-    read: (path) => readFile(join(root, path), 'utf8').catch(() => null),
+      ((await tryGit(root, ['hash-object', '--no-filters', '--', path])) ?? '').trim(),
+    read: diskReader(root),
   };
 }
 
@@ -111,7 +77,7 @@ export function injectedContent(root: string, files: readonly string[]): CommitC
 // 경로를 받는 범위(include·only)에서 git은 색인이 아는 파일만 담는다 — 같은 규칙으로 고른다.
 async function knownPaths(cwd: string, pathspecs: string[]): Promise<string[]> {
   if (pathspecs.length === 0) return [];
-  return names(await git(['ls-files', '-z', '--', ...pathspecs], cwd));
+  return names(await git(cwd, ['ls-files', '-z', '--', ...pathspecs]));
 }
 
 async function prepareIndex(
@@ -122,9 +88,9 @@ async function prepareIndex(
 ): Promise<void> {
   const known = await knownPaths(cwd, plan.pathspecs);
   if (plan.scope === 'only') {
-    await git(hasHead ? ['read-tree', 'HEAD'] : ['read-tree', '--empty'], cwd, env);
+    await git(cwd, hasHead ? ['read-tree', 'HEAD'] : ['read-tree', '--empty'], { env });
   } else {
-    const realIndex = resolve(cwd, (await git(['rev-parse', '--git-path', 'index'], cwd)).trim());
+    const realIndex = resolve(cwd, (await git(cwd, ['rev-parse', '--git-path', 'index'])).trim());
     try {
       await copyFile(realIndex, env.GIT_INDEX_FILE);
       // 색인 파일의 시각을 원본과 같게 둔다. git은 색인 파일보다 늦게(같은 시각 포함) 기록된 항목을 다시 해시해
@@ -134,25 +100,25 @@ async function prepareIndex(
       await utimes(env.GIT_INDEX_FILE, atime, mtime);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-      await git(['read-tree', '--empty'], cwd, env); // 아직 색인이 없는 새 저장소
+      await git(cwd, ['read-tree', '--empty'], { env }); // 아직 색인이 없는 새 저장소
     }
   }
-  if (plan.scope === 'all') await git(['add', '-u'], cwd, env);
+  if (plan.scope === 'all') await git(cwd, ['add', '-u'], { env });
   if ((plan.scope === 'include' || plan.scope === 'only') && known.length > 0) {
     // 목록은 실제 파일 이름이므로 글자 그대로(--literal-pathspecs) 읽게 한다.
-    await gitWithInput(
-      ['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+    // 경로가 많아도 인자 길이 한도(E2BIG)에 걸리지 않게 목록을 stdin으로 넘긴다.
+    await git(
       cwd,
-      env,
-      known.join('\0')
+      ['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+      { env, input: known.join('\0') }
     );
   }
 }
 
 async function emptyTreeId(cwd: string, dir: string): Promise<string> {
   const env = { GIT_INDEX_FILE: join(dir, 'empty-index') };
-  await git(['read-tree', '--empty'], cwd, env);
-  return (await git(['write-tree'], cwd, env)).trim();
+  await git(cwd, ['read-tree', '--empty'], { env });
+  return (await git(cwd, ['write-tree'], { env })).trim();
 }
 
 export async function snapshotCommit(root: string, plan: CommitTarget): Promise<CommitSnapshot> {
@@ -160,25 +126,22 @@ export async function snapshotCommit(root: string, plan: CommitTarget): Promise<
   const dir = await mkdtemp(join(tmpdir(), 'cp-commit-'));
   try {
     const env = { GIT_INDEX_FILE: join(dir, 'index') };
-    const hasHead = (await tryGit(['rev-parse', '-q', '--verify', 'HEAD^{commit}'], cwd)) !== null;
+    const hasHead = (await tryGit(cwd, ['rev-parse', '-q', '--verify', 'HEAD^{commit}'])) !== null;
     await prepareIndex(plan, cwd, env, hasHead);
-    const tree = (await git(['write-tree'], cwd, env)).trim();
+    const tree = (await git(cwd, ['write-tree'], { env })).trim();
     const base = hasHead ? 'HEAD' : await emptyTreeId(cwd, dir);
     const diff = async (filter: string): Promise<string[]> =>
       names(
-        await git(
-          [
-            'diff-tree',
-            '-r',
-            '-z',
-            '--name-only',
-            '--no-renames',
-            `--diff-filter=${filter}`,
-            base,
-            tree,
-          ],
-          cwd
-        )
+        await git(cwd, [
+          'diff-tree',
+          '-r',
+          '-z',
+          '--name-only',
+          '--no-renames',
+          `--diff-filter=${filter}`,
+          base,
+          tree,
+        ])
       );
     return { files: await diff('ACMR'), deleted: await diff('D'), content: treeContent(cwd, tree) };
   } catch (error) {

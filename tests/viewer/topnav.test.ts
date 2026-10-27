@@ -99,6 +99,7 @@ const MANIFEST = {
 type Ctx = Record<string, unknown> & {
   CPTopnav: {
     bar(active: { kind: string; slug: string } | null): StubNode | null;
+    groupKeyOf(entry: unknown): string;
     groupsOf(m: unknown): Array<{ key: string; items: Array<{ kind: string; slug: string }> }>;
     activeGroupKey(m: unknown, a: { kind: string; slug: string } | null): string | null;
     isMenuOpen(): boolean;
@@ -129,6 +130,19 @@ describe('CPTopnav.groupsOf — 묶음 나열(개념 묶음 순서대로)', () =
     expect(MANIFEST.features.length).toBeGreaterThan(0);
     const groups = CPTopnav.groupsOf(MANIFEST);
     expect(groups.some((g) => g.key === '__features')).toBe(false);
+  });
+});
+
+describe('CPTopnav.groupKeyOf — 묶음 열쇠의 단일 원본', () => {
+  it('묶음이 있으면 그 이름, 없거나 항목이 없으면 (ungrouped)', () => {
+    const { CPTopnav } = load();
+    expect(CPTopnav.groupKeyOf({ group: 'alpha' })).toBe('alpha');
+    expect(CPTopnav.groupKeyOf({ group: '' })).toBe('(ungrouped)');
+    expect(CPTopnav.groupKeyOf(null)).toBe('(ungrouped)');
+  });
+
+  it('viewer.js는 묶음 열쇠를 따로 만들지 않고 groupKeyOf를 쓴다', () => {
+    expect(viewerSrc).not.toContain("'(ungrouped)'");
   });
 });
 

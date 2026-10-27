@@ -2,19 +2,26 @@
 // src/concept/attest.ts
 // check-consistency 실행 증빙. 증빙은 에이전트의 자기신고이며, 목표는 "검사 단계를
 // 건너뛴 채 승격/커밋이 진행되지 않게" 워크플로우를 강제하고 감사 흔적을 남기는 것이다.
-import { readFile } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';
+import { readJsonRecordStrict } from '../util/readJsonStrict.js';
 import { AttestEntry, AttestLog } from '../schema/alignment.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { contractHash } from '../drift/hash.js';
 import type { Concept } from '../schema/concept.js';
 
+// 읽기 판정용: 어떤 실패든 빈 기록(=증빙 없음)으로 본다. 증빙이 없으면 승격·커밋이 막히는 쪽이라 안전하다.
 export async function readAttestLog(root: string): Promise<AttestLog> {
   try {
-    return AttestLog.parse(JSON.parse(await readFile(cpPaths(root).attestFile, 'utf8')));
+    return await readAttestLogStrict(root);
   } catch {
     return {};
   }
+}
+
+// 쓰기 경로용: 파일이 없을 때만 빈 기록. 깨진 파일(파싱·검증 실패)은 던져서
+// 다른 개념의 증빙을 빈 값으로 덮어쓰지 않게 한다.
+function readAttestLogStrict(root: string): Promise<AttestLog> {
+  return readJsonRecordStrict(cpPaths(root).attestFile, AttestLog, '증빙 기록 파일');
 }
 
 export interface AttestEvidence {
@@ -39,7 +46,7 @@ export async function recordAttest(
     ...(evidence.compared && evidence.compared.length > 0 ? { compared: evidence.compared } : {}),
     ...(evidence.note ? { note: evidence.note } : {}),
   });
-  const next: AttestLog = { ...(await readAttestLog(root)), [concept.slug]: entry };
+  const next: AttestLog = { ...(await readAttestLogStrict(root)), [concept.slug]: entry };
   await writeFileAtomic(cpPaths(root).attestFile, JSON.stringify(next, null, 2) + '\n');
   return entry;
 }
@@ -49,7 +56,7 @@ export async function pruneAttestLog(
   root: string,
   liveSlugs: ReadonlySet<string>
 ): Promise<string[]> {
-  const log = await readAttestLog(root);
+  const log = await readAttestLogStrict(root);
   const dead = Object.keys(log).filter((slug) => !liveSlugs.has(slug));
   if (dead.length === 0) return [];
   const next: AttestLog = Object.fromEntries(

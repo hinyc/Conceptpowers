@@ -55,4 +55,25 @@ describe('listReferenceFiles', () => {
   it('폴더가 없으면 빈 배열', async () => {
     expect(await listReferenceFiles(root)).toEqual([]);
   });
+  // reference-first-duty "읽는 곳: 참고자료 폴더 안의 파일" — 자료 판정과 지문 목록이 같은 건너뛰기 규칙을 쓴다.
+  // 점 파일(.DS_Store 등)·점 폴더 안 파일·0바이트 파일은 자료가 아니라 "자료 있음" 오신호를 내지 않는다.
+  it('점 파일·점 폴더·0바이트 파일은 자료로 치지 않는다', async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(ref('.DS_Store'), 'x');
+    mkdirSync(ref('.hidden'), { recursive: true });
+    writeFileSync(ref('.hidden/secret.md'), 'x');
+    writeFileSync(ref('empty.md'), '');
+    writeFileSync(ref('real.md'), 'r');
+    expect(await listReferenceFiles(root)).toEqual(['real.md']);
+  });
+  it('하위 폴더의 README.md·paths.md는 사용자 자료로 남긴다(메타 파일은 폴더 바로 아래만)', async () => {
+    await scaffoldInit(root, {});
+    mkdirSync(ref('specs'), { recursive: true });
+    writeFileSync(ref('specs/README.md'), 'r');
+    writeFileSync(ref('specs/paths.md'), 'p');
+    expect(await listReferenceFiles(root)).toEqual([
+      join('specs', 'README.md'),
+      join('specs', 'paths.md'),
+    ]);
+  });
 });

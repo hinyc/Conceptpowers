@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { addReferencePath } from '../../src/init/addReferencePath.js';
 import { parseReferencePaths } from '../../src/init/referencePaths.js';
 import { cpPaths } from '../../src/paths.js';
+import { seedTemplates } from '../../src/i18n/messages.js';
 
 describe('addReferencePath', () => {
   let root: string;
@@ -29,7 +30,8 @@ describe('addReferencePath', () => {
     const r = await addReferencePath(root, ['~/work/specs']);
     expect(r).toEqual({ added: ['~/work/specs'], skipped: [] });
     const content = await readPathsMd();
-    expect(content).toContain('# Reference paths');
+    // 설정이 없으면 기본 언어(ko) 안내 템플릿이 깔린다(output-locale).
+    expect(content.startsWith(seedTemplates.ko.referencePaths)).toBe(true);
     expect(parseReferencePaths(content)).toEqual(['~/work/specs']);
   });
 

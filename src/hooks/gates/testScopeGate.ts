@@ -5,35 +5,31 @@
 // 무엇을 검증하는지 확인할 길이 없다. 그래서 일반 코드와 달리 '해당 개념 없음' 표시를 인정하지 않는다.
 // 범위 이탈(개념이 말하지 않는 동작을 검사로 못박는 것) 자체는 의미 판단이라 기계가 가릴 수 없다 —
 // 여기서는 판단의 전제(어느 개념을 근거로 삼는지)만 확인하고, 판단은 review 스킬이 맡는다.
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { diskReader, type ReadContent } from '../../audit/gaps.js';
+import { commitReader } from '../command/commitTree.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { leadingCommentBlock } from '../../mapping/leadingComment.js';
-import { NO_CONCEPT_TAG } from '../../mapping/scan.js';
+import { conceptTagSlugs, NO_CONCEPT_TAG } from '../../mapping/scan.js';
 import { matchesAny } from '../../util/glob.js';
 import { InitConfigSchema } from '../../schema/initConfig.js';
 import type { GateCheck } from './types.js';
 
 const MAX_LISTED_PATHS = 8;
-const TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
 
 const defaultTestGlobs = (): string[] => InitConfigSchema.shape.testGlobs.parse(undefined);
 
 // 실제 개념을 가리키는 이름표가 선행 주석에 하나라도 있는지 — 예약 마커(none)는 인정하지 않는다.
-async function pointsAtConcept(root: string, rel: string): Promise<boolean | null> {
-  let content: string;
-  try {
-    content = await readFile(join(root, rel), 'utf8');
-  } catch {
-    return null; // 읽을 수 없는 경로(삭제·이동)는 판정 대상이 아니다
-  }
-  for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
-    if (m[1] !== NO_CONCEPT_TAG) return true;
-  }
-  return false;
+// 읽을 수 없는 경로(삭제·이동)는 판정 대상이 아니다(null).
+async function pointsAtConcept(read: ReadContent, rel: string): Promise<boolean | null> {
+  const content = await read(rel);
+  if (content === null) return null;
+  return conceptTagSlugs(leadingCommentBlock(content)).some((slug) => slug !== NO_CONCEPT_TAG);
 }
 
-export const checkTestScope: GateCheck = async ({ root, files, cfg }) => {
+// 커밋될 내용이 있으면 그것으로 읽는다(governance-mode: 커밋에 실제로 들어갈 파일 기준) — 부분 스테이징이나
+// 스테이징 뒤 디스크 수정으로 판정 대상과 커밋 내용이 갈리지 않게 한다.
+export const checkTestScope: GateCheck = async ({ root, files, cfg, commit }) => {
+  const read: ReadContent = commitReader(commit) ?? diskReader(root);
   if (cfg?.conceptDrivenTests === false) return null; // 스위치로 끌 수 있다
   const testGlobs = cfg?.testGlobs?.length ? cfg.testGlobs : defaultTestGlobs();
   const ignoreGlobs = cfg?.ignoreGlobs ?? [];
@@ -43,7 +39,7 @@ export const checkTestScope: GateCheck = async ({ root, files, cfg }) => {
     .filter((p) => matchesAny(p, testGlobs) && !matchesAny(p, ignoreGlobs));
   if (candidates.length === 0) return null;
 
-  const checks = await Promise.all(candidates.map((p) => pointsAtConcept(root, p)));
+  const checks = await Promise.all(candidates.map((p) => pointsAtConcept(read, p)));
   const orphans = candidates.filter((_, i) => checks[i] === false);
   if (orphans.length === 0) return null;
 

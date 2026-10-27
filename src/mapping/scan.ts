@@ -1,15 +1,22 @@
 // @concept:concept-code-mapping
 // src/mapping/scan.ts
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { cpPaths } from '../paths.js';
 import { leadingCommentBlock, hasCodeAfterLeadingComment } from './leadingComment.js';
 import { matchesAny } from '../util/glob.js';
+import { writeFileAtomic } from '../util/atomicWrite.js';
 
 export type Mapping = Record<string, string[]>;
 const MappingSchema = z.record(z.string(), z.array(z.string()));
-const TAG_RE = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
+const TAG_RE = '@concept:([a-z0-9]+(?:-[a-z0-9]+)*)';
+
+// `@concept:<slug>` 표식 판독의 단일 출처 — 지도 만들기·격차 탐지·검사 범위 문지기가 같은 잣대로 읽는다.
+// 넘긴 글(보통 첫머리 주석 블록)에 적힌 표식의 slug를 적힌 순서대로 돌려준다(예약 마커 none 포함).
+export function conceptTagSlugs(text: string): string[] {
+  return [...text.matchAll(new RegExp(TAG_RE, 'g'))].map((m) => m[1]);
+}
 
 // `@concept:none` — 개념이 해당 없음을 파일에 명시하는 예약 마커.
 // 실제 개념이 아니므로 매핑(개념→코드)·감사(미지 태그 검출)에서 개념으로 취급하지 않는다.
@@ -43,8 +50,8 @@ export async function scanTags(
     }
     if (opts.requireCode && !hasCodeAfterLeadingComment(content)) continue;
     const slugs: string[] = [];
-    for (const m of leadingCommentBlock(content).matchAll(TAG_RE)) {
-      if (m[1] !== NO_CONCEPT_TAG) slugs.push(m[1]); // 예약 마커는 개념 목록에서 제외
+    for (const slug of conceptTagSlugs(leadingCommentBlock(content))) {
+      if (slug !== NO_CONCEPT_TAG) slugs.push(slug); // 예약 마커는 개념 목록에서 제외
     }
     if (slugs.length) result[rel] = slugs;
   }
@@ -65,10 +72,9 @@ export async function buildMapping(
   return mapping;
 }
 
+// 갈아 끼우기(임시 파일에 쓴 뒤 교체)로 쓴다 — 쓰다 멈춰도 반쯤 쓴 보관본이 남지 않는다.
 export async function writeMappingCache(root: string, mapping: Mapping): Promise<void> {
-  const target = cpPaths(root).mappingCache;
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, JSON.stringify(mapping, null, 2) + '\n', 'utf8');
+  await writeFileAtomic(cpPaths(root).mappingCache, JSON.stringify(mapping, null, 2) + '\n');
 }
 
 // 증분 갱신: 전달된 파일의 항목만 새 스캔 결과로 교체하고, 나머지 캐시 항목은 보존한다.

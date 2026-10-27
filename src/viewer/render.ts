@@ -63,8 +63,28 @@ export async function writeManifest(root: string, stampVersion?: string): Promis
   );
 }
 
+// 이미 있는 manifest의 버전 도장. 없거나 읽을 수 없으면 null.
+async function readExistingStamp(root: string): Promise<string | null> {
+  try {
+    const raw = await readFile(join(cpPaths(root).conceptsViewer, 'manifest.json'), 'utf8');
+    const stamp = (JSON.parse(raw) as { generatorVersion?: unknown }).generatorVersion;
+    return typeof stamp === 'string' && stamp !== '' ? stamp : null;
+  } catch {
+    return null;
+  }
+}
+
+// 데이터만 바뀐 경우(뷰어 편집)의 manifest 갱신. 에셋은 다시 만들지 않았으므로 기존 버전 도장을 그대로
+// 둔다 — 도장을 지우거나 바꾸면 자동 동기화가 같은 버전인데도 다시 만들거나 옛 버전으로 되돌린다.
+// 도장이 아직 없을 때만 writeManifest의 기본값(플러그인 자신의 버전)을 쓴다.
+export async function refreshManifestData(root: string): Promise<void> {
+  const stamp = await readExistingStamp(root);
+  await writeManifest(root, stamp ?? undefined);
+}
+
+// 버전 도장(manifest)은 에셋을 모두 쓴 뒤 마지막에 찍는다 — 도중에 실패하면 옛 도장이 남아
+// 자동 동기화가 다음에 다시 시도한다(plugin-version-sync). 먼저 찍으면 실패해도 최신으로 보인다.
 export async function renderViewerToDisk(root: string, stampVersion?: string): Promise<void> {
-  await writeManifest(root, stampVersion);
   const p = cpPaths(root);
 
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
@@ -74,4 +94,5 @@ export async function renderViewerToDisk(root: string, stampVersion?: string): P
   await copyAsset('topnav.js', join(p.conceptsViewer, 'assets', 'topnav.js'));
   await copyAsset('serve.mjs', join(p.conceptsViewer, 'serve.mjs'));
   await copyAsset('concept.css', p.cssTarget);
+  await writeManifest(root, stampVersion);
 }

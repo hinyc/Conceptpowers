@@ -46,7 +46,10 @@ describe('ensureInitConfigDefaults', () => {
     expect(cfg.conceptDrivenTests).toBe(true);
     expect(cfg.locale).toBe('ko');
     expect(cfg.versionCheck).toBe(true);
-    expect(cfg.backfillMode).toBe('incremental');
+    // 읽히지 않는 옛 키(backfillMode·enforceScope·project)는 더 이상 채우지 않는다.
+    expect(cfg).not.toHaveProperty('backfillMode');
+    expect(cfg).not.toHaveProperty('enforceScope');
+    expect(cfg).not.toHaveProperty('project');
   });
 
   // 규칙 검증: "설정 파일에 이미 적힌 값을 바꾸거나 지우는 것" 금지 (restrict)

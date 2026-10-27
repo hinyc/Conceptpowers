@@ -37,22 +37,23 @@
         "src/util/glob.ts",
         "src/audit/unlinked.ts",
         "src/audit/tracked.ts",
+        "src/hooks/gates/noConceptNote.ts",
+        "src/schema/initConfig.ts",
         "tests/audit/audit.test.ts",
         "tests/audit/gaps.test.ts",
+        "tests/audit/unlinked.test.ts",
+        "tests/cli/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/hooks/gates.modes.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/mapping/scan.test.ts",
-        "tests/util/glob.test.ts",
-        "tests/viewer/renderDisk.test.ts",
-        "tests/schema/initConfig.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "src/hooks/gates/noConceptNote.ts",
         "tests/hooks/noConceptNote.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/integration/smoke.test.ts",
         "tests/mapping/leadingComment.test.ts",
-        "tests/cli/audit.test.ts",
-        "src/schema/initConfig.ts",
-        "tests/audit/unlinked.test.ts"
+        "tests/mapping/scan.test.ts",
+        "tests/paths.test.ts",
+        "tests/schema/initConfig.test.ts",
+        "tests/util/glob.test.ts",
+        "tests/viewer/renderDisk.test.ts"
       ]
     },
     {
@@ -72,16 +73,16 @@
         "src/hooks/gates/testFollowGate.ts",
         "src/hooks/gates/testScopeGate.ts",
         "src/concept/testReview.ts",
+        "src/hooks/command/recordCommands.ts",
+        "src/hooks/preToolUse.ts",
         "tests/cli/testReview.test.ts",
         "tests/concept/testReview.test.ts",
+        "tests/hooks/recordCommands.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/hooks/testFollowGate.test.ts",
         "tests/hooks/testScopeGate.test.ts",
         "tests/init/scaffold.test.ts",
-        "src/hooks/preToolUse.ts",
-        "tests/schema/initConfig.test.ts",
-        "src/hooks/command/recordCommands.ts",
-        "tests/hooks/recordCommands.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/schema/initConfig.test.ts"
       ]
     },
     {
@@ -101,14 +102,14 @@
         "src/store/conceptStore.ts",
         "assets/viewer.js",
         "skills/update-concepts/references/define.md",
-        "tests/schema/concept.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/viewer/sources.test.ts",
-        "tests/concept/quality.test.ts",
-        "tests/reference/affected.test.ts",
         "src/audit/codeCoordinates.ts",
         "tests/audit/codeCoordinates.test.ts",
-        "tests/cli/audit.test.ts"
+        "tests/cli/audit.test.ts",
+        "tests/concept/quality.test.ts",
+        "tests/reference/affected.test.ts",
+        "tests/schema/concept.test.ts",
+        "tests/store/conceptStore.test.ts",
+        "tests/viewer/sources.test.ts"
       ]
     },
     {
@@ -128,10 +129,10 @@
         "src/concept/quality.ts",
         "src/concept/conceptReference.ts",
         "src/concept/implementationLeak.ts",
+        "src/hooks/sessionStart.ts",
         "tests/cli/quality.test.ts",
         "tests/concept/conceptReference.test.ts",
         "tests/concept/implementationLeak.test.ts",
-        "src/hooks/sessionStart.ts",
         "tests/hooks/sessionStart.test.ts"
       ]
     },
@@ -156,34 +157,38 @@
         "src/drift/noCode.ts",
         "src/drift/follow.ts",
         "src/drift/pendingDocs.ts",
+        "src/hooks/command/commitTree.ts",
+        "src/hooks/command/recordCommands.ts",
         "src/hooks/gates/driftGate.ts",
+        "src/hooks/gates/governanceFilesGate.ts",
+        "src/hooks/sessionStart.ts",
+        "src/schema/alignment.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/noCode.test.ts",
         "tests/concept/aliases.test.ts",
         "tests/drift/detect.test.ts",
         "tests/drift/follow.test.ts",
         "tests/drift/hash.test.ts",
+        "tests/drift/history.test.ts",
+        "tests/drift/historyMerge.test.ts",
         "tests/drift/lock.test.ts",
         "tests/drift/noCode.test.ts",
         "tests/drift/reconcile.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "src/schema/alignment.ts",
-        "tests/schema/alignment.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/commitGate.test.ts",
-        "src/hooks/command/recordCommands.ts",
-        "tests/hooks/recordCommands.test.ts",
-        "tests/mapping/leadingComment.test.ts",
-        "src/hooks/gates/governanceFilesGate.ts",
         "tests/drift/reconcileCommitted.test.ts",
-        "tests/hooks/entrypoint.e2e.test.ts",
-        "src/hooks/command/commitTree.ts",
         "tests/hooks/commitFiles.test.ts",
-        "src/hooks/sessionStart.ts",
+        "tests/hooks/commitGate.test.ts",
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "tests/hooks/headWatch.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/recordCommands.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "tests/drift/historyMerge.test.ts",
-        "tests/drift/history.test.ts",
-        "tests/hooks/headWatch.test.ts"
+        "tests/mapping/leadingComment.test.ts",
+        "tests/schema/alignment.test.ts",
+        "tests/viewer/serve.test.ts",
+        "src/hooks/command/unreconciled.ts",
+        "src/store/conceptEdit.ts",
+        "tests/store/conceptEdit.test.ts"
       ]
     },
     {
@@ -206,6 +211,8 @@
         "tests/drift/detect.test.ts",
         "tests/drift/reconcile.test.ts",
         "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/integration/smoke.test.ts",
         "tests/schema/feature.test.ts",
         "tests/store/featureStore.test.ts",
@@ -214,8 +221,7 @@
         "tests/viewer/listLayout.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/renderDisk.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/viewer/conceptDetail.test.ts"
       ]
     },
     {
@@ -236,6 +242,8 @@
         "src/viewer/manifest.ts",
         "assets/viewer.js",
         "assets/concept.css",
+        "src/audit/audit.ts",
+        "tests/audit/audit.test.ts",
         "tests/cli/feature.test.ts",
         "tests/concept/aliases.test.ts",
         "tests/schema/concept.test.ts",
@@ -246,7 +254,8 @@
         "tests/viewer/heroAliases.test.ts",
         "tests/viewer/manifest.test.ts",
         "tests/viewer/search.test.ts",
-        "tests/viewer/subgraph.test.ts"
+        "tests/viewer/subgraph.test.ts",
+        "tests/store/movedConcept.test.ts"
       ]
     },
     {
@@ -263,54 +272,57 @@
         "src/hooks/preToolUse.ts",
         "src/hooks/postToolUse.ts",
         "src/schema/initConfig.ts",
-        "src/hooks/gates/conceptSlugs.ts",
-        "src/hooks/gates/conflictedPendingGate.ts",
-        "src/hooks/gates/driftGate.ts",
-        "src/hooks/gates/staleArtifactsGate.ts",
-        "src/hooks/gates/types.ts",
-        "tests/cli/cli.test.ts",
-        "tests/hooks/gates.modes.test.ts",
-        "tests/hooks/postToolUse.test.ts",
-        "tests/integration/smoke.test.ts",
-        "src/init/scaffold.ts",
-        "src/hooks/gates/referenceGate.ts",
-        "tests/schema/initConfig.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "src/hooks/gates/conceptlessGate.ts",
-        "src/hooks/gates/unknownTagsGate.ts",
-        "src/hooks/gates/qualityGate.ts",
-        "src/hooks/gates/attestGate.ts",
-        "src/hooks/gates/unapprovedRedGate.ts",
-        "src/util/isMain.ts",
-        "tests/util/isMain.test.ts",
-        "tests/hooks/gateFailure.test.ts",
-        "src/util/exitAfterWrite.ts",
-        "src/hooks/command/shellWords.ts",
-        "src/hooks/command/commitPlan.ts",
-        "tests/hooks/commitPlan.test.ts",
-        "tests/hooks/commitGate.test.ts",
+        "src/cli.ts",
         "src/hooks/command/commandKinds.ts",
         "src/hooks/command/commitArgs.ts",
-        "tests/hooks/shellWords.test.ts",
-        "src/hooks/gates/noConceptNote.ts",
-        "tests/hooks/attestGate.test.ts",
-        "tests/hooks/evidenceGate.test.ts",
-        "tests/hooks/governanceFiles.test.ts",
-        "tests/hooks/noConceptNote.test.ts",
-        "src/hooks/gates/alwaysAsk.ts",
         "src/hooks/command/commitFiles.ts",
+        "src/hooks/command/commitPlan.ts",
+        "src/hooks/command/commitTree.ts",
+        "src/hooks/command/headWatch.ts",
+        "src/hooks/command/shellWords.ts",
+        "src/hooks/command/stagingReach.ts",
+        "src/hooks/gates/alwaysAsk.ts",
+        "src/hooks/gates/attestGate.ts",
+        "src/hooks/gates/conceptSlugs.ts",
+        "src/hooks/gates/conceptlessGate.ts",
+        "src/hooks/gates/conflictedPendingGate.ts",
+        "src/hooks/gates/driftGate.ts",
         "src/hooks/gates/evidenceGate.ts",
         "src/hooks/gates/governanceFilesGate.ts",
-        "src/hooks/command/stagingReach.ts",
-        "tests/hooks/stagingReach.test.ts",
-        "tests/hooks/entrypoint.e2e.test.ts",
-        "src/hooks/command/commitTree.ts",
-        "tests/hooks/commitFiles.test.ts",
+        "src/hooks/gates/noConceptNote.ts",
+        "src/hooks/gates/qualityGate.ts",
+        "src/hooks/gates/referenceGate.ts",
+        "src/hooks/gates/types.ts",
+        "src/hooks/gates/unapprovedRedGate.ts",
+        "src/hooks/gates/unknownTagsGate.ts",
         "src/hooks/sessionStart.ts",
+        "src/init/scaffold.ts",
+        "src/util/exitAfterWrite.ts",
+        "src/util/isMain.ts",
+        "tests/cli/cli.test.ts",
+        "tests/hooks/attestGate.test.ts",
+        "tests/hooks/commitFiles.test.ts",
+        "tests/hooks/commitGate.test.ts",
+        "tests/hooks/commitPlan.test.ts",
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "tests/hooks/evidenceGate.test.ts",
+        "tests/hooks/gateFailure.test.ts",
+        "tests/hooks/gates.modes.test.ts",
+        "tests/hooks/governanceFiles.test.ts",
+        "tests/hooks/headWatch.test.ts",
+        "tests/hooks/noConceptNote.test.ts",
+        "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
         "tests/hooks/sessionStart.test.ts",
-        "src/cli.ts",
-        "src/hooks/command/headWatch.ts",
-        "tests/hooks/headWatch.test.ts"
+        "tests/hooks/shellWords.test.ts",
+        "tests/hooks/stagingReach.test.ts",
+        "tests/integration/smoke.test.ts",
+        "tests/schema/initConfig.test.ts",
+        "tests/util/isMain.test.ts",
+        "src/hooks/command/unreconciled.ts",
+        "tests/hooks/conflictedPendingGate.test.ts",
+        "tests/hooks/hookRoot.test.ts",
+        "tests/util/git.test.ts"
       ]
     },
     {
@@ -334,12 +346,12 @@
         "src/cli.ts",
         "skills/init/SKILL.md",
         "skills/update-concepts/references/batch.md",
-        "tests/cli/cli.test.ts",
-        "tests/store/conceptStore.test.ts",
-        "tests/viewer/serve.test.ts",
-        "tests/hooks/governanceFiles.test.ts",
         "src/hooks/gates/governanceFilesGate.ts",
-        "tests/hooks/entrypoint.e2e.test.ts"
+        "tests/cli/cli.test.ts",
+        "tests/hooks/entrypoint.e2e.test.ts",
+        "tests/hooks/governanceFiles.test.ts",
+        "tests/store/conceptStore.test.ts",
+        "tests/viewer/serve.test.ts"
       ]
     },
     {
@@ -356,13 +368,15 @@
         "src/i18n/messages.ts",
         "src/schema/initConfig.ts",
         "src/init/readConfig.ts",
+        "src/init/referencePaths.ts",
         "tests/cli/cli.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/i18n/messages.test.ts",
         "tests/init/readConfig.test.ts",
         "tests/init/scaffold.test.ts",
-        "tests/viewer/sidebarState.test.ts",
         "tests/schema/initConfig.test.ts",
-        "tests/i18n/messages.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/viewer/sidebarState.test.ts"
       ]
     },
     {
@@ -398,16 +412,16 @@
         "src/init/reference.ts",
         "src/init/referencePaths.ts",
         "src/init/addReferencePath.ts",
+        "src/init/referenceWalk.ts",
+        "src/reference/enumerate.ts",
         "tests/cli/reference.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/hooks/sessionStartReference.test.ts",
         "tests/init/reference.test.ts",
         "tests/init/referencePaths.test.ts",
         "tests/init/referenceWalk.test.ts",
-        "tests/reference/enumerate.test.ts",
         "tests/reference/diff.test.ts",
-        "tests/hooks/sessionStartReference.test.ts",
-        "src/init/referenceWalk.ts",
-        "src/reference/enumerate.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/reference/enumerate.test.ts"
       ]
     },
     {
@@ -433,20 +447,22 @@
         "src/schema/initConfig.ts",
         "src/hooks/gates/referenceGate.ts",
         "src/reference/canonical.ts",
+        "tests/cli/referenceSync.test.ts",
+        "tests/hooks/sessionStartLookups.test.ts",
+        "tests/hooks/sessionStartReference.test.ts",
+        "tests/init/referenceLockIgnore.test.ts",
+        "tests/paths.test.ts",
+        "tests/reference/affected.test.ts",
+        "tests/reference/canonical.test.ts",
+        "tests/reference/canonicalEdge.test.ts",
+        "tests/reference/canonicalFinal.test.ts",
+        "tests/reference/canonicalSymlink.test.ts",
+        "tests/reference/diff.test.ts",
         "tests/reference/enumerate.test.ts",
         "tests/reference/fingerprint.test.ts",
         "tests/reference/lock.test.ts",
-        "tests/reference/affected.test.ts",
-        "tests/reference/diff.test.ts",
-        "tests/cli/referenceSync.test.ts",
-        "tests/hooks/sessionStartReference.test.ts",
         "tests/schema/alignment.test.ts",
-        "tests/init/referenceLockIgnore.test.ts",
-        "tests/reference/canonical.test.ts",
-        "tests/reference/canonicalEdge.test.ts",
-        "tests/reference/canonicalSymlink.test.ts",
-        "tests/hooks/sessionStartLookups.test.ts",
-        "tests/reference/canonicalFinal.test.ts"
+        "tests/util/mapLimit.test.ts"
       ]
     },
     {
@@ -468,32 +484,39 @@
         "src/concept/pendingConflicts.ts",
         "skills/update-concepts/references/settle.md",
         "assets/viewer.js",
+        "src/concept/attestScope.ts",
+        "src/hooks/command/recordCommands.ts",
+        "src/hooks/gates/evidenceGate.ts",
+        "src/hooks/sessionStart.ts",
         "tests/audit/audit.test.ts",
+        "tests/cli/attestScope.test.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/quality.test.ts",
         "tests/concept/approve.test.ts",
         "tests/concept/attest.test.ts",
         "tests/concept/pendingConflicts.test.ts",
         "tests/concept/quality-gate.test.ts",
+        "tests/concept/quality.test.ts",
         "tests/drift/detect.test.ts",
+        "tests/drift/history.test.ts",
         "tests/drift/reconcile.test.ts",
+        "tests/hooks/attestGate.test.ts",
+        "tests/hooks/evidenceGate.test.ts",
         "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/recordCommands.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/integration/smoke.test.ts",
+        "tests/schema/alignment.test.ts",
         "tests/schema/concept.test.ts",
         "tests/store/conceptStore.test.ts",
         "tests/viewer/renderDisk.test.ts",
         "tests/viewer/serve.test.ts",
-        "tests/concept/quality.test.ts",
-        "tests/schema/alignment.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "src/concept/attestScope.ts",
-        "tests/cli/attestScope.test.ts",
-        "tests/hooks/attestGate.test.ts",
-        "tests/hooks/evidenceGate.test.ts",
-        "src/hooks/gates/evidenceGate.ts",
-        "src/hooks/sessionStart.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/drift/history.test.ts"
+        "src/viewer/statusApi.ts",
+        "tests/hooks/conflictedPendingGate.test.ts",
+        "tests/store/movedConcept.test.ts",
+        "tests/viewer/conceptDetail.test.ts",
+        "tests/viewer/statusApi.test.ts"
       ]
     },
     {
@@ -510,18 +533,19 @@
         "src/viewer/render.ts",
         "src/viewer/manifest.ts",
         "scripts/build.mjs",
-        "tests/init/packageScript.test.ts",
-        "tests/init/scaffold.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/version/autoSync.test.ts",
-        "tests/viewer/manifest.test.ts",
-        "tests/viewer/renderDisk.test.ts",
-        "tests/init/syncGenerated.test.ts",
-        "tests/hooks/preToolUse.test.ts",
         "scripts/release.mjs",
         "scripts/releaseSteps.mjs",
+        "src/hooks/gates/staleArtifactsGate.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/init/packageScript.test.ts",
+        "tests/init/scaffold.test.ts",
+        "tests/init/syncGenerated.test.ts",
+        "tests/integration/smoke.test.ts",
         "tests/scripts/release.test.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/version/autoSync.test.ts",
+        "tests/viewer/manifest.test.ts",
+        "tests/viewer/renderDisk.test.ts"
       ]
     },
     {
@@ -537,31 +561,34 @@
       "codeLinks": [
         "src/cli.ts",
         "src/init/scaffold.ts",
+        "tests/cli/attestScope.test.ts",
+        "tests/cli/audit.test.ts",
         "tests/cli/cli.test.ts",
         "tests/cli/feature.test.ts",
         "tests/cli/noCode.test.ts",
         "tests/cli/quality.test.ts",
         "tests/cli/reference.test.ts",
+        "tests/cli/referenceSync.test.ts",
         "tests/cli/requireInit.test.ts",
         "tests/cli/testReview.test.ts",
         "tests/concept/approve.test.ts",
         "tests/concept/pendingConflicts.test.ts",
+        "tests/hooks/gateFailure.test.ts",
         "tests/hooks/gates.modes.test.ts",
         "tests/hooks/postToolUse.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/init/alignmentGitignore.test.ts",
         "tests/init/readConfig.test.ts",
         "tests/init/reference.test.ts",
         "tests/init/referenceGitignore.test.ts",
         "tests/init/scaffold.test.ts",
-        "tests/integration/smoke.test.ts",
-        "tests/version/autoSync.test.ts",
-        "tests/cli/referenceSync.test.ts",
         "tests/init/syncGenerated.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "tests/hooks/gateFailure.test.ts",
-        "tests/cli/attestScope.test.ts",
-        "tests/hooks/sessionStart.test.ts",
-        "tests/cli/audit.test.ts"
+        "tests/integration/smoke.test.ts",
+        "tests/paths.test.ts",
+        "tests/version/autoSync.test.ts",
+        "src/hooks/hookRoot.ts",
+        "tests/hooks/hookRoot.test.ts"
       ]
     },
     {
@@ -580,20 +607,22 @@
         "src/version/checkUpdate.ts",
         "src/version/compareSemver.ts",
         "src/hooks/sessionStart.ts",
+        "scripts/release.mjs",
+        "scripts/releaseSteps.mjs",
+        "src/cli.ts",
         "src/init/packageScript.ts",
         "src/version/autoSync.ts",
         "tests/cli/cli.test.ts",
+        "tests/hooks/sessionStart.test.ts",
         "tests/init/ensureConfigDefaults.test.ts",
         "tests/init/packageScript.test.ts",
+        "tests/init/syncGenerated.test.ts",
+        "tests/schema/initConfig.test.ts",
         "tests/version/autoSync.test.ts",
         "tests/version/checkUpdate.test.ts",
         "tests/version/compareSemver.test.ts",
-        "tests/init/syncGenerated.test.ts",
-        "tests/schema/initConfig.test.ts",
-        "scripts/release.mjs",
-        "scripts/releaseSteps.mjs",
-        "tests/hooks/sessionStart.test.ts",
-        "src/cli.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/viewer/renderStamp.test.ts"
       ]
     },
     {
@@ -615,26 +644,26 @@
         "src/hooks/gates/referenceGate.ts",
         "src/schema/initConfig.ts",
         "src/init/addReferencePath.ts",
+        "src/init/referenceWalk.ts",
+        "src/reference/fingerprint.ts",
+        "src/reference/lock.ts",
+        "src/reference/sessionBlock.ts",
         "tests/cli/reference.test.ts",
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/sessionStart.test.ts",
+        "tests/hooks/sessionStartReference.test.ts",
+        "tests/i18n/messages.test.ts",
         "tests/init/addReferencePath.test.ts",
         "tests/init/reference.test.ts",
         "tests/init/referenceGitignore.test.ts",
+        "tests/init/referenceLockIgnore.test.ts",
         "tests/init/referencePaths.test.ts",
-        "tests/init/scaffold.test.ts",
         "tests/init/referenceWalk.test.ts",
+        "tests/init/scaffold.test.ts",
+        "tests/init/syncGenerated.test.ts",
         "tests/reference/fingerprint.test.ts",
         "tests/reference/lock.test.ts",
-        "tests/hooks/sessionStartReference.test.ts",
-        "src/init/referenceWalk.ts",
-        "src/reference/fingerprint.ts",
-        "src/reference/sessionBlock.ts",
-        "tests/init/referenceLockIgnore.test.ts",
-        "tests/init/syncGenerated.test.ts",
-        "tests/schema/initConfig.test.ts",
-        "tests/hooks/preToolUse.test.ts",
-        "tests/i18n/messages.test.ts",
-        "src/reference/lock.ts",
-        "tests/hooks/sessionStart.test.ts"
+        "tests/schema/initConfig.test.ts"
       ]
     },
     {
@@ -654,7 +683,7 @@
         "skills/review/SKILL.md",
         "skills/update-concepts/SKILL.md",
         "tests/compat/skillFrontmatter.test.ts",
-        "tests/compat/superpowers.test.ts"
+        "tests/compat/skillNames.test.ts"
       ]
     },
     {
@@ -670,8 +699,8 @@
       "codeLinks": [
         "src/drift/safe.ts",
         "tests/drift/safe.test.ts",
-        "tests/hooks/testScopeGate.test.ts",
-        "tests/hooks/preToolUse.test.ts"
+        "tests/hooks/preToolUse.test.ts",
+        "tests/hooks/testScopeGate.test.ts"
       ]
     },
     {
@@ -690,7 +719,8 @@
         "src/store/conceptStore.ts",
         "src/viewer/serve.ts",
         "tests/store/conceptStore.test.ts",
-        "tests/viewer/serve.test.ts"
+        "tests/viewer/serve.test.ts",
+        "tests/store/conceptEdit.test.ts"
       ]
     },
     {
@@ -705,7 +735,6 @@
       "url": "../data/viewer/home-search.json",
       "codeLinks": [
         "assets/viewer.js",
-        "assets/sidebar.js",
         "tests/viewer/listLayout.test.ts",
         "tests/viewer/search.test.ts"
       ]
@@ -786,7 +815,8 @@
         "tests/viewer/detailTitle.test.ts",
         "tests/viewer/heroSummary.test.ts",
         "tests/viewer/listLayout.test.ts",
-        "tests/viewer/sources.test.ts"
+        "tests/viewer/sources.test.ts",
+        "tests/viewer/conceptDetail.test.ts"
       ]
     }
   ],
@@ -1211,6 +1241,20 @@
         "title": "src/audit/tracked.ts"
       },
       {
+        "id": "p:src/hooks/gates/noConceptNote.ts",
+        "label": "noConceptNote.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/noConceptNote.ts"
+      },
+      {
+        "id": "p:src/schema/initConfig.ts",
+        "label": "initConfig.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/schema/initConfig.ts"
+      },
+      {
         "id": "p:tests/audit/audit.test.ts",
         "label": "audit.test.ts",
         "type": "file",
@@ -1223,6 +1267,20 @@
         "type": "file",
         "href": "",
         "title": "tests/audit/gaps.test.ts"
+      },
+      {
+        "id": "p:tests/audit/unlinked.test.ts",
+        "label": "unlinked.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/audit/unlinked.test.ts"
+      },
+      {
+        "id": "p:tests/cli/audit.test.ts",
+        "label": "audit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/audit.test.ts"
       },
       {
         "id": "p:tests/cli/cli.test.ts",
@@ -1239,6 +1297,20 @@
         "title": "tests/hooks/gates.modes.test.ts"
       },
       {
+        "id": "p:tests/hooks/noConceptNote.test.ts",
+        "label": "noConceptNote.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/noConceptNote.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/preToolUse.test.ts",
+        "label": "preToolUse.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/preToolUse.test.ts"
+      },
+      {
         "id": "p:tests/integration/smoke.test.ts",
         "label": "smoke.test.ts",
         "type": "file",
@@ -1246,11 +1318,32 @@
         "title": "tests/integration/smoke.test.ts"
       },
       {
+        "id": "p:tests/mapping/leadingComment.test.ts",
+        "label": "leadingComment.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/mapping/leadingComment.test.ts"
+      },
+      {
         "id": "p:tests/mapping/scan.test.ts",
         "label": "scan.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/mapping/scan.test.ts"
+      },
+      {
+        "id": "p:tests/paths.test.ts",
+        "label": "paths.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/paths.test.ts"
+      },
+      {
+        "id": "p:tests/schema/initConfig.test.ts",
+        "label": "initConfig.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/schema/initConfig.test.ts"
       },
       {
         "id": "p:tests/util/glob.test.ts",
@@ -1265,62 +1358,6 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/renderDisk.test.ts"
-      },
-      {
-        "id": "p:tests/schema/initConfig.test.ts",
-        "label": "initConfig.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/schema/initConfig.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/preToolUse.test.ts",
-        "label": "preToolUse.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/preToolUse.test.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/noConceptNote.ts",
-        "label": "noConceptNote.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/noConceptNote.ts"
-      },
-      {
-        "id": "p:tests/hooks/noConceptNote.test.ts",
-        "label": "noConceptNote.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/noConceptNote.test.ts"
-      },
-      {
-        "id": "p:tests/mapping/leadingComment.test.ts",
-        "label": "leadingComment.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/mapping/leadingComment.test.ts"
-      },
-      {
-        "id": "p:tests/cli/audit.test.ts",
-        "label": "audit.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/cli/audit.test.ts"
-      },
-      {
-        "id": "p:src/schema/initConfig.ts",
-        "label": "initConfig.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/schema/initConfig.ts"
-      },
-      {
-        "id": "p:tests/audit/unlinked.test.ts",
-        "label": "unlinked.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/audit/unlinked.test.ts"
       },
       {
         "id": "c:concept-driven-tests",
@@ -1365,6 +1402,20 @@
         "title": "src/concept/testReview.ts"
       },
       {
+        "id": "p:src/hooks/command/recordCommands.ts",
+        "label": "recordCommands.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/recordCommands.ts"
+      },
+      {
+        "id": "p:src/hooks/preToolUse.ts",
+        "label": "preToolUse.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/preToolUse.ts"
+      },
+      {
         "id": "p:tests/cli/testReview.test.ts",
         "label": "testReview.test.ts",
         "type": "file",
@@ -1377,6 +1428,20 @@
         "type": "file",
         "href": "",
         "title": "tests/concept/testReview.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/recordCommands.test.ts",
+        "label": "recordCommands.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/recordCommands.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/sessionStart.test.ts",
+        "label": "sessionStart.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/sessionStart.test.ts"
       },
       {
         "id": "p:tests/hooks/testFollowGate.test.ts",
@@ -1398,34 +1463,6 @@
         "type": "file",
         "href": "",
         "title": "tests/init/scaffold.test.ts"
-      },
-      {
-        "id": "p:src/hooks/preToolUse.ts",
-        "label": "preToolUse.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/preToolUse.ts"
-      },
-      {
-        "id": "p:src/hooks/command/recordCommands.ts",
-        "label": "recordCommands.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/recordCommands.ts"
-      },
-      {
-        "id": "p:tests/hooks/recordCommands.test.ts",
-        "label": "recordCommands.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/recordCommands.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/sessionStart.test.ts",
-        "label": "sessionStart.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/sessionStart.test.ts"
       },
       {
         "id": "c:concept-provenance",
@@ -1470,6 +1507,34 @@
         "title": "skills/update-concepts/references/define.md"
       },
       {
+        "id": "p:src/audit/codeCoordinates.ts",
+        "label": "codeCoordinates.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/audit/codeCoordinates.ts"
+      },
+      {
+        "id": "p:tests/audit/codeCoordinates.test.ts",
+        "label": "codeCoordinates.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/audit/codeCoordinates.test.ts"
+      },
+      {
+        "id": "p:tests/concept/quality.test.ts",
+        "label": "quality.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/concept/quality.test.ts"
+      },
+      {
+        "id": "p:tests/reference/affected.test.ts",
+        "label": "affected.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/affected.test.ts"
+      },
+      {
         "id": "p:tests/schema/concept.test.ts",
         "label": "concept.test.ts",
         "type": "file",
@@ -1489,34 +1554,6 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/sources.test.ts"
-      },
-      {
-        "id": "p:tests/concept/quality.test.ts",
-        "label": "quality.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/concept/quality.test.ts"
-      },
-      {
-        "id": "p:tests/reference/affected.test.ts",
-        "label": "affected.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/reference/affected.test.ts"
-      },
-      {
-        "id": "p:src/audit/codeCoordinates.ts",
-        "label": "codeCoordinates.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/audit/codeCoordinates.ts"
-      },
-      {
-        "id": "p:tests/audit/codeCoordinates.test.ts",
-        "label": "codeCoordinates.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/audit/codeCoordinates.test.ts"
       },
       {
         "id": "c:concept-scope",
@@ -1631,11 +1668,25 @@
         "title": "src/drift/pendingDocs.ts"
       },
       {
+        "id": "p:src/hooks/command/commitTree.ts",
+        "label": "commitTree.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/commitTree.ts"
+      },
+      {
         "id": "p:src/hooks/gates/driftGate.ts",
         "label": "driftGate.ts",
         "type": "file",
         "href": "",
         "title": "src/hooks/gates/driftGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/governanceFilesGate.ts",
+        "label": "governanceFilesGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/governanceFilesGate.ts"
       },
       {
         "id": "p:tests/cli/noCode.test.ts",
@@ -1673,6 +1724,20 @@
         "title": "tests/drift/hash.test.ts"
       },
       {
+        "id": "p:tests/drift/history.test.ts",
+        "label": "history.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/history.test.ts"
+      },
+      {
+        "id": "p:tests/drift/historyMerge.test.ts",
+        "label": "historyMerge.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/historyMerge.test.ts"
+      },
+      {
         "id": "p:tests/drift/lock.test.ts",
         "label": "lock.test.ts",
         "type": "file",
@@ -1694,6 +1759,41 @@
         "title": "tests/drift/reconcile.test.ts"
       },
       {
+        "id": "p:tests/drift/reconcileCommitted.test.ts",
+        "label": "reconcileCommitted.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/drift/reconcileCommitted.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitFiles.test.ts",
+        "label": "commitFiles.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitFiles.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitGate.test.ts",
+        "label": "commitGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "label": "entrypoint.e2e.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/entrypoint.e2e.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/headWatch.test.ts",
+        "label": "headWatch.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/headWatch.test.ts"
+      },
+      {
         "id": "p:tests/hooks/postToolUse.test.ts",
         "label": "postToolUse.test.ts",
         "type": "file",
@@ -1708,67 +1808,32 @@
         "title": "tests/schema/alignment.test.ts"
       },
       {
-        "id": "p:tests/hooks/commitGate.test.ts",
-        "label": "commitGate.test.ts",
+        "id": "p:tests/viewer/serve.test.ts",
+        "label": "serve.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/hooks/commitGate.test.ts"
+        "title": "tests/viewer/serve.test.ts"
       },
       {
-        "id": "p:src/hooks/gates/governanceFilesGate.ts",
-        "label": "governanceFilesGate.ts",
+        "id": "p:src/hooks/command/unreconciled.ts",
+        "label": "unreconciled.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/gates/governanceFilesGate.ts"
+        "title": "src/hooks/command/unreconciled.ts"
       },
       {
-        "id": "p:tests/drift/reconcileCommitted.test.ts",
-        "label": "reconcileCommitted.test.ts",
+        "id": "p:src/store/conceptEdit.ts",
+        "label": "conceptEdit.ts",
         "type": "file",
         "href": "",
-        "title": "tests/drift/reconcileCommitted.test.ts"
+        "title": "src/store/conceptEdit.ts"
       },
       {
-        "id": "p:tests/hooks/entrypoint.e2e.test.ts",
-        "label": "entrypoint.e2e.test.ts",
+        "id": "p:tests/store/conceptEdit.test.ts",
+        "label": "conceptEdit.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/hooks/entrypoint.e2e.test.ts"
-      },
-      {
-        "id": "p:src/hooks/command/commitTree.ts",
-        "label": "commitTree.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/commitTree.ts"
-      },
-      {
-        "id": "p:tests/hooks/commitFiles.test.ts",
-        "label": "commitFiles.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/commitFiles.test.ts"
-      },
-      {
-        "id": "p:tests/drift/historyMerge.test.ts",
-        "label": "historyMerge.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/historyMerge.test.ts"
-      },
-      {
-        "id": "p:tests/drift/history.test.ts",
-        "label": "history.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/drift/history.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/headWatch.test.ts",
-        "label": "headWatch.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/headWatch.test.ts"
+        "title": "tests/store/conceptEdit.test.ts"
       },
       {
         "id": "c:feature-spec-bridge",
@@ -1848,6 +1913,13 @@
         "title": "tests/viewer/manifest.test.ts"
       },
       {
+        "id": "p:tests/viewer/conceptDetail.test.ts",
+        "label": "conceptDetail.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/conceptDetail.test.ts"
+      },
+      {
         "id": "c:globally-unique-slug",
         "label": "개념 이름",
         "type": "concept",
@@ -1883,6 +1955,13 @@
         "title": "tests/viewer/subgraph.test.ts"
       },
       {
+        "id": "p:tests/store/movedConcept.test.ts",
+        "label": "movedConcept.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/store/movedConcept.test.ts"
+      },
+      {
         "id": "c:governance-mode",
         "label": "커밋 게이트 강도",
         "type": "concept",
@@ -1897,130 +1976,11 @@
         "title": "src/hooks/postToolUse.ts"
       },
       {
-        "id": "p:src/hooks/gates/conceptSlugs.ts",
-        "label": "conceptSlugs.ts",
+        "id": "p:src/cli.ts",
+        "label": "cli.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/gates/conceptSlugs.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/conflictedPendingGate.ts",
-        "label": "conflictedPendingGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/conflictedPendingGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/staleArtifactsGate.ts",
-        "label": "staleArtifactsGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/staleArtifactsGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/types.ts",
-        "label": "types.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/types.ts"
-      },
-      {
-        "id": "p:src/init/scaffold.ts",
-        "label": "scaffold.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/init/scaffold.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/referenceGate.ts",
-        "label": "referenceGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/referenceGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/conceptlessGate.ts",
-        "label": "conceptlessGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/conceptlessGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/unknownTagsGate.ts",
-        "label": "unknownTagsGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/unknownTagsGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/qualityGate.ts",
-        "label": "qualityGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/qualityGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/attestGate.ts",
-        "label": "attestGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/attestGate.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/unapprovedRedGate.ts",
-        "label": "unapprovedRedGate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/unapprovedRedGate.ts"
-      },
-      {
-        "id": "p:src/util/isMain.ts",
-        "label": "isMain.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/util/isMain.ts"
-      },
-      {
-        "id": "p:tests/util/isMain.test.ts",
-        "label": "isMain.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/util/isMain.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/gateFailure.test.ts",
-        "label": "gateFailure.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/gateFailure.test.ts"
-      },
-      {
-        "id": "p:src/util/exitAfterWrite.ts",
-        "label": "exitAfterWrite.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/util/exitAfterWrite.ts"
-      },
-      {
-        "id": "p:src/hooks/command/shellWords.ts",
-        "label": "shellWords.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/shellWords.ts"
-      },
-      {
-        "id": "p:src/hooks/command/commitPlan.ts",
-        "label": "commitPlan.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/command/commitPlan.ts"
-      },
-      {
-        "id": "p:tests/hooks/commitPlan.test.ts",
-        "label": "commitPlan.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/commitPlan.test.ts"
+        "title": "src/cli.ts"
       },
       {
         "id": "p:src/hooks/command/commandKinds.ts",
@@ -2037,41 +1997,6 @@
         "title": "src/hooks/command/commitArgs.ts"
       },
       {
-        "id": "p:tests/hooks/shellWords.test.ts",
-        "label": "shellWords.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/shellWords.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/attestGate.test.ts",
-        "label": "attestGate.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/attestGate.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/evidenceGate.test.ts",
-        "label": "evidenceGate.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/evidenceGate.test.ts"
-      },
-      {
-        "id": "p:tests/hooks/governanceFiles.test.ts",
-        "label": "governanceFiles.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/hooks/governanceFiles.test.ts"
-      },
-      {
-        "id": "p:src/hooks/gates/alwaysAsk.ts",
-        "label": "alwaysAsk.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/hooks/gates/alwaysAsk.ts"
-      },
-      {
         "id": "p:src/hooks/command/commitFiles.ts",
         "label": "commitFiles.ts",
         "type": "file",
@@ -2079,11 +2004,25 @@
         "title": "src/hooks/command/commitFiles.ts"
       },
       {
-        "id": "p:src/hooks/gates/evidenceGate.ts",
-        "label": "evidenceGate.ts",
+        "id": "p:src/hooks/command/commitPlan.ts",
+        "label": "commitPlan.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/gates/evidenceGate.ts"
+        "title": "src/hooks/command/commitPlan.ts"
+      },
+      {
+        "id": "p:src/hooks/command/headWatch.ts",
+        "label": "headWatch.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/headWatch.ts"
+      },
+      {
+        "id": "p:src/hooks/command/shellWords.ts",
+        "label": "shellWords.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/command/shellWords.ts"
       },
       {
         "id": "p:src/hooks/command/stagingReach.ts",
@@ -2093,6 +2032,146 @@
         "title": "src/hooks/command/stagingReach.ts"
       },
       {
+        "id": "p:src/hooks/gates/alwaysAsk.ts",
+        "label": "alwaysAsk.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/alwaysAsk.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/attestGate.ts",
+        "label": "attestGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/attestGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/conceptSlugs.ts",
+        "label": "conceptSlugs.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/conceptSlugs.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/conceptlessGate.ts",
+        "label": "conceptlessGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/conceptlessGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/conflictedPendingGate.ts",
+        "label": "conflictedPendingGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/conflictedPendingGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/evidenceGate.ts",
+        "label": "evidenceGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/evidenceGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/qualityGate.ts",
+        "label": "qualityGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/qualityGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/referenceGate.ts",
+        "label": "referenceGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/referenceGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/types.ts",
+        "label": "types.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/types.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/unapprovedRedGate.ts",
+        "label": "unapprovedRedGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/unapprovedRedGate.ts"
+      },
+      {
+        "id": "p:src/hooks/gates/unknownTagsGate.ts",
+        "label": "unknownTagsGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/unknownTagsGate.ts"
+      },
+      {
+        "id": "p:src/init/scaffold.ts",
+        "label": "scaffold.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/scaffold.ts"
+      },
+      {
+        "id": "p:src/util/exitAfterWrite.ts",
+        "label": "exitAfterWrite.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/exitAfterWrite.ts"
+      },
+      {
+        "id": "p:src/util/isMain.ts",
+        "label": "isMain.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/util/isMain.ts"
+      },
+      {
+        "id": "p:tests/hooks/attestGate.test.ts",
+        "label": "attestGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/attestGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/commitPlan.test.ts",
+        "label": "commitPlan.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/commitPlan.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/evidenceGate.test.ts",
+        "label": "evidenceGate.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/evidenceGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/gateFailure.test.ts",
+        "label": "gateFailure.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/gateFailure.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/governanceFiles.test.ts",
+        "label": "governanceFiles.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/governanceFiles.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/shellWords.test.ts",
+        "label": "shellWords.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/shellWords.test.ts"
+      },
+      {
         "id": "p:tests/hooks/stagingReach.test.ts",
         "label": "stagingReach.test.ts",
         "type": "file",
@@ -2100,18 +2179,32 @@
         "title": "tests/hooks/stagingReach.test.ts"
       },
       {
-        "id": "p:src/cli.ts",
-        "label": "cli.ts",
+        "id": "p:tests/util/isMain.test.ts",
+        "label": "isMain.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/cli.ts"
+        "title": "tests/util/isMain.test.ts"
       },
       {
-        "id": "p:src/hooks/command/headWatch.ts",
-        "label": "headWatch.ts",
+        "id": "p:tests/hooks/conflictedPendingGate.test.ts",
+        "label": "conflictedPendingGate.test.ts",
         "type": "file",
         "href": "",
-        "title": "src/hooks/command/headWatch.ts"
+        "title": "tests/hooks/conflictedPendingGate.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/hookRoot.test.ts",
+        "label": "hookRoot.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/hookRoot.test.ts"
+      },
+      {
+        "id": "p:tests/util/git.test.ts",
+        "label": "git.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/util/git.test.ts"
       },
       {
         "id": "c:human-owns-contract",
@@ -2170,13 +2263,6 @@
         "title": "skills/update-concepts/references/batch.md"
       },
       {
-        "id": "p:tests/viewer/serve.test.ts",
-        "label": "serve.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/viewer/serve.test.ts"
-      },
-      {
         "id": "c:output-locale",
         "label": "출력 언어",
         "type": "concept",
@@ -2198,6 +2284,20 @@
         "title": "src/init/readConfig.ts"
       },
       {
+        "id": "p:src/init/referencePaths.ts",
+        "label": "referencePaths.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/referencePaths.ts"
+      },
+      {
+        "id": "p:tests/i18n/messages.test.ts",
+        "label": "messages.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/i18n/messages.test.ts"
+      },
+      {
         "id": "p:tests/init/readConfig.test.ts",
         "label": "readConfig.test.ts",
         "type": "file",
@@ -2210,13 +2310,6 @@
         "type": "file",
         "href": "",
         "title": "tests/viewer/sidebarState.test.ts"
-      },
-      {
-        "id": "p:tests/i18n/messages.test.ts",
-        "label": "messages.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/i18n/messages.test.ts"
       },
       {
         "id": "c:redteam-review",
@@ -2268,13 +2361,6 @@
         "title": "src/init/reference.ts"
       },
       {
-        "id": "p:src/init/referencePaths.ts",
-        "label": "referencePaths.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/init/referencePaths.ts"
-      },
-      {
         "id": "p:src/init/addReferencePath.ts",
         "label": "addReferencePath.ts",
         "type": "file",
@@ -2282,11 +2368,32 @@
         "title": "src/init/addReferencePath.ts"
       },
       {
+        "id": "p:src/init/referenceWalk.ts",
+        "label": "referenceWalk.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/init/referenceWalk.ts"
+      },
+      {
+        "id": "p:src/reference/enumerate.ts",
+        "label": "enumerate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/reference/enumerate.ts"
+      },
+      {
         "id": "p:tests/cli/reference.test.ts",
         "label": "reference.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/cli/reference.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/sessionStartReference.test.ts",
+        "label": "sessionStartReference.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/sessionStartReference.test.ts"
       },
       {
         "id": "p:tests/init/reference.test.ts",
@@ -2310,13 +2417,6 @@
         "title": "tests/init/referenceWalk.test.ts"
       },
       {
-        "id": "p:tests/reference/enumerate.test.ts",
-        "label": "enumerate.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/reference/enumerate.test.ts"
-      },
-      {
         "id": "p:tests/reference/diff.test.ts",
         "label": "diff.test.ts",
         "type": "file",
@@ -2324,25 +2424,11 @@
         "title": "tests/reference/diff.test.ts"
       },
       {
-        "id": "p:tests/hooks/sessionStartReference.test.ts",
-        "label": "sessionStartReference.test.ts",
+        "id": "p:tests/reference/enumerate.test.ts",
+        "label": "enumerate.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/hooks/sessionStartReference.test.ts"
-      },
-      {
-        "id": "p:src/init/referenceWalk.ts",
-        "label": "referenceWalk.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/init/referenceWalk.ts"
-      },
-      {
-        "id": "p:src/reference/enumerate.ts",
-        "label": "enumerate.ts",
-        "type": "file",
-        "href": "",
-        "title": "src/reference/enumerate.ts"
+        "title": "tests/reference/enumerate.test.ts"
       },
       {
         "id": "c:reference-sync",
@@ -2401,25 +2487,18 @@
         "title": "src/reference/canonical.ts"
       },
       {
-        "id": "p:tests/reference/fingerprint.test.ts",
-        "label": "fingerprint.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/reference/fingerprint.test.ts"
-      },
-      {
-        "id": "p:tests/reference/lock.test.ts",
-        "label": "lock.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/reference/lock.test.ts"
-      },
-      {
         "id": "p:tests/cli/referenceSync.test.ts",
         "label": "referenceSync.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/cli/referenceSync.test.ts"
+      },
+      {
+        "id": "p:tests/hooks/sessionStartLookups.test.ts",
+        "label": "sessionStartLookups.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/hooks/sessionStartLookups.test.ts"
       },
       {
         "id": "p:tests/init/referenceLockIgnore.test.ts",
@@ -2443,6 +2522,13 @@
         "title": "tests/reference/canonicalEdge.test.ts"
       },
       {
+        "id": "p:tests/reference/canonicalFinal.test.ts",
+        "label": "canonicalFinal.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/reference/canonicalFinal.test.ts"
+      },
+      {
         "id": "p:tests/reference/canonicalSymlink.test.ts",
         "label": "canonicalSymlink.test.ts",
         "type": "file",
@@ -2450,18 +2536,25 @@
         "title": "tests/reference/canonicalSymlink.test.ts"
       },
       {
-        "id": "p:tests/hooks/sessionStartLookups.test.ts",
-        "label": "sessionStartLookups.test.ts",
+        "id": "p:tests/reference/fingerprint.test.ts",
+        "label": "fingerprint.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/hooks/sessionStartLookups.test.ts"
+        "title": "tests/reference/fingerprint.test.ts"
       },
       {
-        "id": "p:tests/reference/canonicalFinal.test.ts",
-        "label": "canonicalFinal.test.ts",
+        "id": "p:tests/reference/lock.test.ts",
+        "label": "lock.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/reference/canonicalFinal.test.ts"
+        "title": "tests/reference/lock.test.ts"
+      },
+      {
+        "id": "p:tests/util/mapLimit.test.ts",
+        "label": "mapLimit.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/util/mapLimit.test.ts"
       },
       {
         "id": "c:settled-status",
@@ -2492,6 +2585,20 @@
         "title": "src/concept/pendingConflicts.ts"
       },
       {
+        "id": "p:src/concept/attestScope.ts",
+        "label": "attestScope.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/concept/attestScope.ts"
+      },
+      {
+        "id": "p:tests/cli/attestScope.test.ts",
+        "label": "attestScope.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/cli/attestScope.test.ts"
+      },
+      {
         "id": "p:tests/concept/approve.test.ts",
         "label": "approve.test.ts",
         "type": "file",
@@ -2520,18 +2627,18 @@
         "title": "tests/concept/quality-gate.test.ts"
       },
       {
-        "id": "p:src/concept/attestScope.ts",
-        "label": "attestScope.ts",
+        "id": "p:src/viewer/statusApi.ts",
+        "label": "statusApi.ts",
         "type": "file",
         "href": "",
-        "title": "src/concept/attestScope.ts"
+        "title": "src/viewer/statusApi.ts"
       },
       {
-        "id": "p:tests/cli/attestScope.test.ts",
-        "label": "attestScope.test.ts",
+        "id": "p:tests/viewer/statusApi.test.ts",
+        "label": "statusApi.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/cli/attestScope.test.ts"
+        "title": "tests/viewer/statusApi.test.ts"
       },
       {
         "id": "c:generated-not-hand-edited",
@@ -2555,27 +2662,6 @@
         "title": "scripts/build.mjs"
       },
       {
-        "id": "p:tests/init/packageScript.test.ts",
-        "label": "packageScript.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/init/packageScript.test.ts"
-      },
-      {
-        "id": "p:tests/version/autoSync.test.ts",
-        "label": "autoSync.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/version/autoSync.test.ts"
-      },
-      {
-        "id": "p:tests/init/syncGenerated.test.ts",
-        "label": "syncGenerated.test.ts",
-        "type": "file",
-        "href": "",
-        "title": "tests/init/syncGenerated.test.ts"
-      },
-      {
         "id": "p:scripts/release.mjs",
         "label": "release.mjs",
         "type": "file",
@@ -2590,11 +2676,39 @@
         "title": "scripts/releaseSteps.mjs"
       },
       {
+        "id": "p:src/hooks/gates/staleArtifactsGate.ts",
+        "label": "staleArtifactsGate.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/gates/staleArtifactsGate.ts"
+      },
+      {
+        "id": "p:tests/init/packageScript.test.ts",
+        "label": "packageScript.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/init/packageScript.test.ts"
+      },
+      {
+        "id": "p:tests/init/syncGenerated.test.ts",
+        "label": "syncGenerated.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/init/syncGenerated.test.ts"
+      },
+      {
         "id": "p:tests/scripts/release.test.ts",
         "label": "release.test.ts",
         "type": "file",
         "href": "",
         "title": "tests/scripts/release.test.ts"
+      },
+      {
+        "id": "p:tests/version/autoSync.test.ts",
+        "label": "autoSync.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/version/autoSync.test.ts"
       },
       {
         "id": "c:init-gate",
@@ -2623,6 +2737,13 @@
         "type": "file",
         "href": "",
         "title": "tests/init/referenceGitignore.test.ts"
+      },
+      {
+        "id": "p:src/hooks/hookRoot.ts",
+        "label": "hookRoot.ts",
+        "type": "file",
+        "href": "",
+        "title": "src/hooks/hookRoot.ts"
       },
       {
         "id": "c:plugin-version-sync",
@@ -2695,6 +2816,13 @@
         "title": "tests/version/compareSemver.test.ts"
       },
       {
+        "id": "p:tests/viewer/renderStamp.test.ts",
+        "label": "renderStamp.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/viewer/renderStamp.test.ts"
+      },
+      {
         "id": "c:reference-privacy",
         "label": "참고자료 보호",
         "type": "concept",
@@ -2730,11 +2858,11 @@
         "title": "tests/compat/skillFrontmatter.test.ts"
       },
       {
-        "id": "p:tests/compat/superpowers.test.ts",
-        "label": "superpowers.test.ts",
+        "id": "p:tests/compat/skillNames.test.ts",
+        "label": "skillNames.test.ts",
         "type": "file",
         "href": "",
-        "title": "tests/compat/superpowers.test.ts"
+        "title": "tests/compat/skillNames.test.ts"
       },
       {
         "id": "c:untrusted-text-sanitization",
@@ -2779,13 +2907,6 @@
         "title": "home-search"
       },
       {
-        "id": "p:assets/sidebar.js",
-        "label": "sidebar.js",
-        "type": "file",
-        "href": "",
-        "title": "assets/sidebar.js"
-      },
-      {
         "id": "c:knowledge-graph-view",
         "label": "지식 그래프 화면",
         "type": "concept",
@@ -2819,6 +2940,13 @@
         "type": "concept",
         "href": "#/concept/list-filter",
         "title": "list-filter"
+      },
+      {
+        "id": "p:assets/sidebar.js",
+        "label": "sidebar.js",
+        "type": "file",
+        "href": "",
+        "title": "assets/sidebar.js"
       },
       {
         "id": "c:viewer-navigation",
@@ -3106,12 +3234,32 @@
       },
       {
         "source": "c:concept-code-mapping",
+        "target": "p:src/hooks/gates/noConceptNote.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:src/schema/initConfig.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
         "target": "p:tests/audit/audit.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
         "target": "p:tests/audit/gaps.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/audit/unlinked.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3126,12 +3274,37 @@
       },
       {
         "source": "c:concept-code-mapping",
+        "target": "p:tests/hooks/noConceptNote.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
         "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-code-mapping",
+        "target": "p:tests/mapping/leadingComment.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
         "target": "p:tests/mapping/scan.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/paths.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-code-mapping",
+        "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3142,46 +3315,6 @@
       {
         "source": "c:concept-code-mapping",
         "target": "p:tests/viewer/renderDisk.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:src/hooks/gates/noConceptNote.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/hooks/noConceptNote.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/mapping/leadingComment.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/cli/audit.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:src/schema/initConfig.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-code-mapping",
-        "target": "p:tests/audit/unlinked.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3216,12 +3349,32 @@
       },
       {
         "source": "c:concept-driven-tests",
+        "target": "p:src/hooks/command/recordCommands.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:src/hooks/preToolUse.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
         "target": "p:tests/cli/testReview.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-driven-tests",
         "target": "p:tests/concept/testReview.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/hooks/recordCommands.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-driven-tests",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3241,27 +3394,7 @@
       },
       {
         "source": "c:concept-driven-tests",
-        "target": "p:src/hooks/preToolUse.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
         "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
-        "target": "p:src/hooks/command/recordCommands.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
-        "target": "p:tests/hooks/recordCommands.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-driven-tests",
-        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3291,17 +3424,17 @@
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:tests/schema/concept.test.ts",
+        "target": "p:src/audit/codeCoordinates.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:tests/store/conceptStore.test.ts",
+        "target": "p:tests/audit/codeCoordinates.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:tests/viewer/sources.test.ts",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3316,17 +3449,17 @@
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:src/audit/codeCoordinates.ts",
+        "target": "p:tests/schema/concept.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:tests/audit/codeCoordinates.test.ts",
+        "target": "p:tests/store/conceptStore.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:concept-provenance",
-        "target": "p:tests/cli/audit.test.ts",
+        "target": "p:tests/viewer/sources.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3356,6 +3489,11 @@
       },
       {
         "source": "c:concept-scope",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:concept-scope",
         "target": "p:tests/cli/quality.test.ts",
         "kind": "concept-file"
       },
@@ -3367,11 +3505,6 @@
       {
         "source": "c:concept-scope",
         "target": "p:tests/concept/implementationLeak.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:concept-scope",
-        "target": "p:src/hooks/sessionStart.ts",
         "kind": "concept-file"
       },
       {
@@ -3426,7 +3559,32 @@
       },
       {
         "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/commitTree.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/recordCommands.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:src/hooks/gates/driftGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/schema/alignment.ts",
         "kind": "concept-file"
       },
       {
@@ -3461,6 +3619,16 @@
       },
       {
         "source": "c:drift-reconcile",
+        "target": "p:tests/drift/history.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/drift/historyMerge.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
         "target": "p:tests/drift/lock.test.ts",
         "kind": "concept-file"
       },
@@ -3476,62 +3644,7 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:src/schema/alignment.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/schema/alignment.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/commitGate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:src/hooks/command/recordCommands.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/recordCommands.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/mapping/leadingComment.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:src/hooks/gates/governanceFilesGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
         "target": "p:tests/drift/reconcileCommitted.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:drift-reconcile",
-        "target": "p:src/hooks/command/commitTree.ts",
         "kind": "concept-file"
       },
       {
@@ -3541,7 +3654,32 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:src/hooks/sessionStart.ts",
+        "target": "p:tests/hooks/commitGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/headWatch.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/hooks/recordCommands.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3551,17 +3689,32 @@
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/drift/historyMerge.test.ts",
+        "target": "p:tests/mapping/leadingComment.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/drift/history.test.ts",
+        "target": "p:tests/schema/alignment.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:drift-reconcile",
-        "target": "p:tests/hooks/headWatch.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/hooks/command/unreconciled.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:src/store/conceptEdit.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:drift-reconcile",
+        "target": "p:tests/store/conceptEdit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3606,6 +3759,16 @@
       },
       {
         "source": "c:feature-spec-bridge",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:feature-spec-bridge",
         "target": "p:tests/integration/smoke.test.ts",
         "kind": "concept-file"
       },
@@ -3646,12 +3809,7 @@
       },
       {
         "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:feature-spec-bridge",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/viewer/conceptDetail.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3682,6 +3840,16 @@
       {
         "source": "c:globally-unique-slug",
         "target": "p:assets/concept.css",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:src/audit/audit.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/audit/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -3740,6 +3908,11 @@
         "kind": "concept-file"
       },
       {
+        "source": "c:globally-unique-slug",
+        "target": "p:tests/store/movedConcept.test.ts",
+        "kind": "concept-file"
+      },
+      {
         "source": "c:governance-mode",
         "target": "p:src/hooks/preToolUse.ts",
         "kind": "concept-file"
@@ -3756,132 +3929,7 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/conceptSlugs.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/conflictedPendingGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/driftGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/staleArtifactsGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/types.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/cli/cli.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/gates.modes.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/postToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/integration/smoke.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/init/scaffold.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/referenceGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/conceptlessGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/unknownTagsGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/qualityGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/attestGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/unapprovedRedGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/util/isMain.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/util/isMain.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/gateFailure.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/util/exitAfterWrite.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/command/shellWords.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:src/hooks/command/commitPlan.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/commitPlan.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:governance-mode",
-        "target": "p:tests/hooks/commitGate.test.ts",
+        "target": "p:src/cli.ts",
         "kind": "concept-file"
       },
       {
@@ -3896,32 +3944,32 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/shellWords.test.ts",
+        "target": "p:src/hooks/command/commitFiles.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/gates/noConceptNote.ts",
+        "target": "p:src/hooks/command/commitPlan.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/attestGate.test.ts",
+        "target": "p:src/hooks/command/commitTree.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/evidenceGate.test.ts",
+        "target": "p:src/hooks/command/headWatch.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/governanceFiles.test.ts",
+        "target": "p:src/hooks/command/shellWords.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/noConceptNote.test.ts",
+        "target": "p:src/hooks/command/stagingReach.ts",
         "kind": "concept-file"
       },
       {
@@ -3931,7 +3979,27 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/commitFiles.ts",
+        "target": "p:src/hooks/gates/attestGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/conceptSlugs.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/conceptlessGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/conflictedPendingGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/driftGate.ts",
         "kind": "concept-file"
       },
       {
@@ -3946,27 +4014,32 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/stagingReach.ts",
+        "target": "p:src/hooks/gates/noConceptNote.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/stagingReach.test.ts",
+        "target": "p:src/hooks/gates/qualityGate.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "target": "p:src/hooks/gates/referenceGate.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/commitTree.ts",
+        "target": "p:src/hooks/gates/types.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/commitFiles.test.ts",
+        "target": "p:src/hooks/gates/unapprovedRedGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/gates/unknownTagsGate.ts",
         "kind": "concept-file"
       },
       {
@@ -3976,22 +4049,137 @@
       },
       {
         "source": "c:governance-mode",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:src/init/scaffold.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/cli.ts",
+        "target": "p:src/util/exitAfterWrite.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
-        "target": "p:src/hooks/command/headWatch.ts",
+        "target": "p:src/util/isMain.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/attestGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitFiles.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/commitPlan.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/evidenceGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/gateFailure.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/gates.modes.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/governanceFiles.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:governance-mode",
         "target": "p:tests/hooks/headWatch.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/noConceptNote.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/shellWords.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/stagingReach.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/schema/initConfig.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/util/isMain.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:src/hooks/command/unreconciled.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/conflictedPendingGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/hooks/hookRoot.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:governance-mode",
+        "target": "p:tests/util/git.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4041,7 +4229,22 @@
       },
       {
         "source": "c:human-owns-contract",
+        "target": "p:src/hooks/gates/governanceFilesGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
         "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:human-owns-contract",
+        "target": "p:tests/hooks/governanceFiles.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4052,21 +4255,6 @@
       {
         "source": "c:human-owns-contract",
         "target": "p:tests/viewer/serve.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:human-owns-contract",
-        "target": "p:tests/hooks/governanceFiles.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:human-owns-contract",
-        "target": "p:src/hooks/gates/governanceFilesGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:human-owns-contract",
-        "target": "p:tests/hooks/entrypoint.e2e.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4086,7 +4274,22 @@
       },
       {
         "source": "c:output-locale",
+        "target": "p:src/init/referencePaths.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
         "target": "p:tests/cli/cli.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:output-locale",
+        "target": "p:tests/i18n/messages.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4101,22 +4304,17 @@
       },
       {
         "source": "c:output-locale",
-        "target": "p:tests/viewer/sidebarState.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:output-locale",
         "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:output-locale",
-        "target": "p:tests/i18n/messages.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:output-locale",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/viewer/sidebarState.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4156,7 +4354,27 @@
       },
       {
         "source": "c:reference-first-duty",
+        "target": "p:src/init/referenceWalk.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:src/reference/enumerate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
         "target": "p:tests/cli/reference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-first-duty",
+        "target": "p:tests/hooks/sessionStartReference.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4176,32 +4394,12 @@
       },
       {
         "source": "c:reference-first-duty",
-        "target": "p:tests/reference/enumerate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-first-duty",
         "target": "p:tests/reference/diff.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:reference-first-duty",
-        "target": "p:tests/hooks/sessionStartReference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-first-duty",
-        "target": "p:src/init/referenceWalk.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-first-duty",
-        "target": "p:src/reference/enumerate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-first-duty",
-        "target": "p:tests/hooks/sessionStart.test.ts",
+        "target": "p:tests/reference/enumerate.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4266,6 +4464,61 @@
       },
       {
         "source": "c:reference-sync",
+        "target": "p:tests/cli/referenceSync.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/hooks/sessionStartLookups.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/hooks/sessionStartReference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/init/referenceLockIgnore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/paths.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/affected.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonical.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalEdge.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalFinal.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/canonicalSymlink.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
+        "target": "p:tests/reference/diff.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-sync",
         "target": "p:tests/reference/enumerate.test.ts",
         "kind": "concept-file"
       },
@@ -4281,57 +4534,12 @@
       },
       {
         "source": "c:reference-sync",
-        "target": "p:tests/reference/affected.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/reference/diff.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/cli/referenceSync.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/hooks/sessionStartReference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
         "target": "p:tests/schema/alignment.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:reference-sync",
-        "target": "p:tests/init/referenceLockIgnore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/reference/canonical.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/reference/canonicalEdge.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/reference/canonicalSymlink.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/hooks/sessionStartLookups.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-sync",
-        "target": "p:tests/reference/canonicalFinal.test.ts",
+        "target": "p:tests/util/mapLimit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4371,7 +4579,32 @@
       },
       {
         "source": "c:settled-status",
+        "target": "p:src/concept/attestScope.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/hooks/command/recordCommands.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/hooks/gates/evidenceGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:src/hooks/sessionStart.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
         "target": "p:tests/audit/audit.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/cli/attestScope.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4406,7 +4639,17 @@
       },
       {
         "source": "c:settled-status",
+        "target": "p:tests/concept/quality.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
         "target": "p:tests/drift/detect.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/drift/history.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4416,12 +4659,42 @@
       },
       {
         "source": "c:settled-status",
+        "target": "p:tests/hooks/attestGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/evidenceGate.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
         "target": "p:tests/hooks/postToolUse.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/recordCommands.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
         "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:settled-status",
+        "target": "p:tests/schema/alignment.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4446,57 +4719,27 @@
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/concept/quality.test.ts",
+        "target": "p:src/viewer/statusApi.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/schema/alignment.test.ts",
+        "target": "p:tests/hooks/conflictedPendingGate.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/hooks/preToolUse.test.ts",
+        "target": "p:tests/store/movedConcept.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:src/concept/attestScope.ts",
+        "target": "p:tests/viewer/conceptDetail.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:settled-status",
-        "target": "p:tests/cli/attestScope.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/hooks/attestGate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/hooks/evidenceGate.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:src/hooks/gates/evidenceGate.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:src/hooks/sessionStart.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:settled-status",
-        "target": "p:tests/drift/history.test.ts",
+        "target": "p:tests/viewer/statusApi.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4516,6 +4759,31 @@
       },
       {
         "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/release.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:scripts/releaseSteps.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:src/hooks/gates/staleArtifactsGate.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
         "target": "p:tests/init/packageScript.test.ts",
         "kind": "concept-file"
       },
@@ -4526,7 +4794,17 @@
       },
       {
         "source": "c:generated-not-hand-edited",
+        "target": "p:tests/init/syncGenerated.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
         "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:generated-not-hand-edited",
+        "target": "p:tests/scripts/release.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4545,36 +4823,6 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/init/syncGenerated.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:scripts/release.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:scripts/releaseSteps.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/scripts/release.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:generated-not-hand-edited",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
         "source": "c:init-gate",
         "target": "p:src/cli.ts",
         "kind": "concept-file"
@@ -4582,6 +4830,16 @@
       {
         "source": "c:init-gate",
         "target": "p:src/init/scaffold.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/attestScope.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/cli/audit.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4611,6 +4869,11 @@
       },
       {
         "source": "c:init-gate",
+        "target": "p:tests/cli/referenceSync.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
         "target": "p:tests/cli/requireInit.test.ts",
         "kind": "concept-file"
       },
@@ -4631,12 +4894,27 @@
       },
       {
         "source": "c:init-gate",
+        "target": "p:tests/hooks/gateFailure.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
         "target": "p:tests/hooks/gates.modes.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
         "target": "p:tests/hooks/postToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4666,7 +4944,17 @@
       },
       {
         "source": "c:init-gate",
+        "target": "p:tests/init/syncGenerated.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
         "target": "p:tests/integration/smoke.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:init-gate",
+        "target": "p:tests/paths.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4676,37 +4964,12 @@
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/cli/referenceSync.test.ts",
+        "target": "p:src/hooks/hookRoot.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:init-gate",
-        "target": "p:tests/init/syncGenerated.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/gateFailure.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/cli/attestScope.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:init-gate",
-        "target": "p:tests/cli/audit.test.ts",
+        "target": "p:tests/hooks/hookRoot.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4736,6 +4999,21 @@
       },
       {
         "source": "c:plugin-version-sync",
+        "target": "p:scripts/release.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:scripts/releaseSteps.mjs",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:src/cli.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
         "target": "p:src/init/packageScript.ts",
         "kind": "concept-file"
       },
@@ -4751,12 +5029,27 @@
       },
       {
         "source": "c:plugin-version-sync",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
         "target": "p:tests/init/ensureConfigDefaults.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:plugin-version-sync",
         "target": "p:tests/init/packageScript.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:tests/init/syncGenerated.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:plugin-version-sync",
+        "target": "p:tests/schema/initConfig.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4776,32 +5069,12 @@
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:tests/init/syncGenerated.test.ts",
+        "target": "p:tests/viewer/serve.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:plugin-version-sync",
-        "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:scripts/release.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:scripts/releaseSteps.mjs",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:tests/hooks/sessionStart.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:plugin-version-sync",
-        "target": "p:src/cli.ts",
+        "target": "p:tests/viewer/renderStamp.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4841,7 +5114,47 @@
       },
       {
         "source": "c:reference-privacy",
+        "target": "p:src/init/referenceWalk.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/reference/fingerprint.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/reference/lock.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:src/reference/sessionBlock.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
         "target": "p:tests/cli/reference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/hooks/preToolUse.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/hooks/sessionStartReference.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/i18n/messages.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4861,7 +5174,17 @@
       },
       {
         "source": "c:reference-privacy",
+        "target": "p:tests/init/referenceLockIgnore.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
         "target": "p:tests/init/referencePaths.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:reference-privacy",
+        "target": "p:tests/init/referenceWalk.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4871,7 +5194,7 @@
       },
       {
         "source": "c:reference-privacy",
-        "target": "p:tests/init/referenceWalk.test.ts",
+        "target": "p:tests/init/syncGenerated.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4886,57 +5209,7 @@
       },
       {
         "source": "c:reference-privacy",
-        "target": "p:tests/hooks/sessionStartReference.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:src/init/referenceWalk.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:src/reference/fingerprint.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:src/reference/sessionBlock.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/referenceLockIgnore.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/init/syncGenerated.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
         "target": "p:tests/schema/initConfig.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/hooks/preToolUse.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/i18n/messages.test.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:src/reference/lock.ts",
-        "kind": "concept-file"
-      },
-      {
-        "source": "c:reference-privacy",
-        "target": "p:tests/hooks/sessionStart.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4971,7 +5244,7 @@
       },
       {
         "source": "c:skill-surface",
-        "target": "p:tests/compat/superpowers.test.ts",
+        "target": "p:tests/compat/skillNames.test.ts",
         "kind": "concept-file"
       },
       {
@@ -4986,12 +5259,12 @@
       },
       {
         "source": "c:untrusted-text-sanitization",
-        "target": "p:tests/hooks/testScopeGate.test.ts",
+        "target": "p:tests/hooks/preToolUse.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:untrusted-text-sanitization",
-        "target": "p:tests/hooks/preToolUse.test.ts",
+        "target": "p:tests/hooks/testScopeGate.test.ts",
         "kind": "concept-file"
       },
       {
@@ -5020,13 +5293,13 @@
         "kind": "concept-file"
       },
       {
-        "source": "c:home-search",
-        "target": "p:assets/viewer.js",
+        "source": "c:concept-inline-edit",
+        "target": "p:tests/store/conceptEdit.test.ts",
         "kind": "concept-file"
       },
       {
         "source": "c:home-search",
-        "target": "p:assets/sidebar.js",
+        "target": "p:assets/viewer.js",
         "kind": "concept-file"
       },
       {
@@ -5172,6 +5445,11 @@
       {
         "source": "c:viewer-readability",
         "target": "p:tests/viewer/sources.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:viewer-readability",
+        "target": "p:tests/viewer/conceptDetail.test.ts",
         "kind": "concept-file"
       }
     ]

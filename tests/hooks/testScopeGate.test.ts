@@ -10,6 +10,8 @@
 //    → conceptDrivenTests: false면 아무 말도 하지 않는다
 //  - untrusted-text-sanitization 불변 "사람이 자유롭게 쓴 문장은 걷어내는 과정을 거치지 않고 AI에게
 //    넘기지 않는다" → 경로에 섞인 각괄호·개행을 새니타이즈해 안내문에 넣는다
+//  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
+//    → 디스크가 아니라 커밋될 내용(input.commit)에서 이름표를 읽는다(부분 스테이징·스테이징 뒤 수정)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -81,5 +83,24 @@ describe('concept-test-scope 문지기', () => {
     const f = await checkTestScope(await input(['tests/[INJECT]\npay.test.ts']));
     expect(f?.reason ?? '').not.toContain('[INJECT]');
     expect(f?.reason ?? '').not.toContain('\n');
+  });
+
+  it('이름표를 디스크가 아니라 커밋될 내용에서 읽는다 [규칙: 커밋에 실제로 들어갈 파일 기준]', async () => {
+    await touch('tests/pay.test.ts', '// @concept:pay-rule\nit()\n');
+    const commit = {
+      blobId: async () => 'x',
+      read: async (p: string) => (p === 'tests/pay.test.ts' ? 'it()\n' : null),
+    };
+    const f = await checkTestScope({ ...(await input(['tests/pay.test.ts'])), commit });
+    expect(f?.gate).toBe('concept-test-scope');
+  });
+
+  it('커밋될 내용에 이름표가 있으면 디스크에서 지워졌어도 통과한다 [규칙: 커밋에 실제로 들어갈 파일 기준]', async () => {
+    await touch('tests/pay.test.ts', 'it()\n');
+    const commit = {
+      blobId: async () => 'x',
+      read: async () => '// @concept:pay-rule\nit()\n',
+    };
+    expect(await checkTestScope({ ...(await input(['tests/pay.test.ts'])), commit })).toBeNull();
   });
 });

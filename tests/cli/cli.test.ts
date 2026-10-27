@@ -47,9 +47,33 @@ beforeEach(() => {
 
 describe('runCli', () => {
   it('init 서브커맨드가 스캐폴드를 만든다', async () => {
-    const code = await runCli(['init', '--root', root, '--mode', 'incremental']);
+    const code = await runCli(['init', '--root', root]);
     expect(code).toBe(0);
     expect(existsSync(join(root, 'docs/conceptpowers/init.json'))).toBe(true);
+  });
+  // 효과 없던 --mode 플래그는 제거됐다 — 받아도 아무 일도 하지 않는 선택지를 남기지 않는다.
+  it('init은 더 이상 --mode를 받지 않는다', async () => {
+    const code = await runCli(
+      ['init', '--root', root, '--mode', 'strict'],
+      () => {},
+      () => {}
+    );
+    expect(code).not.toBe(0);
+  });
+  // reference-privacy "참고자료 폴더의 파일은 기본적으로 저장소 추적에서 제외" — 생성물 패치 단계가 실패해도
+  // init은 끝나되, 실패한 단계를 숨기지 않고 stderr로 알린다.
+  it('init은 생성물 패치 실패 단계를 stderr로 알린다', async () => {
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    let errText = '';
+    const code = await runCli(
+      ['init', '--root', root],
+      () => {},
+      (t) => {
+        errText += t;
+      }
+    );
+    expect(code).toBe(0);
+    expect(errText).toContain('packageScript');
   });
   // init 직후는 도장 == 설치 버전이라, 개념 plugin-version-sync에 따라 그냥 실행하면
   // 건너뛴다("버전이 같은데도 생성물을 다시 만드는 것"은 restrict). 패치 결과 보고는
@@ -276,10 +300,10 @@ describe('runCli', () => {
   it('note-conflict/resolve-conflict가 사유를 기록·해소한다', async () => {
     await runCli(['init', '--root', root]);
     expect(await runCli(['note-conflict', 'p', '--reason', 'x', '--root', root])).toBe(0);
-    const { readPendingConflicts } = await import('../../src/concept/pendingConflicts.js');
-    expect(await readPendingConflicts(root)).toEqual({ p: 'x' });
+    const { readPendingConflictsStrict } = await import('../../src/concept/pendingConflicts.js');
+    expect(await readPendingConflictsStrict(root)).toEqual({ p: 'x' });
     await runCli(['resolve-conflict', 'p', '--root', root]);
-    expect(await readPendingConflicts(root)).toEqual({});
+    expect(await readPendingConflictsStrict(root)).toEqual({});
   });
   it('map은 증분 실행 시 전달되지 않은 파일의 캐시 항목을 보존한다(병합)', async () => {
     await runCli(['init', '--root', root]);
@@ -305,7 +329,7 @@ describe('runCli', () => {
     expect(await readMappingCache(root)).toEqual({ beta: ['src/b.ts'] });
   });
   it('render 서브커맨드가 뷰어 경로 안내를 JSON으로 출력한다', async () => {
-    await runCli(['init', '--root', root, '--mode', 'incremental']);
+    await runCli(['init', '--root', root]);
     let captured = '';
     const code = await runCli(['render', '--root', root], (s) => (captured += s));
     expect(code).toBe(0);

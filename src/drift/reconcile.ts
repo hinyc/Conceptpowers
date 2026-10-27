@@ -5,7 +5,12 @@ import { appendHistoryMany, type HistoryInput } from './history.js';
 import { computeDrift } from './detect.js';
 import { contractHash, hashVersion, CONTRACT_HASH_VERSION } from './hash.js';
 import { normalizeRel } from './safe.js';
-import { isEngagedWithTags, isFollowedWithTags, presentTagSlugs } from './follow.js';
+import {
+  isEngagedWithTags,
+  isFollowedWithTags,
+  presentTagSlugs,
+  relatedPresentWithCode,
+} from './follow.js';
 import { pendingConceptDocs } from './pendingDocs.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { pruneAttestLog } from '../concept/attest.js';
@@ -44,6 +49,8 @@ export async function reconcileAfterCommit(
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged =
     drift.length === 0 ? new Set<string>() : await presentTagSlugs(root, committed, ignoreGlobs);
+  // 연결 코드 가운데 코드가 있는 파일만 따라옴 재료로 센다(표식만 있는 파일 제외 — 문지기와 같은 잣대).
+  const committedCode = await relatedPresentWithCode(root, committed, drift);
   // 미커밋 문서의 지문으로 기준선을 올리지 않기 위한 정착 여부(HEAD와 다른 문서 목록).
   // git 정보를 얻을 수 없으면 전부 정착으로 기울인다 — 결산을 조용히 멈추지 않는 방향이다.
   const pendingDocs = drift.length === 0 ? new Set<string>() : await pendingConceptDocs(root);
@@ -60,14 +67,14 @@ export async function reconcileAfterCommit(
     if (d) {
       // 맞물린 개념만 결산한다(drift-reconcile 불변 규칙) — 개념 문서나 연결 코드가
       // 이번 커밋에 하나도 안 들어왔으면 기준선·이력을 건드리지 않고 어긋난 채 남겨 둔다.
-      if (!isEngagedWithTags(d, committed, tagged)) continue;
+      if (!isEngagedWithTags(d, committed, tagged, committedCode)) continue;
       // 문서가 아직 커밋에 정착하지 않았으면(미커밋 변경 존재) 결산을 미룬다 —
       // 기준선은 커밋에 정착한 내용의 지문으로만 옮긴다(문서 미동반 강행을 aligned로
       // 은폐하지 않고, 문서를 담을 다음 커밋이 정상적으로 닫게 한다).
       if (pendingDocs !== null && pendingDocs.has(normalizeRel(d.docPath))) continue;
       // 문지기(driftGate)와 같은 잣대: 연결 코드 가운데 하나라도 커밋에 들어왔거나,
       // 커밋된 파일의 첫머리 태그가 이 개념을 가리키면 따라옴.
-      if (isFollowedWithTags(d, committed, tagged)) {
+      if (isFollowedWithTags(d, committedCode, tagged)) {
         aligned.push(c.slug);
         entries.push({
           slug: c.slug,

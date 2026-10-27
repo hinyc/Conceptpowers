@@ -84,12 +84,6 @@ export function externalKey(base: string, rel: string): string {
   return b === '/' ? `/${toPosix(rel)}` : `${b}/${toPosix(rel)}`;
 }
 
-function hasDotSegment(rel: string): boolean {
-  return toPosix(rel)
-    .split('/')
-    .some((seg) => seg.startsWith('.'));
-}
-
 function target(
   key: string,
   abs: string,
@@ -102,7 +96,8 @@ function target(
 
 async function listRepo(root: string, files?: readonly string[]): Promise<ReferenceTarget[]> {
   const refDir = cpPaths(root).reference;
-  const rels = (files ?? (await listReferenceFiles(root))).filter((rel) => !hasDotSegment(rel));
+  // 점 파일 거르기는 listReferenceFiles(walkUsableFiles)가 이미 한다. stat은 크기·시각을 얻으려고 한다.
+  const rels = files ?? (await listReferenceFiles(root));
   const found = await Promise.all(
     rels.map(async (rel) => {
       const abs = join(refDir, rel);

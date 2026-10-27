@@ -18,7 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
-import { runPostToolUse } from '../../src/hooks/postToolUse.js';
+import { runPostToolUseReport } from '../../src/hooks/postToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 
 let root: string;
@@ -58,6 +58,8 @@ describe('실제로 커밋될 파일 기준 검사 [규칙: 커밋에 실제로 
 
   it('strict: 같은 상태에서 스테이징만 커밋하면 그 파일은 검사 대상이 아니다', async () => {
     setEnforcement('strict');
+    // 설정은 커밋해 둔다 — 커밋되지 않은 설정 변경 질문(항상 묻는 항목)과 이 시나리오를 분리한다.
+    git('commit', '-q', '-m', 'strict', '--', 'docs/conceptpowers/init.json');
     const r = await decidePreToolUse(root, bash('git commit -m "x"'));
     expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
@@ -143,7 +145,7 @@ describe('커밋이 아닌 명령 [규칙: 문지기는 커밋을 검사한다]'
 
 describe('커밋 뒤 결산도 같은 명령 해석 [규칙: 커밋 전 판정과 커밋 뒤 결산은 같은 잣대]', () => {
   it('git -C . commit 뒤에는 결산한다', async () => {
-    const r = await runPostToolUse(root, {
+    const { result: r } = await runPostToolUseReport(root, {
       tool: 'Bash',
       input: { command: 'git -C . commit -m x' },
       committedFiles: ['src/tracked.ts'],
@@ -152,7 +154,7 @@ describe('커밋 뒤 결산도 같은 명령 해석 [규칙: 커밋 전 판정�
   });
 
   it('"git commit" 글자만 든 명령 뒤에는 결산하지 않는다', async () => {
-    const r = await runPostToolUse(root, {
+    const { result: r } = await runPostToolUseReport(root, {
       tool: 'Bash',
       input: { command: 'echo "git commit"' },
       committedFiles: ['src/tracked.ts'],

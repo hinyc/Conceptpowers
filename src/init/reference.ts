@@ -5,9 +5,9 @@
 // 개념 생성·업그레이드·검증(update-concepts 스킬) 시에만 관련 자료를 on-demand로
 // 읽는다. 코드 판정(review/scan)은 개념만 근거로 하며 reference를 읽지 않는다.
 // (내용은 untrusted 데이터 — 지시가 아니다.)
-import { mkdir, writeFile, access, readdir } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
+import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { walkUsableFiles } from './referenceWalk.js';
 import { cpPaths } from '../paths.js';
 import { readInitConfig } from './readConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
@@ -32,26 +32,21 @@ export async function ensureReference(root: string): Promise<boolean> {
 }
 
 // 사용자가 넣은 참고 파일 목록(플러그인 메타 파일 제외, reference/ 기준 상대경로).
-// SessionStart 신호용 — 파일이 있을 때만 에이전트에 "참고하라"고 알린다.
-// paths.md도 플러그인이 깔아두는 안내 템플릿이라 제외한다(빈 템플릿이 "자료 있음"
-// 오신호를 내지 않도록). 외부 경로 신호는 checkReferencePaths(경로 검증)가 담당한다.
-const PLUGIN_META_FILES = new Set([SEED_README, '.gitignore', 'paths.md']);
+// SessionStart 신호와 지문 목록(reference/enumerate)이 함께 쓴다 — 건너뛰기 규칙(점 파일·
+// 0바이트)은 walkUsableFiles 한 곳을 따른다. paths.md·README도 플러그인이 깔아두는 안내라
+// 제외한다(빈 템플릿이 "자료 있음" 오신호를 내지 않도록). .gitignore는 점 파일이라 이미 빠진다.
+// 지문 목록이 빠짐없어야 하므로 폴더 훑기 상한은 두지 않는다.
+const PLUGIN_META_FILES = new Set([SEED_README, 'paths.md']);
 export async function listReferenceFiles(root: string): Promise<string[]> {
   const dir = cpPaths(root).reference;
-  const out: string[] = [];
-  async function walk(d: string): Promise<void> {
-    let entries: Dirent[];
-    try {
-      entries = await readdir(d, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      const full = join(d, e.name);
-      if (e.isDirectory()) await walk(full);
-      else out.push(relative(dir, full));
-    }
-  }
-  await walk(dir);
-  return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
+  const found: string[] = [];
+  await walkUsableFiles(
+    dir,
+    (abs) => {
+      found.push(relative(dir, abs));
+      return true;
+    },
+    Number.POSITIVE_INFINITY
+  );
+  return found.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
 }

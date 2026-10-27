@@ -9,6 +9,9 @@ export interface SeedTemplates {
   architecture: string;
   infra: string;
   reference: string;
+  // reference/paths.md 안내 템플릿. 모든 줄이 주석(#)/빈 줄이라 등록된 경로는 0개다 —
+  // 사용자가 실제 경로를 넣기 전까지 "경로 없음" 경고를 내지 않는다.
+  referencePaths: string;
 }
 
 const REFERENCE_README_KO = `# 참고자료 (reference)
@@ -69,21 +72,85 @@ Put materials here for the agent to consult during concept work.
 - It is supporting material, separate from the baseline (concepts · architecture.md · infra.md).
 `;
 
+const REFERENCE_PATHS_KO = [
+  '# 참고자료 경로 — 개념을 만들 때 참고할 바깥 문서 목록입니다.',
+  '#',
+  '# 한 줄에 경로 하나씩 적습니다. "#"으로 시작하는 줄은 주석이라 무시되므로,',
+  '# 주석이 아닌 실제 줄을 넣기 전까지 이 파일은 아무것도 등록하지 않습니다.',
+  '#',
+  '# 이 경로들은 개념을 정의·업그레이드·검증할 때만(update-concepts 스킬) 읽고,',
+  '# 평소 코드 검토 중에는 읽지 않습니다.',
+  '# 도메인 용어집, 명세, 계약서, 기획 문서 등을 가리키게 하세요.',
+  '#',
+  '# 어떤 형태로 적나요:',
+  '#   이 저장소 밖 -> 절대 경로. 홈 아래라면 "~/"를 쓰세요.',
+  '#     이 파일은 커밋되므로 "/Users/<이름>/..."은 내 컴퓨터에서만 해석됩니다',
+  '#     (동료에게는 없는 경로로 보고됩니다).',
+  '#       ~/Documents/domain-glossary/   홈 기준 폴더(안의 모든 파일, 하위 폴더 포함)',
+  '#       /Volumes/team-share/specs      홈 밖의 절대 경로',
+  '#   이 저장소 안   -> 저장소 루트 기준 상대 경로(현재 작업 폴더 기준이 아닙니다).',
+  '#       docs/legal/contract.pdf',
+  '#',
+  '# 직접 고치지 않아도 됩니다: /conceptpowers:update-concepts 에 경로를 알려주면 여기에',
+  '# 덧붙이고, 그 위치에 읽을 자료가 없으면 알려 줍니다.',
+  '#',
+  '# 아래 예시의 주석을 풀어 고치거나, 직접 추가하세요:',
+  '#   ~/work/product-specs/',
+  '#   /absolute/path/to/domain-rules.md',
+  '',
+].join('\n');
+
+const REFERENCE_PATHS_EN = [
+  '# Reference paths — external documents to consult when authoring concepts.',
+  '#',
+  '# List one path per line. Lines starting with "#" are comments and are ignored,',
+  '# so this file registers nothing until you add real (uncommented) entries.',
+  '#',
+  '# These are read ONLY while defining, upgrading, or verifying a concept',
+  '# (the update-concepts skill) — never during ordinary code checks.',
+  '# Point them at domain glossaries, specs, contracts, planning docs, and so on.',
+  '#',
+  '# Which form to use:',
+  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
+  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
+  '#     (teammates would see it reported as missing).',
+  '#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)',
+  '#       /Volumes/team-share/specs      absolute path outside home',
+  '#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).',
+  '#       docs/legal/contract.pdf',
+  '#',
+  '# Or skip the editing: run /conceptpowers:update-concepts and give it the path — it appends the',
+  '# entry here and warns if the location holds no readable material.',
+  '#',
+  '# Uncomment and edit the examples below, or add your own:',
+  '#   ~/work/product-specs/',
+  '#   /absolute/path/to/domain-rules.md',
+  '',
+].join('\n');
+
 export const seedTemplates: Record<Locale, SeedTemplates> = {
   ko: {
     architecture: '# 아키텍처\n\n<!-- 사용자가 직접 작성: 개념의 상위 기준 -->\n',
     infra: '# 인프라\n\n<!-- 사용자가 직접 작성 -->\n',
     reference: REFERENCE_README_KO,
+    referencePaths: REFERENCE_PATHS_KO,
   },
   en: {
     architecture: '# Architecture\n\n<!-- Fill in: the high-level basis for concepts -->\n',
     infra: '# Infrastructure\n\n<!-- Fill in -->\n',
     reference: REFERENCE_README_EN,
+    referencePaths: REFERENCE_PATHS_EN,
   },
 };
 
 // 에이전트에게 산출물 언어를 지시할 때 쓰는 사람이 읽는 라벨.
 export const localeLabel: Record<Locale, string> = { ko: 'Korean', en: 'English' };
+
+// 뷰어에서 개념을 편집했을 때 변경 이력에 남기는 고정 사유(뷰어에는 사유 입력 칸을 두지 않는다).
+export const viewerEditReason: Record<Locale, string> = {
+  ko: '뷰어에서 편집',
+  en: 'Edited in the viewer',
+};
 
 // init 완료 후 사람이 읽는 안내 문구 조각.
 export interface InitHintStrings {

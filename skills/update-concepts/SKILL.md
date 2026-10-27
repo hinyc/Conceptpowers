@@ -10,7 +10,8 @@ description: Use whenever a concept must be written or changed in a governance-a
 
 개념을 **새로 쓰거나 고치는 유일한 스킬**이다. 참고자료(`docs/conceptpowers/reference/` + `reference/paths.md`에
 등록된 바깥 위치)를 읽는 곳도 여기(와 여기서 부르는 정합성 검사)뿐이다 — 코드를 판정하는 `review`와 구멍을
-찾는 `scan`은 정의된 개념만 근거로 삼는다. 산출물은 프로젝트 언어(`init.json`의 `locale`)로 쓴다.
+찾는 `scan`은 정의된 개념만 근거로 삼는다. 참고자료를 읽을 때는 `references/reference-read.md`(바깥 경로 읽기,
+green 개념과 어긋날 때의 우선순위)를 따른다. 산출물은 프로젝트 언어(`init.json`의 `locale`)로 쓴다.
 
 이 파일은 **계기를 가르고 공통 마무리를 지키는 자리**다. 흐름 본문은 계기에 맞는 절차 문서 하나만 읽는다
 (이 스킬 폴더의 `references/`).
@@ -87,6 +88,8 @@ G pending 재검사·정착 `settle.md`.
 - 코드를 통과시키려고 개념을 고치거나 red를 승인하는 것.
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
+
+이 절이 뷰어 링크 안내의 기준이다 — 다른 스킬과 이 스킬의 절차 문서는 여기를 가리킨다.
 
 After `render`, always end with a clickable viewer link (render prints the path + serve command).
 Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/group/__features/<slug>` / `#/architecture` —

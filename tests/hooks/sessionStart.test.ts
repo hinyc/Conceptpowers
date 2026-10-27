@@ -334,6 +334,21 @@ describe('플러그인 업데이트 알림', () => {
     expect(ctx).toContain('/plugin marketplace update conceptpowers-dev');
   });
 
+  // plugin-version-sync 허용: "새 버전이 나오면 작업을 시작할 때 알리고, 지금 올릴지 무시할지 사람이 고르게 하는 것 —
+  // 무시하기를 고르면 작업을 막지 않고 그대로 이어 간다"
+  it('새 버전 안내는 지금 올리기/무시하기를 사람에게 고르게 하고, 무시하면 막지 않고 이어 가라고 지시한다', async () => {
+    await scaffoldInit(root, {});
+    const o = await buildSessionStartOutput(root, '/plugin', {
+      checkForUpdate: async () => ({ installed: '0.1.0', latest: '0.2.0' }),
+    });
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toMatch(/Ask the user to choose/);
+    expect(ctx).toMatch(/update now/i);
+    expect(ctx).toMatch(/ignore/i);
+    expect(ctx).toMatch(/If the user chooses to ignore, do not block/);
+    expect(ctx).not.toContain('in one concise line');
+  });
+
   it('업데이트가 없으면 블록이 없다', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, '/plugin', {

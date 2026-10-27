@@ -16,6 +16,8 @@
 //  - 구성요소 "개념 없음 영역: 사람이 설정에 적어 둔 폴더 — 그 안에서 표식이 없는 파일은 \"없음\" 표식을 단 것으로 친다"
 //    → 영역 안의 표식 없는 파일은 격차가 아니다 / 영역 밖은 그대로 격차
 //    → '없음' 다수 안내는 사람이 정한 영역 안의 파일을 세지 않는다(파일마다 단 '없음'만 센다)
+//  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
+//    → 내용 읽기 함수를 넘기면 디스크 대신 그 내용(커밋될 내용)으로 표식을 판정한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -97,5 +99,28 @@ describe('개념 없음 영역 [구성요소: 영역 안에서 표식이 없는 
     expect(
       await findNoConceptFiles(root, ['src/ui/Button.ts', 'src/glue.ts'], [], ['src/ui/**'])
     ).toEqual({ none: ['src/glue.ts'], total: 1 });
+  });
+});
+
+describe('커밋될 내용으로 판정 [규칙: 커밋에 실제로 들어갈 파일 기준]', () => {
+  it('읽기 함수가 준 내용에 표식이 없으면 디스크에 표식이 있어도 격차다', async () => {
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:x\nexport const a = 1\n');
+    const read = async (): Promise<string | null> => 'export const a = 1\n';
+    expect(await findConceptlessFiles(root, ['src/a.ts'], [], [], read)).toEqual(['src/a.ts']);
+  });
+
+  it('읽기 함수가 null이면(커밋에 없는 파일) 건너뛴다', async () => {
+    writeFileSync(join(root, 'src/a.ts'), 'export const a = 1\n');
+    const read = async (): Promise<string | null> => null;
+    expect(await findConceptlessFiles(root, ['src/a.ts'], [], [], read)).toEqual([]);
+  });
+
+  it("'없음' 다수 안내도 읽기 함수가 준 내용으로 센다", async () => {
+    writeFileSync(join(root, 'src/a.ts'), 'export const a = 1\n');
+    const read = async (): Promise<string | null> => '// @concept:none\nexport const a = 1\n';
+    expect(await findNoConceptFiles(root, ['src/a.ts'], [], [], read)).toEqual({
+      none: ['src/a.ts'],
+      total: 1,
+    });
   });
 });

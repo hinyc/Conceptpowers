@@ -111,6 +111,5 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
-After `render`, always end with a clickable viewer link (render prints the path + serve command).
-Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/group/__features/<slug>` / `#/architecture` —
-otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.
+`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
+있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.

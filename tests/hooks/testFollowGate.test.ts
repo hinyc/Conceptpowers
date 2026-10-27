@@ -14,6 +14,7 @@
 //    → conceptDrivenTests: false면 문지기가 아무 말도 하지 않는다
 //  - concept-driven-tests 불변 "표식만 있고 검사 내용이 없는 파일은 딸린 검사로 세지 않는다"
 //    → 이름표만 단 빈 검사 파일로는 통과하지 못한다
+//    → 지도에 연결된 검사 파일이라도 표식만 남기고 비운 채 스테이징하면 딸린 검사로 세지 않는다
 //  - concept-driven-tests 구성요소 "검사 파일 판별 규칙 … 시작 설정에 적으며, 적지 않으면 흔히
 //    쓰는 기본 규칙을 쓴다" → 설정에 적은 규칙으로 검사 파일을 가려낸다
 //  - 새로 만든 검사(아직 지도에 없는 파일)도 개념 이름표가 그 개념을 가리키면 따라온 것으로 본다 —
@@ -34,7 +35,7 @@ import type { GateInput } from '../../src/hooks/gates/types.js';
 
 let root: string;
 
-async function touch(rel: string, body = '\n') {
+async function touch(rel: string, body = 'export const x = 1;\n') {
   const abs = join(root, rel);
   await mkdir(dirname(abs), { recursive: true });
   await writeFile(abs, body, 'utf8');
@@ -174,5 +175,13 @@ describe('concept-test-follow 문지기', () => {
     expect(await checkTestFollow(custom)).toBeNull();
     // 같은 파일이라도 기본 규칙에서는 검사로 보지 않으므로 붙잡힌다.
     expect(await checkTestFollow(base)).not.toBeNull();
+  });
+
+  it('연결된 검사 파일이라도 표식만 남기고 비운 채 스테이징하면 따라온 검사가 아니다 [규칙: 표식만 있고 검사 내용이 없는 파일은 세지 않는다]', async () => {
+    await touch('src/pay.ts');
+    await touch('tests/pay.test.ts', '// @concept:pay-rule\n');
+    await makeDrift(['src/pay.ts', 'tests/pay.test.ts']);
+    const f = await checkTestFollow(await input(['src/pay.ts', 'tests/pay.test.ts']));
+    expect(f?.gate).toBe('concept-test-follow');
   });
 });

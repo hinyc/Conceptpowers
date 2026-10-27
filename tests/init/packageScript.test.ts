@@ -12,7 +12,7 @@
 //    → package.json이 없으면 no-package를 반환하고 파일을 만들지 않는다
 //  - "잘못된 JSON이면 에러를 던진다"는 상위 기준 문서 "갈아 끼우기 방식"의 불변 "실패를 감추지 않는다"와 같은 태도다.
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -66,5 +66,38 @@ describe('upsertViewerScript', () => {
   it('잘못된 JSON이면 에러를 던진다', async () => {
     writeFileSync(pkgPath(), '{ not json');
     await expect(upsertViewerScript(root)).rejects.toThrow();
+  });
+});
+
+// plugin-version-sync 불변 "설정 파일에 이미 적힌 값은 무엇이든 그대로 보존한다" —
+// 스크립트 한 줄을 더할 때 사용자의 들여쓰기·끝 줄바꿈 서식까지 바꾸지 않는다.
+describe('upsertViewerScript — 서식 보존', () => {
+  const expectedWith = (indent: string | number, eol: string) =>
+    JSON.stringify(
+      { name: 'demo', scripts: { build: 'tsc', [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND } },
+      null,
+      indent
+    ) + eol;
+  const source = { name: 'demo', scripts: { build: 'tsc' } };
+
+  it('탭 들여쓰기와 끝 줄바꿈을 보존한다', async () => {
+    writeFileSync(pkgPath(), JSON.stringify(source, null, '\t') + '\n');
+    expect(await upsertViewerScript(root)).toBe('set');
+    expect(readFileSync(pkgPath(), 'utf8')).toBe(expectedWith('\t', '\n'));
+  });
+  it('4칸 들여쓰기와 끝 줄바꿈 없음을 보존한다', async () => {
+    writeFileSync(pkgPath(), JSON.stringify(source, null, 4));
+    expect(await upsertViewerScript(root)).toBe('set');
+    expect(readFileSync(pkgPath(), 'utf8')).toBe(expectedWith(4, ''));
+  });
+  it('2칸 들여쓰기를 보존한다', async () => {
+    writeFileSync(pkgPath(), JSON.stringify(source, null, 2) + '\n');
+    expect(await upsertViewerScript(root)).toBe('set');
+    expect(readFileSync(pkgPath(), 'utf8')).toBe(expectedWith(2, '\n'));
+  });
+  it('쓰고 난 뒤 임시 파일을 남기지 않는다(원자적 교체)', async () => {
+    writeFileSync(pkgPath(), JSON.stringify(source, null, 2) + '\n');
+    await upsertViewerScript(root);
+    expect(readdirSync(root)).toEqual(['package.json']);
   });
 });

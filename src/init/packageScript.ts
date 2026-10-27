@@ -3,8 +3,9 @@
 // 대상 프로젝트의 package.json에 "뷰어 열기" 스크립트(concepts:view)를 보장한다.
 // 뷰어는 data/*.json을 fetch하므로 file://가 아닌 http로 열어야 한다.
 // 의존성 0인 정적 서버(serve.mjs)를 node로 실행해 기본 브라우저를 띄운다.
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { writeFileAtomic } from '../util/atomicWrite.js';
 
 export const VIEWER_SCRIPT_NAME = 'concepts:view';
 export const VIEWER_INDEX = 'docs/conceptpowers/concepts/viewer/index.html';
@@ -23,6 +24,19 @@ export type ViewerScriptStatus = 'no-package' | 'unchanged' | 'set' | 'kept';
 // 우리가 과거에 생성한 명령인지 판별(관리 경로를 포함하면 우리 것).
 function isPluginManaged(cmd: string): boolean {
   return cmd.includes('conceptpowers/concepts/viewer/');
+}
+
+// 원래 파일의 들여쓰기(탭/칸 수)를 알아낸다. 한 줄짜리(줄바꿈 없음)면 들여쓰기 없이 쓴다.
+function detectIndent(raw: string): string | undefined {
+  const match = /^([ \t]+)\S/m.exec(raw);
+  if (match) return match[1];
+  return raw.trimEnd().includes('\n') ? '' : undefined;
+}
+
+// 사용자 서식(들여쓰기·끝 줄바꿈)을 보존해 다시 직렬화한다.
+function serializeLike(raw: string, value: unknown): string {
+  const eol = raw.endsWith('\n') ? '\n' : '';
+  return JSON.stringify(value, null, detectIndent(raw)) + eol;
 }
 
 // concepts:view를 표준 명령으로 보장한다. JSON이 깨졌으면 throw.
@@ -49,6 +63,6 @@ export async function upsertViewerScript(root: string): Promise<ViewerScriptStat
     ...pkg,
     scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND },
   };
-  await writeFile(pkgPath, JSON.stringify(next, null, 2) + '\n', 'utf8');
+  await writeFileAtomic(pkgPath, serializeLike(raw, next));
   return 'set';
 }

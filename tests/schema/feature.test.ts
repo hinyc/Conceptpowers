@@ -6,10 +6,12 @@
 //    → 최소 필드로 파싱하고 기본값을 채운다 / 관련 개념과 구현 경로를 보존한다 / title이 비면 거부한다
 //  - globally-unique-slug 불변 "이름표는 소문자·숫자·붙임표만으로 이루어진다"
 //    → slug가 kebab-case가 아니면 거부한다 / concepts 항목이 kebab-case slug가 아니면 거부한다
+//    → 이름표 규칙은 개념 스키마의 것 하나를 함께 쓴다(예약어 거부·모양 정규식이 같다)
 //  - globally-unique-slug 허용 "묶음 구조와 무관하게 이름표만으로 개념이나 기능을 찾아가는 것"
 //    → group은 중첩 경로를 허용한다 (묶음이 깊어져도 이름표가 열쇠다)
 import { describe, it, expect } from 'vitest';
 import { parseFeature } from '../../src/schema/feature.js';
+import { SLUG_RE, SlugSchema } from '../../src/schema/concept.js';
 
 const valid = { slug: 'user-login', title: 'User Login' };
 
@@ -37,6 +39,13 @@ describe('FeatureSchema', () => {
   });
   it('concepts 항목이 kebab-case slug가 아니면 거부한다', () => {
     expect(() => parseFeature({ ...valid, concepts: ['Not Slug'] })).toThrow();
+  });
+  it('이름표 규칙은 개념과 같은 하나를 쓴다 — 예약어도 거부한다', () => {
+    expect(() => parseFeature({ ...valid, slug: 'none' })).toThrow();
+    expect(() => parseFeature({ ...valid, concepts: ['__proto__'] })).toThrow();
+    expect(SLUG_RE.test('user-login')).toBe(true);
+    expect(SLUG_RE.test('User_Login')).toBe(false);
+    expect(SlugSchema.safeParse('none').success).toBe(false);
   });
   it('title이 비면 거부한다', () => {
     expect(() => parseFeature({ slug: 'x', title: '' })).toThrow();

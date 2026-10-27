@@ -1,7 +1,13 @@
 // @concept:governance-mode @concept:drift-reconcile
 // src/hooks/gates/driftGate.ts
 import { computeDrift, type DriftItem } from '../../drift/detect.js';
-import { hasFollowedCode, missingRelatedPaths, presentTagSlugs } from '../../drift/follow.js';
+import {
+  hasFollowedCode,
+  missingRelatedPaths,
+  presentTagSlugs,
+  relatedPresentWithCode,
+} from '../../drift/follow.js';
+import { commitReader } from '../command/commitTree.js';
 import { readNoCodeLog, freshNoCode } from '../../drift/noCode.js';
 import { pendingConceptDocs } from '../../drift/pendingDocs.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
@@ -27,47 +33,45 @@ interface DriftSplit {
 
 // 같은 커밋 판정(같은 GateInput 객체)에서 drift 계산·태그 스캔을 한 번만 한다 —
 // checkDrift·driftReviewNote·engagedDrift가 이 메모를 공유한다.
-const splitCache = new WeakMap<GateInput, DriftSplit | null>();
+// 실패도 메모한다 — 같은 판정에서 어긋남 계산을 쓰는 게이트들이 모두 같은 실패를 받아 함께 실행 실패로 잡힌다.
+const splitCache = new WeakMap<GateInput, Promise<DriftSplit | null>>();
 
-async function splitDrift(input: GateInput): Promise<DriftSplit | null> {
-  if (splitCache.has(input)) return splitCache.get(input) ?? null;
-  const result = await computeSplit(input);
-  splitCache.set(input, result);
-  return result;
+function splitDrift(input: GateInput): Promise<DriftSplit | null> {
+  const cached = splitCache.get(input);
+  if (cached) return cached;
+  const pending = computeSplit(input);
+  splitCache.set(input, pending);
+  return pending;
 }
 
-async function computeSplit({ root, files, cfg }: GateInput): Promise<DriftSplit | null> {
-  // best-effort: drift 계산이 실패해도 나머지 게이트는 정상 진행한다.
-  let drift: DriftItem[] = [];
-  try {
-    drift = await computeDrift(root);
-  } catch {
-    drift = [];
-  }
+// 어긋남 계산이 실패하면 던진다 — 삼켜서 "어긋남 없음"으로 통과시키지 않고, 문지기가 실행 실패(failedGates)로
+// 받아 강도에 맞춰 대응하게 한다(governance-mode: 검사를 실행하지 못한 커밋은 검사를 마친 것이 아니다).
+async function computeSplit(input: GateInput): Promise<DriftSplit | null> {
+  const { root, files, cfg } = input;
+  const drift = await computeDrift(root);
   if (drift.length === 0) return null; // 드리프트가 없으면 태그 스캔 비용도 들이지 않는다
   const staged = new Set(files.map(normalizeRel));
   // 커밋 뒤 결산(reconcile)과 같은 잣대: 연결 코드 가운데 하나라도 스테이징돼 있거나,
   // 스테이징된 파일의 첫머리 태그가 그 개념을 가리키면 코드가 따라온 것(mapping 캐시가 낡아도 인정).
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const tagged = await presentTagSlugs(root, staged, ignoreGlobs);
+  // 연결 코드 가운데 코드가 있는 파일만 따라옴 재료로 센다 — 결산과 같은 함수, 커밋될 내용이 있으면 그것으로 본다.
+  const stagedCode = await relatedPresentWithCode(root, staged, drift, commitReader(input.commit));
   // git 정보를 얻을 수 없으면 전부 미정착으로 기울인다 — 조용히 문서 동반 요구를 끄지 않는다.
   const pendingDocs = await pendingConceptDocs(root);
   // 코드무관 기록: 신선한(현재 지문에 묶인) 기록이 있는 개념은 문서만 커밋해도 정식 통과다.
   // 읽기 실패는 빈 기록 — 기록이 없던 것과 같으므로 조용히 열리는 쪽으로 기울지 않는다.
   const noCodeLog = await readNoCodeLog(root);
-  const missingDoc: DriftSplit['missingDoc'] = [];
-  const missingCode: DriftItem[] = [];
-  const untouched: DriftItem[] = [];
-  const engaged: DriftItem[] = [];
+  const split: DriftSplit = { missingDoc: [], missingCode: [], untouched: [], engaged: [], staged };
   for (const d of drift) {
     const doc = normalizeRel(d.docPath);
     const docStaged = staged.has(doc);
-    const codeStaged = hasFollowedCode(d, staged, tagged);
-    if (docStaged || codeStaged) engaged.push(d);
+    const codeStaged = hasFollowedCode(d, stagedCode, tagged);
+    if (docStaged || codeStaged) split.engaged.push(d);
     const docPending = pendingDocs === null ? true : pendingDocs.has(doc);
     if (codeStaged && !docStaged && docPending) {
       const stagedRelated = d.relatedPaths.map(normalizeRel).filter((p) => staged.has(p));
-      missingDoc.push({ d, stagedRelated });
+      split.missingDoc.push({ d, stagedRelated });
     } else if (
       docStaged &&
       !codeStaged &&
@@ -75,12 +79,12 @@ async function computeSplit({ root, files, cfg }: GateInput): Promise<DriftSplit
       !freshNoCode(noCodeLog, d.slug, d.currentHash)
     ) {
       // 연결 코드가 아예 없는 개념은 따라올 것이 없으므로 문서만 커밋해도 통과다.
-      missingCode.push(d);
+      split.missingCode.push(d);
     } else if (!docStaged && !codeStaged) {
-      untouched.push(d);
+      split.untouched.push(d);
     }
   }
-  return { missingDoc, missingCode, untouched, engaged, staged };
+  return split;
 }
 
 // 딸린 검사 문지기(testFollowGate)가 같은 맞물림 잣대를 재사용한다 — 계산은 메모로 1회.

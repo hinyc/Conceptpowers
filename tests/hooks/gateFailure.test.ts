@@ -9,6 +9,9 @@
 //      (상위 기준 문서의 "실패를 감추지 않는다"와 같은 태도 — 무출력 통과는 어떤 강도에서도 없다)
 //  - governance-mode 불변 "강도 설정이 없거나 깨졌으면 표준(standard)으로 동작한다"
 //    → init.json까지 깨진 상태에서 검사가 무너지면 ask
+//  - governance-mode 불변 "검사 가운데 하나라도 실행하지 못했으면 그 커밋은 검사를 마친 것이 아니다 —
+//    엄격은 막고 표준은 묻는다" → 어긋남 계산(개념 어긋남 검사)이 무너지면 "어긋남 없음"으로 삼키지 않고
+//      실행 실패로 잡는다(그 결과를 함께 쓰는 딸린 검사·증빙 검사도 함께 실패로 잡힌다)
 //  - init-gate 불변 "시작 명령과 상태 확인을 뺀 모든 명령은 실행 전에 초기화 여부를 확인한다"
 //    → 초기화되지 않은 프로젝트의 세션 시작은 실패 안내 없이 무동작(null)
 //  - init-gate 제한 "초기화 표시가 없는 상태를 정상으로 보고하는 것"의 반대편 — 초기화된 프로젝트에서 세션 시작
@@ -117,6 +120,32 @@ describe('커밋 게이트 실행 실패 (fail-closed)', () => {
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
     expect(r!.hookSpecificOutput.permissionDecisionReason).not.toContain('GATE FAILURE');
+  });
+});
+
+// 형식이 깨진 기능 기록 — 어긋남 계산(기능 기록의 연결 코드 수집)만 예외를 던진다.
+function writeBrokenFeature() {
+  const dir = join(root, 'docs/conceptpowers/features');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'broken.json'), '{ not json');
+}
+
+describe('어긋남 계산 실패 — 검사를 마치지 못한 커밋', () => {
+  it('strict: 어긋남 계산이 무너지면 실행 실패로 막는다 [규칙: 하나라도 실행하지 못했으면 엄격은 막는다]', async () => {
+    setEnforcement('strict');
+    writeBrokenFeature();
+    const r = await decidePreToolUseSafe(root, commitEvent());
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('GATE FAILURE');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('concept-drift');
+  });
+
+  it('standard: 어긋남 계산이 무너지면 실행 실패로 묻는다 [규칙: 표준은 묻는다]', async () => {
+    setEnforcement('standard');
+    writeBrokenFeature();
+    const r = await decidePreToolUseSafe(root, commitEvent());
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('concept-drift');
   });
 });
 

@@ -19,6 +19,11 @@
 //    → Edit/Write로 개념 문서·거버넌스 설정·증빙 기록을 직접 고치려 하면 ask다
 //    → 대소문자만 다른 경로(대소문자 무시 파일시스템)·바로가기 경로·MultiEdit으로도 피할 수 없다
 //    → 프로젝트의 다른 파일 편집은 지금처럼 안내만 붙이고 묻지 않는다
+//  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다" + 제한 "도구나 에이전트가
+//    스스로 강도를 바꾸는 것" → 디스크의 init.json이 마지막 커밋과 다른데 이번 커밋에 안 실리면(문지기가 커밋되지
+//    않은 설정으로 판정하게 되므로) 어느 강도에서나 묻는다 / 같으면 묻지 않는다
+//  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
+//    → 커밋될 파일을 확정할 수 없는 명령이어도 색인(·디스크)의 참고자료 변경을 모아 묻는다 — light도 묻는다
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   mkdtempSync,
@@ -189,6 +194,8 @@ describe('사람의 판단 기록이 커밋에 들어오면 [규칙: 사람의 �
   });
   it('그대로거나 지워진 기록만 들어오면 묻지 않는다(결산의 정리)', async () => {
     setEnforcement('strict');
+    git('add', INIT);
+    git('commit', '-qm', 'strict'); // 설정은 커밋해 둔다 — 커밋되지 않은 설정 변경 질문과 분리
     writeFileSync(join(root, NOCODE), JSON.stringify({ kept: entry('기존') }));
     const r = await commit([NOCODE]);
     expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
@@ -265,5 +272,63 @@ describe('도구로 거버넌스 파일을 직접 고치려 하면 [규칙: 개�
       input: { file_path: join(tmpdir(), 'elsewhere/docs/conceptpowers/init.json') },
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBeUndefined();
+  });
+});
+
+describe('커밋되지 않은 설정·참고자료 변경 (git 저장소)', () => {
+  const git = (...args: string[]) =>
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=T', ...args], { cwd: root });
+  beforeEach(() => {
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
+    git('init', '-q');
+    git('add', '-A');
+    git('commit', '-qm', 'base');
+  });
+
+  for (const level of ['strict', 'standard', 'light'] as const) {
+    it(`${level}: 디스크의 init.json이 마지막 커밋과 다르고 커밋에 안 실리면 묻는다 [규칙: 커밋에 실제로 들어갈 파일 기준·강도는 사람이 정한다]`, async () => {
+      setEnforcement(level);
+      const p = join(root, INIT);
+      const cfg = JSON.parse(readFileSync(p, 'utf8'));
+      writeFileSync(p, JSON.stringify({ ...cfg, ignoreGlobs: ['src/**'] }, null, 2) + '\n');
+      writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
+      const r = await commit(['src/a.ts']);
+      expect(r!.hookSpecificOutput.permissionDecision).not.toBeUndefined();
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+    });
+  }
+
+  it('디스크의 init.json이 마지막 커밋과 같으면 묻지 않는다', async () => {
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('init.json');
+  });
+
+  it('light: 확정할 수 없는 커밋 명령이어도 스테이징된 참고자료가 있으면 묻는다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
+    setEnforcement('light');
+    git('add', INIT);
+    git('commit', '-qm', 'light');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/secret.md'), '기밀\n');
+    git('add', '-f', 'docs/conceptpowers/reference/secret.md');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git add src/a.ts && git commit -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('secret.md');
+  });
+
+  it('light: 디스크에서 고친 추적 중인 참고자료도 함께 담길 수 있으면 묻는다', async () => {
+    setEnforcement('light');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/spec.md'), 'v1\n');
+    git('add', '-f', INIT, 'docs/conceptpowers/reference/spec.md');
+    git('commit', '-qm', 'ref');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/spec.md'), 'v2\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git add -A && git commit -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('spec.md');
   });
 });

@@ -35,6 +35,8 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const here = dirname(fileURLToPath(import.meta.url));
+// 실제 화면처럼 topnav.js(묶음 열쇠 groupKeyOf)를 함께 싣는다 — index.html 로드 순서와 같다.
+const topnavSrc = readFileSync(join(here, '../../assets/topnav.js'), 'utf8');
 const src = readFileSync(join(here, '../../assets/viewer.js'), 'utf8').replace(
   /\nboot\(\);?\s*$/,
   '\n'
@@ -118,6 +120,7 @@ const MANIFEST = {
 function load() {
   const ctx: Record<string, unknown> = { window: {}, document: makeDocument() };
   vm.createContext(ctx);
+  vm.runInContext(topnavSrc, ctx);
   vm.runInContext(src, ctx);
   const state = ctx.state as { manifest: unknown; t: unknown };
   state.manifest = MANIFEST;

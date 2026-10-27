@@ -103,6 +103,15 @@ body {
 .side__search {
   margin: 0 0 12px;
 }
+/* 곁 목록 동그라미 색 뜻은 같은 화면(곁 목록 아래 범례)에서 알려준다. */
+.side__legend {
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+}
+.side__legend .status-legend {
+  gap: 6px 10px;
+  font-size: 0.75rem;
+}
 .side-search {
   display: block;
   width: 100%;

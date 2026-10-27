@@ -12,8 +12,6 @@ export type Enforcement = z.infer<typeof EnforcementSchema>;
 export const InitConfigSchema = z.object({
   version: z.string(),
   enabled: z.literal(true),
-  backfillMode: z.enum(['incremental', 'strict']).default('incremental'),
-  enforceScope: z.literal('new-feature-behavior').default('new-feature-behavior'),
   locale: LocaleSchema.default('ko'),
   versionCheck: z.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
@@ -52,10 +50,9 @@ export const InitConfigSchema = z.object({
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
   noConceptGlobs: z.array(z.string()).default([]),
-  project: z
-    .object({ name: z.string().default(''), description: z.string().default('') })
-    .default({}),
 });
+// 모르는 키는 거부하지 않고 버린다(zod 기본 strip) — 읽히지 않아 빠진 옛 키
+// (backfillMode·enforceScope·project)가 기존 init.json에 남아 있어도 검증은 통과한다.
 export type InitConfig = z.infer<typeof InitConfigSchema>;
 
 // 설정이 없거나 깨졌을 때 쓰는 기본 제외 글롭. 문지기·결산·감사가 같은 잣대를 쓰도록

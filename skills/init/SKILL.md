@@ -9,7 +9,7 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
 
 ## Steps
 
-1. Confirm the backfill mode with the user (default: incremental):
+1. Confirm the backfill mode with the user (default: incremental) — it only decides whether step 9 runs the full scan now; it is not passed to the CLI:
    - **incremental** (default): scaffold + marker only. Backfill missing concepts gradually via audit.
    - **strict (full scan)**: enforce a full backfill immediately by scanning the whole project.
      > ⚠️ **Full scan is time- and token-intensive.** It walks every UI button/action and on-screen
@@ -31,7 +31,7 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
    This sets `locale` in `init.json`; the agent then produces concept content, architecture/infra
    docs, and user-facing messages in that language.
 4. Scaffold via the CLI (the CLI path is in the `CONCEPTPOWERS-ACTIVE` session context or the plugin dist):
-   `node "<cli>" init --root . --mode <incremental|strict> --lang <ko|en> --enforcement <strict|standard|light>`
+   `node "<cli>" init --root . --lang <ko|en> --enforcement <strict|standard|light>`
 5. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 6. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
 7. **Ask for reference material paths (skippable).** "개념을 작성할 때 참고할 문서 폴더나 파일이

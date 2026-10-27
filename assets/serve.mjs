@@ -9,12 +9,12 @@ import { createServer } from "node:http";
 import { readFile as readFile9, realpath } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
-import { extname, normalize, resolve, sep } from "node:path";
+import { extname, normalize, resolve as resolve2, sep } from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
-import { readFile as readFile3, readdir } from "node:fs/promises";
-import { join as join2, relative } from "node:path";
+import { readFile as readFile2 } from "node:fs/promises";
+import { join as join3, relative, resolve } from "node:path";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4105,8 +4105,10 @@ var NEVER = INVALID;
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
+var SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
-var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
+var SlugSchema = external_exports.string().regex(SLUG_RE, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
+var slug = SlugSchema;
 var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSourceKind = external_exports.enum(["code", "reference", "decision"]);
 var ConceptSource = external_exports.object({
@@ -4171,19 +4173,34 @@ function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
 
-// src/concept/pendingConflicts.ts
+// src/util/readJsonStrict.ts
 import { readFile } from "node:fs/promises";
-async function readPendingConflicts(root) {
+async function readJsonRecordStrict(file, schema, label) {
+  let raw;
   try {
-    const raw = await readFile(cpPaths(root).pendingConflicts, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
+    raw = await readFile(file, "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") return {};
+    throw error;
+  }
+  try {
+    return schema.parse(JSON.parse(raw));
+  } catch (error) {
+    throw new Error(`${label}\uC774 \uAE68\uC838 \uC788\uC5B4 \uC4F0\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4 (${file}): ${error.message}`);
   }
 }
+
+// src/concept/pendingConflicts.ts
+var PendingConflictsSchema = external_exports.record(external_exports.string(), external_exports.string());
+function readPendingConflictsStrict(root) {
+  return readJsonRecordStrict(
+    cpPaths(root).pendingConflicts,
+    PendingConflictsSchema,
+    "\uCDA9\uB3CC \uC0AC\uC720 \uAE30\uB85D \uD30C\uC77C"
+  );
+}
 async function clearPendingConflict(root, slug3) {
-  const current = await readPendingConflicts(root);
+  const current = await readPendingConflictsStrict(root);
   if (!(slug3 in current)) return;
   const next = { ...current };
   delete next[slug3];
@@ -4319,9 +4336,6 @@ function checkConceptQuality(c, knownSlugs = []) {
   return { ok: deficiencies.length === 0, deficiencies, warnings };
 }
 
-// src/concept/attest.ts
-import { readFile as readFile2 } from "node:fs/promises";
-
 // src/schema/alignment.ts
 var ReferenceLockEntry = external_exports.object({
   hash: external_exports.string(),
@@ -4401,27 +4415,45 @@ function contractHash(c) {
 // src/concept/attest.ts
 async function readAttestLog(root) {
   try {
-    return AttestLog.parse(JSON.parse(await readFile2(cpPaths(root).attestFile, "utf8")));
+    return await readAttestLogStrict(root);
   } catch {
     return {};
   }
+}
+function readAttestLogStrict(root) {
+  return readJsonRecordStrict(cpPaths(root).attestFile, AttestLog, "\uC99D\uBE59 \uAE30\uB85D \uD30C\uC77C");
 }
 function freshPassAttest(log, concept) {
   const entry = log[concept.slug];
   return !!entry && entry.result === "pass" && entry.hash === contractHash(concept);
 }
 
-// src/store/conceptStore.ts
-function fileFor(root, c) {
-  const dataDir = cpPaths(root).conceptsData;
-  return c.group ? join2(dataDir, c.group, `${c.slug}.json`) : join2(dataDir, `${c.slug}.json`);
+// src/store/walkJson.ts
+import { readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
+async function walkJson(dir) {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    const full = join2(dir, e.name);
+    if (e.isDirectory()) out.push(...await walkJson(full));
+    else if (e.name.endsWith(".json")) out.push(full);
+  }
+  return out;
 }
+
+// src/store/conceptStore.ts
 function assertAliasesFree(concept, existing, target, root) {
-  const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((c) => c.slug)]);
+  const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((e) => e.concept.slug)]);
   const takenBy = /* @__PURE__ */ new Map();
   for (const other of existing) {
-    if (fileFor(root, other) === target) continue;
-    for (const alias of other.aliases) takenBy.set(alias, other.slug);
+    if (resolve(root, other.rel) === target) continue;
+    for (const alias of other.concept.aliases) takenBy.set(alias, other.concept.slug);
   }
   const seen = /* @__PURE__ */ new Set();
   for (const alias of concept.aliases) {
@@ -4438,40 +4470,13 @@ function assertAliasesFree(concept, existing, target, root) {
     }
   }
 }
-async function writeConcept(root, input) {
-  const concept = parseConcept(input);
-  const target = fileFor(root, concept);
-  const existing = await listConcepts(root);
-  const duplicate = existing.find((c) => c.slug === concept.slug && fileFor(root, c) !== target);
-  if (duplicate) {
-    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
-  }
-  assertAliasesFree(concept, existing, target, root);
-  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
-  return concept;
-}
-async function walkJson(dir) {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const e of entries) {
-    const full = join2(dir, e.name);
-    if (e.isDirectory()) out.push(...await walkJson(full));
-    else if (e.name.endsWith(".json")) out.push(full);
-  }
-  return out;
-}
 async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
   const entries = [];
   for (const f of files) {
     try {
       entries.push({
-        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
+        concept: parseConcept(JSON.parse(await readFile2(f, "utf8"))),
         rel: relative(root, f)
       });
     } catch (error) {
@@ -4483,6 +4488,36 @@ async function listConceptEntries(root) {
 async function listConcepts(root) {
   return (await listConceptEntries(root)).map((e) => e.concept);
 }
+function locationsOf(root, entries, slug3) {
+  return entries.filter((e) => e.concept.slug === slug3).map((e) => resolve(root, e.rel));
+}
+function duplicateError(slug3, root, paths) {
+  const where = paths.map((p) => relative(root, p)).join(", ");
+  return new Error(
+    `Duplicate slug: ${slug3} exists in more than one file (${where}) \u2014 globally unique; merge them into one file before writing`
+  );
+}
+async function persistConcept(root, concept, target, entries) {
+  const all = locationsOf(root, entries, concept.slug);
+  if (all.length > 1) throw duplicateError(concept.slug, root, all);
+  if (all.length === 1 && all[0] !== target) {
+    throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
+  }
+  assertAliasesFree(concept, entries, target, root);
+  await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
+  return concept;
+}
+async function readSingleEntry(root, slug3) {
+  const entries = await listConceptEntries(root);
+  const matches = entries.filter((e) => e.concept.slug === slug3);
+  if (matches.length === 0) return null;
+  if (matches.length > 1) throw duplicateError(slug3, root, locationsOf(root, entries, slug3));
+  return { entry: matches[0], entries };
+}
+async function rewriteConcept(root, found, input) {
+  const target = resolve(root, found.entry.rel);
+  return persistConcept(root, parseConcept(input), target, found.entries);
+}
 async function readConcept(root, slug3) {
   return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
 }
@@ -4492,8 +4527,9 @@ var ALLOWED_STATUS_TRANSITIONS = {
   green: ["green"]
 };
 async function setConceptStatus(root, slug3, status) {
-  const concept = await readConcept(root, slug3);
-  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  const found = await readSingleEntry(root, slug3);
+  if (!found) throw new Error(`Concept not found: ${slug3}`);
+  const concept = found.entry.concept;
   const from = concept.status;
   if (!ALLOWED_STATUS_TRANSITIONS[from].includes(status)) {
     throw new Error(
@@ -4501,7 +4537,7 @@ async function setConceptStatus(root, slug3, status) {
     );
   }
   if (status === "green" && from !== "green") {
-    const knownSlugs = (await listConcepts(root)).map((c) => c.slug);
+    const knownSlugs = found.entries.map((e) => e.concept.slug);
     const quality = checkConceptQuality(concept, knownSlugs);
     if (!quality.ok) {
       throw new Error(
@@ -4514,7 +4550,7 @@ async function setConceptStatus(root, slug3, status) {
       );
     }
   }
-  const updated = await writeConcept(root, { ...concept, status });
+  const updated = await rewriteConcept(root, found, { ...concept, status });
   if (status === "green") await clearPendingConflict(root, slug3);
   return updated;
 }
@@ -4532,8 +4568,9 @@ var EDITABLE_FIELDS = [
   "sources"
 ];
 async function editConceptContent(root, slug3, patch) {
-  const concept = await readConcept(root, slug3);
-  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  const found = await readSingleEntry(root, slug3);
+  if (!found) throw new Error(`Concept not found: ${slug3}`);
+  const concept = found.entry.concept;
   const safe = {};
   for (const key of EDITABLE_FIELDS) {
     if (Object.prototype.hasOwnProperty.call(patch, key) && patch[key] !== void 0) {
@@ -4541,7 +4578,7 @@ async function editConceptContent(root, slug3, patch) {
     }
   }
   const nextStatus = concept.status === "green" ? "pending" : concept.status;
-  return writeConcept(root, {
+  return rewriteConcept(root, found, {
     ...concept,
     ...safe,
     slug: concept.slug,
@@ -4550,9 +4587,226 @@ async function editConceptContent(root, slug3, patch) {
   });
 }
 
+// src/drift/history.ts
+import { createHash as createHash2 } from "node:crypto";
+import { readdir as readdir2, readFile as readFile3 } from "node:fs/promises";
+import { join as join4 } from "node:path";
+async function readLegacyHistory(root) {
+  try {
+    return History.parse(JSON.parse(await readFile3(cpPaths(root).alignmentHistory, "utf8")));
+  } catch {
+    return [];
+  }
+}
+async function readRecordFiles(root) {
+  const dir = cpPaths(root).alignmentHistoryDir;
+  let names;
+  try {
+    names = (await readdir2(dir)).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const entries = await Promise.all(
+    names.map(async (name) => {
+      try {
+        return HistoryEntry.parse(JSON.parse(await readFile3(join4(dir, name), "utf8")));
+      } catch {
+        return null;
+      }
+    })
+  );
+  return entries.filter((entry) => entry !== null);
+}
+async function readHistory(root) {
+  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
+  return [...legacy, ...records];
+}
+function toEntry(input, prevHash) {
+  return HistoryEntry.parse({
+    slug: input.slug,
+    hash: input.hash,
+    prevHash,
+    reason: input.reason ?? "",
+    ignored: input.ignored ?? false,
+    aligned: input.aligned ?? false,
+    noCode: input.noCode ?? false,
+    note: input.note ?? "",
+    at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
+  });
+}
+function recordFileName(entry, order) {
+  const stamp = entry.at.replace(/[^0-9A-Za-z]/g, "") || "unknown";
+  const digest = createHash2("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
+  return `${stamp}-${String(order).padStart(3, "0")}-${entry.slug}-${digest}.json`;
+}
+async function appendHistoryMany(root, inputs) {
+  if (inputs.length === 0) return [];
+  const existing = await readHistory(root);
+  const lastHash = new Map(existing.map((entry) => [entry.slug, entry.hash]));
+  const dir = cpPaths(root).alignmentHistoryDir;
+  const added = [];
+  for (const [order, input] of inputs.entries()) {
+    const entry = toEntry(input, lastHash.get(input.slug) ?? "");
+    lastHash.set(entry.slug, entry.hash);
+    await writeFileAtomic(
+      join4(dir, recordFileName(entry, order)),
+      JSON.stringify(entry, null, 2) + "\n"
+    );
+    added.push(entry);
+  }
+  return added;
+}
+async function appendHistory(root, input) {
+  return (await appendHistoryMany(root, [input]))[0];
+}
+
+// src/drift/note.ts
+async function noteChange(root, slug3, reason, at) {
+  if (!reason.trim()) throw new Error("reason must not be empty");
+  const concept = await readConcept(root, slug3);
+  if (!concept) throw new Error(`Concept not found: ${slug3}`);
+  return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
+}
+
+// src/store/conceptEdit.ts
+async function editConceptWithNote(root, slug3, patch, reason) {
+  if (typeof reason !== "string" || reason.trim() === "") {
+    throw new Error("reason must not be empty \u2014 say why the concept is being changed");
+  }
+  const before = await readConcept(root, slug3);
+  if (!before) throw new Error(`Concept not found: ${slug3}`);
+  const concept = await editConceptContent(root, slug3, patch);
+  await noteChange(root, slug3, reason);
+  return { concept, downgradedToPending: before.status === "green" };
+}
+
+// src/init/readConfig.ts
+import { readFile as readFile4 } from "node:fs/promises";
+
+// src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
+var InitConfigSchema = external_exports.object({
+  version: external_exports.string(),
+  enabled: external_exports.literal(true),
+  locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
+  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
+  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
+  conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
+  enforcement: EnforcementSchema.default("standard"),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
+  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
+  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  ignoreGlobs: external_exports.array(external_exports.string()).default([
+    "docs/conceptpowers/**",
+    // 플러그인 생성물(뷰어 등)
+    "dist/**",
+    "build/**",
+    // 빌드 산출물
+    "node_modules/**",
+    // 외부 의존성
+    "**/*.generated.*"
+    // 코드 생성물
+  ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+});
+function parseInitConfig(input) {
+  return InitConfigSchema.parse(input);
+}
+
+// src/init/readConfig.ts
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile4(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+// src/i18n/messages.ts
+var REFERENCE_PATHS_KO = [
+  "# \uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \u2014 \uAC1C\uB150\uC744 \uB9CC\uB4E4 \uB54C \uCC38\uACE0\uD560 \uBC14\uAE65 \uBB38\uC11C \uBAA9\uB85D\uC785\uB2C8\uB2E4.",
+  "#",
+  '# \uD55C \uC904\uC5D0 \uACBD\uB85C \uD558\uB098\uC529 \uC801\uC2B5\uB2C8\uB2E4. "#"\uC73C\uB85C \uC2DC\uC791\uD558\uB294 \uC904\uC740 \uC8FC\uC11D\uC774\uB77C \uBB34\uC2DC\uB418\uBBC0\uB85C,',
+  "# \uC8FC\uC11D\uC774 \uC544\uB2CC \uC2E4\uC81C \uC904\uC744 \uB123\uAE30 \uC804\uAE4C\uC9C0 \uC774 \uD30C\uC77C\uC740 \uC544\uBB34\uAC83\uB3C4 \uB4F1\uB85D\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "#",
+  "# \uC774 \uACBD\uB85C\uB4E4\uC740 \uAC1C\uB150\uC744 \uC815\uC758\xB7\uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC(update-concepts \uC2A4\uD0AC) \uC77D\uACE0,",
+  "# \uD3C9\uC18C \uCF54\uB4DC \uAC80\uD1A0 \uC911\uC5D0\uB294 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "# \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uBA85\uC138, \uACC4\uC57D\uC11C, \uAE30\uD68D \uBB38\uC11C \uB4F1\uC744 \uAC00\uB9AC\uD0A4\uAC8C \uD558\uC138\uC694.",
+  "#",
+  "# \uC5B4\uB5A4 \uD615\uD0DC\uB85C \uC801\uB098\uC694:",
+  '#   \uC774 \uC800\uC7A5\uC18C \uBC16 -> \uC808\uB300 \uACBD\uB85C. \uD648 \uC544\uB798\uB77C\uBA74 "~/"\uB97C \uC4F0\uC138\uC694.',
+  '#     \uC774 \uD30C\uC77C\uC740 \uCEE4\uBC0B\uB418\uBBC0\uB85C "/Users/<\uC774\uB984>/..."\uC740 \uB0B4 \uCEF4\uD4E8\uD130\uC5D0\uC11C\uB9CC \uD574\uC11D\uB429\uB2C8\uB2E4',
+  "#     (\uB3D9\uB8CC\uC5D0\uAC8C\uB294 \uC5C6\uB294 \uACBD\uB85C\uB85C \uBCF4\uACE0\uB429\uB2C8\uB2E4).",
+  "#       ~/Documents/domain-glossary/   \uD648 \uAE30\uC900 \uD3F4\uB354(\uC548\uC758 \uBAA8\uB4E0 \uD30C\uC77C, \uD558\uC704 \uD3F4\uB354 \uD3EC\uD568)",
+  "#       /Volumes/team-share/specs      \uD648 \uBC16\uC758 \uC808\uB300 \uACBD\uB85C",
+  "#   \uC774 \uC800\uC7A5\uC18C \uC548   -> \uC800\uC7A5\uC18C \uB8E8\uD2B8 \uAE30\uC900 \uC0C1\uB300 \uACBD\uB85C(\uD604\uC7AC \uC791\uC5C5 \uD3F4\uB354 \uAE30\uC900\uC774 \uC544\uB2D9\uB2C8\uB2E4).",
+  "#       docs/legal/contract.pdf",
+  "#",
+  "# \uC9C1\uC811 \uACE0\uCE58\uC9C0 \uC54A\uC544\uB3C4 \uB429\uB2C8\uB2E4: /conceptpowers:update-concepts \uC5D0 \uACBD\uB85C\uB97C \uC54C\uB824\uC8FC\uBA74 \uC5EC\uAE30\uC5D0",
+  "# \uB367\uBD99\uC774\uACE0, \uADF8 \uC704\uCE58\uC5D0 \uC77D\uC744 \uC790\uB8CC\uAC00 \uC5C6\uC73C\uBA74 \uC54C\uB824 \uC90D\uB2C8\uB2E4.",
+  "#",
+  "# \uC544\uB798 \uC608\uC2DC\uC758 \uC8FC\uC11D\uC744 \uD480\uC5B4 \uACE0\uCE58\uAC70\uB098, \uC9C1\uC811 \uCD94\uAC00\uD558\uC138\uC694:",
+  "#   ~/work/product-specs/",
+  "#   /absolute/path/to/domain-rules.md",
+  ""
+].join("\n");
+var REFERENCE_PATHS_EN = [
+  "# Reference paths \u2014 external documents to consult when authoring concepts.",
+  "#",
+  '# List one path per line. Lines starting with "#" are comments and are ignored,',
+  "# so this file registers nothing until you add real (uncommented) entries.",
+  "#",
+  "# These are read ONLY while defining, upgrading, or verifying a concept",
+  "# (the update-concepts skill) \u2014 never during ordinary code checks.",
+  "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
+  "#",
+  "# Which form to use:",
+  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
+  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
+  "#     (teammates would see it reported as missing).",
+  "#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)",
+  "#       /Volumes/team-share/specs      absolute path outside home",
+  "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
+  "#       docs/legal/contract.pdf",
+  "#",
+  "# Or skip the editing: run /conceptpowers:update-concepts and give it the path \u2014 it appends the",
+  "# entry here and warns if the location holds no readable material.",
+  "#",
+  "# Uncomment and edit the examples below, or add your own:",
+  "#   ~/work/product-specs/",
+  "#   /absolute/path/to/domain-rules.md",
+  ""
+].join("\n");
+var viewerEditReason = {
+  ko: "\uBDF0\uC5B4\uC5D0\uC11C \uD3B8\uC9D1",
+  en: "Edited in the viewer"
+};
+
 // src/viewer/render.ts
-import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile8 } from "node:fs/promises";
-import { join as join5, dirname as dirname3 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile8 } from "node:fs/promises";
+import { join as join6, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4633,12 +4887,10 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile4, readdir as readdir2 } from "node:fs/promises";
-import { join as join3 } from "node:path";
+import { readFile as readFile5 } from "node:fs/promises";
 
 // src/schema/feature.ts
-var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
-var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS2.has(s), "slug must not be a reserved name");
+var slug2 = SlugSchema;
 var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
 var FeatureSchema = external_exports.object({
   slug: slug2,
@@ -4653,27 +4905,12 @@ function parseFeature(input) {
 }
 
 // src/store/featureStore.ts
-async function walkJson2(dir) {
-  let entries;
-  try {
-    entries = await readdir2(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const e of entries) {
-    const full = join3(dir, e.name);
-    if (e.isDirectory()) out.push(...await walkJson2(full));
-    else if (e.name.endsWith(".json")) out.push(full);
-  }
-  return out;
-}
 async function listFeatures(root) {
-  const files = await walkJson2(cpPaths(root).features);
+  const files = await walkJson(cpPaths(root).features);
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile5(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4682,93 +4919,26 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile5, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile6(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
-// src/init/readConfig.ts
-import { readFile as readFile6 } from "node:fs/promises";
-
-// src/schema/initConfig.ts
-var LocaleSchema = external_exports.enum(["ko", "en"]);
-var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
-var InitConfigSchema = external_exports.object({
-  version: external_exports.string(),
-  enabled: external_exports.literal(true),
-  backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
-  enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
-  locale: LocaleSchema.default("ko"),
-  versionCheck: external_exports.boolean().default(true),
-  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
-  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
-  conceptDrivenTests: external_exports.boolean().default(true),
-  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
-  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
-  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
-  testGlobs: external_exports.array(external_exports.string()).default([
-    "tests/**",
-    "test/**",
-    "__tests__/**",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/*_test.*",
-    "**/*_spec.*",
-    "**/test_*.py"
-  ]),
-  enforcement: EnforcementSchema.default("standard"),
-  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
-  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
-  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
-  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
-  ignoreGlobs: external_exports.array(external_exports.string()).default([
-    "docs/conceptpowers/**",
-    // 플러그인 생성물(뷰어 등)
-    "dist/**",
-    "build/**",
-    // 빌드 산출물
-    "node_modules/**",
-    // 외부 의존성
-    "**/*.generated.*"
-    // 코드 생성물
-  ]),
-  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
-  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
-  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
-  project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
-});
-function parseInitConfig(input) {
-  return InitConfigSchema.parse(input);
-}
-
-// src/init/readConfig.ts
-async function readInitConfig(root) {
-  try {
-    const raw = await readFile6(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
-import { readFile as readFile7, writeFile as writeFile3, mkdir as mkdir3 } from "node:fs/promises";
-import { join as join4, dirname as dirname2 } from "node:path";
+import { readFile as readFile7, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
+import { join as join5, dirname as dirname2 } from "node:path";
 var MAX_PLUGIN_ROOT_DEPTH = 6;
 function findPluginRoot(startDir) {
   let dir = startDir;
   for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
     try {
-      readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
+      readFileSync(join5(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
       const parent = dirname2(dir);
@@ -4780,7 +4950,7 @@ function findPluginRoot(startDir) {
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile7(join4(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile7(join5(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -4799,16 +4969,54 @@ async function writeManifest(root, stampVersion) {
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir4(p.conceptsViewer, { recursive: true });
+  await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
     generatorVersion: stampVersion ?? await readPluginVersion()
   };
-  await writeFile4(
-    join5(p.conceptsViewer, "manifest.json"),
+  await writeFile3(
+    join6(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
+}
+async function readExistingStamp(root) {
+  try {
+    const raw = await readFile8(join6(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
+    const stamp = JSON.parse(raw).generatorVersion;
+    return typeof stamp === "string" && stamp !== "" ? stamp : null;
+  } catch {
+    return null;
+  }
+}
+async function refreshManifestData(root) {
+  const stamp = await readExistingStamp(root);
+  await writeManifest(root, stamp ?? void 0);
+}
+
+// src/viewer/statusApi.ts
+function engineErrorStatus(error) {
+  return /not found/i.test(error.message) ? 404 : 400;
+}
+async function handleStatusApi(projectRoot, method, rawSlug, body) {
+  if (method !== "POST") return { status: 405, json: { error: "method not allowed" } };
+  const slug3 = decodeURIComponent(rawSlug);
+  if (!SLUG_RE.test(slug3)) return { status: 400, json: { error: "invalid slug" } };
+  let parsed;
+  try {
+    parsed = JSON.parse(body || "{}");
+  } catch {
+    return { status: 400, json: { error: "invalid JSON body" } };
+  }
+  const status = ConceptStatus.safeParse(parsed?.status);
+  if (!status.success) return { status: 400, json: { error: "status must be green|pending|red" } };
+  try {
+    const concept = await setConceptStatus(projectRoot, slug3, status.data);
+    await refreshManifestData(projectRoot);
+    return { status: 200, json: { ok: true, concept } };
+  } catch (error) {
+    return { status: engineErrorStatus(error), json: { error: error.message } };
+  }
 }
 
 // src/viewer/serve.ts
@@ -4825,7 +5033,6 @@ var MIME = {
   ".woff2": "font/woff2",
   ".map": "application/json; charset=utf-8"
 };
-var SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 var PRIVATE_DIRS = /* @__PURE__ */ new Set(["reference"]);
 var MAX_BODY = 256 * 1024;
 var DRAIN_LIMIT = 4 * MAX_BODY;
@@ -4834,7 +5041,7 @@ function contentType(pathname) {
   return MIME[extname(pathname).toLowerCase()] ?? "application/octet-stream";
 }
 function safeResolve(root, urlPath) {
-  const base = resolve(root);
+  const base = resolve2(root);
   let p;
   try {
     p = decodeURIComponent((urlPath || "/").split("?")[0].split("#")[0]);
@@ -4844,7 +5051,7 @@ function safeResolve(root, urlPath) {
   if (p.includes("\0")) return null;
   if (p === "/" || p === "") p = "/index.html";
   if (p.split("/").some((seg) => seg.startsWith("."))) return null;
-  const resolved = normalize(resolve(base, "." + p));
+  const resolved = normalize(resolve2(base, "." + p));
   return isServable(base, resolved) ? resolved : null;
 }
 function isServable(base, target) {
@@ -4908,33 +5115,13 @@ async function handleApi(projectRoot, req) {
     return { status: 403, json: { error: "forbidden: non-local request" } };
   }
   if (req.method === "GET" && path === "/api/health") {
-    return { status: 200, json: { editable: true } };
+    return { status: 200, json: { editable: true, transitions: ALLOWED_STATUS_TRANSITIONS } };
   }
   if (req.method !== "GET" && !isSameOriginWrite(req.headers)) {
     return { status: 403, json: { error: "forbidden: write must come from this viewer as JSON" } };
   }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
-  if (statusMatch) {
-    if (req.method !== "POST") return { status: 405, json: { error: "method not allowed" } };
-    const slug3 = decodeURIComponent(statusMatch[1]);
-    if (!SLUG_RE.test(slug3)) return { status: 400, json: { error: "invalid slug" } };
-    let parsed;
-    try {
-      parsed = JSON.parse(req.body || "{}");
-    } catch {
-      return { status: 400, json: { error: "invalid JSON body" } };
-    }
-    const status = ConceptStatus.safeParse(parsed.status);
-    if (!status.success)
-      return { status: 400, json: { error: "status must be green|pending|red" } };
-    try {
-      const concept = await setConceptStatus(projectRoot, slug3, status.data);
-      await writeManifest(projectRoot);
-      return { status: 200, json: { ok: true, concept } };
-    } catch (error) {
-      return { status: errorStatus(error), json: { error: error.message } };
-    }
-  }
+  if (statusMatch) return handleStatusApi(projectRoot, req.method, statusMatch[1], req.body);
   const editMatch = path.match(/^\/api\/concept\/([^/]+)$/);
   if (editMatch) {
     if (req.method !== "PUT") return { status: 405, json: { error: "method not allowed" } };
@@ -4950,19 +5137,23 @@ async function handleApi(projectRoot, req) {
     if (!patch || typeof patch !== "object")
       return { status: 400, json: { error: "patch object required" } };
     try {
-      const before = await readConcept(projectRoot, slug3);
-      const wasGreen = before?.status === "green";
-      const concept = await editConceptContent(projectRoot, slug3, patch);
-      await writeManifest(projectRoot);
-      return { status: 200, json: { ok: true, concept, downgradedToPending: wasGreen } };
+      const result = await editConceptWithNote(
+        projectRoot,
+        slug3,
+        patch,
+        await editReason(projectRoot)
+      );
+      await refreshManifestData(projectRoot);
+      return { status: 200, json: { ok: true, ...result } };
     } catch (error) {
-      return { status: errorStatus(error), json: { error: error.message } };
+      return { status: engineErrorStatus(error), json: { error: error.message } };
     }
   }
   return { status: 404, json: { error: "not found" } };
 }
-function errorStatus(error) {
-  return /not found/i.test(error.message) ? 404 : 400;
+async function editReason(projectRoot) {
+  const locale = (await readInitConfig(projectRoot))?.locale ?? "ko";
+  return viewerEditReason[locale];
 }
 function readBody(req) {
   return new Promise((resolvePromise, reject) => {

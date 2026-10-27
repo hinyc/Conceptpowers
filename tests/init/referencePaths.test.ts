@@ -12,7 +12,7 @@
 //    만든다" → 없으면 안내 템플릿을 만들고 있으면 보존한다(멱등)
 //    → 템플릿은 전부 주석·빈 줄이라 등록된 경로가 0개다(오경고 방지)
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile } from 'node:fs/promises';
 import { tmpdir, homedir } from 'node:os';
 import { join } from 'node:path';
 import { access } from 'node:fs/promises';
@@ -21,9 +21,9 @@ import {
   resolveReferencePath,
   checkReferencePaths,
   ensureReferencePaths,
-  PATHS_TEMPLATE,
 } from '../../src/init/referencePaths.js';
 import { cpPaths } from '../../src/paths.js';
+import { seedTemplates } from '../../src/i18n/messages.js';
 
 describe('parseReferencePaths', () => {
   it('불릿·일반 줄을 경로로 파싱하고 주석·빈 줄·제목은 건너뛴다', () => {
@@ -65,8 +65,33 @@ describe('ensureReferencePaths', () => {
     ]);
   });
 
-  it('템플릿은 전부 주석/빈 줄이라 등록된 경로가 0개다(오경고 방지)', () => {
-    expect(parseReferencePaths(PATHS_TEMPLATE)).toEqual([]);
+  it('템플릿은 전부 주석/빈 줄이라 등록된 경로가 0개다(오경고 방지, ko/en)', () => {
+    expect(parseReferencePaths(seedTemplates.ko.referencePaths)).toEqual([]);
+    expect(parseReferencePaths(seedTemplates.en.referencePaths)).toEqual([]);
+  });
+
+  // output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
+  async function writeLocale(locale: 'ko' | 'en'): Promise<void> {
+    await writeFile(
+      cpPaths(root).initFile,
+      JSON.stringify({ version: '0.1.0', enabled: true, locale }),
+      'utf8'
+    );
+  }
+  const readTemplate = () => readFile(join(cpPaths(root).reference, 'paths.md'), 'utf8');
+
+  it('설정 언어가 ko면 한국어 안내 템플릿을 만든다', async () => {
+    await writeLocale('ko');
+    await ensureReferencePaths(root);
+    expect(await readTemplate()).toBe(seedTemplates.ko.referencePaths);
+    expect(seedTemplates.ko.referencePaths).toMatch(/참고자료/);
+  });
+
+  it('설정 언어가 en이면 영어 안내 템플릿을 만든다', async () => {
+    await writeLocale('en');
+    await ensureReferencePaths(root);
+    expect(await readTemplate()).toBe(seedTemplates.en.referencePaths);
+    expect(seedTemplates.en.referencePaths).toMatch(/Reference paths/);
   });
 });
 

@@ -10,9 +10,13 @@ import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { extname, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { setConceptStatus, editConceptContent, readConcept } from '../store/conceptStore.js';
-import { writeManifest } from './render.js';
-import { ConceptStatus } from '../schema/concept.js';
+import { ALLOWED_STATUS_TRANSITIONS } from '../store/conceptStore.js';
+import { editConceptWithNote } from '../store/conceptEdit.js';
+import { readInitConfig } from '../init/readConfig.js';
+import { viewerEditReason } from '../i18n/messages.js';
+import { refreshManifestData } from './render.js';
+import { SLUG_RE } from '../schema/concept.js';
+import { handleStatusApi, engineErrorStatus } from './statusApi.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -28,7 +32,6 @@ const MIME: Record<string, string> = {
   '.map': 'application/json; charset=utf-8',
 };
 
-const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // 서버가 내주지 않는 폴더(대소문자 무시) — 참고자료는 개념 작업용 기밀 자료다(reference-privacy).
 const PRIVATE_DIRS = new Set(['reference']);
 const MAX_BODY = 256 * 1024; // 256KB
@@ -159,7 +162,8 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
   }
 
   if (req.method === 'GET' && path === '/api/health') {
-    return { status: 200, json: { editable: true } };
+    // 상태 전이표는 엔진의 것을 그대로 싣는다 — 뷰어가 손으로 베껴 두면 어긋난다.
+    return { status: 200, json: { editable: true, transitions: ALLOWED_STATUS_TRANSITIONS } };
   }
 
   if (req.method !== 'GET' && !isSameOriginWrite(req.headers)) {
@@ -168,27 +172,7 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
 
   // POST /api/concept/:slug/status  { status }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
-  if (statusMatch) {
-    if (req.method !== 'POST') return { status: 405, json: { error: 'method not allowed' } };
-    const slug = decodeURIComponent(statusMatch[1]);
-    if (!SLUG_RE.test(slug)) return { status: 400, json: { error: 'invalid slug' } };
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(req.body || '{}');
-    } catch {
-      return { status: 400, json: { error: 'invalid JSON body' } };
-    }
-    const status = ConceptStatus.safeParse((parsed as { status?: unknown }).status);
-    if (!status.success)
-      return { status: 400, json: { error: 'status must be green|pending|red' } };
-    try {
-      const concept = await setConceptStatus(projectRoot, slug, status.data);
-      await writeManifest(projectRoot);
-      return { status: 200, json: { ok: true, concept } };
-    } catch (error) {
-      return { status: errorStatus(error), json: { error: (error as Error).message } };
-    }
-  }
+  if (statusMatch) return handleStatusApi(projectRoot, req.method, statusMatch[1], req.body);
 
   // PUT /api/concept/:slug  { patch }
   const editMatch = path.match(/^\/api\/concept\/([^/]+)$/);
@@ -206,22 +190,27 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
     if (!patch || typeof patch !== 'object')
       return { status: 400, json: { error: 'patch object required' } };
     try {
-      const before = await readConcept(projectRoot, slug);
-      const wasGreen = before?.status === 'green';
-      const concept = await editConceptContent(projectRoot, slug, patch);
-      await writeManifest(projectRoot);
-      return { status: 200, json: { ok: true, concept, downgradedToPending: wasGreen } };
+      const result = await editConceptWithNote(
+        projectRoot,
+        slug,
+        patch,
+        await editReason(projectRoot)
+      );
+      await refreshManifestData(projectRoot);
+      return { status: 200, json: { ok: true, ...result } };
     } catch (error) {
-      return { status: errorStatus(error), json: { error: (error as Error).message } };
+      return { status: engineErrorStatus(error), json: { error: (error as Error).message } };
     }
   }
 
   return { status: 404, json: { error: 'not found' } };
 }
 
-// 엔진 에러 메시지를 HTTP 상태로 매핑한다. "not found"만 404, 나머지(가드 위반/중복/검증)는 400.
-function errorStatus(error: unknown): number {
-  return /not found/i.test((error as Error).message) ? 404 : 400;
+// 뷰어 편집의 이력 사유는 고정 문구다(요청 본문의 사유는 받지 않는다) — 사람이 읽는 이력이라 프로젝트 설정
+// 언어로 남긴다(output-locale).
+async function editReason(projectRoot: string): Promise<string> {
+  const locale = (await readInitConfig(projectRoot))?.locale ?? 'ko';
+  return viewerEditReason[locale];
 }
 
 function readBody(req: IncomingMessage): Promise<string> {

@@ -5,11 +5,14 @@ export const ConceptCategory = z.enum(['feature', 'behavior', 'role', 'permissio
 export type ConceptCategory = z.infer<typeof ConceptCategory>;
 
 // 'none'은 `@concept:none `(개념 없음 명시) 예약 마커라 실제 개념 slug로 쓸 수 없다.
+// 이름표 모양(kebab-case)의 단일 원본 — 기능 기록·뷰어 서버도 이것을 가져다 쓴다.
+export const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const RESERVED_SLUGS = new Set(['constructor', 'prototype', '__proto__', 'none']);
-const slug = z
+export const SlugSchema = z
   .string()
-  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case')
+  .regex(SLUG_RE, 'slug must be kebab-case')
   .refine((s) => !RESERVED_SLUGS.has(s), 'slug must not be a reserved name');
+const slug = SlugSchema;
 
 // 승인 상태: green = 검증된 source of truth, pending = 사용자 작성·정착 전(미적용),
 // red = 미승인(자동추론 기본/거부). 기본값은 red(특권 상태 pending은 명시 지정만).

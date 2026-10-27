@@ -7,6 +7,7 @@
 //  - knowledge-graph-view 불변 "경로 복사의 성공과 실패를 모두 사용자에게 즉시 보여준다 — 조용히
 //    실패하지 않는다"
 //    → 성공하면 버튼 글자가 "복사됨" / 실패하면 "복사 실패" / 잠시 뒤 원래 글자로 돌아온다
+//    → 클립보드 기능이 없는 대체 경로(execCommand)도 브라우저가 복사를 거절하면(false) 실패로 알린다
 //  - knowledge-graph-view 허용 "파일 점의 말풍선에서 경로를 클릭 한 번으로 클립보드에 담는 것"
 //    → 클립보드에 담기는 값은 말풍선에 보이는 그 경로다
 import { describe, it, expect, vi } from 'vitest';
@@ -145,5 +146,49 @@ describe('buildFileTip — 경로 복사 버튼', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// 대체 경로: navigator.clipboard가 없을 때 copyText는 textarea + execCommand('copy')로 복사한다.
+function loadFallback(execResult: boolean | (() => boolean)) {
+  const body = Object.assign(el('body'), {
+    removeChild(c: Stub) {
+      c.parentNode = null;
+      return c;
+    },
+  });
+  const textarea = () => Object.assign(el('textarea'), { value: '', focus() {}, select() {} });
+  const ctx: Record<string, unknown> = {
+    window: {},
+    navigator: {},
+    document: {
+      createElement: (t: string) => (t === 'textarea' ? textarea() : el(t)),
+      createElementNS: (_ns: string, t: string) => el(t),
+      createTextNode: (s: string) => Object.assign(el('#text'), { textContent: s }),
+      execCommand: typeof execResult === 'function' ? execResult : () => execResult,
+      body,
+    },
+    setTimeout,
+    clearTimeout,
+  };
+  vm.createContext(ctx);
+  vm.runInContext(src, ctx);
+  return ctx as unknown as { copyText: (s: string) => Promise<void> };
+}
+
+describe('copyText — 클립보드 기능이 없을 때의 대체 경로', () => {
+  it('브라우저가 복사를 해 주면(true) 성공으로 끝난다', async () => {
+    await expect(loadFallback(true).copyText('a/b.ts')).resolves.toBeUndefined();
+  });
+
+  it('브라우저가 복사를 거절하면(false) 성공으로 꾸미지 않고 실패로 알린다', async () => {
+    await expect(loadFallback(false).copyText('a/b.ts')).rejects.toThrow();
+  });
+
+  it('복사 도중 예외가 나도 실패로 알린다', async () => {
+    const boom = () => {
+      throw new Error('unsupported');
+    };
+    await expect(loadFallback(boom).copyText('a/b.ts')).rejects.toThrow('unsupported');
   });
 });

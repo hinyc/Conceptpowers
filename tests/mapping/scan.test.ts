@@ -16,8 +16,10 @@
 //    → updateMappingCache 증분 병합: 전달 안 된 파일은 보존 / 전달된 파일은 교체 / 삭제된 파일은 제거
 //  - concept-code-mapping 제한 "보관본이 낡았는지 확인하지 않고 최신 상태라고 단정하는 것"
 //    → 형식이 깨진 캐시는 빈 객체로 폴백한다 (낡거나 깨진 값을 최신으로 믿지 않는다)
+//  - concept-code-mapping 허용 "…지도를 만들고 보관본으로 저장하는 것"
+//    → 보관본은 갈아 끼우기로 쓴다 — 기존 파일을 제자리에서 덮어쓰지 않는다(바로가기를 따라가 남의 파일을 덮지 않는다)
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -63,6 +65,17 @@ describe('mapping scan', () => {
   it('readMappingCache는 쓰고 다시 읽으면 동일하다', async () => {
     await writeMappingCache(root, { 'admin-role': ['src/a.ts'] });
     expect(await readMappingCache(root)).toEqual({ 'admin-role': ['src/a.ts'] });
+  });
+  it('보관본은 갈아 끼우기로 쓴다 — 바로가기 대상 파일을 덮어쓰지 않고 임시 파일도 남기지 않는다', async () => {
+    const cache = join(root, 'docs/conceptpowers/.cache');
+    mkdirSync(cache, { recursive: true });
+    const outside = join(root, 'outside.json');
+    writeFileSync(outside, 'keep\n');
+    symlinkSync(outside, join(cache, 'mapping.json'));
+    await writeMappingCache(root, { 'admin-role': ['src/a.ts'] });
+    expect(readFileSync(outside, 'utf8')).toBe('keep\n');
+    expect(await readMappingCache(root)).toEqual({ 'admin-role': ['src/a.ts'] });
+    expect(readdirSync(cache).filter((n) => n.endsWith('.tmp'))).toEqual([]);
   });
   it('readMappingCache는 형식이 깨진 캐시면 빈 객체로 폴백한다 (M3/zod)', async () => {
     const cache = join(root, 'docs/conceptpowers/.cache');

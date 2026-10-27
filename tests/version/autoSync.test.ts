@@ -142,6 +142,19 @@ describe('syncIfStale', () => {
   });
 });
 
+// plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것" —
+// 일부 단계가 실패하면 맞춘 것으로 알리지 않고, 도장을 그대로 둬 다음 시작에 다시 시도한다.
+describe('syncIfStale — 단계 실패', () => {
+  it('package.json이 깨져 한 단계가 실패하면 synced=false이고 도장은 옛것 그대로다', async () => {
+    stampGenerator(root, '0.0.1');
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    const r = await syncIfStale(root, makePluginRoot('9.9.9'));
+    expect(r.synced).toBe(false);
+    const manifest = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
+    expect(manifest.generatorVersion).toBe('0.0.1');
+  });
+});
+
 describe('findPluginRoot', () => {
   it('상위 탐색으로 .claude-plugin/plugin.json이 있는 디렉터리를 찾는다', () => {
     const pluginRoot = makePluginRoot('1.0.0');

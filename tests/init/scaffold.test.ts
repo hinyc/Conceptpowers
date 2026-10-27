@@ -4,7 +4,7 @@
 // 검증 대상 규칙 ↔ 시나리오:
 //  - init-gate 구성요소 "초기화 표시: 프로젝트에 개념 관리를 시작했음을 나타내는 표시"
 //    → 5요소 폴더와 init.json을 만든다 / isInitialized가 마커 존재를 감지한다
-//    → init.json에 backfillMode를 기록한다
+//    → init.json에 읽히지 않는 옛 설정 키(backfillMode·enforceScope·project)를 쓰지 않는다
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
 //    → 이미 초기화된 경우 init.json을 덮어쓰지 않는다 / 재실행 시 baseline을 보존한다
 //  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
@@ -29,7 +29,7 @@ beforeEach(() => {
 
 describe('scaffoldInit', () => {
   it('5요소 폴더와 init.json을 만든다', async () => {
-    await scaffoldInit(root, { backfillMode: 'incremental' });
+    await scaffoldInit(root, {});
     const b = join(root, 'docs/conceptpowers');
     for (const d of ['features', 'concepts/data', 'concepts/viewer', 'architecture', 'infra'])
       expect(existsSync(join(b, d))).toBe(true);
@@ -42,11 +42,13 @@ describe('scaffoldInit', () => {
     expect(existsSync(join(ref, 'README.md'))).toBe(true);
     expect(readFileSync(join(ref, 'README.md'), 'utf8')).toContain('참고자료');
   });
-  it('init.json에 backfillMode를 기록한다', async () => {
-    await scaffoldInit(root, { backfillMode: 'strict' });
+  it('init.json에 읽히지 않는 옛 설정 키를 쓰지 않는다', async () => {
+    await scaffoldInit(root, {});
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
     expect(cfg.enabled).toBe(true);
-    expect(cfg.backfillMode).toBe('strict');
+    expect(cfg).not.toHaveProperty('backfillMode');
+    expect(cfg).not.toHaveProperty('enforceScope');
+    expect(cfg).not.toHaveProperty('project');
   });
   // 규칙 검증: 새 init.json에 스위치가 명시돼 사용자가 파일만 봐도 끌 수 있다 (concept-driven-tests)
   it('새 init.json에 conceptDrivenTests: true를 기록한다', async () => {
@@ -60,10 +62,10 @@ describe('scaffoldInit', () => {
     expect(await isInitialized(root)).toBe(true);
   });
   it('이미 초기화된 경우 init.json을 덮어쓰지 않는다', async () => {
-    await scaffoldInit(root, { backfillMode: 'strict' });
-    await scaffoldInit(root, { backfillMode: 'incremental' });
+    await scaffoldInit(root, { locale: 'en' });
+    await scaffoldInit(root, { locale: 'ko' });
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
-    expect(cfg.backfillMode).toBe('strict'); // 보존
+    expect(cfg.locale).toBe('en'); // 보존
   });
   it('재실행 시 옛 포맷 고아 *.html을 정리한다 (baseline 보존)', async () => {
     await scaffoldInit(root, {});
@@ -103,5 +105,17 @@ describe('scaffoldInit', () => {
     // locale은 정적 셸이 아니라 manifest.json에 기록되어 런타임에 반영된다.
     const manifest = JSON.parse(readFileSync(join(v, 'manifest.json'), 'utf8'));
     expect(manifest.locale).toBe('en');
+  });
+});
+
+// reference-privacy "참고자료 폴더의 파일은 기본적으로 저장소 추적에서 제외" —
+// 생성물 패치 한 단계(package.json)가 실패해도 init은 멈추지 않되, 결과는 실제 상태를 말한다.
+describe('scaffoldInit — 생성물 패치 실패', () => {
+  it('package.json이 깨져도 참고자료 .gitignore를 만들고 실패 단계를 결과에 드러낸다', async () => {
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    const r = await scaffoldInit(root, {});
+    expect(existsSync(join(root, 'docs/conceptpowers/reference/.gitignore'))).toBe(true);
+    expect(r.synced.referenceGitignoreCreated).toBe(true);
+    expect(r.synced.failedSteps.map((f) => f.step)).toContain('packageScript');
   });
 });

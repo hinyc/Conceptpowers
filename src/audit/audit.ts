@@ -1,6 +1,6 @@
-// @concept:concept-code-mapping
+// @concept:concept-code-mapping @concept:globally-unique-slug
 // src/audit/audit.ts
-import { listConcepts } from '../store/conceptStore.js';
+import { findDuplicateSlugs, listConcepts, type DuplicateSlug } from '../store/conceptStore.js';
 import { scanTags } from '../mapping/scan.js';
 
 export interface UnknownTag {
@@ -14,6 +14,7 @@ export interface AuditReport {
   unapprovedRefs: string[]; // 스캔한 파일이 참조하는 미승인(red) 개념 slug
   pending: string[]; // 프로젝트 전체의 보류(pending) 개념 slug
   pendingRefs: string[]; // 스캔한 파일이 참조하는 보류(pending) 개념 slug
+  duplicateSlugs: DuplicateSlug[]; // 같은 slug의 개념 문서가 두 곳 이상에 있는 경우(globally-unique-slug)
 }
 
 // ignoreGlobs: init.json의 게이트 제외 글롭 — 무시 목록의 생성물·외부 코드는 검사 대상이 아니다
@@ -25,7 +26,10 @@ export async function auditIntegrity(
   files: string[],
   ignoreGlobs: string[] = []
 ): Promise<AuditReport> {
-  const concepts = await listConcepts(root);
+  const [concepts, duplicateSlugs] = await Promise.all([
+    listConcepts(root),
+    findDuplicateSlugs(root),
+  ]);
   const known = new Set(concepts.map((c) => c.slug));
   const red = new Set(concepts.filter((c) => (c.status ?? 'red') === 'red').map((c) => c.slug));
   const pending = new Set(concepts.filter((c) => c.status === 'pending').map((c) => c.slug));
@@ -40,11 +44,13 @@ export async function auditIntegrity(
       else if (pending.has(slug)) refPending.add(slug);
     }
   return {
-    ok: unknownTags.length === 0, // 미승인(red)·보류(pending)는 정합성을 막지 않음(경고만)
+    // 미지 태그·slug 중복은 정합성을 깬다. 미승인(red)·보류(pending)는 정합성을 막지 않음(경고만)
+    ok: unknownTags.length === 0 && duplicateSlugs.length === 0,
     unknownTags,
     unapproved: [...red],
     unapprovedRefs: [...refRed],
     pending: [...pending],
     pendingRefs: [...refPending],
+    duplicateSlugs,
   };
 }

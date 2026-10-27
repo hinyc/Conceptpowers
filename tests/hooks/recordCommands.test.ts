@@ -1,4 +1,4 @@
-// @concept:concept-driven-tests @concept:drift-reconcile
+// @concept:concept-driven-tests @concept:drift-reconcile @concept:settled-status
 // tests/hooks/recordCommands.test.ts
 // 사람의 판단을 남기는 기록 명령(검토 기록·코드무관 기록)을 실행하기 전에 문지기가 사람에게 묻는지 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -11,6 +11,8 @@
 //  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다 — … 확정할 수 없으면 검사를
 //    마친 것처럼 통과시키지 않고 강도에 맞춰 대응한다"
 //    → 기록 명령과 커밋을 한 명령에 섞어도 커밋 판정이 사라지지 않는다(strict는 여전히 deny)
+//  - settled-status 제한 "AI가 스스로 판단해서 승인하는 것" + 불변 "빨강을 초록으로 올리는 것은 사람이 명시적으로
+//    요청했을 때만" → 승인 명령(approve)도 실행 전에 어느 강도에서나 사람에게 묻는다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -42,6 +44,8 @@ describe('findHumanRecordCommands', () => {
       ['attest-test-review'],
     ],
     ['./dist/cli.js attest-no-code foo --note x', ['attest-no-code']],
+    ['node dist/cli.js approve pay-rule --root .', ['approve']],
+    ['grep -rn "approve" src', []],
     ['bash -lc "node cli.js attest-no-code foo --note x"', ['attest-no-code']],
     [
       'eval "node cli.js attest-test-review foo --result no-tests --note x"',
@@ -90,6 +94,14 @@ describe('기록 명령 실행 전 확인 [규칙: 사람의 확인 없이 기�
     const noCode = await run('node cli.js attest-no-code foo --note x');
     expect(noCode!.hookSpecificOutput.permissionDecisionReason).toContain('코드를 고치지 않고');
   });
+  for (const level of ['strict', 'standard', 'light']) {
+    it(`${level}: 승인(approve)은 실행 전에 묻는다 [규칙: 빨강→초록은 사람이 명시적으로 요청했을 때만]`, async () => {
+      setEnforcement(level);
+      const r = await run('node cli.js approve pay-rule --root .');
+      expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('승인');
+    });
+  }
   it('인자로만 든 글자나 검사 증빙 명령은 묻지 않는다', async () => {
     expect(await run('grep -rn "attest-no-code" src')).toBeNull();
     expect(await run('node cli.js attest-consistency foo --result pass --compared all')).toBeNull();

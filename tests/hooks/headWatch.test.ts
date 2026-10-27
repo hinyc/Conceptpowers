@@ -7,6 +7,8 @@
 //    → 커밋 없이 HEAD만 옮긴 명령(reset·checkout)이나 아무것도 안 한 명령은 커밋으로 세지 않는다
 //  - drift-reconcile 불변 "커밋 전 문지기의 판정과 커밋 뒤 결산은 같은 잣대로 판정한다"
 //    → 문지기가 이미 본 커밋 명령은 문지기를 거치지 않은 커밋으로 알리지 않는다
+//  - governance-mode 불변 "어긋난 채 통과한 커밋은 강도와 무관하게 이력에 남는다"
+//    → 커밋될 파일을 확정할 수 없던 커밋 명령이 커밋을 여럿 만들면 마지막 하나가 아니라 모두 결산한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -18,9 +20,9 @@ import {
   ungatedCommitNotice,
 } from '../../src/hooks/command/headWatch.js';
 import {
-  runPostToolUse,
+  runPostToolUseReport,
   ungatedCommitFiles,
-  ungatedCommitsOf,
+  commitsMadeBy,
 } from '../../src/hooks/postToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 
@@ -138,23 +140,36 @@ describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
     await scaffoldInit(root, {});
     await recordHeadBefore(root, 'toolu_7');
     commitFile('b.txt', 'release');
-    const found = await ungatedCommitsOf(root, 'Bash', 'toolu_7', { command: 'pnpm release' });
+    const found = (await commitsMadeBy(root, 'Bash', 'toolu_7', { command: 'pnpm release' }))
+      .ungated;
     expect(found.map((c) => c.subject)).toEqual(['commit: release']);
 
     await recordHeadBefore(root, 'toolu_8');
     commitFile('c.txt', 'gated');
-    expect(await ungatedCommitsOf(root, 'Bash', 'toolu_8', { command: 'git commit -m x' })).toEqual(
-      []
-    );
+    expect(
+      (await commitsMadeBy(root, 'Bash', 'toolu_8', { command: 'git commit -m x' })).ungated
+    ).toEqual([]);
+  });
+
+  it('확정 불가 커밋 명령이 커밋을 여럿 만들면 모두 결산 대상으로 모으되 문지기 우회로 알리지는 않는다 [규칙: 어긋난 채 통과한 커밋도 이력에 남는다]', async () => {
+    await scaffoldInit(root, {});
+    await recordHeadBefore(root, 'toolu_10');
+    commitFile('b.txt', 'one');
+    commitFile('c.txt', 'two');
+    const got = await commitsMadeBy(root, 'Bash', 'toolu_10', {
+      command: 'git commit -m one && git commit -m two',
+    });
+    expect(got.reconcile.map((c) => c.subject)).toEqual(['commit: two', 'commit: one']);
+    expect(got.ungated).toEqual([]);
   });
 
   it('초기화 전이거나 Bash가 아니면 보지 않는다', async () => {
     await recordHeadBefore(root, 'toolu_9');
     commitFile('b.txt', 'x');
-    expect(await ungatedCommitsOf(root, 'Bash', 'toolu_9', { command: 'pnpm release' })).toEqual(
-      []
-    );
-    expect(await ungatedCommitsOf(root, 'Edit', 'toolu_9', {})).toEqual([]);
+    expect(
+      (await commitsMadeBy(root, 'Bash', 'toolu_9', { command: 'pnpm release' })).ungated
+    ).toEqual([]);
+    expect((await commitsMadeBy(root, 'Edit', 'toolu_9', {})).ungated).toEqual([]);
   });
 
   it('실행 중 커밋이 여럿이면 마지막 하나가 아니라 모든 커밋의 파일을 결산 대상으로 모은다', async () => {
@@ -173,8 +188,8 @@ describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
     await scaffoldInit(root, {});
     commitFile('b.txt', 'release');
     const input = { command: 'pnpm release' };
-    expect(await runPostToolUse(root, { tool: 'Bash', input })).toBeNull();
-    const res = await runPostToolUse(root, {
+    expect((await runPostToolUseReport(root, { tool: 'Bash', input })).result).toBeNull();
+    const { result: res } = await runPostToolUseReport(root, {
       tool: 'Bash',
       input,
       ungatedCommits: [{ sha: sh('git rev-parse HEAD').trim(), subject: 'commit: release' }],

@@ -22,9 +22,9 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
 - 건너뛰기는 항상 허용된다(강제 없음). 건너뛴 단계는 최종 리포트에 남긴다.
 - **멱등**: 언제든 재실행 가능. 진단에서 이미 끝난 단계는 "완료됨"으로 보고하고 자동으로 넘어간다.
 
-## Stage 0 — Diagnose (읽기 전용, 항상 실행)
+## Stage 0 — Diagnose (개념·코드는 고치지 않음, 항상 실행)
 
-무엇도 바꾸지 말고 현재 상태만 수집한다(CLI 경로는 `CONCEPTPOWERS-ACTIVE` 세션 컨텍스트 또는 플러그인 dist):
+개념·코드를 바꾸지 말고 현재 상태만 수집한다 — 생성물 자동 동기화는 #1 참고(CLI 경로는 `CONCEPTPOWERS-ACTIVE` 세션 컨텍스트 또는 플러그인 dist):
 
 1. **버전 동기화**: 모든 CLI 명령 앞에서 자동으로 맞춰지므로 따로 할 일은 없다 — stderr에
    `[conceptpowers] auto version-sync` 안내가 있었으면 "완료됨"으로 보고한다. 수동 실행
@@ -34,7 +34,8 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
 3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
    그리고 `node "<cli>" reference-diff --quick --root .` — `unlocked`(기준점 없음), `changed/removed`(변경), `added`(새 파일), `truncated`(비교가 일부만 됨),
    `affected`(영향 개념), `newMaterial`(새 개념 후보 자료), `unreachable`.
-4. **개념**: 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red) — `concepts/viewer/manifest.json`의 `concepts[].status`(또는 #6 audit의 `unapproved`/`pending`).
+4. **개념**: 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red) — red/pending은 #6 audit의 `unapproved`/`pending`(개념 원본 기준)을
+   1순위로 쓴다. `concepts/viewer/manifest.json`의 `concepts[].status`는 생성물이라 `render` 전이면 낡을 수 있으므로 보조(개수·green 확인)로만 쓴다.
 5. **feature**: `features/` 명세 개수.
 6. **무결성**: `node "<cli>" audit --root .` — **파일 인자 없이**(전체 스캔: `unknownTags` + `conceptless`).
    exit 1은 진단 데이터이지 실패가 아니다.
@@ -103,6 +104,5 @@ architecture.md / infra.md가 아직 템플릿이면:
 
 ## Viewer handoff (마지막 단계 — 생략 금지)
 
-After `render`, always end with a clickable viewer link (render prints the path + serve command).
-Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/group/__features/<slug>` / `#/architecture` —
-otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.
+`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
+있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.

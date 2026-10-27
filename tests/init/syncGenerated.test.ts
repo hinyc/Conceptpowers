@@ -11,7 +11,7 @@
 //  - generated-not-hand-edited 불변 "생성물은 직접 고치지 않고 원본을 고쳐 다시 만드는 방식으로만
 //    바꾼다" → 옛 포맷 고아 *.html은 정리하고 index.html은 보존한다
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { syncGenerated } from '../../src/init/syncGenerated.js';
@@ -110,5 +110,57 @@ describe('syncGenerated', () => {
     expect(r.scriptStatus).toBe('unchanged'); // scaffoldInit가 이미 표준으로 맞춤
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
     expect(pkg.scripts[VIEWER_SCRIPT_NAME]).toBe(VIEWER_COMMAND);
+  });
+});
+
+// reference-privacy 불변 "파일 이름과 지문의 목록(기준점)은 프로젝트 설정으로 공유를 택했을 때만 함께 올린다" —
+// 설정을 읽지 못하면 공유를 택했다고 볼 수 없으므로 .alignment/.gitignore에 손대지 않는다.
+describe('syncGenerated — 설정을 읽지 못할 때', () => {
+  it('init.json이 깨졌으면 기준점 제외 줄을 빼지 않는다(unchanged)', async () => {
+    await scaffoldInit(root, {});
+    const gi = join(root, 'docs/conceptpowers/concepts/.alignment/.gitignore');
+    writeFileSync(gi, 'last-commit\nreference.lock.json\n');
+    writeFileSync(join(root, 'docs/conceptpowers/init.json'), '{ broken');
+    const r = await syncGenerated(root);
+    expect(r.referenceLockMode).toBeNull();
+    expect(r.referenceLockIgnore).toBe('unchanged');
+    expect(readFileSync(gi, 'utf8')).toBe('last-commit\nreference.lock.json\n');
+  });
+});
+
+// reference-privacy "참고자료 폴더의 파일은 기본적으로 저장소 추적에서 제외" +
+// plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것" —
+// 한 단계가 실패해도 나머지(특히 참고자료 추적 제외)는 맞추고, 도장은 모두 성공했을 때만 새로 찍어 다음에 다시 시도하게 한다.
+describe('syncGenerated — 단계별 실패 격리', () => {
+  const manifest = () => JSON.parse(readFileSync(viewer('manifest.json'), 'utf8'));
+  const refGitignore = () => join(root, 'docs/conceptpowers/reference/.gitignore');
+
+  async function brokenPackageSetup(): Promise<void> {
+    await scaffoldInit(root, {});
+    const m = manifest();
+    writeFileSync(viewer('manifest.json'), JSON.stringify({ ...m, generatorVersion: '0.0.1' }));
+    rmSync(refGitignore());
+    writeFileSync(join(root, 'package.json'), '{ not json');
+  }
+
+  it('package.json이 깨져도 참고자료 .gitignore를 만들고 실패 단계를 드러낸다', async () => {
+    await brokenPackageSetup();
+    const r = await syncGenerated(root, { stampVersion: '9.9.9' });
+    expect(existsSync(refGitignore())).toBe(true);
+    expect(r.referenceGitignoreCreated).toBe(true);
+    expect(r.failedSteps.map((f) => f.step)).toContain('packageScript');
+  });
+
+  it('실패한 단계가 있으면 버전 도장을 새로 찍지 않는다', async () => {
+    await brokenPackageSetup();
+    await syncGenerated(root, { stampVersion: '9.9.9' });
+    expect(manifest().generatorVersion).toBe('0.0.1');
+  });
+
+  it('모든 단계가 성공하면 실패 목록이 비고 도장을 찍는다', async () => {
+    await scaffoldInit(root, {});
+    const r = await syncGenerated(root, { stampVersion: '9.9.9' });
+    expect(r.failedSteps).toEqual([]);
+    expect(manifest().generatorVersion).toBe('9.9.9');
   });
 });

@@ -5,6 +5,16 @@ import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { matchesAny } from '../util/glob.js';
 import { leadingCommentBlock } from '../mapping/leadingComment.js';
+import { conceptTagSlugs, NO_CONCEPT_TAG } from '../mapping/scan.js';
+
+/** 파일 내용을 읽는 함수 — 없거나 읽을 수 없으면 null. 넘기지 않으면 디스크에서 읽는다. */
+export type ReadContent = (rel: string) => Promise<string | null>;
+
+/** 디스크 판독기(루트 기준 상대 경로) — 판독기를 쓰는 곳(문지기·결산·감사·커밋 트리)이 모두 이것을 쓴다. */
+export const diskReader =
+  (root: string): ReadContent =>
+  (rel) =>
+    readFile(join(root, rel), 'utf8').catch(() => null);
 
 // 기본 거버넌스 대상 코드 확장자. 비코드(.md/.json/.css 등)는 대상이 아니다.
 const CODE_EXT = new Set([
@@ -26,9 +36,6 @@ const CODE_EXT = new Set([
   '.swift',
 ]);
 
-const TAG_RE = /@concept:[a-z0-9]+(?:-[a-z0-9]+)*/;
-const TAG_RE_ALL = /@concept:([a-z0-9]+(?:-[a-z0-9]+)*)/g;
-
 // 거버넌스 대상 코드 파일인지 판단한다 (확장자 기준).
 // gap 탐지뿐 아니라 태그 정합성 전체 스캔에서도 비코드 파일(.md 등)을
 // 제외하는 데 재사용된다.
@@ -40,23 +47,21 @@ export function isCodeFile(rel: string): boolean {
 // - 비코드 확장자, ignoreGlobs 매칭 파일은 대상에서 제외한다.
 // - 개념 없음 영역(noConceptGlobs) 안의 파일은 표식이 없어도 `@concept:none`을 단 것으로 친다.
 // - 읽을 수 없는 파일(삭제/부재)은 개념 없음으로 보지 않고 건너뛴다.
+// - read를 넘기면 디스크 대신 그 내용으로 판정한다(문지기: 커밋될 내용 기준).
 export async function findConceptlessFiles(
   root: string,
   files: string[],
   ignoreGlobs: string[],
-  noConceptGlobs: string[] = []
+  noConceptGlobs: string[] = [],
+  read: ReadContent = diskReader(root)
 ): Promise<string[]> {
   const conceptless: string[] = [];
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
-    let content: string;
-    try {
-      content = await readFile(join(root, rel), 'utf8');
-    } catch {
-      continue;
-    }
-    if (!TAG_RE.test(leadingCommentBlock(content))) conceptless.push(rel);
+    const content = await read(rel);
+    if (content === null) continue;
+    if (conceptTagSlugs(leadingCommentBlock(content)).length === 0) conceptless.push(rel);
   }
   return conceptless;
 }
@@ -76,22 +81,19 @@ export async function findNoConceptFiles(
   root: string,
   files: string[],
   ignoreGlobs: string[],
-  noConceptGlobs: string[] = []
+  noConceptGlobs: string[] = [],
+  read: ReadContent = diskReader(root)
 ): Promise<NoConceptCount> {
   const none: string[] = [];
   let total = 0;
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
-    let content: string;
-    try {
-      content = await readFile(join(root, rel), 'utf8');
-    } catch {
-      continue;
-    }
+    const content = await read(rel);
+    if (content === null) continue;
     total++;
-    const slugs = [...leadingCommentBlock(content).matchAll(TAG_RE_ALL)].map((m) => m[1]);
-    if (slugs.length > 0 && slugs.every((s) => s === 'none')) none.push(rel);
+    const slugs = conceptTagSlugs(leadingCommentBlock(content));
+    if (slugs.length > 0 && slugs.every((s) => s === NO_CONCEPT_TAG)) none.push(rel);
   }
   return { none, total };
 }

@@ -7,7 +7,11 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { cpPaths } from '../paths.js';
 import { ReferenceLock, ReferenceLockEntry } from '../schema/alignment.js';
 import { readInitConfig } from '../init/readConfig.js';
-import { applyReferenceLockIgnore, type ReferenceLockMode } from '../init/referenceLockIgnore.js';
+import {
+  applyReferenceLockIgnore,
+  type ReferenceLockIgnoreStatus,
+  type ReferenceLockMode,
+} from '../init/referenceLockIgnore.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { mapLimit } from '../util/mapLimit.js';
 import { enumerateReference, type ReferenceTarget } from './enumerate.js';
@@ -49,8 +53,19 @@ export async function writeReferenceLock(root: string, lock: ReferenceLock): Pro
   await writeFileAtomic(p.referenceLock, JSON.stringify(lock, null, 2) + '\n');
 }
 
-export async function readReferenceLockMode(root: string): Promise<ReferenceLockMode> {
-  return (await readInitConfig(root))?.referenceLock ?? 'shared';
+// 설정을 읽지 못하면(없음·파싱·검증 실패) null — 공유를 택했다고 볼 수 없으므로 shared로 단정하지 않는다.
+export async function readReferenceLockMode(root: string): Promise<ReferenceLockMode | null> {
+  return (await readInitConfig(root))?.referenceLock ?? null;
+}
+
+// 설정(referenceLock)에 맞춰 .alignment/.gitignore를 맞춘다 — 기준점 찍기와 생성물 동기화가 함께 쓴다.
+// 설정을 읽지 못하면 공유를 택했다고 볼 수 없으므로 .gitignore에 손대지 않는다(unchanged).
+export async function syncReferenceLockIgnore(
+  root: string
+): Promise<{ mode: ReferenceLockMode | null; status: ReferenceLockIgnoreStatus }> {
+  const mode = await readReferenceLockMode(root);
+  if (mode === null) return { mode, status: 'unchanged' };
+  return { mode, status: await applyReferenceLockIgnore(root, mode) };
 }
 
 export interface SnapshotResult {
@@ -61,7 +76,8 @@ export interface SnapshotResult {
   skipped: number;
   truncated: string[];
   unreachable: string[];
-  mode: ReferenceLockMode;
+  /** 설정을 읽지 못하면 null이고 .alignment/.gitignore는 건드리지 않는다 */
+  mode: ReferenceLockMode | null;
 }
 
 async function fingerprintAll(
@@ -85,8 +101,7 @@ export async function snapshotReference(
   const files = await fingerprintAll(inv.targets);
   const lock: ReferenceLock = { version: 1, at, files, truncated: inv.truncated };
   await writeReferenceLock(root, lock);
-  const mode = await readReferenceLockMode(root);
-  await applyReferenceLockIgnore(root, mode);
+  const { mode } = await syncReferenceLockIgnore(root);
   const kept = (origin: ReferenceTarget['origin']) =>
     inv.targets.filter((t) => t.origin === origin && hasOwn(files, t.key)).length;
   return {

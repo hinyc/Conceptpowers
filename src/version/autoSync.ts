@@ -55,7 +55,12 @@ export async function syncIfStale(root: string, pluginRoot: string): Promise<Aut
     // 자동 경로는 설치 버전을 못 읽으면 아무것도 하지 않는다(도장 값을 알 수 없어 수렴 불가).
     if (!installed) return { synced: false, installed: null, generator: null };
     if (!stale) return { synced: false, installed, generator };
-    await syncGenerated(root, { stampVersion: installed });
+    const { failedSteps } = await syncGenerated(root, { stampVersion: installed });
+    // 일부 단계가 실패하면 도장이 그대로라 다음 시작에 다시 시도된다 — 맞췄다고 알리지 않는다.
+    if (failedSteps.length > 0) {
+      const steps = failedSteps.map((f) => `${f.step}: ${f.error}`).join('; ');
+      throw new Error(`some sync steps failed — ${steps}`);
+    }
     return { synced: true, installed, generator };
   } catch (error) {
     if (process.env.CONCEPTPOWERS_DEBUG) {

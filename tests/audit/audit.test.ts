@@ -1,4 +1,4 @@
-// @concept:concept-code-mapping @concept:settled-status
+// @concept:concept-code-mapping @concept:settled-status @concept:globally-unique-slug
 // tests/audit/audit.test.ts
 // 개념↔코드 연결의 무결성(auditIntegrity)을 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -11,6 +11,8 @@
 //    → ignoreGlobs에 걸리는 생성물의 태그는 미지 태그로 잡지 않는다
 //  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것"
 //    → 미승인(red)을 보고하되 ok는 막지 않는다
+//  - globally-unique-slug 제한 "같은 이름표가 두 곳에 …"
+//    → 같은 slug의 개념 문서가 두 곳에 있으면 duplicateSlugs로 보고하고 정합성(ok)을 깬다(미지 태그와 같은 관례)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -124,5 +126,35 @@ describe('auditIntegrity', () => {
     const r = await auditIntegrity(root, []);
     expect(r.unapproved).not.toContain('pend-one');
     expect(r.pending).toContain('pend-one');
+  });
+});
+
+describe('같은 slug 중복 [규칙: 같은 이름표가 두 곳에 있으면 안 된다]', () => {
+  const concept = (group?: string) =>
+    JSON.stringify({
+      slug: 'dup-rule',
+      ...(group ? { group } : {}),
+      category: ['behavior'],
+      title: 'D',
+      description: { definition: 'd' },
+      purpose: { reason: 'r' },
+      actions: {},
+      principle: {},
+    });
+  it('같은 slug 문서가 두 곳에 있으면 duplicateSlugs로 보고하고 ok를 깬다', async () => {
+    const data = join(root, 'docs/conceptpowers/concepts/data');
+    mkdirSync(join(data, 'a'), { recursive: true });
+    mkdirSync(join(data, 'b'), { recursive: true });
+    writeFileSync(join(data, 'a', 'dup-rule.json'), concept('a'));
+    writeFileSync(join(data, 'b', 'dup-rule.json'), concept('a'));
+    const r = await auditIntegrity(root, []);
+    expect(r.duplicateSlugs.map((d) => d.slug)).toEqual(['dup-rule']);
+    expect(r.duplicateSlugs[0].rels).toHaveLength(2);
+    expect(r.ok).toBe(false);
+  });
+  it('중복이 없으면 빈 목록이다', async () => {
+    const r = await auditIntegrity(root, []);
+    expect(r.duplicateSlugs).toEqual([]);
+    expect(r.ok).toBe(true);
   });
 });

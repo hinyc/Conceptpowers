@@ -9,6 +9,11 @@ var CPTopnav = (function () {
   var openItem = null; // 현재 펼쳐진 .topnav__item (한 번에 하나만)
   var bound = false;
 
+  // 묶음 열쇠의 단일 원본 — 묶음이 없는 개념은 '(ungrouped)'로 모은다. 항목이 없어도(null) 같은 열쇠.
+  function groupKeyOf(entry) {
+    return (entry && entry.group) || '(ungrouped)';
+  }
+
   // manifest → [{key, items:[{slug, title, status}]}] — 개념 묶음 순서대로.
   // 기능은 펼쳐 볼 화면이 없어(feature-spec-bridge) 이 줄에 묶음으로 들어오지 않는다.
   // 순수 함수라 DOM 없이 검증할 수 있다.
@@ -16,7 +21,7 @@ var CPTopnav = (function () {
     var order = [];
     var byKey = {};
     ((manifest && manifest.concepts) || []).forEach(function (c) {
-      var key = c.group || '(ungrouped)';
+      var key = groupKeyOf(c);
       if (!byKey[key]) {
         byKey[key] = { key: key, items: [] };
         order.push(byKey[key]);
@@ -32,7 +37,7 @@ var CPTopnav = (function () {
     var found = ((manifest && manifest.concepts) || []).filter(function (c) {
       return c.slug === active.slug;
     })[0];
-    return found ? found.group || '(ungrouped)' : null;
+    return found ? groupKeyOf(found) : null;
   }
 
   function setOpen(item, open) {
@@ -141,6 +146,7 @@ var CPTopnav = (function () {
   return {
     bar: bar,
     groupsOf: groupsOf,
+    groupKeyOf: groupKeyOf,
     activeGroupKey: activeGroupKey,
     isMenuOpen: isMenuOpen,
     close: close,

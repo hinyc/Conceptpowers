@@ -29,7 +29,7 @@ import { readHistory } from '../../src/drift/history.js';
 import { contractHash } from '../../src/drift/hash.js';
 import { readAttestLog } from '../../src/concept/attest.js';
 import { readTestReviewLog } from '../../src/concept/testReview.js';
-import { readPendingConflicts } from '../../src/concept/pendingConflicts.js';
+import { readPendingConflictsStrict } from '../../src/concept/pendingConflicts.js';
 import { recordNoCode, readNoCodeLog } from '../../src/drift/noCode.js';
 import { parseConcept } from '../../src/schema/concept.js';
 
@@ -52,10 +52,11 @@ const concept = (over: Record<string, unknown> = {}) => ({
 // 픽스처 개념(auth-token, group 없음)의 문서 경로 — 맞물림 판정에 쓴다.
 const DOC = 'docs/conceptpowers/concepts/data/auth-token.json';
 
+// 연결 코드 자리 파일 — 코드가 있어야 따라온 코드로 센다(표식만·빈 파일은 세지 않는다).
 function touch(rel: string) {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
-  writeFileSync(p, '');
+  writeFileSync(p, 'export const x = 1;\n');
 }
 
 // v1을 lock에 등록한 뒤 v2로 바꿔 drift를 만든다. 연결 코드는 디스크에 실제로 둔다.
@@ -256,7 +257,7 @@ describe('reconcileAfterCommit', () => {
       const res = await reconcileAfterCommit(root, [DOC]);
       expect(Object.keys(await readAttestLog(root)).sort()).toEqual(['auth-token']);
       expect(Object.keys(await readTestReviewLog(root)).sort()).toEqual(['auth-token']);
-      expect(Object.keys(await readPendingConflicts(root)).sort()).toEqual(['auth-token']);
+      expect(Object.keys(await readPendingConflictsStrict(root)).sort()).toEqual(['auth-token']);
       expect(Object.keys(await readNoCodeLog(root)).sort()).toEqual(['auth-token']);
       expect(res.pruned.sort()).toEqual(['gone-one', 'gone-two']);
     });
@@ -267,7 +268,7 @@ describe('reconcileAfterCommit', () => {
       await reconcileAfterCommit(root, [DOC]);
       expect((await readAttestLog(root))['auth-token']?.result).toBe('pass');
       expect((await readTestReviewLog(root))['auth-token']?.result).toBe('updated');
-      expect((await readPendingConflicts(root))['auth-token']).toBe('살아있음');
+      expect((await readPendingConflictsStrict(root))['auth-token']).toBe('살아있음');
     });
 
     it('지울 것이 없으면 pruned는 비어 있다', async () => {

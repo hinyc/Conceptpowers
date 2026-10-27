@@ -182,12 +182,17 @@ var I18N = {
   },
 };
 
-var state = { manifest: null, t: I18N.en, editable: false, editing: false, current: null };
+// transitions: 서버(/api/health)가 엔진의 상태 전이표를 실어 보낸다 — 뷰어는 읽기만 한다(손 복사 없음).
+// 받지 못하면 null → 어떤 상태 단추도 켜지 않는다(안전한 쪽).
+var state = {
+  manifest: null,
+  t: I18N.en,
+  editable: false,
+  editing: false,
+  current: null,
+  transitions: null,
+};
 var renderGen = 0; // 라우트가 바뀌면 증가 → 그래프 애니메이션 루프 종료 신호
-
-// 클라이언트가 보여줄 상태 전이(서버 가드의 미러 — 활성/비활성 판단용).
-// red→green / pending→green·red 만 허용. green은 정착(버튼 비활성).
-var ALLOWED_TRANSITIONS = { red: ['green'], pending: ['green', 'red'], green: [] };
 
 // ---- DOM 헬퍼: 텍스트는 textContent로만 넣어 XSS를 차단한다 ----
 function h(tag, attrs, children) {
@@ -320,9 +325,11 @@ function copyText(s) {
       document.body.appendChild(ta);
       ta.focus();
       ta.select();
-      document.execCommand('copy');
+      var ok = document.execCommand('copy');
       document.body.removeChild(ta);
-      res();
+      // 브라우저가 복사를 거절하면 false를 돌려준다 — 성공으로 꾸미지 않는다(조용히 실패하지 않는다).
+      if (ok) res();
+      else rej(new Error('copy command was rejected'));
     } catch (e) {
       rej(e);
     }
@@ -858,7 +865,7 @@ function conceptListSections(active, compact, onlyGroup) {
   var m = state.manifest;
   var groups = {};
   (m.concepts || []).forEach(function (c) {
-    var g = c.group || '(ungrouped)';
+    var g = CPTopnav.groupKeyOf(c);
     if (onlyGroup && g !== onlyGroup) return;
     (groups[g] = groups[g] || []).push(c);
   });
@@ -988,7 +995,8 @@ function renderConcept(slug) {
 // 상태 전이 컨트롤: 허용 전이만 활성. green은 비활성(정착) + 사유 툴팁.
 function statusControl(slug, c) {
   var t = state.t;
-  var allowed = ALLOWED_TRANSITIONS[c.status] || [];
+  var table = state.transitions || {};
+  var allowed = Object.prototype.hasOwnProperty.call(table, c.status) ? table[c.status] : [];
   var defs = [
     ['green', t.statusGreen],
     ['pending', t.statusYellow],
@@ -1042,6 +1050,25 @@ function conceptHero(slug, c) {
   ]);
 }
 
+// 개념 상세의 "관련 기능" 구역. 기능이 나타나는 줄에는 그 기능이 따르는 개념을 빠짐없이 함께
+// 드러낸다(feature-spec-bridge) — 기능 색인 표와 같은 개념 딱지(conceptChips)를 붙인다.
+function relatedFeaturesSection(related) {
+  if (!related.length) return null;
+  return h('section', { class: 'section' }, [
+    h('h2', null, state.t.relatedFeatures),
+    h(
+      'ul',
+      { class: 'links' },
+      related.map(function (f) {
+        return h('li', null, [
+          h('a', { href: featureRowHref(f.slug) }, displayName(f.title, f.slug)),
+          h('span', { class: 'links__chips' }, conceptChips(f.concepts)),
+        ]);
+      })
+    ),
+  ]);
+}
+
 // 읽기 모드.
 function renderConceptRead(slug) {
   var t = state.t;
@@ -1062,7 +1089,7 @@ function renderConceptRead(slug) {
       renderConcept(slug);
     });
   }
-  var group = (entry && entry.group) || '(ungrouped)';
+  var group = CPTopnav.groupKeyOf(entry);
   var sections = [
     breadcrumbs([
       { label: t.home, href: '#/' },
@@ -1100,22 +1127,7 @@ function renderConceptRead(slug) {
       ul(c.principle.immutableRules),
       c.principle.tradeoffs ? h('p', null, c.principle.tradeoffs) : null,
     ]),
-    related.length
-      ? h('section', { class: 'section' }, [
-          h('h2', null, t.relatedFeatures),
-          h(
-            'ul',
-            { class: 'links' },
-            related.map(function (f) {
-              return h(
-                'li',
-                null,
-                h('a', { href: featureRowHref(f.slug) }, displayName(f.title, f.slug))
-              );
-            })
-          ),
-        ])
-      : null,
+    relatedFeaturesSection(related),
     sources.length
       ? h('section', { class: 'section' }, [
           h('h2', null, t.sourcesLabel),
@@ -1328,7 +1340,7 @@ function renderConceptEdit(slug) {
   });
 
   var editEntry = conceptEntry(slug);
-  var editGroup = (editEntry && editEntry.group) || '(ungrouped)';
+  var editGroup = CPTopnav.groupKeyOf(editEntry);
   setApp(
     CPSidebar.shell(
       slug,
@@ -2015,9 +2027,11 @@ function detectEditable() {
     })
     .then(function (j) {
       state.editable = !!(j && j.editable);
+      state.transitions = (j && j.transitions) || null;
     })
     .catch(function () {
       state.editable = false;
+      state.transitions = null;
     });
 }
 

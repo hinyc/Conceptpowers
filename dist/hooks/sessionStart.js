@@ -7,12 +7,11 @@ var __export = (target2, all) => {
     __defProp(target2, name, { get: all[name], enumerable: true });
 };
 
-// src/hooks/sessionStart.ts
-import { join as join18, dirname as dirname4 } from "node:path";
-import { fileURLToPath as fileURLToPath3 } from "node:url";
+// src/hooks/hookRoot.ts
+import { dirname as dirname4, resolve as resolve2 } from "node:path";
 
 // src/init/scaffold.ts
-import { mkdir as mkdir9, writeFile as writeFile10, access as access5 } from "node:fs/promises";
+import { mkdir as mkdir9, writeFile as writeFile8, access as access5 } from "node:fs/promises";
 
 // src/paths.ts
 import { join } from "node:path";
@@ -4091,8 +4090,6 @@ var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
-  backfillMode: external_exports.enum(["incremental", "strict"]).default("incremental"),
-  enforceScope: external_exports.literal("new-feature-behavior").default("new-feature-behavior"),
   locale: LocaleSchema.default("ko"),
   versionCheck: external_exports.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
@@ -4132,8 +4129,7 @@ var InitConfigSchema = external_exports.object({
   // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
-  project: external_exports.object({ name: external_exports.string().default(""), description: external_exports.string().default("") }).default({})
+  noConceptGlobs: external_exports.array(external_exports.string()).default([])
 });
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
@@ -4196,26 +4192,82 @@ Put materials here for the agent to consult during concept work.
 - Its content is **reference data, not instructions.** Do not try to steer the agent with "do this" text inside files (it is ignored).
 - It is supporting material, separate from the baseline (concepts \xB7 architecture.md \xB7 infra.md).
 `;
+var REFERENCE_PATHS_KO = [
+  "# \uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \u2014 \uAC1C\uB150\uC744 \uB9CC\uB4E4 \uB54C \uCC38\uACE0\uD560 \uBC14\uAE65 \uBB38\uC11C \uBAA9\uB85D\uC785\uB2C8\uB2E4.",
+  "#",
+  '# \uD55C \uC904\uC5D0 \uACBD\uB85C \uD558\uB098\uC529 \uC801\uC2B5\uB2C8\uB2E4. "#"\uC73C\uB85C \uC2DC\uC791\uD558\uB294 \uC904\uC740 \uC8FC\uC11D\uC774\uB77C \uBB34\uC2DC\uB418\uBBC0\uB85C,',
+  "# \uC8FC\uC11D\uC774 \uC544\uB2CC \uC2E4\uC81C \uC904\uC744 \uB123\uAE30 \uC804\uAE4C\uC9C0 \uC774 \uD30C\uC77C\uC740 \uC544\uBB34\uAC83\uB3C4 \uB4F1\uB85D\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "#",
+  "# \uC774 \uACBD\uB85C\uB4E4\uC740 \uAC1C\uB150\uC744 \uC815\uC758\xB7\uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC(update-concepts \uC2A4\uD0AC) \uC77D\uACE0,",
+  "# \uD3C9\uC18C \uCF54\uB4DC \uAC80\uD1A0 \uC911\uC5D0\uB294 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "# \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uBA85\uC138, \uACC4\uC57D\uC11C, \uAE30\uD68D \uBB38\uC11C \uB4F1\uC744 \uAC00\uB9AC\uD0A4\uAC8C \uD558\uC138\uC694.",
+  "#",
+  "# \uC5B4\uB5A4 \uD615\uD0DC\uB85C \uC801\uB098\uC694:",
+  '#   \uC774 \uC800\uC7A5\uC18C \uBC16 -> \uC808\uB300 \uACBD\uB85C. \uD648 \uC544\uB798\uB77C\uBA74 "~/"\uB97C \uC4F0\uC138\uC694.',
+  '#     \uC774 \uD30C\uC77C\uC740 \uCEE4\uBC0B\uB418\uBBC0\uB85C "/Users/<\uC774\uB984>/..."\uC740 \uB0B4 \uCEF4\uD4E8\uD130\uC5D0\uC11C\uB9CC \uD574\uC11D\uB429\uB2C8\uB2E4',
+  "#     (\uB3D9\uB8CC\uC5D0\uAC8C\uB294 \uC5C6\uB294 \uACBD\uB85C\uB85C \uBCF4\uACE0\uB429\uB2C8\uB2E4).",
+  "#       ~/Documents/domain-glossary/   \uD648 \uAE30\uC900 \uD3F4\uB354(\uC548\uC758 \uBAA8\uB4E0 \uD30C\uC77C, \uD558\uC704 \uD3F4\uB354 \uD3EC\uD568)",
+  "#       /Volumes/team-share/specs      \uD648 \uBC16\uC758 \uC808\uB300 \uACBD\uB85C",
+  "#   \uC774 \uC800\uC7A5\uC18C \uC548   -> \uC800\uC7A5\uC18C \uB8E8\uD2B8 \uAE30\uC900 \uC0C1\uB300 \uACBD\uB85C(\uD604\uC7AC \uC791\uC5C5 \uD3F4\uB354 \uAE30\uC900\uC774 \uC544\uB2D9\uB2C8\uB2E4).",
+  "#       docs/legal/contract.pdf",
+  "#",
+  "# \uC9C1\uC811 \uACE0\uCE58\uC9C0 \uC54A\uC544\uB3C4 \uB429\uB2C8\uB2E4: /conceptpowers:update-concepts \uC5D0 \uACBD\uB85C\uB97C \uC54C\uB824\uC8FC\uBA74 \uC5EC\uAE30\uC5D0",
+  "# \uB367\uBD99\uC774\uACE0, \uADF8 \uC704\uCE58\uC5D0 \uC77D\uC744 \uC790\uB8CC\uAC00 \uC5C6\uC73C\uBA74 \uC54C\uB824 \uC90D\uB2C8\uB2E4.",
+  "#",
+  "# \uC544\uB798 \uC608\uC2DC\uC758 \uC8FC\uC11D\uC744 \uD480\uC5B4 \uACE0\uCE58\uAC70\uB098, \uC9C1\uC811 \uCD94\uAC00\uD558\uC138\uC694:",
+  "#   ~/work/product-specs/",
+  "#   /absolute/path/to/domain-rules.md",
+  ""
+].join("\n");
+var REFERENCE_PATHS_EN = [
+  "# Reference paths \u2014 external documents to consult when authoring concepts.",
+  "#",
+  '# List one path per line. Lines starting with "#" are comments and are ignored,',
+  "# so this file registers nothing until you add real (uncommented) entries.",
+  "#",
+  "# These are read ONLY while defining, upgrading, or verifying a concept",
+  "# (the update-concepts skill) \u2014 never during ordinary code checks.",
+  "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
+  "#",
+  "# Which form to use:",
+  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
+  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
+  "#     (teammates would see it reported as missing).",
+  "#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)",
+  "#       /Volumes/team-share/specs      absolute path outside home",
+  "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
+  "#       docs/legal/contract.pdf",
+  "#",
+  "# Or skip the editing: run /conceptpowers:update-concepts and give it the path \u2014 it appends the",
+  "# entry here and warns if the location holds no readable material.",
+  "#",
+  "# Uncomment and edit the examples below, or add your own:",
+  "#   ~/work/product-specs/",
+  "#   /absolute/path/to/domain-rules.md",
+  ""
+].join("\n");
 var seedTemplates = {
   ko: {
     architecture: "# \uC544\uD0A4\uD14D\uCC98\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131: \uAC1C\uB150\uC758 \uC0C1\uC704 \uAE30\uC900 -->\n",
     infra: "# \uC778\uD504\uB77C\n\n<!-- \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC791\uC131 -->\n",
-    reference: REFERENCE_README_KO
+    reference: REFERENCE_README_KO,
+    referencePaths: REFERENCE_PATHS_KO
   },
   en: {
     architecture: "# Architecture\n\n<!-- Fill in: the high-level basis for concepts -->\n",
     infra: "# Infrastructure\n\n<!-- Fill in -->\n",
-    reference: REFERENCE_README_EN
+    reference: REFERENCE_README_EN,
+    referencePaths: REFERENCE_PATHS_EN
   }
 };
 var localeLabel = { ko: "Korean", en: "English" };
 
 // src/init/syncGenerated.ts
-import { readdir as readdir5, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join13 } from "node:path";
+import { readdir as readdir3, rm as rm2, rmdir } from "node:fs/promises";
+import { join as join14 } from "node:path";
 
 // src/viewer/render.ts
-import { mkdir as mkdir4, writeFile as writeFile4, readFile as readFile6 } from "node:fs/promises";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile6 } from "node:fs/promises";
 import { join as join5, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -4297,8 +4349,8 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/conceptStore.ts
-import { readFile, readdir } from "node:fs/promises";
-import { join as join2, relative } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join as join3, relative, resolve } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -4318,8 +4370,10 @@ async function writeFileAtomic(target2, data) {
 
 // src/schema/concept.ts
 var ConceptCategory = external_exports.enum(["feature", "behavior", "role", "permission", "term"]);
+var SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 var RESERVED_SLUGS = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
-var slug = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
+var SlugSchema = external_exports.string().regex(SLUG_RE, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS.has(s), "slug must not be a reserved name");
+var slug = SlugSchema;
 var ConceptStatus = external_exports.enum(["green", "pending", "red"]);
 var ConceptSourceKind = external_exports.enum(["code", "reference", "decision"]);
 var ConceptSource = external_exports.object({
@@ -4383,6 +4437,9 @@ var ConceptSchema = external_exports.object({
 function parseConcept(input) {
   return ConceptSchema.parse(input);
 }
+
+// src/concept/pendingConflicts.ts
+var PendingConflictsSchema = external_exports.record(external_exports.string(), external_exports.string());
 
 // src/concept/implementationLeak.ts
 var CODE_EXTENSIONS = "ts|tsx|js|jsx|mjs|cjs|json|md|css|scss|html|py|go|rs|java|kt|rb|php|sql|ya?ml|sh|toml";
@@ -4479,7 +4536,9 @@ function hashVersion(hash) {
   return m ? Number(m[1]) : 1;
 }
 
-// src/store/conceptStore.ts
+// src/store/walkJson.ts
+import { readdir } from "node:fs/promises";
+import { join as join2 } from "node:path";
 async function walkJson(dir) {
   let entries;
   try {
@@ -4495,6 +4554,8 @@ async function walkJson(dir) {
   }
   return out;
 }
+
+// src/store/conceptStore.ts
 async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
   const entries = [];
@@ -4515,12 +4576,10 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile2, readdir as readdir2 } from "node:fs/promises";
-import { join as join3 } from "node:path";
+import { readFile as readFile2 } from "node:fs/promises";
 
 // src/schema/feature.ts
-var RESERVED_SLUGS2 = /* @__PURE__ */ new Set(["constructor", "prototype", "__proto__", "none"]);
-var slug2 = external_exports.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "slug must be kebab-case").refine((s) => !RESERVED_SLUGS2.has(s), "slug must not be a reserved name");
+var slug2 = SlugSchema;
 var group = external_exports.string().regex(/^([a-z0-9]+(-[a-z0-9]+)*)(\/[a-z0-9]+(-[a-z0-9]+)*)*$/).or(external_exports.literal("")).default("");
 var FeatureSchema = external_exports.object({
   slug: slug2,
@@ -4535,23 +4594,8 @@ function parseFeature(input) {
 }
 
 // src/store/featureStore.ts
-async function walkJson2(dir) {
-  let entries;
-  try {
-    entries = await readdir2(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const e of entries) {
-    const full = join3(dir, e.name);
-    if (e.isDirectory()) out.push(...await walkJson2(full));
-    else if (e.name.endsWith(".json")) out.push(full);
-  }
-  return out;
-}
 async function listFeatures(root) {
-  const files = await walkJson2(cpPaths(root).features);
+  const files = await walkJson(cpPaths(root).features);
   const features = [];
   for (const file of files) {
     try {
@@ -4564,7 +4608,7 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile3, mkdir as mkdir2, writeFile as writeFile2 } from "node:fs/promises";
+import { readFile as readFile3 } from "node:fs/promises";
 
 // src/drift/safe.ts
 function normalizeRel(p) {
@@ -4621,7 +4665,7 @@ async function readInitConfig(root) {
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
-import { readFile as readFile5, writeFile as writeFile3, mkdir as mkdir3 } from "node:fs/promises";
+import { readFile as readFile5, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join as join4, dirname as dirname2 } from "node:path";
 
@@ -4689,8 +4733,8 @@ async function readCache(cacheDir) {
 }
 async function writeCache(cacheDir, cache) {
   try {
-    await mkdir3(cacheDir, { recursive: true });
-    await writeFile3(join4(cacheDir, CACHE_FILE), JSON.stringify(cache));
+    await mkdir2(cacheDir, { recursive: true });
+    await writeFile2(join4(cacheDir, CACHE_FILE), JSON.stringify(cache));
   } catch {
   }
 }
@@ -4746,8 +4790,8 @@ async function readAsset(name) {
   throw new Error(`asset not found: ${name} (search start: ${start})`);
 }
 async function copyAsset(name, target2) {
-  await mkdir4(dirname3(target2), { recursive: true });
-  await writeFile4(target2, await readAsset(name));
+  await mkdir3(dirname3(target2), { recursive: true });
+  await writeFile3(target2, await readAsset(name));
 }
 async function readPluginVersion() {
   const pluginRoot = findPluginRoot(dirname3(fileURLToPath(import.meta.url)));
@@ -4759,19 +4803,18 @@ async function writeManifest(root, stampVersion) {
   const mapping = await readMappingCache(root);
   const locale = (await readInitConfig(root))?.locale ?? "ko";
   const p = cpPaths(root);
-  await mkdir4(p.conceptsViewer, { recursive: true });
+  await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
     generatorVersion: stampVersion ?? await readPluginVersion()
   };
-  await writeFile4(
+  await writeFile3(
     join5(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }
 async function renderViewerToDisk(root, stampVersion) {
-  await writeManifest(root, stampVersion);
   const p = cpPaths(root);
   await copyAsset("index.html", join5(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join5(p.conceptsViewer, "assets", "viewer.js"));
@@ -4779,16 +4822,26 @@ async function renderViewerToDisk(root, stampVersion) {
   await copyAsset("topnav.js", join5(p.conceptsViewer, "assets", "topnav.js"));
   await copyAsset("serve.mjs", join5(p.conceptsViewer, "serve.mjs"));
   await copyAsset("concept.css", p.cssTarget);
+  await writeManifest(root, stampVersion);
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile7, writeFile as writeFile5 } from "node:fs/promises";
+import { readFile as readFile7 } from "node:fs/promises";
 import { join as join6 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
 var VIEWER_COMMAND = `node ${VIEWER_SERVE}`;
 function isPluginManaged(cmd) {
   return cmd.includes("conceptpowers/concepts/viewer/");
+}
+function detectIndent(raw) {
+  const match = /^([ \t]+)\S/m.exec(raw);
+  if (match) return match[1];
+  return raw.trimEnd().includes("\n") ? "" : void 0;
+}
+function serializeLike(raw, value) {
+  const eol = raw.endsWith("\n") ? "\n" : "";
+  return JSON.stringify(value, null, detectIndent(raw)) + eol;
 }
 async function upsertViewerScript(root) {
   const pkgPath = join6(root, "package.json");
@@ -4812,56 +4865,17 @@ async function upsertViewerScript(root) {
     ...pkg,
     scripts: { ...scripts, [VIEWER_SCRIPT_NAME]: VIEWER_COMMAND }
   };
-  await writeFile5(pkgPath, JSON.stringify(next, null, 2) + "\n", "utf8");
+  await writeFileAtomic(pkgPath, serializeLike(raw, next));
   return "set";
 }
 
 // src/init/reference.ts
-import { mkdir as mkdir5, writeFile as writeFile6, access, readdir as readdir3 } from "node:fs/promises";
-import { join as join7, relative as relative2 } from "node:path";
-var SEED_README = "README.md";
-async function ensureReference(root) {
-  const dir = cpPaths(root).reference;
-  await mkdir5(dir, { recursive: true });
-  const readme = join7(dir, SEED_README);
-  try {
-    await access(readme);
-    return false;
-  } catch {
-  }
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
-  await writeFile6(readme, seedTemplates[locale].reference, "utf8");
-  return true;
-}
-var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, ".gitignore", "paths.md"]);
-async function listReferenceFiles(root) {
-  const dir = cpPaths(root).reference;
-  const out = [];
-  async function walk(d) {
-    let entries;
-    try {
-      entries = await readdir3(d, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      const full = join7(d, e.name);
-      if (e.isDirectory()) await walk(full);
-      else out.push(relative2(dir, full));
-    }
-  }
-  await walk(dir);
-  return out.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
-}
-
-// src/init/referencePaths.ts
-import { readFile as readFile8, stat as stat2, access as access2, mkdir as mkdir6, writeFile as writeFile7 } from "node:fs/promises";
-import { homedir as homedir2 } from "node:os";
-import { isAbsolute, join as join9 } from "node:path";
+import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
+import { join as join8, relative as relative2 } from "node:path";
 
 // src/init/referenceWalk.ts
-import { readdir as readdir4, stat } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { readdir as readdir2, stat } from "node:fs/promises";
+import { join as join7 } from "node:path";
 var SCAN_LIMIT = 5e3;
 async function statUsableFile(path) {
   try {
@@ -4879,7 +4893,7 @@ async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
     const current = queue.shift();
     let entries;
     try {
-      entries = await readdir4(current, { withFileTypes: true });
+      entries = await readdir2(current, { withFileTypes: true });
     } catch {
       if (current === dir) return "unreadable";
       continue;
@@ -4887,7 +4901,7 @@ async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
     for (const entry of entries) {
       if (++visited > limit) return "capped";
       if (entry.name.startsWith(".")) continue;
-      const full = join8(current, entry.name);
+      const full = join7(current, entry.name);
       if (entry.isDirectory()) {
         queue.push(full);
         continue;
@@ -4900,35 +4914,41 @@ async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
   return "done";
 }
 
+// src/init/reference.ts
+var SEED_README = "README.md";
+async function ensureReference(root) {
+  const dir = cpPaths(root).reference;
+  await mkdir4(dir, { recursive: true });
+  const readme = join8(dir, SEED_README);
+  try {
+    await access(readme);
+    return false;
+  } catch {
+  }
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  await writeFile4(readme, seedTemplates[locale].reference, "utf8");
+  return true;
+}
+var PLUGIN_META_FILES = /* @__PURE__ */ new Set([SEED_README, "paths.md"]);
+async function listReferenceFiles(root) {
+  const dir = cpPaths(root).reference;
+  const found = [];
+  await walkUsableFiles(
+    dir,
+    (abs) => {
+      found.push(relative2(dir, abs));
+      return true;
+    },
+    Number.POSITIVE_INFINITY
+  );
+  return found.filter((p) => !PLUGIN_META_FILES.has(p)).sort();
+}
+
 // src/init/referencePaths.ts
+import { readFile as readFile8, stat as stat2, access as access2, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
+import { homedir as homedir2 } from "node:os";
+import { isAbsolute, join as join9 } from "node:path";
 var PATHS_FILE = "paths.md";
-var PATHS_TEMPLATE = [
-  "# Reference paths \u2014 external documents to consult when authoring concepts.",
-  "#",
-  '# List one path per line. Lines starting with "#" are comments and are ignored,',
-  "# so this file registers nothing until you add real (uncommented) entries.",
-  "#",
-  "# These are read ONLY while defining, upgrading, or verifying a concept",
-  "# (the update-concepts skill) \u2014 never during ordinary code checks.",
-  "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
-  "#",
-  "# Which form to use:",
-  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
-  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
-  "#     (teammates would see it reported as missing).",
-  "#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)",
-  "#       /Volumes/team-share/specs      absolute path outside home",
-  "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
-  "#       docs/legal/contract.pdf",
-  "#",
-  "# Or skip the editing: run /conceptpowers:update-concepts and give it the path \u2014 it appends the",
-  "# entry here and warns if the location holds no readable material.",
-  "#",
-  "# Uncomment and edit the examples below, or add your own:",
-  "#   ~/work/product-specs/",
-  "#   /absolute/path/to/domain-rules.md",
-  ""
-].join("\n");
 async function ensureReferencePaths(root) {
   const dir = cpPaths(root).reference;
   const target2 = join9(dir, PATHS_FILE);
@@ -4937,8 +4957,9 @@ async function ensureReferencePaths(root) {
     return false;
   } catch {
   }
-  await mkdir6(dir, { recursive: true });
-  await writeFile7(target2, PATHS_TEMPLATE, "utf8");
+  await mkdir5(dir, { recursive: true });
+  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  await writeFile5(target2, seedTemplates[locale].referencePaths, "utf8");
   return true;
 }
 function parseReferencePaths(content) {
@@ -4976,7 +4997,7 @@ async function checkReferencePaths(root) {
 }
 
 // src/init/alignmentGitignore.ts
-import { access as access3, mkdir as mkdir7, writeFile as writeFile8 } from "node:fs/promises";
+import { access as access3, mkdir as mkdir6, writeFile as writeFile6 } from "node:fs/promises";
 import { join as join10 } from "node:path";
 var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
 async function ensureAlignmentGitignore(root) {
@@ -4985,14 +5006,14 @@ async function ensureAlignmentGitignore(root) {
     await access3(target2);
     return false;
   } catch {
-    await mkdir7(cpPaths(root).alignmentDir, { recursive: true });
-    await writeFile8(target2, CONTENT, "utf8");
+    await mkdir6(cpPaths(root).alignmentDir, { recursive: true });
+    await writeFile6(target2, CONTENT, "utf8");
     return true;
   }
 }
 
 // src/init/referenceGitignore.ts
-import { access as access4, mkdir as mkdir8, writeFile as writeFile9 } from "node:fs/promises";
+import { access as access4, mkdir as mkdir7, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join11 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
@@ -5008,8 +5029,8 @@ async function ensureReferenceGitignore(root) {
     await access4(target2);
     return false;
   } catch {
-    await mkdir8(cpPaths(root).reference, { recursive: true });
-    await writeFile9(target2, CONTENT2, "utf8");
+    await mkdir7(cpPaths(root).reference, { recursive: true });
+    await writeFile7(target2, CONTENT2, "utf8");
     return true;
   }
 }
@@ -5044,6 +5065,9 @@ async function ensureInitConfigDefaults(root) {
   return missing;
 }
 
+// src/reference/lock.ts
+import { readFile as readFile11, mkdir as mkdir8 } from "node:fs/promises";
+
 // src/init/referenceLockIgnore.ts
 import { readFile as readFile10 } from "node:fs/promises";
 import { join as join12 } from "node:path";
@@ -5064,108 +5088,6 @@ async function applyReferenceLockIgnore(root, mode) {
   return mode === "local" ? "added" : "removed";
 }
 
-// src/init/syncGenerated.ts
-async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join13(viewerDir, "index.html");
-  let removed = 0;
-  async function walk(dir) {
-    let entries;
-    try {
-      entries = await readdir5(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      const full = join13(dir, e.name);
-      if (e.isDirectory()) {
-        await walk(full);
-        try {
-          if ((await readdir5(full)).length === 0) await rmdir(full);
-        } catch {
-        }
-      } else if (e.name.endsWith(".html") && full !== keep) {
-        await rm2(full);
-        removed++;
-      }
-    }
-  }
-  await walk(viewerDir);
-  return removed;
-}
-async function syncGenerated(root, opts = {}) {
-  await renderViewerToDisk(root, opts.stampVersion);
-  const orphansRemoved = await cleanLegacyViewerHtml(cpPaths(root).conceptsViewer);
-  const scriptStatus = await upsertViewerScript(root);
-  const referenceReadmeCreated = await ensureReference(root);
-  const referencePathsCreated = await ensureReferencePaths(root);
-  const alignmentGitignoreCreated = await ensureAlignmentGitignore(root);
-  const referenceGitignoreCreated = await ensureReferenceGitignore(root);
-  const configFieldsAdded = await ensureInitConfigDefaults(root);
-  const referenceLockMode = (await readInitConfig(root))?.referenceLock ?? "shared";
-  const referenceLockIgnore = await applyReferenceLockIgnore(root, referenceLockMode);
-  return {
-    scriptStatus,
-    orphansRemoved,
-    referenceReadmeCreated,
-    referencePathsCreated,
-    alignmentGitignoreCreated,
-    referenceGitignoreCreated,
-    configFieldsAdded,
-    referenceLockMode,
-    referenceLockIgnore
-  };
-}
-
-// src/init/scaffold.ts
-async function isInitialized(root) {
-  try {
-    await access5(cpPaths(root).initFile);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// src/version/autoSync.ts
-import { readFile as readFile11 } from "node:fs/promises";
-import { join as join14 } from "node:path";
-async function readGeneratorVersion(root) {
-  try {
-    const manifest = JSON.parse(
-      await readFile11(join14(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
-    );
-    return typeof manifest?.generatorVersion === "string" ? manifest.generatorVersion : null;
-  } catch {
-    return null;
-  }
-}
-async function checkStale(root, pluginRoot) {
-  const installed = await readInstalledVersion(pluginRoot);
-  const generator = await readGeneratorVersion(root);
-  if (!installed || !generator) return { installed, generator, stale: true };
-  return { installed, generator, stale: isNewer(installed, generator) };
-}
-async function syncIfStale(root, pluginRoot) {
-  try {
-    const { installed, generator, stale } = await checkStale(root, pluginRoot);
-    if (!installed) return { synced: false, installed: null, generator: null };
-    if (!stale) return { synced: false, installed, generator };
-    await syncGenerated(root, { stampVersion: installed });
-    return { synced: true, installed, generator };
-  } catch (error) {
-    if (process.env.CONCEPTPOWERS_DEBUG) {
-      process.stderr.write(
-        `[conceptpowers] auto version-sync failed: ${error.message}
-`
-      );
-    }
-    return { synced: false, installed: null, generator: null };
-  }
-}
-
-// src/reference/lock.ts
-import { readFile as readFile12, mkdir as mkdir10 } from "node:fs/promises";
-
 // src/util/mapLimit.ts
 async function mapLimit(items, limit, fn) {
   const out = new Array(items.length);
@@ -5182,7 +5104,7 @@ async function mapLimit(items, limit, fn) {
 
 // src/reference/enumerate.ts
 import { stat as stat3 } from "node:fs/promises";
-import { join as join15 } from "node:path";
+import { join as join13 } from "node:path";
 
 // src/reference/canonical.ts
 import { realpath } from "node:fs/promises";
@@ -5259,18 +5181,15 @@ function toPosix(p) {
 function repoKey(rel) {
   return cleanPath(`${CP_REL}/reference/${toPosix(rel)}`);
 }
-function hasDotSegment(rel) {
-  return toPosix(rel).split("/").some((seg) => seg.startsWith("."));
-}
 function target(key, abs, origin, raw, s) {
   return { key, abs, origin, raw, size: s.size, mtime: s.mtime };
 }
 async function listRepo(root, files) {
   const refDir = cpPaths(root).reference;
-  const rels = (files ?? await listReferenceFiles(root)).filter((rel) => !hasDotSegment(rel));
+  const rels = files ?? await listReferenceFiles(root);
   const found = await Promise.all(
     rels.map(async (rel) => {
-      const abs = join15(refDir, rel);
+      const abs = join13(refDir, rel);
       const s = await statUsableFile(abs);
       return s ? target(repoKey(rel), abs, "repo", "", s) : null;
     })
@@ -5356,12 +5275,176 @@ function parseLockFiles(raw) {
 }
 async function readReferenceLock(root) {
   try {
-    const raw = JSON.parse(await readFile12(cpPaths(root).referenceLock, "utf8"));
+    const raw = JSON.parse(await readFile11(cpPaths(root).referenceLock, "utf8"));
     if (!isPlainObject(raw)) return null;
     const { files, ...rest2 } = raw;
     return { ...ReferenceLock.parse({ ...rest2, files: {} }), files: parseLockFiles(files) };
   } catch {
     return null;
+  }
+}
+async function readReferenceLockMode(root) {
+  return (await readInitConfig(root))?.referenceLock ?? null;
+}
+async function syncReferenceLockIgnore(root) {
+  const mode = await readReferenceLockMode(root);
+  if (mode === null) return { mode, status: "unchanged" };
+  return { mode, status: await applyReferenceLockIgnore(root, mode) };
+}
+
+// src/init/syncGenerated.ts
+async function cleanLegacyViewerHtml(viewerDir) {
+  const keep = join14(viewerDir, "index.html");
+  let removed = 0;
+  async function walk(dir) {
+    let entries;
+    try {
+      entries = await readdir3(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = join14(dir, e.name);
+      if (e.isDirectory()) {
+        await walk(full);
+        try {
+          if ((await readdir3(full)).length === 0) await rmdir(full);
+        } catch {
+        }
+      } else if (e.name.endsWith(".html") && full !== keep) {
+        await rm2(full);
+        removed++;
+      }
+    }
+  }
+  await walk(viewerDir);
+  return removed;
+}
+async function runStep(step, fn, fallback) {
+  try {
+    return { value: await fn() };
+  } catch (error) {
+    return { value: fallback, failure: { step, error: error.message } };
+  }
+}
+var VIEWER_SKIPPED = "skipped: earlier steps failed \u2014 viewer and version stamp left as-is so the next sync retries";
+async function runPreparationSteps(root) {
+  const refIgnore = await runStep(
+    "referenceGitignore",
+    () => ensureReferenceGitignore(root),
+    false
+  );
+  const readme = await runStep("reference", () => ensureReference(root), false);
+  const paths = await runStep("referencePaths", () => ensureReferencePaths(root), false);
+  const alignIgnore = await runStep(
+    "alignmentGitignore",
+    () => ensureAlignmentGitignore(root),
+    false
+  );
+  const noFields = [];
+  const config = await runStep("configDefaults", () => ensureInitConfigDefaults(root), noFields);
+  const lockIgnore = await runStep("referenceLockIgnore", () => syncReferenceLockIgnore(root), {
+    mode: null,
+    status: "unchanged"
+  });
+  const viewerDir = cpPaths(root).conceptsViewer;
+  const orphans = await runStep("legacyViewerCleanup", () => cleanLegacyViewerHtml(viewerDir), 0);
+  const noPackage = "no-package";
+  const script = await runStep("packageScript", () => upsertViewerScript(root), noPackage);
+  return { refIgnore, readme, paths, alignIgnore, config, lockIgnore, orphans, script };
+}
+async function syncGenerated(root, opts = {}) {
+  const steps = await runPreparationSteps(root);
+  const earlier = Object.values(steps).flatMap((o) => o.failure ? [o.failure] : []);
+  const viewer = earlier.length > 0 ? { value: void 0, failure: { step: "viewer", error: VIEWER_SKIPPED } } : await runStep("viewer", () => renderViewerToDisk(root, opts.stampVersion), void 0);
+  return {
+    scriptStatus: steps.script.value,
+    orphansRemoved: steps.orphans.value,
+    referenceReadmeCreated: steps.readme.value,
+    referencePathsCreated: steps.paths.value,
+    alignmentGitignoreCreated: steps.alignIgnore.value,
+    referenceGitignoreCreated: steps.refIgnore.value,
+    configFieldsAdded: steps.config.value,
+    referenceLockMode: steps.lockIgnore.value.mode,
+    referenceLockIgnore: steps.lockIgnore.value.status,
+    failedSteps: viewer.failure ? [...earlier, viewer.failure] : earlier
+  };
+}
+
+// src/init/scaffold.ts
+async function isInitialized(root) {
+  try {
+    await access5(cpPaths(root).initFile);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// src/hooks/hookRoot.ts
+async function initializedAncestor(start) {
+  let current = resolve2(start);
+  for (; ; ) {
+    if (await isInitialized(current)) return current;
+    const parent = dirname4(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+async function findHookRoot(src) {
+  const starts = [src.cwd, src.env.CLAUDE_PROJECT_DIR, src.processCwd].filter(
+    (s) => typeof s === "string" && s.length > 0
+  );
+  for (const start of starts) {
+    const found = await initializedAncestor(start);
+    if (found) return found;
+  }
+  return src.processCwd;
+}
+var hookRootOf = (payloadCwd) => findHookRoot({ cwd: payloadCwd, env: process.env, processCwd: process.cwd() });
+
+// src/hooks/sessionStart.ts
+import { join as join18, dirname as dirname5 } from "node:path";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
+
+// src/version/autoSync.ts
+import { readFile as readFile12 } from "node:fs/promises";
+import { join as join15 } from "node:path";
+async function readGeneratorVersion(root) {
+  try {
+    const manifest = JSON.parse(
+      await readFile12(join15(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
+    );
+    return typeof manifest?.generatorVersion === "string" ? manifest.generatorVersion : null;
+  } catch {
+    return null;
+  }
+}
+async function checkStale(root, pluginRoot) {
+  const installed = await readInstalledVersion(pluginRoot);
+  const generator = await readGeneratorVersion(root);
+  if (!installed || !generator) return { installed, generator, stale: true };
+  return { installed, generator, stale: isNewer(installed, generator) };
+}
+async function syncIfStale(root, pluginRoot) {
+  try {
+    const { installed, generator, stale } = await checkStale(root, pluginRoot);
+    if (!installed) return { synced: false, installed: null, generator: null };
+    if (!stale) return { synced: false, installed, generator };
+    const { failedSteps } = await syncGenerated(root, { stampVersion: installed });
+    if (failedSteps.length > 0) {
+      const steps = failedSteps.map((f) => `${f.step}: ${f.error}`).join("; ");
+      throw new Error(`some sync steps failed \u2014 ${steps}`);
+    }
+    return { synced: true, installed, generator };
+  } catch (error) {
+    if (process.env.CONCEPTPOWERS_DEBUG) {
+      process.stderr.write(
+        `[conceptpowers] auto version-sync failed: ${error.message}
+`
+      );
+    }
+    return { synced: false, installed: null, generator: null };
   }
 }
 
@@ -5546,7 +5629,7 @@ async function readLock(root) {
 }
 
 // src/drift/history.ts
-import { readdir as readdir6, readFile as readFile14 } from "node:fs/promises";
+import { readdir as readdir4, readFile as readFile14 } from "node:fs/promises";
 import { join as join16 } from "node:path";
 async function readLegacyHistory(root) {
   try {
@@ -5559,7 +5642,7 @@ async function readRecordFiles(root) {
   const dir = cpPaths(root).alignmentHistoryDir;
   let names;
   try {
-    names = (await readdir6(dir)).filter((name) => name.endsWith(".json")).sort();
+    names = (await readdir4(dir)).filter((name) => name.endsWith(".json")).sort();
   } catch {
     return [];
   }
@@ -5581,9 +5664,9 @@ async function readHistory(root) {
 
 // src/drift/follow.ts
 import { stat as stat4 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join17, relative as relative3, resolve } from "node:path";
+import { isAbsolute as isAbsolute2, join as join17, relative as relative3, resolve as resolve3 } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative3(resolve(root), resolve(root, rel));
+  const r = relative3(resolve3(root), resolve3(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
 }
 async function isRelatedFile(root, rel) {
@@ -5834,8 +5917,10 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
         updateBlock = "\n" + [
           "<CONCEPTPOWERS-UPDATE>",
           `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
-          "Tell the user once, in one concise line, that an update is available and how to apply it:",
+          "Ask the user to choose, once at the start of this session: (a) update now, or (b) ignore and continue.",
+          "To update now, the user runs:",
           "  /plugin marketplace update conceptpowers-dev",
+          "If the user chooses to ignore, do not block \u2014 continue the requested work as usual. Turning the check off is possible with `versionCheck: false` in init.json.",
           "After updating, generated artifacts (viewer assets, concepts:view script) are auto-synced at the next session start or the next Conceptpowers CLI use \u2014 no manual sync needed. The baseline (concepts/specs/architecture/infra) is never touched.",
           "Updates are manual by design; do not nag repeatedly within this session.",
           "</CONCEPTPOWERS-UPDATE>"
@@ -5874,9 +5959,8 @@ async function buildSessionStartOutputSafe(root, pluginRoot, deps = {}) {
 }
 var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
-  const root = process.cwd();
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname4(fileURLToPath3(import.meta.url))) ?? process.cwd();
-  buildSessionStartOutputSafe(root, pluginRoot).then((o) => o ? JSON.stringify(o) : null).catch(() => null).then((text) => exitAfterWrite(text));
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath3(import.meta.url))) ?? process.cwd();
+  hookRootOf().then((root) => buildSessionStartOutputSafe(root, pluginRoot)).then((o) => o ? JSON.stringify(o) : null).catch(() => null).then((text) => exitAfterWrite(text));
 }
 export {
   buildSessionStartOutput,

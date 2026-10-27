@@ -39,7 +39,10 @@ description: Use when the user wants a critical, adversarial review of finished 
 **시작 전:** 모드를 정하고 `references/modes.md`대로 대상 파일을 모은 뒤, 파일 첫머리 `@concept` 표식에서 대상
 개념 slug 집합을 뽑는다. 0단계는 이 두 목록으로 거르고, 2단계는 이 표식을 다시 쓴다.
 
-### 0단계 — 개념 최신 확인 (필수, 읽기 전용)
+### 0단계 — 개념 최신 확인 (필수, 개념·코드는 고치지 않음)
+
+이 단계는 개념과 코드를 고치지 않는다. 다만 CLI 명령 앞에서 생성물 자동 동기화가 일어날 수 있다 — stderr에
+그 안내가 나왔으면 보고서에 적는다.
 
 `conceptpowers:auto`의 **Stage 0** 진단 가운데 reference(3번)·개념 status(4번)·무결성(6번) 항목을 **그 문서에 적힌
 명령과 판독 그대로** 수행한다. 여기서 명령을 다시 정의하지 않는다 — 결과 목록을 대상 파일·대상 개념 slug로

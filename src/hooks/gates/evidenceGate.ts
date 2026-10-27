@@ -4,17 +4,15 @@
 // 문지기와 결산은 기록을 디스크에서 읽는다 — 디스크의 기록이 커밋될 내용과 같아야 그 판정이 저장소에 남는다.
 // 그래서 기록 파일마다 디스크 내용(필터를 거치지 않은 바이트)과 커밋될 내용(커밋될 트리에서 git이 알려준 blob)을
 // 견준다. 줄끝·키 순서만 다른 경우는 JSON 값으로 한 번 더 견줘 같은 것으로 본다. git을 읽지 못하면 던진다.
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { CP_REL } from '../../paths.js';
 import { sanitizeText } from '../../drift/safe.js';
 import { sameJsonText } from '../../util/canonicalJson.js';
+import { git } from '../../util/git.js';
 import { diskContent, injectedContent } from '../command/commitTree.js';
 import { stagedConceptSlugs } from './conceptSlugs.js';
 import { engagedDrift } from './driftGate.js';
 import type { GateCheck, GateInput } from './types.js';
 
-const execFileAsync = promisify(execFile);
 const ALIGN_REL = `${CP_REL}/concepts/.alignment`;
 export const EVIDENCE_FILES = ['attest.json', 'test-review.json', 'no-code.json'].map(
   (f) => `${ALIGN_REL}/${f}`
@@ -35,7 +33,7 @@ const KIND_LABEL: Record<ProblemKind, string> = {
 
 async function assertRepository(root: string): Promise<void> {
   try {
-    await execFileAsync('git', ['rev-parse', '--git-dir'], { cwd: root });
+    await git(root, ['rev-parse', '--git-dir']);
   } catch (error) {
     throw new Error(`증빙 기록 파일의 상태를 읽지 못했습니다 — ${(error as Error).message}`);
   }

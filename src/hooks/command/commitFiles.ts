@@ -2,13 +2,12 @@
 // src/hooks/command/commitFiles.ts
 // 커밋 계획(범위)에 따라 실제로 커밋될 파일 목록을 돌려준다. 목록은 커밋될 트리를 미리 만들어 git에게서 받는다
 // (commitTree). 계산하지 못하면 빈 목록으로 삼키지 않고 던진다 — "검사할 파일 없음 = 통과"가 되지 않도록.
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { tryGit } from '../../util/git.js';
 import { snapshotCommit, type CommitTarget } from './commitTree.js';
 
 export type { CommitTarget } from './commitTree.js';
 
-const execFileAsync = promisify(execFile);
+const ALIAS_LOOKUP_TIMEOUT_MS = 2000;
 
 // 커밋에 들어갈 추가·수정 파일(이름 바꾸기는 새 경로의 추가) — 문지기 검사의 대상.
 export async function resolveCommitFiles(root: string, plan: CommitTarget): Promise<string[]> {
@@ -24,14 +23,9 @@ export async function resolveDeletedFiles(root: string, plan: CommitTarget): Pro
 export function createAliasResolver(root: string): (name: string) => Promise<string | null> {
   return async (name) => {
     if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(name)) return null;
-    try {
-      const { stdout } = await execFileAsync('git', ['config', '--get', `alias.${name}`], {
-        cwd: root,
-        timeout: 2000,
-      });
-      return stdout.trim() || null;
-    } catch {
-      return null;
-    }
+    const out = await tryGit(root, ['config', '--get', `alias.${name}`], {
+      timeout: ALIAS_LOOKUP_TIMEOUT_MS,
+    });
+    return out?.trim() || null;
   };
 }

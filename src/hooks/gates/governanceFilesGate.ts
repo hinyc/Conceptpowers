@@ -3,13 +3,12 @@
 // 거버넌스를 정하는 파일들 — 설정(init.json), 개념 문서, 증빙·기준선 기록 — 에 손대는 일은 강도와 무관하게
 // 사람에게 묻는다. 검사 항목과 강도를 정하는 것도, 개념 문서의 내용을 바꾸는 것도, 코드·검사를 고치지 않고
 // 개념을 통과시키는 판단 기록을 남기는 것도 사람이다.
-import { execFile } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { promisify } from 'node:util';
 import { CP_REL } from '../../paths.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { canonicalJson, sameJsonText } from '../../util/canonicalJson.js';
+import { isGitRepo, tryGit } from '../../util/git.js';
 import {
   diskContent,
   headContent,
@@ -17,12 +16,13 @@ import {
   type CommitContent,
 } from '../command/commitTree.js';
 import { mergeAlwaysAsk } from './alwaysAsk.js';
+import { checkReferenceGate } from './referenceGate.js';
 import { stagedConceptSlugs } from './conceptSlugs.js';
 import type { GateFinding } from './types.js';
 
-const execFileAsync = promisify(execFile);
 const INIT_REL = `${CP_REL}/init.json`;
 const DATA_PREFIX = `${CP_REL}/concepts/data/`;
+const REFERENCE_REL = `${CP_REL}/reference`;
 const ALIGN_PREFIX = `${CP_REL}/concepts/.alignment/`;
 export const HUMAN_RECORD_FILES = [
   `${ALIGN_PREFIX}test-review.json`,
@@ -133,7 +133,7 @@ export async function checkHumanRecords(
 }
 
 async function deletedSinceHead(root: string, includeWorktree: boolean): Promise<string[]> {
-  const base = ['-c', 'diff.relative=false', '--no-pager', 'diff', '--name-only', '-z'];
+  const base = ['diff', '--name-only', '-z'];
   const tail = ['--no-renames', '--diff-filter=D', 'HEAD'];
   const queries = includeWorktree
     ? [
@@ -142,14 +142,46 @@ async function deletedSinceHead(root: string, includeWorktree: boolean): Promise
       ]
     : [[...base, '--cached', ...tail]];
   const lists = await Promise.all(
-    queries.map((args) =>
-      execFileAsync('git', args, { cwd: root }).then(
-        ({ stdout }) => stdout.split('\0').filter(Boolean),
-        () => [] as string[]
-      )
-    )
+    queries.map(async (args) => ((await tryGit(root, args)) ?? '').split('\0').filter(Boolean))
   );
   return [...new Set(lists.flat())];
+}
+
+// 커밋될 수 있는 참고자료 변경 — 색인(그리고 명령이 담을 수 있으면 디스크의 추적 중인 변경·무시되지 않은 새 파일)에서
+// 마지막 커밋과 달라진 reference/ 파일. 무시 목록(.gitignore)에 걸린 파일은 강제 추가(-f) 없이 담기지 않으므로 뺀다.
+async function pendingReferenceFiles(root: string, includeWorktree: boolean): Promise<string[]> {
+  const diff = ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=ACMR'];
+  const queries = [[...diff, '--cached', 'HEAD', '--', REFERENCE_REL]];
+  if (includeWorktree) {
+    queries.push([...diff, 'HEAD', '--', REFERENCE_REL]);
+    queries.push(['ls-files', '-z', '--others', '--exclude-standard', '--', REFERENCE_REL]);
+  }
+  const lists = await Promise.all(
+    queries.map(async (args) => ((await tryGit(root, args)) ?? '').split('\0').filter(Boolean))
+  );
+  return [...new Set(lists.flat())];
+}
+
+// 확정된 커밋에서: 디스크의 거버넌스 설정이 마지막 커밋과 다른데 이번 커밋에 실리지 않는 경우. 문지기는 디스크의 설정
+// (강도·검사 범위·무시 목록)으로 판정하므로, 커밋되지 않은 설정 변경이 판정을 바꾼다 — 강도와 무관하게 묻는다
+// (governance-mode: 강도는 사람이 정한다). 설정이 커밋에 실리면 checkGovernanceFiles가 묻는다. 마지막 커밋에
+// 설정이 없으면(아직 커밋하지 않은 설정) 견줄 기준이 없어 묻지 않는다.
+export async function checkUncommittedConfig(
+  root: string,
+  files: string[]
+): Promise<GateFinding | null> {
+  if (files.map(normalizeRel).includes(INIT_REL)) return null;
+  const [disk, head] = await Promise.all([
+    diskContent(root).read(INIT_REL),
+    headContent(root).read(INIT_REL),
+  ]);
+  if (head === null || sameJsonText(disk, head)) return null;
+  return {
+    gate: 'governance-files',
+    reason: `[GOVERNANCE CONFIG] 거버넌스 설정(${INIT_REL})이 마지막 커밋과 다른데 이번 커밋에 들어오지 않습니다 — 문지기는 이 커밋되지 않은 설정(강도·검사 범위·무시 목록)으로 판정합니다. 사용자가 직접 바꾼 설정인지 확인하세요.`,
+    context:
+      'Governance-files gate (asks in every enforcement mode): init.json on disk differs from the last commit and is not part of this commit, yet the gate reads enforcement level, ignoreGlobs, testGlobs and the concept-driven-tests switch from disk. Only the user may change these settings. Confirm with the user that the uncommitted change is theirs (and consider committing it) before proceeding.',
+  };
 }
 
 // 커밋될 파일을 실행 전에 확정할 수 없는 명령(스테이징과 커밋을 한 명령에 섞은 경우 등)에서도, 그 커밋에 들어갈 수
@@ -164,11 +196,7 @@ export async function checkPendingGovernance(
   root: string,
   opts: PendingOptions
 ): Promise<GateFinding | null> {
-  try {
-    await execFileAsync('git', ['rev-parse', '--git-dir'], { cwd: root });
-  } catch {
-    return null;
-  }
+  if (!(await isGitRepo(root))) return null;
   const sources = opts.includeWorktree
     ? [diskContent(root), indexContent(root)]
     : [indexContent(root)];
@@ -183,7 +211,9 @@ export async function checkPendingGovernance(
     const config = await source.read(INIT_REL);
     if (config !== null && !sameJsonText(config, headConfig)) configChanged = true;
   }
+  // 참고자료 기밀 확인은 어느 강도에서나 묻는다 — 확정할 수 없는 커밋에 담길 수 있는 참고자료 변경도 모은다.
   return mergeAlwaysAsk(
+    checkReferenceGate(await pendingReferenceFiles(root, opts.includeWorktree)),
     checkGovernanceFiles(
       configChanged ? [INIT_REL] : [],
       await deletedSinceHead(root, opts.includeWorktree)

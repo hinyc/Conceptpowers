@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
 import { syncIfStale, checkStale, findPluginRoot } from './version/autoSync.js';
 import { writeFeature, listFeatures } from './store/featureStore.js';
-import { syncGenerated } from './init/syncGenerated.js';
+import { syncGenerated, type SyncStepFailure } from './init/syncGenerated.js';
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
 import { buildInitHint } from './i18n/messages.js';
 import type { Locale } from './schema/initConfig.js';
@@ -25,7 +25,8 @@ import { approveConcept } from './concept/approve.js';
 import { computeDrift } from './drift/detect.js';
 import { noteChange } from './drift/note.js';
 import { setPendingConflict, clearPendingConflict } from './concept/pendingConflicts.js';
-import { readConcept, listConcepts, editConceptContent } from './store/conceptStore.js';
+import { readConcept, listConcepts } from './store/conceptStore.js';
+import { editConceptWithNote } from './store/conceptEdit.js';
 import { checkConceptQuality } from './concept/quality.js';
 import { recordAttest } from './concept/attest.js';
 import { resolveComparedScope } from './concept/attestScope.js';
@@ -53,6 +54,13 @@ type Out = (s: string) => void;
 // 하드코딩 대신 packageScript.ts의 상수를 그대로 재사용한다.
 function viewerHint(): { viewer: string; serve: string } {
   return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
+}
+
+// init은 생성물 패치 실패로 멈추지 않지만, 실패한 단계는 숨기지 않고 stderr로 알린다.
+function reportFailedSteps(err: Out, failed: readonly SyncStepFailure[]): void {
+  if (failed.length === 0) return;
+  const steps = failed.map((f) => `${f.step} (${f.error})`).join('; ');
+  err(`[conceptpowers] some generated-artifact steps failed — ${steps}\n`);
 }
 
 export async function runCli(
@@ -98,15 +106,14 @@ export async function runCli(
   program
     .command('init')
     .option('--root <dir>', 'project root', process.cwd())
-    .option('--mode <mode>', 'incremental|strict', 'incremental')
     .option('--lang <lang>', 'ko|en', 'ko')
     .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
       const result = await scaffoldInit(o.root, {
-        backfillMode: o.mode,
         locale: o.lang,
         enforcement: o.enforcement,
       });
+      reportFailedSteps(err, result.synced.failedSteps);
       out(
         buildInitHint(o.lang as Locale, {
           viewerScriptAdded: result.viewerScriptAdded,
@@ -146,7 +153,9 @@ export async function runCli(
         return;
       }
       const result = await syncGenerated(o.root, { stampVersion: state.installed ?? undefined });
-      out(JSON.stringify({ ok: true, installed: state.installed, ...result }));
+      const ok = result.failedSteps.length === 0;
+      out(JSON.stringify({ ok, installed: state.installed, ...result }));
+      if (!ok) code = 1;
     });
 
   program
@@ -202,23 +211,22 @@ export async function runCli(
         code = 1;
         return;
       }
-      const before = await readConcept(o.root, slug);
-      if (!before) {
-        out(JSON.stringify({ error: `Concept not found: ${slug}` }));
-        code = 1;
-        return;
-      }
-      const wasGreen = before.status === 'green';
+      // 사유 검사 → 편집 → 이력 기록은 뷰어와 같은 흐름(editConceptWithNote)을 쓴다.
+      // 없는 개념이면 던지고, 바깥 catch가 {error} + exit 1로 바꾼다.
       const patch = JSON.parse(await readFile(o.file, 'utf8'));
-      const concept = await editConceptContent(o.root, slug, patch);
-      await noteChange(o.root, slug, o.reason);
+      const { concept, downgradedToPending } = await editConceptWithNote(
+        o.root,
+        slug,
+        patch,
+        o.reason
+      );
       await renderViewerToDisk(o.root);
       out(
         JSON.stringify({
           ok: true,
           slug,
           status: concept.status,
-          downgradedToPending: wasGreen,
+          downgradedToPending,
           ...viewerHint(),
         })
       );
@@ -361,18 +369,6 @@ export async function runCli(
       );
       out(JSON.stringify(r));
       if (!r.ok) code = 1;
-    });
-
-  program
-    .command('reference')
-    .description('참고자료 현황 — 폴더 파일 + paths.md 외부 경로 검증 (없음/빈 폴더 시 exit 1)')
-    .option('--root <dir>', 'project root', process.cwd())
-    .action(async (o) => {
-      const files = await listReferenceFiles(o.root);
-      const external = await checkReferencePaths(o.root);
-      const ok = external.every((p) => p.status === 'ok');
-      out(JSON.stringify({ ok, files, external }));
-      if (!ok) code = 1;
     });
 
   // 등록 결과와 전체 현황을 함께 돌려준다 — 스킬이 한 번의 호출로 "추가됨 + 자료 없는 경로 경고"를

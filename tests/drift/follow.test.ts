@@ -19,6 +19,7 @@
 //    생성물(ignoreGlobs)의 태그와 본문 중간의 태그는 세지 않는다(= 맞물림 아님).
 //  - drift-reconcile 불변 "첫머리 표식만 있고 코드가 없는 파일은 따라온 코드로 세지 않는다"
 //    → 표식만 단 빈 파일로는 문지기를 넘지 못하고 결산도 따라옴으로 기록하지 않는다
+//    → 연결 목록에 든 경로가 일치해도 코드가 없는 파일(표식만·빈 파일)은 따라온 코드가 아니다(presentWithCode)
 //  - 경로 표기 정규화(./ 접두·역슬래시)는 개념 규칙이 아니라 같은 파일을 다르게 세지 않기 위한 구현 세부다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -31,6 +32,7 @@ import {
   isEngagedWithTags,
   isRelatedFile,
   missingRelatedPaths,
+  presentWithCode,
   pruneMissingPaths,
 } from '../../src/drift/follow.js';
 import { reconcileAfterCommit } from '../../src/drift/reconcile.js';
@@ -45,10 +47,10 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cp-'));
 });
 
-function touch(rel: string) {
+function touch(rel: string, content = '') {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
-  writeFileSync(p, '');
+  writeFileSync(p, content);
 }
 
 describe('isFollowed — 따라옴 판정(문지기·결산 공용 잣대)', () => {
@@ -106,6 +108,26 @@ describe('hasFollowedCode · isEngagedWithTags — 맞물림 판정(문지기·�
   });
 });
 
+describe('presentWithCode — 코드가 있는 파일만 따라옴 재료로 (규칙: 표식만 있는 파일은 세지 않는다)', () => {
+  it('표식만 있거나 빈 파일은 빼고, 코드가 있는 파일과 읽을 수 없는(지워진) 파일은 남긴다', async () => {
+    touch('src/code.ts', '// @concept:x\nexport const a = 1;\n');
+    touch('src/tag-only.ts', '// @concept:x\n');
+    touch('src/empty.ts', '');
+    const got = await presentWithCode(root, [
+      'src/code.ts',
+      'src/tag-only.ts',
+      'src/empty.ts',
+      'src/gone.ts',
+    ]);
+    expect([...got].sort()).toEqual(['src/code.ts', 'src/gone.ts']);
+  });
+  it('읽기 함수를 넘기면 디스크 대신 그 내용(커밋될 내용)으로 본다', async () => {
+    touch('src/a.ts', 'export const a = 1;\n');
+    const got = await presentWithCode(root, ['src/a.ts'], async () => '// @concept:x\n');
+    expect([...got]).toEqual([]);
+  });
+});
+
 describe('missingRelatedPaths — 안 들어온 연결 코드 목록', () => {
   it('들어오지 않은 경로만 정규화해 돌려준다', () => {
     const present = new Set(['src/a.ts']);
@@ -149,7 +171,7 @@ describe('pruneMissingPaths — 이제 존재하지 않는 경로 제외 (규칙
 describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   const DOC = 'docs/conceptpowers/concepts/data/auth-token.json';
   async function makeDrift(related: string[]) {
-    related.forEach((p) => touch(p));
+    related.forEach((p) => touch(p, 'export const x = 1;\n'));
     const base = {
       slug: 'auth-token',
       category: ['behavior'],
@@ -313,6 +335,16 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
     expect(r.ignored).toContain('auth-token');
     expect(r.aligned).toEqual([]);
   });
+  it('연결 목록에 든 파일이라도 표식만 있고 코드가 없으면 따라온 코드가 아니다 — 문지기가 잡고 결산은 ignored (규칙: 표식만 있는 파일은 세지 않는다)', async () => {
+    await makeDrift(['src/a.ts']);
+    writeTagged('src/a.ts', '// @concept:auth-token\n\n');
+    const gate = await checkDrift({ root, files: ['src/a.ts', DOC] } as never);
+    expect(gate).not.toBeNull();
+    expect(gate!.reason).toContain('연결된 코드가 하나도');
+    const r = await reconcileAfterCommit(root, ['src/a.ts', DOC], 't2');
+    expect(r.ignored).toContain('auth-token');
+    expect(r.aligned).toEqual([]);
+  });
   it('비코드 파일(.md)의 첫머리 텍스트는 태그로 세지 않는다 — 문서만 고친 커밋은 맞물림이 아니다', async () => {
     await makeDrift(['src/a.ts']);
     // 마크다운 헤딩(#)은 leadingCommentBlock에서 주석으로 오인될 수 있는 형태다.
@@ -352,7 +384,7 @@ describe('문서 정착과 결산 유예 (git 저장소)', () => {
   };
   // v1을 커밋해 두고 lock을 v1로 맞춘 뒤, 문서를 v2로 고친다(아직 미커밋 = 미정착).
   async function makeGitDrift() {
-    touch('src/a.ts');
+    touch('src/a.ts', 'export const a = 1;\n');
     await writeConcept(root, { ...base, description: { definition: 'v1' } } as never);
     const c1 = await readConcept(root, 'auth-token');
     await writeLock(root, { 'auth-token': { hash: contractHash(c1!), at: 't' } });

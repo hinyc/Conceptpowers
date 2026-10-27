@@ -3,13 +3,11 @@
 // 커밋 명령으로 보이지 않던 명령(패키지 스크립트·스크립트 파일 등)이 실행 중에 커밋을 만들었는지 사후에 알아낸다.
 // 실행 직전에 HEAD reflog 맨 위 항목을 git 폴더에 적어 두고, 실행 뒤 그 위에 새로 쌓인 커밋 항목을 찾는다.
 // 기록은 저장소 작업 트리가 아니라 git 폴더 안에 두므로 커밋 대상이 되지 않는다.
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { writeFileAtomic } from '../../util/atomicWrite.js';
+import { tryGit } from '../../util/git.js';
 
-const execFileAsync = promisify(execFile);
 const RECORD_DIR = join('conceptpowers', 'head-before');
 /** 결과가 오지 않아 남은 기록(실패한 명령 등)을 치우는 기준 */
 const STALE_MS = 24 * 60 * 60 * 1000;
@@ -29,20 +27,8 @@ export interface UngatedCommit {
   subject: string;
 }
 
-async function git(root: string, args: string[]): Promise<string | null> {
-  try {
-    const { stdout } = await execFileAsync('git', ['--no-pager', ...args], {
-      cwd: root,
-      maxBuffer: 4 * 1024 * 1024,
-    });
-    return stdout;
-  } catch {
-    return null;
-  }
-}
-
 async function recordDir(root: string): Promise<string | null> {
-  const gitDir = await git(root, ['rev-parse', '--absolute-git-dir']);
+  const gitDir = await tryGit(root, ['rev-parse', '--absolute-git-dir']);
   return gitDir ? join(gitDir.trim(), RECORD_DIR) : null;
 }
 
@@ -53,7 +39,7 @@ function recordName(toolUseId: string): string | null {
 }
 
 async function reflogLines(root: string, count: number): Promise<string[]> {
-  const out = await git(root, [
+  const out = await tryGit(root, [
     'reflog',
     `-${count}`,
     '--format=%H%x09%gd%x09%gs',

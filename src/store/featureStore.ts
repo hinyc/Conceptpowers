@@ -1,11 +1,11 @@
 // @concept:feature-spec-bridge
 // src/store/featureStore.ts
-import { readFile, readdir } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cpPaths } from '../paths.js';
 import { writeFileAtomic } from '../util/atomicWrite.js';
 import { parseFeature, type Feature } from '../schema/feature.js';
+import { walkJson } from './walkJson.js';
 
 function fileFor(root: string, f: Feature): string {
   const dir = cpPaths(root).features;
@@ -23,22 +23,6 @@ export async function writeFeature(root: string, input: unknown): Promise<Featur
   // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
   await writeFileAtomic(target, JSON.stringify(feature, null, 2) + '\n');
   return feature;
-}
-
-async function walkJson(dir: string): Promise<string[]> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out: string[] = [];
-  for (const e of entries) {
-    const full = join(dir, e.name);
-    if (e.isDirectory()) out.push(...(await walkJson(full)));
-    else if (e.name.endsWith('.json')) out.push(full);
-  }
-  return out;
 }
 
 export async function listFeatures(root: string): Promise<Feature[]> {

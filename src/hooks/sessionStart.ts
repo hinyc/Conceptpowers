@@ -1,5 +1,6 @@
 // @concept:plugin-version-sync @concept:concept-driven-tests @concept:governance-mode @concept:reference-sync @concept:settled-status @concept:concept-scope @concept:drift-reconcile
 // src/hooks/sessionStart.ts
+import { hookRootOf } from './hookRoot.js';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isInitialized } from '../init/scaffold.js';
@@ -268,8 +269,10 @@ export async function buildSessionStartOutput(
           [
             '<CONCEPTPOWERS-UPDATE>',
             `A newer Conceptpowers version is available: v${update.latest} (installed v${update.installed}).`,
-            'Tell the user once, in one concise line, that an update is available and how to apply it:',
+            'Ask the user to choose, once at the start of this session: (a) update now, or (b) ignore and continue.',
+            'To update now, the user runs:',
             '  /plugin marketplace update conceptpowers-dev',
+            'If the user chooses to ignore, do not block — continue the requested work as usual. Turning the check off is possible with `versionCheck: false` in init.json.',
             'After updating, generated artifacts (viewer assets, concepts:view script) are auto-synced at the next session start or the next Conceptpowers CLI use — no manual sync needed. The baseline (concepts/specs/architecture/infra) is never touched.',
             'Updates are manual by design; do not nag repeatedly within this session.',
             '</CONCEPTPOWERS-UPDATE>',
@@ -323,13 +326,14 @@ export async function buildSessionStartOutputSafe(
 
 const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
-  const root = process.cwd();
   // CLI와 같은 해석 규칙: 훅 환경 변수 우선, 없으면 번들 위치에서 플러그인 루트를 상위 탐색.
   const pluginRoot =
     process.env.CLAUDE_PLUGIN_ROOT ??
     findPluginRoot(dirname(fileURLToPath(import.meta.url))) ??
     process.cwd();
-  buildSessionStartOutputSafe(root, pluginRoot)
+  // 하위 폴더에서 시작해도 초기화된 프로젝트 루트를 찾는다(hookRoot).
+  hookRootOf()
+    .then((root) => buildSessionStartOutputSafe(root, pluginRoot))
     .then((o) => (o ? JSON.stringify(o) : null))
     .catch(() => null)
     .then((text) => exitAfterWrite(text));
