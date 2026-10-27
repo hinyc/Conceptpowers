@@ -366,6 +366,24 @@
       ]
     },
     {
+      "slug": "redteam-review",
+      "group": "governance",
+      "title": "비판적 점검",
+      "status": "green",
+      "category": [
+        "behavior"
+      ],
+      "aliases": [
+        "레드팀"
+      ],
+      "url": "../data/governance/redteam-review.json",
+      "codeLinks": [
+        "skills/redteam/SKILL.md",
+        "skills/redteam/references/axes.md",
+        "skills/redteam/references/modes.md"
+      ]
+    },
+    {
       "slug": "reference-first-duty",
       "group": "governance",
       "title": "참고자료 확인 의무",
@@ -871,6 +889,15 @@
       ]
     },
     {
+      "slug": "redteam-review",
+      "group": "governance",
+      "title": "비판적 점검(레드팀)",
+      "description": "끝낸 작업을 개념과 작업 목적에 비추어 여러 시선으로 비판하고, 반박을 견딘 지적만 보고해 사람이 고른 것만 고친다.",
+      "concepts": [
+        "redteam-review"
+      ]
+    },
+    {
       "slug": "plugin-lifecycle",
       "group": "platform",
       "title": "플러그인 생애주기",
@@ -1034,6 +1061,13 @@
         "type": "feature",
         "href": "#/feature/localized-output",
         "title": "localized-output"
+      },
+      {
+        "id": "f:redteam-review",
+        "label": "비판적 점검(레드팀)",
+        "type": "feature",
+        "href": "#/feature/redteam-review",
+        "title": "redteam-review"
       },
       {
         "id": "f:plugin-lifecycle",
@@ -2184,6 +2218,34 @@
         "title": "tests/i18n/messages.test.ts"
       },
       {
+        "id": "c:redteam-review",
+        "label": "비판적 점검",
+        "type": "concept",
+        "href": "#/concept/redteam-review",
+        "title": "redteam-review"
+      },
+      {
+        "id": "p:skills/redteam/SKILL.md",
+        "label": "SKILL.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/redteam/SKILL.md"
+      },
+      {
+        "id": "p:skills/redteam/references/axes.md",
+        "label": "axes.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/redteam/references/axes.md"
+      },
+      {
+        "id": "p:skills/redteam/references/modes.md",
+        "label": "modes.md",
+        "type": "file",
+        "href": "",
+        "title": "skills/redteam/references/modes.md"
+      },
+      {
         "id": "c:reference-first-duty",
         "label": "참고자료 확인 의무",
         "type": "concept",
@@ -2882,6 +2944,11 @@
       {
         "source": "f:localized-output",
         "target": "c:output-locale",
+        "kind": "feature-concept"
+      },
+      {
+        "source": "f:redteam-review",
+        "target": "c:redteam-review",
         "kind": "feature-concept"
       },
       {
@@ -4042,6 +4109,21 @@
       {
         "source": "c:output-locale",
         "target": "p:tests/hooks/sessionStart.test.ts",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:redteam-review",
+        "target": "p:skills/redteam/SKILL.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:redteam-review",
+        "target": "p:skills/redteam/references/axes.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:redteam-review",
+        "target": "p:skills/redteam/references/modes.md",
         "kind": "concept-file"
       },
       {

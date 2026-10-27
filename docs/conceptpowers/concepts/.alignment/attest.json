@@ -508,5 +508,38 @@
       "human-owns-contract"
     ],
     "note": "스킬은 생성물도 프로젝트 산출물도 아닌 도구의 지시문 — output-locale이 명시적으로 제외하고, plugin-version-sync·generated-not-hand-edited는 생성물만 다룬다. 충돌 없음"
+  },
+  "redteam-review": {
+    "hash": "3:ebc29a14635b",
+    "result": "pass",
+    "at": "2026-10-27T05:37:21.639Z",
+    "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
+    ]
   }
 }
