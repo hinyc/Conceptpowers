@@ -1,0 +1,11 @@
+{
+  "slug": "plugin-version-sync",
+  "hash": "3:bfe92ab4f3a1",
+  "prevHash": "3:bfe92ab4f3a1",
+  "reason": "사용자 요청: 새 버전 알림은 사람이 지금 올리기/무시하기를 고르게 하고, 무시하기를 고르면 막지 않는 것으로 명시",
+  "at": "2026-10-27T08:45:23.237Z",
+  "ignored": false,
+  "aligned": true,
+  "noCode": false,
+  "note": ""
+}
