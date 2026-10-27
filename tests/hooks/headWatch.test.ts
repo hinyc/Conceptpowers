@@ -17,7 +17,11 @@ import {
   takeUngatedCommits,
   ungatedCommitNotice,
 } from '../../src/hooks/command/headWatch.js';
-import { runPostToolUse, ungatedCommitsOf } from '../../src/hooks/postToolUse.js';
+import {
+  runPostToolUse,
+  ungatedCommitFiles,
+  ungatedCommitsOf,
+} from '../../src/hooks/postToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 
 let root: string;
@@ -56,6 +60,46 @@ describe('headWatch — 실행 중에 생긴 커밋 찾기', () => {
     sh('git commit -q --amend -m "amended"');
     const subjects = (await takeUngatedCommits(root, 'toolu_2')).map((c) => c.subject);
     expect(subjects).toEqual(['commit (amend): amended', 'cherry-pick: side work']);
+  });
+
+  it('충돌을 풀고 이어 간 rebase가 만든 커밋은 세고, 그대로 옮겨 심은 커밋은 세지 않는다', async () => {
+    sh('git checkout -q -b side');
+    commitFile('a.txt', 'side change');
+    commitFile('d.txt', 'side extra');
+    sh('git checkout -q -');
+    commitFile('a.txt', 'main change');
+    sh('git checkout -q side');
+    await recordHeadBefore(root, 'toolu_rb');
+    try {
+      sh('git rebase main');
+    } catch {
+      /* a.txt 충돌로 멈춘다 */
+    }
+    writeFileSync(join(root, 'a.txt'), 'resolved');
+    sh('git add a.txt');
+    sh('GIT_EDITOR=true git rebase --continue');
+    const subjects = (await takeUngatedCommits(root, 'toolu_rb')).map((c) => c.subject);
+    expect(subjects).toEqual(['rebase (continue): side change']);
+  });
+
+  it('기준 항목이 지워져도 예전 커밋을 새 커밋으로 알리지 않는다', async () => {
+    commitFile('b.txt', 'second');
+    await recordHeadBefore(root, 'toolu_gone');
+    sh('git reflog delete HEAD@{0}');
+    expect(await takeUngatedCommits(root, 'toolu_gone')).toEqual([]);
+  });
+
+  it('기준 항목이 지워진 뒤에 생긴 커밋은 여전히 찾는다', async () => {
+    await recordHeadBefore(root, 'toolu_gone2');
+    sh('git reflog delete HEAD@{0}');
+    writeFileSync(join(root, 'n.txt'), 'n');
+    sh('git add n.txt');
+    execSync('git commit -q -m later', {
+      cwd: root,
+      env: { ...process.env, GIT_COMMITTER_DATE: '2099-01-01T00:00:00Z' },
+    });
+    const subjects = (await takeUngatedCommits(root, 'toolu_gone2')).map((c) => c.subject);
+    expect(subjects).toEqual(['commit: later']);
   });
 
   it('커밋 없이 HEAD만 옮긴 명령은 세지 않는다', async () => {
@@ -111,6 +155,18 @@ describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
       []
     );
     expect(await ungatedCommitsOf(root, 'Edit', 'toolu_9', {})).toEqual([]);
+  });
+
+  it('실행 중 커밋이 여럿이면 마지막 하나가 아니라 모든 커밋의 파일을 결산 대상으로 모은다', async () => {
+    commitFile('b.txt', 'one');
+    const first = sh('git rev-parse HEAD').trim();
+    commitFile('c.txt', 'two');
+    const second = sh('git rev-parse HEAD').trim();
+    const files = await ungatedCommitFiles(root, [
+      { sha: second, subject: 'commit: two' },
+      { sha: first, subject: 'commit: one' },
+    ]);
+    expect([...files].sort()).toEqual(['b.txt', 'c.txt']);
   });
 
   it('커밋 명령이 아니어도 실행 중 커밋이 있으면 결산한다', async () => {

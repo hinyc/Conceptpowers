@@ -58,4 +58,15 @@ describe('matchesAny', () => {
   it('백슬래시 경로를 정규화해 매칭한다', () => {
     expect(matchesAny('src\\types\\foo.ts', ['**/types/**'])).toBe(true);
   });
+  it('사람이 적은 글롭의 ./ · 백슬래시 · 끝 슬래시를 경로와 같은 모양으로 맞춘다', () => {
+    expect(matchesAny('src/ui/a.ts', ['./src/ui/**'])).toBe(true);
+    expect(matchesAny('src/ui/a.ts', ['src\\ui\\**'])).toBe(true);
+    expect(matchesAny('src/ui/deep/a.ts', ['src/ui/'])).toBe(true);
+  });
+  it('와일드카드 없는 폴더 이름은 그 폴더 아래 전부와 같은 이름의 파일만 매칭한다', () => {
+    expect(matchesAny('src/ui/a.ts', ['src/ui'])).toBe(true);
+    expect(matchesAny('src/ui', ['src/ui'])).toBe(true);
+    expect(matchesAny('src/uix/a.ts', ['src/ui'])).toBe(false);
+    expect(matchesAny('lib/src/ui/a.ts', ['src/ui'])).toBe(false);
+  });
 });

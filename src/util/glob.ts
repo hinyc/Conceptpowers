@@ -32,8 +32,18 @@ function globToRegExp(glob: string): RegExp {
   return new RegExp('^' + re + '$');
 }
 
+// 사람이 적은 글롭을 경로와 같은 모양으로 맞춘다(./ · 백슬래시 제거). 끝 슬래시나 와일드카드 없는
+// 이름은 폴더로 보고 그 아래 전부를 덧붙인다 — 이름 그대로의 파일도 함께 매칭한다.
+function normalizeGlob(glob: string): string[] {
+  const raw = normalizeRel(glob.trim());
+  const g = raw.replace(/\/+$/, '');
+  if (!g) return [];
+  if (g !== raw) return [`${g}/**`];
+  return g.includes('*') ? [g] : [g, `${g}/**`];
+}
+
 // 경로가 글롭 목록 중 하나라도 매칭되면 true.
 export function matchesAny(path: string, globs: string[]): boolean {
   const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
+  return globs.flatMap(normalizeGlob).some((g) => globToRegExp(g).test(p));
 }

@@ -129,21 +129,25 @@ export type GitCallKind =
 const GIT_OTHER_COMMIT = new Set(['cherry-pick', 'revert', 'am', 'commit-tree']);
 /** 멈춘 작업을 이어 가며 스테이징된 내용을 커밋하는 하위 명령(`--continue`) */
 const GIT_CONTINUABLE = new Set(['merge', 'rebase', 'cherry-pick', 'revert', 'am']);
-/** 진행 중인 작업을 멈추거나 보기만 하거나, 커밋 없이 색인에만 반영하는 옵션 */
-const NO_COMMIT_FLAGS = new Set([
-  '--abort',
-  '--quit',
-  '--skip',
-  '--show-current-patch',
-  '-n',
-  '--no-commit',
-]);
+/** 진행 중인 작업을 멈추거나 보기만 하는 옵션 */
+const STOP_FLAGS = ['--abort', '--quit', '--skip', '--show-current-patch'];
+/** 커밋 없이 색인에만 반영하는 옵션 — cherry-pick·revert 전용(am의 -n은 커밋을 만드는 --no-verify다) */
+const NO_COMMIT_FLAGS = ['-n', '--no-commit'];
+const APPLY_ONLY_SUBS = new Set(['cherry-pick', 'revert']);
+/** git이 줄임 옵션으로 받아들이는 최소 길이 — `--co`부터 `--continue`로 본다(모호하면 git이 거절한다) */
+const MIN_ABBREV = 4;
+
+// git은 모호하지 않은 줄임 옵션(--cont)도 받아들인다.
+function isContinue(arg: string): boolean {
+  return arg.length >= MIN_ABBREV && '--continue'.startsWith(arg);
+}
 
 // 새 커밋을 만드는 다른 git 명령인가 — 커밋을 만들지 않는 제어 옵션을 함께 쓰면 아니다.
 function createsOtherCommit(sub: string, args: string[]): boolean {
-  if (GIT_CONTINUABLE.has(sub) && args.includes('--continue')) return true;
+  if (GIT_CONTINUABLE.has(sub) && args.some(isContinue)) return true;
   if (!GIT_OTHER_COMMIT.has(sub)) return false;
-  return !args.some((a) => NO_COMMIT_FLAGS.has(a.split('=')[0]));
+  const skip = APPLY_ONLY_SUBS.has(sub) ? [...STOP_FLAGS, ...NO_COMMIT_FLAGS] : STOP_FLAGS;
+  return !args.some((a) => skip.includes(a.split('=')[0]));
 }
 
 /** 다른 명령을 실행할 수 있는 하위 명령(rebase -x, bisect run, submodule foreach 등) */

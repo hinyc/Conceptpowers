@@ -4674,9 +4674,16 @@ function globToRegExp(glob) {
   }
   return new RegExp("^" + re + "$");
 }
+function normalizeGlob(glob) {
+  const raw = normalizeRel(glob.trim());
+  const g = raw.replace(/\/+$/, "");
+  if (!g) return [];
+  if (g !== raw) return [`${g}/**`];
+  return g.includes("*") ? [g] : [g, `${g}/**`];
+}
 function matchesAny(path, globs) {
   const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
+  return globs.flatMap(normalizeGlob).some((g) => globToRegExp(g).test(p));
 }
 
 // src/mapping/scan.ts
@@ -6387,18 +6394,18 @@ var GIT_BUILTINS = new Set(
 );
 var GIT_OTHER_COMMIT = /* @__PURE__ */ new Set(["cherry-pick", "revert", "am", "commit-tree"]);
 var GIT_CONTINUABLE = /* @__PURE__ */ new Set(["merge", "rebase", "cherry-pick", "revert", "am"]);
-var NO_COMMIT_FLAGS = /* @__PURE__ */ new Set([
-  "--abort",
-  "--quit",
-  "--skip",
-  "--show-current-patch",
-  "-n",
-  "--no-commit"
-]);
+var STOP_FLAGS = ["--abort", "--quit", "--skip", "--show-current-patch"];
+var NO_COMMIT_FLAGS = ["-n", "--no-commit"];
+var APPLY_ONLY_SUBS = /* @__PURE__ */ new Set(["cherry-pick", "revert"]);
+var MIN_ABBREV = 4;
+function isContinue(arg) {
+  return arg.length >= MIN_ABBREV && "--continue".startsWith(arg);
+}
 function createsOtherCommit(sub, args) {
-  if (GIT_CONTINUABLE.has(sub) && args.includes("--continue")) return true;
+  if (GIT_CONTINUABLE.has(sub) && args.some(isContinue)) return true;
   if (!GIT_OTHER_COMMIT.has(sub)) return false;
-  return !args.some((a) => NO_COMMIT_FLAGS.has(a.split("=")[0]));
+  const skip = APPLY_ONLY_SUBS.has(sub) ? [...STOP_FLAGS, ...NO_COMMIT_FLAGS] : STOP_FLAGS;
+  return !args.some((a) => skip.includes(a.split("=")[0]));
 }
 var GIT_EXECUTE = /* @__PURE__ */ new Set([
   "rebase",
@@ -6901,6 +6908,8 @@ import { join as join11 } from "node:path";
 var execFileAsync8 = promisify8(execFile8);
 var RECORD_DIR = join11("conceptpowers", "head-before");
 var STALE_MS = 24 * 60 * 60 * 1e3;
+var SWEEP_EVERY_MS = 60 * 60 * 1e3;
+var SWEEP_MARK = ".last-sweep";
 async function git2(root, args) {
   try {
     const { stdout } = await execFileAsync8("git", ["--no-pager", ...args], {
@@ -6932,7 +6941,12 @@ async function reflogLines(root, count) {
 }
 async function removeStaleRecords(dir) {
   const now = Date.now();
+  const mark = join11(dir, SWEEP_MARK);
+  const last = await stat3(mark).catch(() => null);
+  if (last && now - last.mtimeMs < SWEEP_EVERY_MS) return;
+  await writeFileAtomic(mark, "");
   for (const name of await readdir4(dir).catch(() => [])) {
+    if (name === SWEEP_MARK) continue;
     const p = join11(dir, name);
     const info = await stat3(p).catch(() => null);
     if (info && now - info.mtimeMs > STALE_MS) await rm3(p, { force: true });

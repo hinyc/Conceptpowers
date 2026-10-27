@@ -54,12 +54,27 @@ describe('locatorSymbols · locatorMaxLine', () => {
     expect(locatorMaxLine('foo() 3행')).toBe(3);
     expect(locatorMaxLine('12줄 근처')).toBe(12);
   });
+  it('「약 N줄」「N줄짜리」 같은 분량 표현은 줄 번호로 읽지 않는다', () => {
+    expect(locatorMaxLine('검증 블록(약 40줄)')).toBeNull();
+    expect(locatorMaxLine('40줄짜리 함수')).toBeNull();
+    expect(locatorMaxLine('총 300줄 분량의 설정')).toBeNull();
+    expect(locatorMaxLine('renderViewer() 20줄 정도')).toBeNull();
+    expect(locatorMaxLine('약 40줄 블록, 12-15행')).toBe(15);
+  });
   it('설명 속 약어·제품명·줄 표기는 심볼로 뽑지 않는다 [규칙: 확인할 수 없는 것을 깨졌다고 단정하지 않는다]', () => {
     expect(locatorSymbols('handleApi()의 CSRF 방어부')).toEqual(['handleApi']);
     expect(locatorSymbols('GitHub 연동부, TypeScript 설정')).toEqual([]);
     expect(locatorSymbols('README 설치 절, JSON 응답, iOS·macOS·iPhone 분기')).toEqual([]);
+    expect(locatorSymbols('watchOS·tvOS·iPadOS 분기')).toEqual([]);
     expect(locatorSymbols('handleApi() L9-L10')).toEqual(['handleApi']);
     expect(locatorSymbols('FeatureSchema (concepts, codePaths 필드)')).toEqual(['codePaths']);
+  });
+  it('대문자 약어가 든 camelCase도 코드 이름으로 뽑는다 [규칙: 짚은 심볼이 실재하는지 확인한다]', () => {
+    expect(locatorSymbols('parseJSON 함수, getHTTPClient 생성부, toUTC 변환')).toEqual([
+      'parseJSON',
+      'getHTTPClient',
+      'toUTC',
+    ]);
   });
   it('따옴표 안 인용문은 심볼로 뽑지 않는다', () => {
     expect(locatorSymbols('"## Judgment basis: concepts ONLY" 절')).toEqual([]);
@@ -70,6 +85,13 @@ describe('locatorSymbols · locatorMaxLine', () => {
   it('붙여 쓴 괄호라도 안이 한글 설명이면 함수 호출로 보지 않는다', () => {
     expect(locatorSymbols('README.md(설치 절차)')).toEqual([]);
     expect(locatorSymbols('config.json(3줄)')).toEqual([]);
+  });
+  it('파일 이름 뒤 괄호 설명은 함수 호출로 보지 않되, 빈 괄호 메서드 호출은 본다', () => {
+    expect(locatorSymbols('package.json(scripts) 설정')).toEqual([]);
+    expect(locatorSymbols('tsconfig.json(paths), vite.config.ts(plugins)')).toEqual([]);
+    // 괄호 안의 코드 이름은 그대로 확인한다
+    expect(locatorSymbols('tsconfig.json(compilerOptions)')).toEqual(['compilerOptions']);
+    expect(locatorSymbols('res.json() 응답부')).toEqual(['json']);
     expect(locatorSymbols('eslint-disable(rules) 주석')).toEqual([]);
     expect(locatorSymbols('macOS(로컬) 환경')).toEqual([]);
     expect(locatorSymbols('CPSidebar.isOpen(), program.hook(name)')).toEqual(

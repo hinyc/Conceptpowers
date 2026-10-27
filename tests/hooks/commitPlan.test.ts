@@ -12,7 +12,8 @@
 //      정해지면 확정 불가로 표시한다
 //    → 커밋을 실행할 수 있는 어떤 우회 형태도 "커밋 아님"으로 판정되지 않는다(우회 회귀 표)
 //    → git commit이 아닌 명령이 만드는 커밋(cherry-pick·revert·am·commit-tree, merge·rebase 등의 --continue)은
-//      무엇이 커밋될지 실행하면서 정해지므로 확정 불가다
+//      무엇이 커밋될지 실행하면서 정해지므로 확정 불가다 — git이 받아들이는 줄임 옵션(--cont)과
+//      am의 -n(커밋을 만드는 --no-verify)도 마찬가지다
 //    → git 내장 명령은 설정이 주입돼도 alias로 풀리지 않으므로 커밋 아님이다 / 분류되지 않은 내장 명령 뒤의 커밋은
 //      커밋될 파일을 바꿀 수 있어 확정 불가다
 import { describe, it, expect } from 'vitest';
@@ -237,6 +238,11 @@ describe('git commit이 아닌 명령이 만드는 커밋 [규칙: 확정할 수
     'git rebase --continue',
     'git cherry-pick --continue',
     'git -C . cherry-pick abc123',
+    'git am -n 0001-fix.patch',
+    'git am --no-verify 0001-fix.patch',
+    'git rebase --cont',
+    'git merge --conti',
+    'git am --cont',
   ];
   for (const cmd of cases) {
     it(`unresolved: ${label(cmd)}`, async () => {

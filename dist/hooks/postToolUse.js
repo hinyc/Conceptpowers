@@ -4551,9 +4551,16 @@ function globToRegExp(glob) {
   }
   return new RegExp("^" + re + "$");
 }
+function normalizeGlob(glob) {
+  const raw = normalizeRel(glob.trim());
+  const g = raw.replace(/\/+$/, "");
+  if (!g) return [];
+  if (g !== raw) return [`${g}/**`];
+  return g.includes("*") ? [g] : [g, `${g}/**`];
+}
 function matchesAny(path, globs) {
   const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
+  return globs.flatMap(normalizeGlob).some((g) => globToRegExp(g).test(p));
 }
 
 // src/mapping/scan.ts
@@ -5587,18 +5594,18 @@ var GIT_BUILTINS = new Set(
 );
 var GIT_OTHER_COMMIT = /* @__PURE__ */ new Set(["cherry-pick", "revert", "am", "commit-tree"]);
 var GIT_CONTINUABLE = /* @__PURE__ */ new Set(["merge", "rebase", "cherry-pick", "revert", "am"]);
-var NO_COMMIT_FLAGS = /* @__PURE__ */ new Set([
-  "--abort",
-  "--quit",
-  "--skip",
-  "--show-current-patch",
-  "-n",
-  "--no-commit"
-]);
+var STOP_FLAGS = ["--abort", "--quit", "--skip", "--show-current-patch"];
+var NO_COMMIT_FLAGS = ["-n", "--no-commit"];
+var APPLY_ONLY_SUBS = /* @__PURE__ */ new Set(["cherry-pick", "revert"]);
+var MIN_ABBREV = 4;
+function isContinue(arg) {
+  return arg.length >= MIN_ABBREV && "--continue".startsWith(arg);
+}
 function createsOtherCommit(sub, args) {
-  if (GIT_CONTINUABLE.has(sub) && args.includes("--continue")) return true;
+  if (GIT_CONTINUABLE.has(sub) && args.some(isContinue)) return true;
   if (!GIT_OTHER_COMMIT.has(sub)) return false;
-  return !args.some((a) => NO_COMMIT_FLAGS.has(a.split("=")[0]));
+  const skip = APPLY_ONLY_SUBS.has(sub) ? [...STOP_FLAGS, ...NO_COMMIT_FLAGS] : STOP_FLAGS;
+  return !args.some((a) => skip.includes(a.split("=")[0]));
 }
 var GIT_EXECUTE = /* @__PURE__ */ new Set([
   "rebase",
@@ -6003,7 +6010,8 @@ var execFileAsync5 = promisify5(execFile5);
 var RECORD_DIR = join8("conceptpowers", "head-before");
 var STALE_MS = 24 * 60 * 60 * 1e3;
 var MAX_ENTRIES = 50;
-var COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am):/;
+var SWEEP_EVERY_MS = 60 * 60 * 1e3;
+var COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am|rebase \(continue\)):/;
 async function git(root, args) {
   try {
     const { stdout } = await execFileAsync5("git", ["--no-pager", ...args], {
@@ -6045,13 +6053,26 @@ async function takeUngatedCommits(root, toolUseId) {
     return [];
   }
   await rm2(path, { force: true }).catch(() => void 0);
-  const fresh = [];
-  for (const line of await reflogLines(root, MAX_ENTRIES)) {
-    if (line === before) break;
+  const [top] = await reflogLines(root, 1);
+  if ((top ?? "") === before) return [];
+  const lines = await reflogLines(root, MAX_ENTRIES);
+  const fresh = newEntries(lines, before).map((line) => {
     const [sha, , subject = ""] = line.split("	");
-    if (COMMIT_ENTRY.test(subject)) fresh.push({ sha, subject });
-  }
-  return fresh;
+    return { sha, subject };
+  });
+  return fresh.filter((c) => COMMIT_ENTRY.test(c.subject));
+}
+function entryTime(line) {
+  const m = /@\{(\d+)\}/.exec(line.split("	")[1] ?? "");
+  return m ? Number(m[1]) : null;
+}
+function newEntries(lines, before) {
+  const at = lines.indexOf(before);
+  if (at >= 0) return lines.slice(0, at);
+  if (!before) return lines;
+  const since = entryTime(before);
+  if (since === null) return [];
+  return lines.filter((line) => (entryTime(line) ?? 0) > since);
 }
 function ungatedCommitNotice(commits) {
   const list = commits.slice(0, 5).map((c) => `- ${c.sha.slice(0, 7)} ${c.subject}`).join("\n");
@@ -6085,12 +6106,12 @@ async function headSha(root) {
   const out = await git2(root, ["rev-parse", "HEAD"]);
   return out ? out.trim() : null;
 }
-async function isMergeCommit(root) {
-  const out = await git2(root, ["rev-list", "--parents", "-n", "1", "HEAD"]);
+async function isMergeCommit(root, rev = "HEAD") {
+  const out = await git2(root, ["rev-list", "--parents", "-n", "1", rev]);
   if (!out) return false;
   return out.trim().split(/\s+/).length > 2;
 }
-async function committedFiles(root) {
+async function committedFiles(root, rev = "HEAD") {
   const out = await git2(root, [
     "diff-tree",
     "--root",
@@ -6098,7 +6119,7 @@ async function committedFiles(root) {
     "--name-only",
     "-z",
     "-r",
-    "HEAD"
+    rev
   ]);
   if (!out) return [];
   return out.split("\0").map((l) => l.trim()).filter(Boolean);
@@ -6133,11 +6154,12 @@ async function runPostToolUse(root, ev) {
   const sha = await headSha(root);
   if (!sha) return null;
   if (sha === await readLastCommit(root)) return null;
-  if (await isMergeCommit(root)) {
+  const ungated = ev.ungatedCommits ?? [];
+  if (ungated.length === 0 && await isMergeCommit(root)) {
     await writeLastCommit(root, sha);
     return null;
   }
-  const files = await committedFiles(root);
+  const files = ungated.length ? await ungatedCommitFiles(root, ungated) : await committedFiles(root);
   if (files.length === 0) {
     await writeLastCommit(root, sha);
     return null;
@@ -6149,6 +6171,14 @@ async function runPostToolUse(root, ev) {
   } catch {
     return null;
   }
+}
+async function ungatedCommitFiles(root, commits) {
+  const lists = await Promise.all(
+    commits.map(
+      async (c) => await isMergeCommit(root, c.sha) ? [] : committedFiles(root, c.sha)
+    )
+  );
+  return [...new Set(lists.flat())];
 }
 async function ungatedCommitsOf(root, tool, toolUseId, input) {
   if (tool !== "Bash" || typeof toolUseId !== "string") return [];
@@ -6186,6 +6216,7 @@ if (isMain) {
 }
 export {
   runPostToolUse,
+  ungatedCommitFiles,
   ungatedCommitsOf
 };
 //# sourceMappingURL=postToolUse.js.map

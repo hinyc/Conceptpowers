@@ -15,8 +15,14 @@ const RECORD_DIR = join('conceptpowers', 'head-before');
 const STALE_MS = 24 * 60 * 60 * 1000;
 /** 한 명령 동안 쌓였다고 볼 reflog 항목의 상한 — 넘치면 그만큼만 본다 */
 const MAX_ENTRIES = 50;
-/** 새 커밋을 만든 reflog 항목(commit·commit (amend)·cherry-pick·revert·am) */
-const COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am):/;
+/** 묵은 기록 청소를 다시 할 간격 — 매 명령마다 폴더를 훑지 않는다 */
+const SWEEP_EVERY_MS = 60 * 60 * 1000;
+const SWEEP_MARK = '.last-sweep';
+/**
+ * 새 내용을 담은 커밋을 만든 reflog 항목(commit·commit (amend)·cherry-pick·revert·am·rebase (continue)).
+ * 그대로 옮겨 심는 rebase (pick)은 이미 있던 커밋의 재배치라 세지 않는다.
+ */
+const COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am|rebase \(continue\)):/;
 
 export interface UngatedCommit {
   sha: string;
@@ -57,9 +63,15 @@ async function reflogLines(root: string, count: number): Promise<string[]> {
   return out ? out.split('\n').filter(Boolean) : [];
 }
 
+// 마지막 청소가 SWEEP_EVERY_MS보다 오래됐을 때만 폴더를 훑는다.
 async function removeStaleRecords(dir: string): Promise<void> {
   const now = Date.now();
+  const mark = join(dir, SWEEP_MARK);
+  const last = await stat(mark).catch(() => null);
+  if (last && now - last.mtimeMs < SWEEP_EVERY_MS) return;
+  await writeFileAtomic(mark, '');
   for (const name of await readdir(dir).catch(() => [] as string[])) {
+    if (name === SWEEP_MARK) continue;
     const p = join(dir, name);
     const info = await stat(p).catch(() => null);
     if (info && now - info.mtimeMs > STALE_MS) await rm(p, { force: true });
@@ -97,13 +109,32 @@ export async function takeUngatedCommits(
     return [];
   }
   await rm(path, { force: true }).catch(() => undefined);
-  const fresh: UngatedCommit[] = [];
-  for (const line of await reflogLines(root, MAX_ENTRIES)) {
-    if (line === before) break;
+  // 대부분의 명령은 HEAD를 건드리지 않는다 — 맨 위 한 줄이 그대로면 더 읽지 않는다.
+  const [top] = await reflogLines(root, 1);
+  if ((top ?? '') === before) return [];
+  const lines = await reflogLines(root, MAX_ENTRIES);
+  const fresh = newEntries(lines, before).map((line) => {
     const [sha, , subject = ''] = line.split('\t');
-    if (COMMIT_ENTRY.test(subject)) fresh.push({ sha, subject });
-  }
-  return fresh;
+    return { sha, subject };
+  });
+  return fresh.filter((c) => COMMIT_ENTRY.test(c.subject));
+}
+
+// reflog 줄의 시각(--date=unix의 HEAD@{초}). 읽을 수 없으면 null.
+function entryTime(line: string): number | null {
+  const m = /@\{(\d+)\}/.exec(line.split('\t')[1] ?? '');
+  return m ? Number(m[1]) : null;
+}
+
+// 기준 항목 위에 쌓인 줄. 기준 항목이 지워졌으면(reflog expire·delete) 기준보다 늦은 시각의 줄만 본다 —
+// 그대로 다 세면 예전 커밋을 이번 명령의 커밋으로 잘못 알린다.
+function newEntries(lines: string[], before: string): string[] {
+  const at = lines.indexOf(before);
+  if (at >= 0) return lines.slice(0, at);
+  if (!before) return lines; // 기록 당시 reflog가 비어 있었다 — 전부 새 항목
+  const since = entryTime(before);
+  if (since === null) return [];
+  return lines.filter((line) => (entryTime(line) ?? 0) > since);
 }
 
 /** 문지기를 거치지 않은 커밋을 알리는 안내 — 이미 커밋된 뒤라 막을 수는 없다. */

@@ -48,13 +48,13 @@ async function headSha(root: string): Promise<string | null> {
 }
 
 // 머지 커밋(부모 2개 이상)이면 diff-tree 파일목록이 비거나 모호하므로 신뢰하지 않는다.
-async function isMergeCommit(root: string): Promise<boolean> {
-  const out = await git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']);
+async function isMergeCommit(root: string, rev = 'HEAD'): Promise<boolean> {
+  const out = await git(root, ['rev-list', '--parents', '-n', '1', rev]);
   if (!out) return false;
   return out.trim().split(/\s+/).length > 2; // sha + parent(s)
 }
 
-async function committedFiles(root: string): Promise<string[]> {
+async function committedFiles(root: string, rev = 'HEAD'): Promise<string[]> {
   // --root: 최초(부모 없는) 커밋도 파일 목록을 내도록 한다.
   // -z: 경로를 NUL로 구분해 원본 그대로 받는다(따옴표 인코딩 방지).
   const out = await git(root, [
@@ -64,7 +64,7 @@ async function committedFiles(root: string): Promise<string[]> {
     '--name-only',
     '-z',
     '-r',
-    'HEAD',
+    rev,
   ]);
   if (!out) return [];
   return out
@@ -116,11 +116,15 @@ export async function runPostToolUse(
   const sha = await headSha(root);
   if (!sha) return null;
   if (sha === (await readLastCommit(root))) return null; // 새 커밋 없음 = 실패/중복
-  if (await isMergeCommit(root)) {
+  // 문지기를 거치지 않은 커밋이 여럿이면 마지막 하나가 아니라 그 커밋들의 파일을 모두 결산한다.
+  const ungated = ev.ungatedCommits ?? [];
+  if (ungated.length === 0 && (await isMergeCommit(root))) {
     await writeLastCommit(root, sha);
     return null;
   }
-  const files = await committedFiles(root);
+  const files = ungated.length
+    ? await ungatedCommitFiles(root, ungated)
+    : await committedFiles(root);
   if (files.length === 0) {
     await writeLastCommit(root, sha);
     return null;
@@ -132,6 +136,19 @@ export async function runPostToolUse(
   } catch {
     return null; // best-effort: 이미 커밋은 끝났다
   }
+}
+
+/** 문지기를 거치지 않은 커밋들에 들어간 파일(중복 없이). 머지 커밋은 파일 목록이 모호해 뺀다. */
+export async function ungatedCommitFiles(
+  root: string,
+  commits: UngatedCommit[]
+): Promise<string[]> {
+  const lists = await Promise.all(
+    commits.map(async (c) =>
+      (await isMergeCommit(root, c.sha)) ? [] : committedFiles(root, c.sha)
+    )
+  );
+  return [...new Set(lists.flat())];
 }
 
 /**

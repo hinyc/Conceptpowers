@@ -8029,9 +8029,16 @@ function globToRegExp(glob) {
   }
   return new RegExp("^" + re + "$");
 }
+function normalizeGlob(glob) {
+  const raw = normalizeRel(glob.trim());
+  const g = raw.replace(/\/+$/, "");
+  if (!g) return [];
+  if (g !== raw) return [`${g}/**`];
+  return g.includes("*") ? [g] : [g, `${g}/**`];
+}
 function matchesAny(path, globs) {
   const p = normalizeRel(path);
-  return globs.some((g) => globToRegExp(g).test(p));
+  return globs.flatMap(normalizeGlob).some((g) => globToRegExp(g).test(p));
 }
 
 // src/mapping/scan.ts
@@ -8709,19 +8716,27 @@ import { join as join18 } from "node:path";
 var BACKTICKED = /`\s*([A-Za-z_$][\w$]*)\s*(?:\(\s*\))?\s*`/g;
 var CALL = /(?<![\w$-])([A-Za-z_$][\w$]*)\((?![^)]*[가-힣])/g;
 var CONSTANT = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9])\b/g;
-var LOWER_CAMEL = /\b([a-z][a-z0-9]+[A-Z][a-z0-9]+[A-Za-z0-9]*)\b/g;
+var LOWER_CAMEL = /\b([a-z][a-z0-9]+(?:[A-Z]+[a-z0-9]+[A-Za-z0-9]*|[A-Z]{3,}))\b/g;
 var QUOTED = /"[^"]*"|(?<![A-Za-z])'[^']*'(?![A-Za-z])|“[^”]*”|‘[^’]*’/g;
-var LINE_RANGE = /(\d+)\s*(?:[~\-–]\s*(\d+)\s*)?(?:행|줄)|\bL(\d+)(?:\s*[-–~]\s*L?(\d+))?\b/g;
+var LINE_RANGE = /(\d+)\s*(?:[~\-–]\s*(\d+)\s*)?(행|줄)|\bL(\d+)(?:\s*[-–~]\s*L?(\d+))?\b/g;
+var AMOUNT_BEFORE = /(?:약|총|대략|전체)\s*$/;
+var AMOUNT_AFTER = /^\s*(?:짜리|분량|정도|가량|남짓|내외)/;
+var FILE_PAREN = /[\w.-]+\.(?:json5?|jsonc|md|mdx|ya?ml|toml|tsx?|jsx?|mjs|cjs|css|scss|html|txt|lock|sh|py|env)\((?!\s*\))/g;
 function locatorSymbols(locator) {
   const backticked = [...locator.matchAll(BACKTICKED)].map((m) => m[1]);
-  const prose = locator.replace(QUOTED, " ");
+  const prose = locator.replace(QUOTED, " ").replace(FILE_PAREN, " ");
   const patterned = [CALL, CONSTANT, LOWER_CAMEL].flatMap(
     (pattern) => [...prose.matchAll(pattern)].map((m) => m[1])
   );
   return [.../* @__PURE__ */ new Set([...backticked, ...patterned])];
 }
+function isAmount(locator, m) {
+  if (m[3] !== "\uC904" || m[2] !== void 0) return false;
+  const start = m.index ?? 0;
+  return AMOUNT_BEFORE.test(locator.slice(0, start)) || AMOUNT_AFTER.test(locator.slice(start + m[0].length));
+}
 function locatorMaxLine(locator) {
-  const numbers = [...locator.matchAll(LINE_RANGE)].flatMap((m) => [m[1], m[2], m[3], m[4]]).filter((n) => n !== void 0).map(Number);
+  const numbers = [...locator.matchAll(LINE_RANGE)].filter((m) => !isAmount(locator, m)).flatMap((m) => [m[1], m[2], m[4], m[5]]).filter((n) => n !== void 0).map(Number);
   return numbers.length > 0 ? Math.max(...numbers) : null;
 }
 var escapeRegExp2 = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
