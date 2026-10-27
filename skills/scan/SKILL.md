@@ -1,6 +1,6 @@
 ---
 name: scan
-description: Use when the user wants to find what is NOT yet covered by concepts in a governance-active project ("상태 탐색", "개념 전수 점검", "audit", "감사", "개념 없는 코드 찾기", "구멍 찾기", "기능 명세", "feature spec", "매핑 갱신", "태그 달기") and after modifying, moving, or deleting code to resync @concept tags — concept-less code, broken @concept links, features missing a spec, unapproved red / lingering pending concepts — and to wire @concept tags and the mapping cache. Finds gaps; it does not judge code against rules (that is review).
+description: Use when the user wants to find what is NOT yet covered by concepts in a governance-active project ("상태 탐색", "개념 전수 점검", "audit", "감사", "개념 없는 코드 찾기", "구멍 찾기", "기능 명세", "feature spec", "매핑 갱신", "태그 달기") and after modifying, moving, or deleting code to resync @concept tags — concept-less code, broken @concept links, features missing a spec, unapproved red / lingering pending concepts — and to wire @concept tags and the mapping cache. Finds gaps; it does not judge code against rules (that is review), nor critique finished work (that is redteam).
 ---
 
 # Conceptpowers: Scan (상태 탐색 — 개념이 안 걸린 것 찾기)

@@ -1,0 +1,14 @@
+{
+  "slug": "redteam-review",
+  "group": "governance",
+  "title": "비판적 점검(레드팀)",
+  "description": "끝낸 작업을 개념과 작업 목적에 비추어 여러 시선으로 비판하고, 반박을 견딘 지적만 보고해 사람이 고른 것만 고친다.",
+  "concepts": [
+    "redteam-review"
+  ],
+  "codePaths": [
+    "skills/redteam/SKILL.md",
+    "skills/redteam/references/axes.md",
+    "skills/redteam/references/modes.md"
+  ]
+}

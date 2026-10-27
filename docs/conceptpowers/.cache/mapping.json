@@ -443,5 +443,8 @@
   "skill-surface": [
     "tests/compat/skillFrontmatter.test.ts",
     "tests/compat/superpowers.test.ts"
+  ],
+  "redteam-review": [
+    "tests/compat/redteamSkill.test.ts"
   ]
 }

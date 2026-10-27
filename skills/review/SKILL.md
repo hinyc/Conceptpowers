@@ -1,6 +1,6 @@
 ---
 name: review
-description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a governance-active project, and whenever the user asks to check that code follows its concepts ("검토", "이 개념대로 구현됐나", "전체 검토"). Judges code against the allow/restrict/immutable rules of the concepts mapped to it — one procedure with three entry modes (pre-change check, one concept, whole project). Never reads reference.
+description: Use BEFORE writing/modifying code (including tests) that adds a feature or changes behavior in a governance-active project, and whenever the user asks to check that code follows its concepts ("검토", "이 개념대로 구현됐나", "전체 검토"). Judges code against the allow/restrict/immutable rules of the concepts mapped to it — one procedure with three entry modes (pre-change check, one concept, whole project). For an adversarial multi-angle critique of finished work (레드팀) use redteam instead. Never reads reference.
 ---
 
 # Conceptpowers: Review (검토 — 코드 ↔ 개념)
