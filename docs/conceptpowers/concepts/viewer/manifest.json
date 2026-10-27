@@ -380,7 +380,8 @@
       "codeLinks": [
         "skills/redteam/SKILL.md",
         "skills/redteam/references/axes.md",
-        "skills/redteam/references/modes.md"
+        "skills/redteam/references/modes.md",
+        "tests/compat/redteamSkill.test.ts"
       ]
     },
     {
@@ -2244,6 +2245,13 @@
         "type": "file",
         "href": "",
         "title": "skills/redteam/references/modes.md"
+      },
+      {
+        "id": "p:tests/compat/redteamSkill.test.ts",
+        "label": "redteamSkill.test.ts",
+        "type": "file",
+        "href": "",
+        "title": "tests/compat/redteamSkill.test.ts"
       },
       {
         "id": "c:reference-first-duty",
@@ -4124,6 +4132,11 @@
       {
         "source": "c:redteam-review",
         "target": "p:skills/redteam/references/modes.md",
+        "kind": "concept-file"
+      },
+      {
+        "source": "c:redteam-review",
+        "target": "p:tests/compat/redteamSkill.test.ts",
         "kind": "concept-file"
       },
       {

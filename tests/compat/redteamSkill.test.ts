@@ -68,7 +68,11 @@ describe('redteam 스킬 문서', () => {
 
   it('겹치는 일은 기존 스킬로 넘긴다', () => {
     const s = skill();
-    for (const ref of ['conceptpowers:review', 'conceptpowers:scan', 'conceptpowers:update-concepts']) {
+    for (const ref of [
+      'conceptpowers:review',
+      'conceptpowers:scan',
+      'conceptpowers:update-concepts',
+    ]) {
       expect(s).toContain(ref);
     }
   });
@@ -89,6 +93,12 @@ describe('redteam 스킬 문서', () => {
       expect(a, axis).toContain(axis);
     }
     expect(a).toContain('@concept:none');
+  });
+
+  it('README가 redteam으로 이어 준다', () => {
+    for (const readme of ['README.md', 'README.ko.md']) {
+      expect(readFileSync(readme, 'utf8'), readme).toContain('/conceptpowers:redteam');
+    }
   });
 
   it('반박 검증에 상한과 미검증 표시가 있다', () => {
