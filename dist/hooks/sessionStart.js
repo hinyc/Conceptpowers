@@ -5740,7 +5740,6 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     "- Never force past the gate (Drift Ignored). When the concept change genuinely needs no code change, the legitimate path is attest-no-code (user-confirmed, reason recorded); otherwise fix the code and stage it. Each `ignored: true` history entry without a noCode reason is an unexplained exception \u2014 accumulated ones void the concept\u2013code alignment guarantee.",
     redLine,
     pendingLine,
-    "Relationship: Conceptpowers complements superpowers' workflow (brainstorming\u2192writing-plans\u2192TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     "</CONCEPTPOWERS-ACTIVE>"
   ].join("\n");
   let pathChecks = [];

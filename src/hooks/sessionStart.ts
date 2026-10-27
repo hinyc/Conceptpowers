@@ -133,7 +133,6 @@ export async function buildSessionStartOutput(
     '- Never force past the gate (Drift Ignored). When the concept change genuinely needs no code change, the legitimate path is attest-no-code (user-confirmed, reason recorded); otherwise fix the code and stage it. Each `ignored: true` history entry without a noCode reason is an unexplained exception — accumulated ones void the concept–code alignment guarantee.',
     redLine,
     pendingLine,
-    "Relationship: Conceptpowers complements superpowers' workflow (brainstorming→writing-plans→TDD) rather than replacing it. It only adds concept definition/verification gates; for process skills, follow superpowers as-is.",
     '</CONCEPTPOWERS-ACTIVE>',
   ].join('\n');
   // paths.md 경로 검증은 한 번만 수행해 아래 두 블록(자료 신호 + 깨진 경로 경고)에서 공유한다.

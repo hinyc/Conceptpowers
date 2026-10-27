@@ -448,10 +448,6 @@ docs/conceptpowers/
 
 그래프는 데이터 기반이며 `render` / `scan`마다 다시 만들어지므로, 항상 현재의 개념·`@concept` ↔ 코드 링크를 반영한다.
 
-### superpowers와 함께 쓰기
-
-Conceptpowers는 [superpowers](https://github.com/obra/superpowers)와 충돌 없이 보완한다. superpowers가 개발 _프로세스_(아이디어 → 스펙 → 계획 → TDD)를 이끌고, Conceptpowers가 개념 정의/검증 *게이트*를 더한다. 자세한 흐름: `docs/superpowers-interop.md`.
-
 ---
 
 ## 라이선스 & 커뮤니티

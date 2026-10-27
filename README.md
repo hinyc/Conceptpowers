@@ -462,10 +462,6 @@ How the links are made: the `concept → file` edges come from the concept's own
 
 The graph is data-driven and re-derived on every `render` / `scan`, so it always reflects the current concepts and `@concept` ↔ code links.
 
-### Using with superpowers
-
-Conceptpowers complements [superpowers](https://github.com/obra/superpowers) without conflict. superpowers drives the development _process_ (idea → spec → plan → TDD); Conceptpowers adds the concept definition / verification _gates_. Detailed flow: `docs/superpowers-interop.md`.
-
 ---
 
 ## License & Community
