@@ -1,6 +1,6 @@
 ---
 name: redteam
-description: Use when the user wants a critical, adversarial review of finished work in a governance-active project ("레드팀", "redteam", "비판적 검토", "중복 정리", "과잉 구현 점검", "목적에 맞는지 점검") — several reviewers attack the work from five angles (concept compliance, red-team critique, duplication, overreach and purpose drift, side effects) against its concepts and the purpose of the work, a refuter drops findings that do not survive, and only the findings the user picks are fixed. Three modes (changes, one concept, whole project). Never reads reference.
+description: Use when the user wants a critical, adversarial review of finished work in a governance-active project ("레드팀", "redteam", "비판적 검토", "중복 정리", "과잉 구현 점검", "목적에 맞는지 점검") — several reviewers attack the work from five angles (concept compliance, red-team critique, duplication, overreach and purpose drift, side effects) against its concepts and the purpose of the work, a refuter drops findings that do not survive, and only the findings the user picks are fixed. Three modes (changes, one concept, whole project). For a plain check that code follows its concepts use review instead. Never reads reference.
 ---
 
 # Conceptpowers: Redteam (비판적 점검)
@@ -36,12 +36,17 @@ description: Use when the user wants a critical, adversarial review of finished 
 
 ## 흐름 (세 모드 공통)
 
+**시작 전:** 모드를 정하고 `references/modes.md`대로 대상 파일을 모은 뒤, 파일 첫머리 `@concept` 표식에서 대상
+개념 slug 집합을 뽑는다. 0단계는 이 두 목록으로 거르고, 2단계는 이 표식을 다시 쓴다.
+
 ### 0단계 — 개념 최신 확인 (필수, 읽기 전용)
 
-`conceptpowers:auto`의 **Stage 0** 진단 항목을 그대로 확인한다: `node "<cli>" reference-diff --root .`
-(changed / removed / affected), 개념 status 분포(🔴 red / 🟡 pending), `node "<cli>" audit --root .`(깨진 태그·
-표식 없는 코드). 새 진단을 만들지 않는다 — 결과 목록을 대상 파일·대상 개념 slug로 거르기만 한다.
+`conceptpowers:auto`의 **Stage 0** 진단 가운데 reference(3번)·개념 status(4번)·무결성(6번) 항목을 **그 문서에 적힌
+명령과 판독 그대로** 수행한다. 여기서 명령을 다시 정의하지 않는다 — 결과 목록을 대상 파일·대상 개념 slug로
+거르기만 한다.
 
+- `unlocked`(참고자료 기준점 없음)나 일부만 비교된 결과는 최신 여부를 모르는 것이므로 아래처럼 묻는다 —
+  "낡음 없음"으로 치지 않는다.
 - 대상 코드나 그 코드에 걸린 개념에 **닿는 낡음**이 있으면 멈추고, 무엇이 낡았는지 보인 뒤 묻는다:
   (a) `conceptpowers:auto` 또는 해당 스킬로 먼저 최신화 / (b) 그대로 진행 — 보고서에 "낡은 개념 기준으로
   점검함"을 남긴다.
@@ -59,7 +64,7 @@ description: Use when the user wants a critical, adversarial review of finished 
    - 목적에 묶기(기본) — 지적마다 근거를 개념 규칙이나 작업 목적에 묶는다. 묶을 수 없는 지적은 내지 않는다.
    - 일반 품질까지 — 보안·성능·읽기 쉬움도 지적한다. 보고서에서 "목적 밖 일반 품질"로 따로 묶는다.
 
-개념 요약을 보고 사용자가 "이건 옛날 얘기"라고 하면 그 개념은 낡은 것이다 — 0단계 (a)/(b)로 돌아간다.
+사용자가 개념 요약을 보고 낡았다고 짚으면 0단계와 같이 (a)/(b)를 묻는다.
 
 ### 2단계 — 코드 분류
 
@@ -68,13 +73,17 @@ description: Use when the user wants a critical, adversarial review of finished 
 
 ### 3단계 — 축별 리뷰어 (병렬)
 
-축 하나에 리뷰어 하나, 총 다섯을 동시에 띄운다: **개념 준수 · 레드팀 비판 · 중복 · 과잉·목적 이탈 · 부작용**.
+축 하나에 리뷰어 하나, 최대 다섯을 동시에 띄운다: **개념 준수 · 레드팀 비판 · 중복 · 과잉·목적 이탈 · 부작용**.
 리뷰어마다 1단계 목적, 2단계 분류, 대상 파일 목록, 그 축의 지시(`references/axes.md`)를 준다.
+
+- 2단계 뒤 맡을 대상이 없는 축은 띄우지 않고 보고서에 "해당 없음"으로 적는다(예: 태그 있는 파일이 없으면
+  개념 준수 축).
+- 판단할 대상이 하나도 남지 않으면(전부 표식 없음 등) 리뷰어를 띄우지 않고 `conceptpowers:scan`을 권한 뒤 멈춘다.
 
 ### 4단계 — 반박 검증
 
-지적마다 "문제가 아니다" 쪽에서 따져 본다. 견딘 것만 남긴다. 묶음 방식·상한·미검증 처리는
-`references/axes.md`.
+지적마다 "문제가 아니다" 쪽에서 따져 본다. 기각된 지적은 버린다. 반박자에게 줄 지시·결과 형식·묶음 방식·
+상한·미검증 처리는 `references/axes.md`.
 
 ### 5단계 — 보고
 
@@ -83,13 +92,16 @@ description: Use when the user wants a critical, adversarial review of finished 
 - **위반**은 개념에 적힌 규칙에 근거할 때만 쓴다(개념 준수 축). 작업 목적이나 일반 품질에 근거한 지적은
   **개선 제안**이다 — 위반이라 부르지 않는다.
 - 따로 묶는 목록: 판단 불가(개념 모호 → `update-concepts` 개념 업그레이드 권장), `none` 오분류 후보, 표식 없는
-  코드(→ `scan`), 반박 상한으로 넘긴 미검증 지적, 표본 검사로 넘긴 파일, 0단계에서 낡음을 알고 진행했는지.
+  코드(→ `scan`), 반박 상한으로 넘긴 지적(**미검증**이라고 밝혀서만 싣는다), 해당 없음으로 건너뛴 축, 표본
+  검사로 넘긴 파일, 0단계에서 낡음을 알고 진행했는지.
 
 ### 6단계 — 승인 후 수정
 
 1. 사용자가 고른 항목만 고친다. 고르지 않은 항목은 손대지 않는다.
-2. 개념 위반 항목은 사용자가 고른다: (a) 코드 수정 (b) 개념 수정 → `conceptpowers:update-concepts`
-   (c) 기능·개념 분리. 이 스킬은 개념을 고치지 않는다.
+2. 개념 위반 항목은 사용자가 고른다: 코드 수정, 또는 `conceptpowers:review` 판정 ②의 선택지 그대로(개념 수정·
+   기능/개념 분리 — 개념을 고치면 green이 pending으로 내려가 정착 전까지 코드를 다스리지 않는다). 이 스킬은
+   개념을 고치지 않는다. 개념 수정이나 분리를 고르면 **이번 점검은 여기서 끝낸다** — 남은 항목은 손대지 않고
+   목록으로 넘기며, 개념이 정착한 뒤 새 점검으로 다시 시작한다.
 3. 동작을 바꾸는 수정은 테스트를 먼저 쓴다(개념 기반 테스트 규칙 포함). 코드를 고치면 `@concept` 표식과
    매핑도 함께 갱신한다(`node "<cli>" map --root . <files...>`).
 4. 고친 뒤 고친 파일만 **과잉·목적 이탈·중복** 세 축으로 가볍게 다시 본다 — 수정이 새 과잉을 만들지 않았는지.
