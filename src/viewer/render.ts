@@ -77,17 +77,18 @@ async function readExistingStamp(root: string): Promise<string | null> {
 
 // 데이터만 바뀐 경우(뷰어 편집)의 manifest 갱신. 에셋은 다시 만들지 않았으므로 기존 버전 도장을 그대로
 // 둔다 — 도장을 지우거나 바꾸면 자동 동기화가 같은 버전인데도 다시 만들거나 옛 버전으로 되돌린다.
-// 도장이 아직 없을 때만 writeManifest의 기본값(플러그인 자신의 버전)을 쓴다.
+// 도장이 아직 없으면 비워 둔다(null) — 도장은 동기화(syncGenerated)만 찍는다. 비어 있으면 다음 동기화가 맞춘다.
 export async function refreshManifestData(root: string): Promise<void> {
-  const stamp = await readExistingStamp(root);
-  await writeManifest(root, stamp ?? undefined);
+  await writeManifest(root, await readExistingStamp(root));
 }
 
 // 버전 도장(manifest)은 에셋을 모두 쓴 뒤 마지막에 찍는다 — 도중에 실패하면 옛 도장이 남아
 // 자동 동기화가 다음에 다시 시도한다(plugin-version-sync). 먼저 찍으면 실패해도 최신으로 보인다.
-// holdStamp: 다른 동기화 단계가 실패했을 때 화면은 새로 그리되 도장은 옛 값(없으면 비움)으로 둔다.
+// stamp: 새 도장을 찍을지. 생략하면 stampVersion을 넘긴 경우에만 찍는다. 찍을 때 stampVersion이 없으면
+// 플러그인 자신의 버전을 쓴다. 찍지 않으면 기존 도장을 그대로 둔다(없으면 비움) — 도장은 "동기화로 맞췄다"는
+// 표시라 동기화가 아닌 다시 그리기(render·approve·edit-concept)나 실패로 보류된 동기화는 도장을 바꾸지 않는다.
 export interface RenderViewerOpts {
-  holdStamp?: boolean;
+  stamp?: boolean;
 }
 
 export async function renderViewerToDisk(
@@ -96,7 +97,8 @@ export async function renderViewerToDisk(
   opts: RenderViewerOpts = {}
 ): Promise<void> {
   const p = cpPaths(root);
-  const stamp = opts.holdStamp ? await readExistingStamp(root) : stampVersion;
+  const shouldStamp = opts.stamp ?? stampVersion !== undefined;
+  const stamp = shouldStamp ? stampVersion : await readExistingStamp(root);
 
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
   await copyAsset('index.html', join(p.conceptsViewer, 'index.html'));

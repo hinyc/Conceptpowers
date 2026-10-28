@@ -32,8 +32,9 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
    사용자가 명시적으로 요청할 때만(같은 버전 재생성은 로컬 산출물 수정을 되돌릴 수 있다).
    version-sync가 `ok: false`이거나 `failedSteps`가 비어 있지 않으면(exit 1), 또는 자동 맞춤 안내에 실패한 단계가
    있으면 "완료됨"으로 보고하지 않는다 — 실패한 단계와 오류를 한 줄로 알린다(예: package.json이 깨져
-   `packageScript` 실패 → package.json을 고친 뒤 version-sync 재실행). 뷰어는 새로 그려지지만 버전 도장은 보류돼
-   다음 동기화가 다시 시도한다.
+   `packageScript` 실패 → package.json을 고친 뒤 version-sync 재실행). 실패 단계에 `viewer`가 없으면 뷰어는 새로
+   그려진 상태이고, `viewer`가 있으면 뷰어도 옛 상태일 수 있다. 어느 경우든 버전 도장은 보류돼(render 등 다른 명령도
+   도장을 바꾸지 않는다) 다음 동기화(세션 시작·다음 CLI 명령·version-sync)가 다시 시도한다.
 2. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿 그대로인지.
 3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
    그리고 `node "<cli>" reference-diff --quick --root .` — `unlocked`(기준점 없음), `changed/removed`(변경), `added`(새 파일), `truncated`(비교가 일부만 됨),

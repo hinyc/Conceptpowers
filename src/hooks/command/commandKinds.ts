@@ -58,6 +58,9 @@ export const DECLARE_COMMANDS = new Set([
 
 export const SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'fish']);
 
+/** 현재 셸에서 다른 코드를 실행하는 명령 — 그 안에서 실행 위치(cd)가 바뀔 수 있다 */
+export const SAME_SHELL_RUNNERS = new Set(['eval', 'source', '.']);
+
 /** 뒤따르는 명령을 인자 그대로 실행하는 래퍼와, 값을 하나 받는 그 옵션들 */
 export const WRAPPERS: Record<string, ReadonlySet<string>> = {
   command: new Set(),
@@ -69,8 +72,13 @@ export const WRAPPERS: Record<string, ReadonlySet<string>> = {
   time: new Set(['-f', '-o']),
   nice: new Set(['-n']),
   env: new Set(['-u']),
-  sudo: new Set(['-u', '-g', '-h', '-p', '-C', '-D', '-U', '-r', '-t', '-T']),
+  sudo: new Set(['-u', '-g', '-h', '-p', '-C', '-D', '-U', '-r', '-t', '-T', '--chdir']),
   doas: new Set(['-u', '-C']),
+};
+
+/** 감싼 명령의 실행 위치를 바꾸는 래퍼 옵션(sudo -D/--chdir, 대상 사용자의 홈에서 로그인 셸로 실행하는 -i/--login) */
+export const RELOCATING_FLAGS: Record<string, (flag: string) => boolean> = {
+  sudo: (flag) => /^--(chdir|login)(=|$)/.test(flag) || /^-[^-]*[iD]/.test(flag),
 };
 
 export const ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
@@ -95,6 +103,37 @@ export const GIT_GLOBAL_WITH_VALUE = new Set([
   '--attr-source',
 ]);
 export const GIT_GLOBAL_REPO = new Set(['--git-dir', '--work-tree', '--namespace', '--bare']);
+
+export interface GitGlobalOption {
+  arg: string;
+  /** 따로 받는 값(값을 받는 옵션일 때만) */
+  value?: string;
+  dynamic: boolean;
+  valueDynamic: boolean;
+}
+
+/**
+ * 하위 명령 앞의 git 전역 옵션(-C·-c·--no-pager 등)을 읽어 옵션 목록과 하위 명령 위치를 낸다. 값을 따로 받는
+ * 옵션은 GIT_GLOBAL_WITH_VALUE 표 하나로 정한다(`--opt=value`는 한 낱말). 셸 확장 옵션은 값을 받지 않는 것으로 센다.
+ */
+export function splitGitGlobals(
+  args: readonly string[],
+  dyn: readonly boolean[]
+): { options: GitGlobalOption[]; at: number } {
+  const options: GitGlobalOption[] = [];
+  let i = 0;
+  while (i < args.length && args[i].startsWith('-')) {
+    const takesValue = !dyn[i] && GIT_GLOBAL_WITH_VALUE.has(args[i]);
+    options.push({
+      arg: args[i],
+      dynamic: Boolean(dyn[i]),
+      ...(takesValue ? { value: args[i + 1] } : {}),
+      valueDynamic: takesValue && Boolean(dyn[i + 1]),
+    });
+    i += takesValue ? 2 : 1;
+  }
+  return { options, at: i };
+}
 /** 경로 지정 해석 방식을 바꾸는 전역 옵션·환경 변수 — 경로 지정 커밋의 파일 계산이 달라진다 */
 export const GIT_PATHSPEC_OPTIONS = new Set([
   '--icase-pathspecs',
@@ -102,6 +141,75 @@ export const GIT_PATHSPEC_OPTIONS = new Set([
   '--noglob-pathspecs',
   '--literal-pathspecs',
 ]);
+
+/** git 전역 옵션의 뜻 — 커밋 판정(commitPlan)과 스테이징 가늠(stagingReach)이 같은 풀이를 쓴다 */
+export interface GitGlobalEffects {
+  /** 하위 명령의 위치 */
+  at: number;
+  /** -C로 차례로 옮겨 가는 폴더 글자(절대·상대 그대로) */
+  dirs: string[];
+  /** -C 값이 없거나 ~·셸 확장이라 위치를 확정할 수 없다 */
+  unknownLocation: boolean;
+  /** 저장소·작업 트리를 바꾼다(--git-dir·--work-tree·-c/--config-env core.worktree 등) */
+  repo: boolean;
+  /** 셸 확장으로 정해지는 전역 옵션이 있다 — 무엇이든 될 수 있다 */
+  dynamic: boolean;
+  /** 값을 알 수 없는 alias 설정이 주입됐다(--config-env alias.*) */
+  configInjected: boolean;
+  pathspecMode: boolean;
+  /** 경로를 대소문자 무시로 읽는다(--icase-pathspecs) */
+  icase: boolean;
+  /** -c alias.이름=값으로 주입된 alias */
+  aliases: [string, string][];
+}
+
+const NO_EFFECTS: Omit<GitGlobalEffects, 'at'> = {
+  dirs: [],
+  unknownLocation: false,
+  repo: false,
+  dynamic: false,
+  configInjected: false,
+  pathspecMode: false,
+  icase: false,
+  aliases: [],
+};
+
+// -c·--config-env 설정 하나의 뜻: 저장소를 바꾸는 키, 주입된 alias.
+function configEffect(e: GitGlobalEffects, o: GitGlobalOption): GitGlobalEffects {
+  const kv = o.arg.includes('=') ? o.arg.slice(o.arg.indexOf('=') + 1) : (o.value ?? '');
+  const repo = e.repo || (o.arg === '-c' && o.valueDynamic) || GIT_REPO_CONFIG.test(kv);
+  // 줄바꿈이 든 값은 펼칠 때 셸·git이 다르게 나눌 수 있다 — 값을 알 수 없는 alias로 본다(판단 불가).
+  const alias = /^alias\.([^=]+)=(.*)$/i.exec(kv);
+  if (o.arg === '-c' && alias && !o.valueDynamic && !/[\r\n]/.test(kv)) {
+    return { ...e, repo, aliases: [...e.aliases, [alias[1], alias[2]]] };
+  }
+  return { ...e, repo, configInjected: e.configInjected || /^alias\./i.test(kv) };
+}
+
+function globalEffect(e: GitGlobalEffects, o: GitGlobalOption): GitGlobalEffects {
+  if (o.dynamic) {
+    return { ...e, dynamic: true, repo: true, configInjected: true, pathspecMode: true };
+  }
+  if (o.arg === '-C') {
+    const unknown = o.value === undefined || o.valueDynamic || o.value.startsWith('~');
+    return unknown ? { ...e, unknownLocation: true } : { ...e, dirs: [...e.dirs, o.value ?? ''] };
+  }
+  const name = o.arg.split('=')[0];
+  if (GIT_GLOBAL_REPO.has(name)) return { ...e, repo: true };
+  if (GIT_PATHSPEC_OPTIONS.has(o.arg)) {
+    return { ...e, pathspecMode: true, icase: e.icase || o.arg === '--icase-pathspecs' };
+  }
+  return o.arg === '-c' || name === '--config-env' ? configEffect(e, o) : e;
+}
+
+/** 하위 명령 앞 git 전역 옵션의 뜻(위치·저장소·설정 주입·경로 해석)을 한 번에 풀이한다 */
+export function gitGlobalEffects(
+  args: readonly string[],
+  dyn: readonly boolean[]
+): GitGlobalEffects {
+  const { options, at } = splitGitGlobals(args, dyn);
+  return options.reduce(globalEffect, { ...NO_EFFECTS, at });
+}
 export const GIT_PATHSPEC_ENV = /^GIT_(ICASE|GLOB|NOGLOB|LITERAL)_PATHSPECS(=|$)/;
 
 /**

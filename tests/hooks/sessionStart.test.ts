@@ -37,7 +37,7 @@
 //  - governance-mode 제한 "도구나 에이전트가 스스로 강도를 바꾸는 것"
 //    → strict면 우회 금지 지침을 주입한다
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -128,6 +128,24 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('packageScript');
     expect(ctx).toContain('version-sync');
     expect(ctx).not.toContain('were auto-synced');
+    expect(ctx).toContain('The viewer was redrawn'); // 뷰어 단계는 성공했으니 사실이다
+  });
+  // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 알림은 사실이어야 한다:
+  // 뷰어 단계가 실패했으면 "다시 그렸다"고 말하지 않고, 실패 단계의 오류 내용도 함께 싣는다.
+  it('뷰어 단계가 실패하면 뷰어를 다시 그렸다고 알리지 않는다', async () => {
+    await scaffoldInit(root, {});
+    const viewerDir = join(root, 'docs/conceptpowers/concepts/viewer');
+    const manifestPath = join(viewerDir, 'manifest.json');
+    const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    writeFileSync(manifestPath, JSON.stringify({ ...m, generatorVersion: '0.0.1' }));
+    rmSync(join(viewerDir, 'assets'), { recursive: true, force: true });
+    writeFileSync(join(viewerDir, 'assets'), 'not a directory');
+    const o = await buildSessionStartOutput(root, process.cwd());
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain('<CONCEPTPOWERS-SYNC>');
+    expect(ctx).toMatch(/viewer \(.+\)/); // 단계와 오류를 함께
+    expect(ctx).not.toContain('was redrawn');
+    expect(ctx).toContain('next session retries');
   });
   it('생성 버전이 설치 버전과 같으면 자동 sync 블록이 없다', async () => {
     await scaffoldInit(root, {});

@@ -1,4 +1,4 @@
-// @concept:concept-inline-edit
+// @concept:concept-inline-edit @concept:human-owns-contract
 // src/viewer/serve.ts — Conceptpowers 뷰어 로컬 서버.
 // 빌드 시 esbuild가 엔진(zod 포함)을 인라인 번들해 assets/serve.mjs로 출력한다.
 // 따라서 배포본은 런타임 의존성 0이면서 실제 엔진 가드 로직을 그대로 사용한다(드리프트 없음).
@@ -10,11 +10,7 @@ import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { extname, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import {
-  ALLOWED_STATUS_TRANSITIONS,
-  editConceptContent,
-  readConcept,
-} from '../store/conceptStore.js';
+import { ALLOWED_STATUS_TRANSITIONS, editConceptContent } from '../store/conceptStore.js';
 import { refreshManifestData } from './render.js';
 import { SLUG_RE } from '../schema/concept.js';
 import { handleStatusApi, engineErrorStatus } from './statusApi.js';
@@ -192,13 +188,9 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
       return { status: 400, json: { error: 'patch object required' } };
     try {
       // 화면에서 사람이 직접 고칠 때는 사유를 따로 요구하지 않는다(human-owns-contract) — 사유 이력도 쌓지 않는다.
-      const before = await readConcept(projectRoot, slug);
-      const concept = await editConceptContent(projectRoot, slug, patch);
+      const { concept, downgradedToPending } = await editConceptContent(projectRoot, slug, patch);
       await refreshManifestData(projectRoot);
-      return {
-        status: 200,
-        json: { ok: true, concept, downgradedToPending: before?.status === 'green' },
-      };
+      return { status: 200, json: { ok: true, concept, downgradedToPending } };
     } catch (error) {
       return { status: engineErrorStatus(error), json: { error: (error as Error).message } };
     }

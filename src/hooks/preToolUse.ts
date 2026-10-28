@@ -1,6 +1,5 @@
 // @concept:governance-mode @concept:concept-driven-tests
 // src/hooks/preToolUse.ts
-import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { isInitialized } from '../init/scaffold.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { defaultIgnoreGlobs, type InitConfig } from '../schema/initConfig.js';
@@ -30,9 +29,10 @@ import type { GateCheck, GateFinding, GateInput } from './gates/types.js';
 import { describeError } from '../drift/safe.js';
 import { isMainModule } from '../util/isMain.js';
 import { exitAfterWrite } from '../util/exitAfterWrite.js';
-import { planCommit, type CommitPlan } from './command/commitPlan.js';
+import { planCommit } from './command/commitPlan.js';
 import { findHumanRecordCommands } from './command/recordCommands.js';
-import { forcedReferenceSpecs, mayStageGovernance } from './command/stagingReach.js';
+import { pendingOptionsAt } from './command/stagingReach.js';
+import { createRepoLocator, locateCommit } from './command/commitLocation.js';
 import type { CommitTarget } from './command/commitFiles.js';
 import { createAliasResolver } from './command/commitFiles.js';
 import { snapshotCommit, injectedContent } from './command/commitTree.js';
@@ -46,6 +46,8 @@ export interface PreToolEvent {
   changedFiles?: string[];
   /** 테스트·호출자 주입용: 커밋으로 삭제되는 파일(D) */
   deletedFiles?: string[];
+  /** 명령이 실행될 작업 폴더(훅 입력의 cwd). 없거나 알 수 없으면(undefined·null) 루트에서 출발한 것으로 본다 */
+  cwd?: string | null;
 }
 export interface PreToolOutput {
   hookSpecificOutput: {
@@ -224,18 +226,19 @@ export async function decidePreToolUse(
     // (governance-mode 불변: 실행 전에 그 파일들을 확정할 수 없으면 강도에 맞춰 대응).
     const plan = await planCommit(command, { resolveAlias: createAliasResolver(root) });
     if (plan.kind === 'none') return recordAsk ? recordAskOutput(recordAsk) : null;
+    // 커밋 위치(명령을 파싱해 얻은 위치)가 다른 저장소(프로젝트 밖·중첩 클론·다른 worktree)면 이 프로젝트 커밋이 아니다.
+    // 저장소 판별은 훅 한 번에 위치마다 한 번만 한다.
+    const locator = createRepoLocator(root);
+    const target = await locateCommit(root, plan, ev.cwd, locator);
+    if (target.kind === 'foreign') return recordAsk ? recordAskOutput(recordAsk) : null;
     const cfg = await readInitConfig(root);
     const enforcement = cfg?.enforcement ?? 'standard';
-    const target = confineToProject(root, plan);
     if (target.kind === 'unresolved') {
       // 커밋될 파일을 확정할 수 없어도, 그 커밋에 들어갈 수 있는 거버넌스 변경(달라진 설정·판단 기록, 지워진 개념·기록)은
       // 모아 함께 묻는다. 물어야 할 항목이 있으면 light도 경고로 흘려보내지 않는다.
       const ask = mergeAlwaysAsk(
         recordAsk,
-        await checkPendingGovernance(root, {
-          includeWorktree: mayStageGovernance(command),
-          forcedReference: forcedReferenceSpecs(command),
-        })
+        await checkPendingGovernance(root, await pendingOptionsAt(command, root, ev.cwd, locator))
       );
       const level = ask && enforcement === 'light' ? 'standard' : enforcement;
       return escalateWithAsk(unresolvedCommitOutput(level, target.reason), ask);
@@ -272,7 +275,8 @@ const RECORD_MEANINGS: Record<string, string> = {
   'attest-no-code': '코드를 고치지 않고 바뀐 개념을 통과시키는 판단 기록',
   'attest-test-review':
     '바뀐 개념에 맞춰 검사를 검토했다는 판단 기록(고침·고칠 필요 없음·검사 없음) — 고친 검사 파일을 같은 커밋에 넣으면 이 기록 없이도 통과합니다',
-  approve: '빨강(미승인) 개념을 초록(확정)으로 올리는 승인 — 사용자가 명시적으로 요청한 승인이어야 합니다',
+  approve:
+    '빨강(미승인) 개념을 초록(확정)으로 올리는 승인 — 사용자가 명시적으로 요청한 승인이어야 합니다',
 };
 const recordMeaning = (record: string): string => RECORD_MEANINGS[record] ?? record;
 
@@ -511,19 +515,6 @@ function unresolvedCommitOutput(enforcement: EnforcementLevel, reason: string): 
   });
 }
 
-// -C가 프로젝트 밖을 가리키면 이 프로젝트의 검사로 커밋 파일을 확정할 수 없다.
-function confineToProject(
-  root: string,
-  plan: Exclude<CommitPlan, { kind: 'none' }>
-): Exclude<CommitPlan, { kind: 'none' }> {
-  if (plan.kind !== 'commit' || !plan.cwd) return plan;
-  const rel = relative(root, resolve(root, plan.cwd));
-  if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
-    return { kind: 'unresolved', reason: '프로젝트 밖의 위치를 가리키는 git -C' };
-  }
-  return plan;
-}
-
 // 훅 진입점이 쓰는 안전 판정: 판정 중 예외가 나면 커밋 명령에 한해 강도별 실패 대응을 돌려준다.
 // 강도는 readInitConfig로 다시 읽는다 — 설정이 없거나 깨졌으면 standard(governance-mode 불변).
 export async function decidePreToolUseSafe(
@@ -579,13 +570,12 @@ if (isMain) {
       const ev: PreToolEvent = {
         tool: payload.tool_name,
         input: payload.tool_input ?? {},
+        cwd: typeof payload.cwd === 'string' && payload.cwd ? payload.cwd : null,
       };
       const root = await hookRootOf(payload.cwd);
       const out = await decidePreToolUseSafe(root, ev);
       if (out) text = JSON.stringify(out);
-      await recordBeforeBash(root, ev.tool, payload.tool_use_id, out).catch(
-        () => undefined
-      );
+      await recordBeforeBash(root, ev.tool, payload.tool_use_id, out).catch(() => undefined);
     } catch {
       text = null; // 페이로드조차 해석하지 못하면 커밋 여부를 알 수 없다
     }

@@ -3,9 +3,8 @@
 // 거버넌스를 정하는 파일들 — 설정(init.json), 개념 문서, 증빙·기준선 기록 — 에 손대는 일은 강도와 무관하게
 // 사람에게 묻는다. 검사 항목과 강도를 정하는 것도, 개념 문서의 내용을 바꾸는 것도, 코드·검사를 고치지 않고
 // 개념을 통과시키는 판단 기록을 남기는 것도 사람이다.
-import { realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { CP_REL } from '../../paths.js';
+import { basename, isAbsolute, relative, resolve } from 'node:path';
+import { CP_REL, REFERENCE_REL, canonicalPath, foldCase as fold } from '../../paths.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { InitConfigSchema } from '../../schema/initConfig.js';
 import { canonicalJson, sameJsonText } from '../../util/canonicalJson.js';
@@ -23,14 +22,12 @@ import type { GateFinding } from './types.js';
 
 const INIT_REL = `${CP_REL}/init.json`;
 const DATA_PREFIX = `${CP_REL}/concepts/data/`;
-const REFERENCE_REL = `${CP_REL}/reference`;
 const ALIGN_PREFIX = `${CP_REL}/concepts/.alignment/`;
 export const HUMAN_RECORD_FILES = [
   `${ALIGN_PREFIX}test-review.json`,
   `${ALIGN_PREFIX}no-code.json`,
 ];
 const MAX_LISTED = 8;
-const CASE_INSENSITIVE_FS = process.platform === 'darwin' || process.platform === 'win32';
 
 function listed(items: string[]): string {
   const shown = items.slice(0, MAX_LISTED).map((s) => sanitizeText(s));
@@ -148,14 +145,15 @@ async function deletedSinceHead(root: string, includeWorktree: boolean): Promise
   return [...new Set(lists.flat())];
 }
 
-// 커밋될 수 있는 참고자료 변경 — 색인(그리고 명령이 담을 수 있으면 디스크의 추적 중인 변경·무시되지 않은 새 파일)에서
+// 커밋될 수 있는 참고자료 변경 — 색인(그리고 명령이 참고자료를 담을 수 있으면 디스크의 추적 중인 변경·무시되지 않은 새 파일)에서
 // 마지막 커밋과 달라진 reference/ 파일. 무시 목록(.gitignore)에 걸린 파일은 강제 추가(-f) 없이 담기지 않으므로 빼되,
-// 명령이 강제 추가하는 참고자료 경로(forced)가 있으면 그 경로의 무시된 새 파일도 담길 수 있는 것으로 본다.
+// 명령이 강제 추가하는 참고자료 경로(forced)가 있으면 그 경로의 무시된 새 파일도 담길 수 있는 것으로 본다 — 그 파일들은
+// ignored로 따로 돌려준다(안내 문구가 달라진다).
 async function pendingReferenceFiles(
   root: string,
   includeWorktree: boolean,
   forced: readonly string[]
-): Promise<string[]> {
+): Promise<{ files: string[]; ignored: string[] }> {
   const diff = ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=ACMR'];
   const queries = [[...diff, '--cached', 'HEAD', '--', REFERENCE_REL]];
   if (includeWorktree) {
@@ -163,11 +161,20 @@ async function pendingReferenceFiles(
     queries.push(['ls-files', '-z', '--others', '--exclude-standard', '--', REFERENCE_REL]);
   }
   if (forced.length > 0) queries.push(['ls-files', '-z', '--others', '--', ...forced]);
-  const lists = await Promise.all(
-    queries.map(async (args) => ((await tryGit(root, args)) ?? '').split('\0').filter(Boolean))
-  );
-  return [...new Set(lists.flat())].filter((f) => f.startsWith(`${REFERENCE_REL}/`));
+  const ignoredQuery = ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--'];
+  const [lists, ignored] = await Promise.all([
+    Promise.all(queries.map((args) => gitList(root, args))),
+    forced.length > 0 ? gitList(root, [...ignoredQuery, ...forced]) : Promise.resolve([]),
+  ]);
+  const inReference = (f: string) => f.startsWith(`${REFERENCE_REL}/`);
+  return {
+    files: [...new Set(lists.flat())].filter(inReference),
+    ignored: ignored.filter(inReference),
+  };
 }
+
+const gitList = async (root: string, args: string[]): Promise<string[]> =>
+  ((await tryGit(root, args)) ?? '').split('\0').filter(Boolean);
 
 // 설정 항목의 기본값(스키마가 정한 값). 기본값이 없는 항목·모르는 항목은 undefined.
 function schemaDefault(key: string): unknown {
@@ -224,14 +231,32 @@ export async function checkUncommittedConfig(
   };
 }
 
+// 한쪽(디스크·색인)의 설정이 마지막 커밋과 다른가. 커밋에 들어갈지 알 수 없는 디스크 설정(allowDefaults)에 한해,
+// 도구가 빠진 항목을 기본값으로 보충한 것뿐이면 판정이 바뀌지 않으므로 다르지 않은 것으로 본다(checkUncommittedConfig와
+// 같은 기준). 커밋에 들어오는 설정(색인·명령이 직접 담는 디스크)은 예외 없이 변경이다 — checkGovernanceFiles와 같은 판정.
+function configDiffers(
+  config: string | null,
+  headConfig: string | null,
+  allowDefaults: boolean
+): boolean {
+  if (config === null || sameJsonText(config, headConfig)) return false;
+  if (!allowDefaults || headConfig === null) return true;
+  return !onlyDefaultsAdded(config, headConfig);
+}
+
 // 커밋될 파일을 실행 전에 확정할 수 없는 명령(스테이징과 커밋을 한 명령에 섞은 경우 등)에서도, 그 커밋에 들어갈 수
 // 있는 거버넌스 변경 — 색인(그리고 명령이 담을 수 있으면 디스크)에서 마지막 커밋과 달라진 설정·판단 기록, 지워진
 // 개념 문서·기록 — 을 모아 묻는다. git 저장소가 아니면 커밋 자체가 실패하므로 묻지 않는다.
 export interface PendingOptions {
   /** 명령이 디스크에만 있는 변경까지 스테이징할 수 있는가 — 거짓이면 색인의 변경만 본다 */
   includeWorktree: boolean;
-  /** 명령이 강제 추가(add -f)하는 참고자료 경로 — 그 경로의 무시된 새 파일도 담길 수 있다(stagingReach.forcedReferenceSpecs) */
+  /** 명령이 디스크에만 있는 참고자료 변경까지 스테이징할 수 있는가 — 없으면 includeWorktree를 따른다(stagingReach.mayStageReference) */
+  referenceWorktree?: boolean;
+  /** 명령이 강제 추가(add -f)하는 참고자료 경로 — 그 경로의 무시된 새 파일도 담길 수 있다(stagingReach.forcedReference) */
   forcedReference?: readonly string[];
+  /** 명령이 디스크의 설정 파일(init.json)을 직접 담는가 — 그 경로·상위 폴더를 add하거나 넓게 스테이징(add -A·add .·commit -a).
+   * 참이면(includeWorktree도 참일 때) 디스크 설정의 기본값 보충도 변경으로 묻는다. 없으면 담을지 모르는 것으로 보고 기본값 보충은 묻지 않는다 */
+  configExplicit?: boolean;
 }
 
 export async function checkPendingGovernance(
@@ -239,25 +264,29 @@ export async function checkPendingGovernance(
   opts: PendingOptions
 ): Promise<GateFinding | null> {
   if (!(await isGitRepo(root))) return null;
-  const sources = opts.includeWorktree
-    ? [diskContent(root), indexContent(root)]
-    : [indexContent(root)];
+  // 색인의 설정은 커밋에 들어가므로 기본값 예외가 없다. 디스크 설정은 명령이 직접 담지 않을 때만 예외를 둔다.
+  const index = { content: indexContent(root), allowDefaults: false };
+  const disk = { content: diskContent(root), allowDefaults: opts.configExplicit !== true };
+  const sources = opts.includeWorktree ? [disk, index] : [index];
   const head = headContent(root);
   const records = new Set<string>();
   let configChanged = false;
   const headConfig = await head.read(INIT_REL);
-  for (const source of sources) {
+  for (const { content, allowDefaults } of sources) {
     for (const file of HUMAN_RECORD_FILES) {
-      for (const entry of await changedRecordEntries(root, file, source)) records.add(entry);
+      for (const entry of await changedRecordEntries(root, file, content)) records.add(entry);
     }
-    const config = await source.read(INIT_REL);
-    if (config !== null && !sameJsonText(config, headConfig)) configChanged = true;
+    if (configDiffers(await content.read(INIT_REL), headConfig, allowDefaults))
+      configChanged = true;
   }
   // 참고자료 기밀 확인은 어느 강도에서나 묻는다 — 확정할 수 없는 커밋에 담길 수 있는 참고자료 변경도 모은다.
+  const reference = await pendingReferenceFiles(
+    root,
+    opts.referenceWorktree ?? opts.includeWorktree,
+    opts.forcedReference ?? []
+  );
   return mergeAlwaysAsk(
-    checkReferenceGate(
-      await pendingReferenceFiles(root, opts.includeWorktree, opts.forcedReference ?? [])
-    ),
+    checkReferenceGate(reference.files, reference.ignored),
     checkGovernanceFiles(
       configChanged ? [INIT_REL] : [],
       await deletedSinceHead(root, opts.includeWorktree)
@@ -265,24 +294,6 @@ export async function checkPendingGovernance(
     humanRecordFinding([...records])
   );
 }
-
-// 경로의 실제 위치: 있는 조상까지 바로가기를 풀고 나머지를 붙인다(아직 없는 파일을 Write할 때도 쓴다).
-function canonicalPath(path: string): string {
-  let current = resolve(path);
-  let tail: string[] = [];
-  for (;;) {
-    try {
-      return join(realpathSync(current), ...tail);
-    } catch {
-      const parent = dirname(current);
-      if (parent === current) return resolve(path);
-      tail = [basename(current), ...tail];
-      current = parent;
-    }
-  }
-}
-
-const fold = (text: string): string => (CASE_INSENSITIVE_FS ? text.toLowerCase() : text);
 
 // Edit/Write 도구가 거버넌스 파일을 직접 고치려 할 때. 프로젝트 밖 경로·뷰어 생성물·참고자료는 대상이 아니다.
 // 바로가기·대소문자만 다른 표기(대소문자 무시 파일시스템)로도 피하지 못하게 실제 위치로 견준다.

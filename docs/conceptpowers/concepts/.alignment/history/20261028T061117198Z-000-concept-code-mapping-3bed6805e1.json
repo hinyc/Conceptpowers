@@ -1,0 +1,11 @@
+{
+  "slug": "concept-code-mapping",
+  "hash": "3:972a19386e80",
+  "prevHash": "3:6c4fa8ad241b",
+  "reason": "레드팀 3차 Q4-a: 이미 있던 미지 표식 경고를 개념 약속으로 올림(테스트가 근거로 인용할 규칙)",
+  "at": "2026-10-28T06:11:17.198Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

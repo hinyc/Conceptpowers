@@ -161,7 +161,9 @@ describe('syncIfStale — 단계 실패', () => {
     const index = join(cpPaths(root).conceptsViewer, 'index.html');
     writeFileSync(index, 'stale viewer');
     const r = await syncIfStale(root, makePluginRoot('9.9.9'));
-    expect(r.failedSteps).toEqual(['packageScript']);
+    // 단계 이름만이 아니라 오류 내용도 함께 돌려준다(안내가 원인을 숨기지 않게).
+    expect(r.failedSteps).toEqual([{ step: 'packageScript', error: expect.any(String) }]);
+    expect(r.failedSteps?.[0]?.error).not.toBe('');
     expect(readFileSync(index, 'utf8')).not.toBe('stale viewer');
   });
 });
@@ -266,7 +268,31 @@ describe('CLI 사용 시 자동 version sync', () => {
     );
     expect(code).toBe(0);
     expect(JSON.parse(captured)).toEqual([]);
-    expect(notice).toMatch(/^\[conceptpowers\] auto version-sync failed steps: packageScript .*version-sync.*\n$/);
+    // 명시 경로(init)와 같은 형식 — 단계(오류) 목록 + 다시 시도 안내, 한 줄.
+    expect(notice).toMatch(
+      /^\[conceptpowers\] some generated-artifact steps failed — packageScript \(.+\) — .*version-sync.*\n$/
+    );
+  });
+
+  // plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것" —
+  // 동기화가 실패해 보류된 도장을 같은 명령의 render가 새 버전으로 찍어 재시도를 없애면 안 된다.
+  it('자동 sync가 실패하면 render 명령이 도장을 찍지 않아, 원인을 고친 뒤 version-sync가 실제로 맞춘다', async () => {
+    stampGenerator(root, '0.0.1');
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    const code = await runCli(['render', '--root', root], () => {}, () => {});
+    expect(code).toBe(0);
+    const held = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
+    expect(held.generatorVersion).toBe('0.0.1'); // 재시도가 살아 있다
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'x' }));
+    let out = '';
+    expect(await runCli(['version-sync', '--root', root], (s) => (out += s))).toBe(0);
+    const result = JSON.parse(out);
+    expect(result.skipped).toBeUndefined();
+    expect(result.scriptStatus).not.toBe('no-package');
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    expect(pkg.scripts?.['concepts:view']).toBeDefined();
+    const after = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
+    expect(after.generatorVersion).toBe(result.installed);
   });
 
   it('stderr 알림 콜백이 throw해도 명령은 계속 실행된다', async () => {

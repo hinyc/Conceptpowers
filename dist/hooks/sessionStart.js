@@ -8,14 +8,16 @@ var __export = (target2, all) => {
 };
 
 // src/hooks/hookRoot.ts
-import { dirname as dirname4, resolve as resolve2 } from "node:path";
+import { dirname as dirname5, resolve as resolve3 } from "node:path";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir9, writeFile as writeFile8, access as access5 } from "node:fs/promises";
 
 // src/paths.ts
-import { join } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 var CP_REL = "docs/conceptpowers";
+var REFERENCE_REL = `${CP_REL}/reference`;
+var CASE_INSENSITIVE_FS = process.platform === "darwin" || process.platform === "win32";
 function cpPaths(root) {
   const base = join(root, CP_REL);
   return {
@@ -4268,7 +4270,7 @@ import { join as join14 } from "node:path";
 
 // src/viewer/render.ts
 import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile6 } from "node:fs/promises";
-import { join as join5, dirname as dirname3 } from "node:path";
+import { join as join5, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4350,14 +4352,14 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 
 // src/store/conceptStore.ts
 import { readFile } from "node:fs/promises";
-import { join as join3, relative, resolve } from "node:path";
+import { join as join3, relative as relative2, resolve as resolve2 } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname as dirname2 } from "node:path";
 var counter = 0;
 async function writeFileAtomic(target2, data) {
-  await mkdir(dirname(target2), { recursive: true });
+  await mkdir(dirname2(target2), { recursive: true });
   const tmp = `${target2}.${process.pid}.${counter++}.tmp`;
   try {
     await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
@@ -4563,7 +4565,7 @@ async function listConceptEntries(root) {
     try {
       entries.push({
         concept: parseConcept(JSON.parse(await readFile(f, "utf8"))),
-        rel: relative(root, f)
+        rel: relative2(root, f)
       });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
@@ -4667,7 +4669,7 @@ async function readInitConfig(root) {
 import { readFileSync } from "node:fs";
 import { readFile as readFile5, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join as join4, dirname as dirname2 } from "node:path";
+import { join as join4, dirname as dirname3 } from "node:path";
 
 // src/version/compareSemver.ts
 var SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
@@ -4703,7 +4705,7 @@ function findPluginRoot(startDir) {
       readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
-      const parent = dirname2(dir);
+      const parent = dirname3(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4776,13 +4778,13 @@ async function checkForUpdate(pluginRoot, opts = {}) {
 
 // src/viewer/render.ts
 async function readAsset(name) {
-  const start = dirname3(fileURLToPath(import.meta.url));
+  const start = dirname4(fileURLToPath(import.meta.url));
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
       return await readFile6(join5(dir, "assets", name));
     } catch {
-      const parent = dirname3(dir);
+      const parent = dirname4(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4790,11 +4792,11 @@ async function readAsset(name) {
   throw new Error(`asset not found: ${name} (search start: ${start})`);
 }
 async function copyAsset(name, target2) {
-  await mkdir3(dirname3(target2), { recursive: true });
+  await mkdir3(dirname4(target2), { recursive: true });
   await writeFile3(target2, await readAsset(name));
 }
 async function readPluginVersion() {
-  const pluginRoot = findPluginRoot(dirname3(fileURLToPath(import.meta.url)));
+  const pluginRoot = findPluginRoot(dirname4(fileURLToPath(import.meta.url)));
   return pluginRoot ? readInstalledVersion(pluginRoot) : null;
 }
 async function writeManifest(root, stampVersion) {
@@ -4825,7 +4827,8 @@ async function readExistingStamp(root) {
 }
 async function renderViewerToDisk(root, stampVersion, opts = {}) {
   const p = cpPaths(root);
-  const stamp = opts.holdStamp ? await readExistingStamp(root) : stampVersion;
+  const shouldStamp = opts.stamp ?? stampVersion !== void 0;
+  const stamp = shouldStamp ? stampVersion : await readExistingStamp(root);
   await copyAsset("index.html", join5(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join5(p.conceptsViewer, "assets", "viewer.js"));
   await copyAsset("sidebar.js", join5(p.conceptsViewer, "assets", "sidebar.js"));
@@ -4881,7 +4884,7 @@ async function upsertViewerScript(root) {
 
 // src/init/reference.ts
 import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
-import { join as join8, relative as relative2 } from "node:path";
+import { join as join8, relative as relative3 } from "node:path";
 
 // src/init/referenceWalk.ts
 import { readdir as readdir2, stat } from "node:fs/promises";
@@ -4946,7 +4949,7 @@ async function listReferenceFiles(root) {
   await walkUsableFiles(
     dir,
     (abs) => {
-      found.push(relative2(dir, abs));
+      found.push(relative3(dir, abs));
       return true;
     },
     Number.POSITIVE_INFINITY
@@ -4957,7 +4960,7 @@ async function listReferenceFiles(root) {
 // src/init/referencePaths.ts
 import { readFile as readFile8, stat as stat2, access as access2, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import { isAbsolute, join as join9 } from "node:path";
+import { isAbsolute as isAbsolute2, join as join9 } from "node:path";
 var PATHS_FILE = "paths.md";
 async function ensureReferencePaths(root) {
   const dir = cpPaths(root).reference;
@@ -4977,7 +4980,7 @@ function parseReferencePaths(content) {
 }
 function resolveReferencePath(root, raw) {
   if (raw === "~" || raw.startsWith("~/")) return join9(homedir2(), raw.slice(1));
-  if (isAbsolute(raw)) return raw;
+  if (isAbsolute2(raw)) return raw;
   return join9(root, raw);
 }
 async function dirHasUsableContent(dir) {
@@ -5303,6 +5306,9 @@ async function syncReferenceLockIgnore(root) {
 }
 
 // src/init/syncGenerated.ts
+function formatFailedSteps(failed) {
+  return failed.map((f) => `${f.step} (${f.error})`).join("; ");
+}
 async function cleanLegacyViewerHtml(viewerDir) {
   const keep = join14(viewerDir, "index.html");
   let removed = 0;
@@ -5368,7 +5374,7 @@ async function syncGenerated(root, opts = {}) {
   const holdStamp = earlier.length > 0;
   const viewer = await runStep(
     "viewer",
-    () => renderViewerToDisk(root, opts.stampVersion, { holdStamp }),
+    () => renderViewerToDisk(root, opts.stampVersion, { stamp: !holdStamp }),
     void 0
   );
   return {
@@ -5397,10 +5403,10 @@ async function isInitialized(root) {
 
 // src/hooks/hookRoot.ts
 async function initializedAncestor(start) {
-  let current = resolve2(start);
+  let current = resolve3(start);
   for (; ; ) {
     if (await isInitialized(current)) return current;
-    const parent = dirname4(current);
+    const parent = dirname5(current);
     if (parent === current) return null;
     current = parent;
   }
@@ -5418,7 +5424,7 @@ async function findHookRoot(src) {
 var hookRootOf = (payloadCwd) => findHookRoot({ cwd: payloadCwd, env: process.env, processCwd: process.cwd() });
 
 // src/hooks/sessionStart.ts
-import { join as join18, dirname as dirname5 } from "node:path";
+import { join as join18, dirname as dirname6 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/version/autoSync.ts
@@ -5447,7 +5453,7 @@ async function syncIfStale(root, pluginRoot) {
     if (!stale) return { synced: false, installed, generator };
     const { failedSteps } = await syncGenerated(root, { stampVersion: installed });
     if (failedSteps.length > 0) {
-      return { synced: false, installed, generator, failedSteps: failedSteps.map((f) => f.step) };
+      return { synced: false, installed, generator, failedSteps };
     }
     return { synced: true, installed, generator };
   } catch (error) {
@@ -5462,12 +5468,12 @@ async function syncIfStale(root, pluginRoot) {
 }
 
 // src/reference/affected.ts
-import { basename } from "node:path/posix";
+import { basename as basename2 } from "node:path/posix";
 var relCanon = (p) => normalizeRel(p).replace(/\/+$/, "");
 var referencePaths = (concept) => concept.sources.filter((s) => s.kind === "reference" && s.path !== "").map((s) => s.path);
 function matches(p, k) {
   if (p === "" || p === ".") return false;
-  return k === p || basename(k) === p || k.endsWith(`/${p}`);
+  return k === p || basename2(k) === p || k.endsWith(`/${p}`);
 }
 function citedMatcher(concepts, canon = relCanon) {
   const cited = new Set(
@@ -5677,10 +5683,10 @@ async function readHistory(root) {
 
 // src/drift/follow.ts
 import { stat as stat4 } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join17, relative as relative3, resolve as resolve3 } from "node:path";
+import { isAbsolute as isAbsolute3, join as join17, relative as relative4, resolve as resolve4 } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative3(resolve3(root), resolve3(root, rel));
-  return r !== "" && !r.startsWith("..") && !isAbsolute2(r);
+  const r = relative4(resolve4(root), resolve4(root, rel));
+  return r !== "" && !r.startsWith("..") && !isAbsolute3(r);
 }
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
@@ -5782,9 +5788,12 @@ function buildAutoSyncBlock(sync, cli) {
     ].join("\n");
   }
   if (!sync.failedSteps?.length) return "";
+  const viewerFailed = sync.failedSteps.some((f) => f.step === "viewer");
+  const viewerLine = viewerFailed ? "The viewer could not be redrawn either and the version stamp was held" : "The viewer was redrawn but the version stamp was held";
+  const steps = sanitizeText(formatFailedSteps(sync.failedSteps), 600);
   return "\n" + [
     "<CONCEPTPOWERS-SYNC>",
-    `Auto-sync of plugin-generated artifacts to v${sync.installed} partly failed at session start \u2014 failed steps: ${sync.failedSteps.join(", ")}. The viewer was redrawn but the version stamp was held, so the next session retries.`,
+    `Auto-sync of plugin-generated artifacts to v${sync.installed} partly failed at session start \u2014 failed steps: ${steps}. ${viewerLine}, so the next session retries.`,
     `Tell the user in one concise line which steps failed and suggest running: node "${cli}" version-sync --root . (it reports each step's error).`,
     "</CONCEPTPOWERS-SYNC>"
   ].join("\n");
@@ -5980,7 +5989,7 @@ async function buildSessionStartOutputSafe(root, pluginRoot, deps = {}) {
 }
 var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname5(fileURLToPath3(import.meta.url))) ?? process.cwd();
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? findPluginRoot(dirname6(fileURLToPath3(import.meta.url))) ?? process.cwd();
   hookRootOf().then((root) => buildSessionStartOutputSafe(root, pluginRoot)).then((o) => o ? JSON.stringify(o) : null).catch(() => null).then((text) => exitAfterWrite(text));
 }
 export {

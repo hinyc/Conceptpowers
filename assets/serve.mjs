@@ -9,16 +9,18 @@ import { createServer } from "node:http";
 import { readFile as readFile8, realpath } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
-import { extname, normalize, resolve as resolve2, sep } from "node:path";
+import { extname, normalize, resolve as resolve3, sep as sep2 } from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
 import { readFile as readFile2 } from "node:fs/promises";
-import { join as join3, relative, resolve } from "node:path";
+import { join as join3, relative as relative2, resolve as resolve2 } from "node:path";
 
 // src/paths.ts
-import { join } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 var CP_REL = "docs/conceptpowers";
+var REFERENCE_REL = `${CP_REL}/reference`;
+var CASE_INSENSITIVE_FS = process.platform === "darwin" || process.platform === "win32";
 function cpPaths(root) {
   const base = join(root, CP_REL);
   return {
@@ -48,10 +50,10 @@ function cpPaths(root) {
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname as dirname2 } from "node:path";
 var counter = 0;
 async function writeFileAtomic(target, data) {
-  await mkdir(dirname(target), { recursive: true });
+  await mkdir(dirname2(target), { recursive: true });
   const tmp = `${target}.${process.pid}.${counter++}.tmp`;
   try {
     await writeFile(tmp, data, { encoding: "utf8", flag: "wx" });
@@ -4452,7 +4454,7 @@ function assertAliasesFree(concept, existing, target, root) {
   const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((e) => e.concept.slug)]);
   const takenBy = /* @__PURE__ */ new Map();
   for (const other of existing) {
-    if (resolve(root, other.rel) === target) continue;
+    if (resolve2(root, other.rel) === target) continue;
     for (const alias of other.concept.aliases) takenBy.set(alias, other.concept.slug);
   }
   const seen = /* @__PURE__ */ new Set();
@@ -4477,7 +4479,7 @@ async function listConceptEntries(root) {
     try {
       entries.push({
         concept: parseConcept(JSON.parse(await readFile2(f, "utf8"))),
-        rel: relative(root, f)
+        rel: relative2(root, f)
       });
     } catch (error) {
       throw new Error(`Failed to parse concept file: ${f} \u2014 ${error.message}`);
@@ -4489,10 +4491,10 @@ async function listConcepts(root) {
   return (await listConceptEntries(root)).map((e) => e.concept);
 }
 function locationsOf(root, entries, slug3) {
-  return entries.filter((e) => e.concept.slug === slug3).map((e) => resolve(root, e.rel));
+  return entries.filter((e) => e.concept.slug === slug3).map((e) => resolve2(root, e.rel));
 }
 function duplicateError(slug3, root, paths) {
-  const where = paths.map((p) => relative(root, p)).join(", ");
+  const where = paths.map((p) => relative2(root, p)).join(", ");
   return new Error(
     `Duplicate slug: ${slug3} exists in more than one file (${where}) \u2014 globally unique; merge them into one file before writing`
   );
@@ -4515,11 +4517,8 @@ async function readSingleEntry(root, slug3) {
   return { entry: matches[0], entries };
 }
 async function rewriteConcept(root, found, input) {
-  const target = resolve(root, found.entry.rel);
+  const target = resolve2(root, found.entry.rel);
   return persistConcept(root, parseConcept(input), target, found.entries);
-}
-async function readConcept(root, slug3) {
-  return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
 }
 var ALLOWED_STATUS_TRANSITIONS = {
   red: ["red", "green"],
@@ -4577,19 +4576,21 @@ async function editConceptContent(root, slug3, patch) {
       safe[key] = patch[key];
     }
   }
-  const nextStatus = concept.status === "green" ? "pending" : concept.status;
-  return rewriteConcept(root, found, {
+  const downgradedToPending = concept.status === "green";
+  const nextStatus = downgradedToPending ? "pending" : concept.status;
+  const saved = await rewriteConcept(root, found, {
     ...concept,
     ...safe,
     slug: concept.slug,
     group: concept.group,
     status: nextStatus
   });
+  return { concept: saved, downgradedToPending };
 }
 
 // src/viewer/render.ts
 import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
-import { join as join5, dirname as dirname3 } from "node:path";
+import { join as join5, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4779,7 +4780,7 @@ async function readInitConfig(root) {
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
 import { readFile as readFile6, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
-import { join as join4, dirname as dirname2 } from "node:path";
+import { join as join4, dirname as dirname3 } from "node:path";
 var MAX_PLUGIN_ROOT_DEPTH = 6;
 function findPluginRoot(startDir) {
   let dir = startDir;
@@ -4788,7 +4789,7 @@ function findPluginRoot(startDir) {
       readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
-      const parent = dirname2(dir);
+      const parent = dirname3(dir);
       if (parent === dir) break;
       dir = parent;
     }
@@ -4807,7 +4808,7 @@ async function readInstalledVersion(pluginRoot) {
 
 // src/viewer/render.ts
 async function readPluginVersion() {
-  const pluginRoot = findPluginRoot(dirname3(fileURLToPath(import.meta.url)));
+  const pluginRoot = findPluginRoot(dirname4(fileURLToPath(import.meta.url)));
   return pluginRoot ? readInstalledVersion(pluginRoot) : null;
 }
 async function writeManifest(root, stampVersion) {
@@ -4837,8 +4838,7 @@ async function readExistingStamp(root) {
   }
 }
 async function refreshManifestData(root) {
-  const stamp = await readExistingStamp(root);
-  await writeManifest(root, stamp ?? void 0);
+  await writeManifest(root, await readExistingStamp(root));
 }
 
 // src/viewer/statusApi.ts
@@ -4888,7 +4888,7 @@ function contentType(pathname) {
   return MIME[extname(pathname).toLowerCase()] ?? "application/octet-stream";
 }
 function safeResolve(root, urlPath) {
-  const base = resolve2(root);
+  const base = resolve3(root);
   let p;
   try {
     p = decodeURIComponent((urlPath || "/").split("?")[0].split("#")[0]);
@@ -4898,12 +4898,12 @@ function safeResolve(root, urlPath) {
   if (p.includes("\0")) return null;
   if (p === "/" || p === "") p = "/index.html";
   if (p.split("/").some((seg) => seg.startsWith("."))) return null;
-  const resolved = normalize(resolve2(base, "." + p));
+  const resolved = normalize(resolve3(base, "." + p));
   return isServable(base, resolved) ? resolved : null;
 }
 function isServable(base, target) {
-  if (target !== base && !target.startsWith(base + sep)) return false;
-  const segs = target.slice(base.length + 1).split(sep).filter(Boolean);
+  if (target !== base && !target.startsWith(base + sep2)) return false;
+  const segs = target.slice(base.length + 1).split(sep2).filter(Boolean);
   if (segs.some((seg) => seg.startsWith("."))) return false;
   return !segs.some((seg) => PRIVATE_DIRS.has(seg.replace(/[. ]+$/, "").toLowerCase()));
 }
@@ -4984,13 +4984,9 @@ async function handleApi(projectRoot, req) {
     if (!patch || typeof patch !== "object")
       return { status: 400, json: { error: "patch object required" } };
     try {
-      const before = await readConcept(projectRoot, slug3);
-      const concept = await editConceptContent(projectRoot, slug3, patch);
+      const { concept, downgradedToPending } = await editConceptContent(projectRoot, slug3, patch);
       await refreshManifestData(projectRoot);
-      return {
-        status: 200,
-        json: { ok: true, concept, downgradedToPending: before?.status === "green" }
-      };
+      return { status: 200, json: { ok: true, concept, downgradedToPending } };
     } catch (error) {
       return { status: engineErrorStatus(error), json: { error: error.message } };
     }

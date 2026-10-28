@@ -16,8 +16,10 @@
 //  - drift-reconcile 이점 "삭제된 개념의 낡은 기록이 쌓이지 않는다"
 //    → 결산 뒤 어느 기록에도 사라진 개념의 항목이 남지 않는다
 //  - drift-reconcile 불변 "따라옴이든 무시함이든, 결산한 개념의 기준선은 반드시 현재 지문으로 다시 맞춘다"
-//    → 낡은 기록 정리는 결산에 딸린 일이다: 기록 파일 하나가 깨져도 결산(이력·기준선)은 성공하고,
-//      깨진 파일은 덮어쓰지 않은 채 어느 파일인지 따로 알린다
+//    → 낡은 기록 정리는 결산에 딸린 일이다: 기록 파일 하나가 깨져도 결산(이력·기준선)은 성공한다
+//  - drift-reconcile 허용 "새로 생긴 개념을 기준선에 등록하고, 사라진 개념의 낡은 기록을 지우는 것"
+//    → 허용된 것은 사라진 개념의 낡은 기록을 지우는 일뿐이다: 깨진 기록 파일을 통째로 다시 써서
+//      (살아 있는 개념의 기록까지) 바꾸지 않는다
 //  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
 //    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 문서 커밋에서 aligned
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -274,7 +276,7 @@ describe('reconcileAfterCommit', () => {
       expect((await readPendingConflictsStrict(root))['auth-token']).toBe('살아있음');
     });
 
-    it('기록 파일 하나가 깨져도 결산은 성공하고(이력·기준선 갱신) 깨진 파일을 알린다 [규칙: 결산한 개념의 기준선은 반드시 현재 지문으로 다시 맞춘다]', async () => {
+    it('기록 파일 하나가 깨져도 결산은 성공한다(이력·기준선 갱신) [규칙: 결산한 개념의 기준선은 반드시 현재 지문으로 다시 맞춘다]', async () => {
       await makeDrift();
       const c2 = await readConcept(root, 'auth-token');
       const attestPath = join(root, 'docs/conceptpowers/concepts/.alignment/attest.json');
@@ -283,14 +285,23 @@ describe('reconcileAfterCommit', () => {
       const res = await reconcileAfterCommit(root, ['src/login.ts'], 't2');
       expect(res.aligned).toEqual(['auth-token']);
       expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
-      expect((await readHistory(root)).some((h) => h.slug === 'auth-token' && h.aligned)).toBe(true);
-      expect(res.pruneFailures.map((f) => f.file)).toEqual([
-        'docs/conceptpowers/concepts/.alignment/attest.json',
-      ]);
-      expect(readFileSync(attestPath, 'utf8')).toBe('{ broken'); // 깨진 파일은 덮어쓰지 않는다
+      expect((await readHistory(root)).some((h) => h.slug === 'auth-token' && h.aligned)).toBe(
+        true
+      );
     });
 
-    it('정리 실패가 없으면 pruneFailures는 비어 있다', async () => {
+    it('깨진 기록 파일은 덮어쓰지 않는다 [규칙: 허용은 사라진 개념의 낡은 기록을 지우는 것까지]', async () => {
+      await makeDrift();
+      const attestPath = join(root, 'docs/conceptpowers/concepts/.alignment/attest.json');
+      mkdirSync(dirname(attestPath), { recursive: true });
+      writeFileSync(attestPath, '{ broken');
+      await reconcileAfterCommit(root, ['src/login.ts'], 't2');
+      expect(readFileSync(attestPath, 'utf8')).toBe('{ broken');
+    });
+
+    it('정리 실패가 없으면 pruneFailures는 비어 있다 [규칙: 허용 — 새로 생긴 개념을 기준선에 등록하고, 사라진 개념의 낡은 기록을 지우는 것]', async () => {
+      // 정리가 문제없이 끝난 결산에는 알릴 실패가 없다 — 해소할 것 없는 경고를 띄우지 않는다
+      // (drift-reconcile 고충 "해소되지 않는 경고가 계속 떠서 결국 도구를 끄게 되는 문제")
       await writeConcept(root, concept());
       seedLogs();
       const res = await reconcileAfterCommit(root, [DOC]);

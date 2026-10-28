@@ -22,6 +22,11 @@ export interface ShellSegment {
   connector: Connector;
   /** 서브셸 괄호 깊이 */
   depth: number;
+  /** 이 명령 앞의 구분자 — 괄호를 닫은 뒤의 구분자(`(a) || b`의 ||)·괄호를 열기 전의 구분자(`a; (b)`의 ;)도
+   * 여기 남는다. 첫 명령이면 없음 */
+  joinedBy?: Connector;
+  /** 이 명령이 새 서브셸 괄호를 열고 시작한다 */
+  opened?: boolean;
 }
 
 export interface ParsedCommand {
@@ -57,6 +62,15 @@ interface PendingHeredoc {
 
 const SEPARATORS = new Set([';', '|', '&', '(', ')']);
 const NON_WRITING_TARGET = /^(\/dev\/null|-|\d+)$/;
+
+// 다음 명령 앞의 구분자. 빈 구간을 건너도(괄호 뒤의 구분자, 괄호를 여는 '(' 앞의 구분자) 앞 구분자를 잃지 않고,
+// &&·||·| 뒤의 줄바꿈은 앞 구분자가 이어진다(`a &&\n b`의 b는 a에 걸린다).
+function nextJoin(kept: boolean, before: Connector | undefined, connector: Connector): Connector {
+  if (kept) return connector;
+  if (connector === '(') return before ?? '(';
+  const carried = before === '&&' || before === '||' || before === '|';
+  return carried && connector === '\n' ? before : connector;
+}
 
 function newSegment(depth: number): ShellSegment {
   return {
@@ -221,6 +235,7 @@ class ShellParser {
       this.endSegment('(');
       this.depth++;
       this.seg.depth = this.depth;
+      this.seg.opened = true;
       this.i++;
       return;
     }
@@ -408,8 +423,13 @@ class ShellParser {
     const seg = this.seg;
     seg.connector = connector;
     if (seg.words[0] === 'function' && !seg.dynamicWords[0]) this.functionDefined = true;
-    if (seg.words.length > 0 || seg.substitutions.length > 0) this.segments.push(seg);
-    this.seg = newSegment(this.depth);
+    const kept = seg.words.length > 0 || seg.substitutions.length > 0;
+    if (kept) this.segments.push(seg);
+    this.seg = {
+      ...newSegment(this.depth),
+      joinedBy: nextJoin(kept, seg.joinedBy, connector),
+      ...(!kept && seg.opened ? { opened: true } : {}),
+    };
   }
 
   private consumeHeredocs(): void {

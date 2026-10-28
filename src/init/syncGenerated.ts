@@ -49,6 +49,11 @@ export interface SyncResult {
   failedSteps: SyncStepFailure[];
 }
 
+// 실패 단계 목록을 "단계 (오류); …" 한 줄로 만든다. 명시 실행(init)·자동 경로(CLI 진입·세션 시작)가 같은 형식을 쓴다.
+export function formatFailedSteps(failed: readonly SyncStepFailure[]): string {
+  return failed.map((f) => `${f.step} (${f.error})`).join('; ');
+}
+
 // 옛 포맷의 개념별 *.html / graph.html 고아 파일을 정리한다.
 // 새 단일 SPA의 index.html(뷰어 루트)만 남기고, 비워진 디렉터리는 잘라낸다.
 async function cleanLegacyViewerHtml(viewerDir: string): Promise<number> {
@@ -140,7 +145,7 @@ export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<
   const holdStamp = earlier.length > 0;
   const viewer = await runStep(
     'viewer',
-    () => renderViewerToDisk(root, opts.stampVersion, { holdStamp }),
+    () => renderViewerToDisk(root, opts.stampVersion, { stamp: !holdStamp }),
     undefined
   );
   return {

@@ -25,9 +25,14 @@
 //  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
 //    → 커밋될 파일을 확정할 수 없는 명령이어도 색인(·디스크)의 참고자료 변경을 모아 묻는다 — light도 묻는다
 //    → 같은 명령 안에서 참고자료 경로를 가리켜 스테이징(add, add -f로 무시된 새 파일 포함)해도 light에서 묻는다
-//  - 작업 목적(사람이 아닌 우회를 잡는다) + plugin-version-sync(빠진 설정 항목만 기본값으로 보충)
-//    → 디스크 init.json이 마지막 커밋에 없던 항목을 기본값 그대로 덧붙인 것뿐이면 묻지 않는다
-//    → 기존 항목 값이 바뀌었거나 지워졌거나, 기본값과 다른·모르는 새 항목이 있으면 지금처럼 묻는다
+//  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
+//    → 디스크에만 있는(커밋에 들어가지 않는) init.json이 마지막 커밋에 없던 항목을 기본값 그대로 덧붙인 것뿐이면
+//      묻지 않는다 — 판정도 바뀌지 않는다 / 담을지 알 수 없는 명령(pnpm lint && git commit)도 같다
+//  - governance-mode 불변 "거버넌스 설정 파일의 변경·삭제, 개념 문서나 증빙 기록 파일의 삭제가 커밋에 들어오면
+//    강도와 무관하게 사람에게 묻는다"
+//    → 기존 항목 값이 바뀌었거나 지워졌거나, 기본값과 다른·모르는 새 항목이 있으면 묻는다
+//    → 기본값 보충뿐이어도 init.json이 커밋에 들어오면(미리 스테이징했거나, 명령이 그 경로·넓은 범위를 직접 담으면)
+//      명령 모양과 무관하게 묻는다 — 확정된 커밋의 판정과 같다
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   mkdtempSync,
@@ -44,7 +49,7 @@ import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 import { ensureInitConfigDefaults } from '../../src/init/ensureConfigDefaults.js';
 import { checkPendingGovernance } from '../../src/hooks/gates/governanceFilesGate.js';
-import { forcedReferenceSpecs, mayStageGovernance } from '../../src/hooks/command/stagingReach.js';
+import { pendingOptionsFor } from '../../src/hooks/command/stagingReach.js';
 
 let root: string;
 beforeEach(async () => {
@@ -356,45 +361,16 @@ describe('커밋되지 않은 설정·참고자료 변경 (git 저장소)', () =
   it('강제 추가(-f)하는 무시된 새 참고자료도 커밋될 수 있는 참고자료로 모은다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
     writeFileSync(join(root, 'docs/conceptpowers/reference/new.md'), '기밀\n');
     const command = 'git add -f docs/conceptpowers/reference/new.md && git commit -m x';
-    const finding = await checkPendingGovernance(root, {
-      includeWorktree: mayStageGovernance(command),
-      forcedReference: forcedReferenceSpecs(command),
-    });
+    const finding = await checkPendingGovernance(root, pendingOptionsFor(command, root, root));
     expect(finding?.reason ?? '').toContain('new.md');
+    // 안내 문구("강제 추가(-f)를 빼세요")는 종단 검사(pendingReach.test)에서 한 번만 본다
     // 강제 추가가 없으면 무시된 파일은 담기지 않으므로 모으지 않는다
     const plain = await checkPendingGovernance(root, { includeWorktree: true });
     expect(plain?.reason ?? '').not.toContain('new.md');
   });
-
-  // preToolUse가 checkPendingGovernance에 forcedReference: forcedReferenceSpecs(command)를 넘기면 켠다(외부 변경 대기).
-  it('light: git add -f <무시된 새 참고자료> && git commit 한 명령도 묻는다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
-    setEnforcement('light');
-    git('add', INIT);
-    git('commit', '-qm', 'light');
-    writeFileSync(join(root, 'docs/conceptpowers/reference/new.md'), '기밀\n');
-    const r = await decidePreToolUse(root, {
-      tool: 'Bash',
-      input: { command: 'git add -f docs/conceptpowers/reference/new.md && git commit -m x' },
-    });
-    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
-    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('new.md');
-  });
-
-  it('light: -f 없이 넓게 담는 명령은 무시된 로컬 참고자료로 묻지 않는다(강제 추가 없이는 담기지 않는다)', async () => {
-    setEnforcement('light');
-    git('add', INIT);
-    git('commit', '-qm', 'light');
-    writeFileSync(join(root, 'docs/conceptpowers/reference/local.md'), '기밀\n');
-    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
-    const r = await decidePreToolUse(root, {
-      tool: 'Bash',
-      input: { command: 'git add -A && git commit -m x' },
-    });
-    expect(r?.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('local.md');
-  });
 });
 
-describe('도구가 보충한 설정 기본값은 묻지 않는다 [규칙: 사람이 아닌 우회를 잡는다 · plugin-version-sync 빠진 항목만 보충]', () => {
+describe('커밋에 들어가지 않는 설정 기본값 보충은 묻지 않는다 [규칙: 커밋에 실제로 들어갈 파일 기준 · 설정 변경이 커밋에 들어오면 묻는다]', () => {
   const git = (...args: string[]) =>
     execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=T', ...args], { cwd: root });
   const initPath = () => join(root, INIT);
@@ -443,5 +419,46 @@ describe('도구가 보충한 설정 기본값은 묻지 않는다 [규칙: 사�
     writeCfg(rest);
     const r = await commit(['src/a.ts']);
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  // 기본값 예외는 init.json이 커밋에 들어가지 않을 수도 있을 때만 — 커밋에 들어오면 확정된 커밋과 같이 묻는다.
+  const bash = (command: string) => decidePreToolUse(root, { tool: 'Bash', input: { command } });
+  const C = 'git ' + 'commit -m x';
+
+  it('기본값 보충뿐이어도 미리 스테이징한 init.json은 git commit에서 묻는다 [규칙: 설정 변경이 커밋에 들어오면 묻는다]', async () => {
+    await ensureInitConfigDefaults(root);
+    git('add', '-f', INIT);
+    const r = await bash(C);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  it('기본값 보충뿐이어도 미리 스테이징한 init.json은 pnpm lint && git commit에서도 묻는다 — 명령 모양과 무관하다', async () => {
+    await ensureInitConfigDefaults(root);
+    git('add', '-f', INIT);
+    const r = await bash(`pnpm lint && ${C}`);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  it('디스크에만 있는 기본값 보충은 pnpm lint && git commit에서 묻지 않는다 [규칙: 커밋에 실제로 들어갈 파일 기준]', async () => {
+    await ensureInitConfigDefaults(root);
+    const r = await bash(`pnpm lint && ${C}`);
+    expect(r?.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('init.json');
+  });
+
+  // 명령이 init.json을 직접 담는지는 pendingOptionsFor가 가늠해 configExplicit로 넘긴다.
+  for (const command of [`git add -f ${INIT} && ${C}`, `pnpm lint && git add -A && ${C}`]) {
+    it(`${command}: 명령이 init.json을 직접 담으면 기본값 보충뿐이어도 묻는다 [규칙: 설정 변경이 커밋에 들어오면 묻는다]`, async () => {
+      await ensureInitConfigDefaults(root);
+      const opts = pendingOptionsFor(command, root, root);
+      expect(opts.configExplicit).toBe(true);
+      const finding = await checkPendingGovernance(root, opts);
+      expect(finding?.reason ?? '').toContain('init.json');
+    });
+  }
+
+  it('담을지 알 수 없는 명령(configExplicit 없음)이면 디스크의 기본값 보충은 묻지 않는다', async () => {
+    await ensureInitConfigDefaults(root);
+    const finding = await checkPendingGovernance(root, { includeWorktree: true });
+    expect(finding?.reason ?? '').not.toContain('init.json');
   });
 });

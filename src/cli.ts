@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { scaffoldInit, isInitialized } from './init/scaffold.js';
 import { syncIfStale, checkStale, findPluginRoot } from './version/autoSync.js';
 import { writeFeature, listFeatures } from './store/featureStore.js';
-import { syncGenerated, type SyncStepFailure } from './init/syncGenerated.js';
+import { syncGenerated, formatFailedSteps, type SyncStepFailure } from './init/syncGenerated.js';
 import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
 import { buildInitHint } from './i18n/messages.js';
 import type { Locale } from './schema/initConfig.js';
@@ -56,12 +56,17 @@ function viewerHint(): { viewer: string; serve: string } {
   return { viewer: VIEWER_INDEX, serve: `npm run ${VIEWER_SCRIPT_NAME}` };
 }
 
-// init은 생성물 패치 실패로 멈추지 않지만, 실패한 단계는 숨기지 않고 stderr로 알린다.
-function reportFailedSteps(err: Out, failed: readonly SyncStepFailure[]): void {
+// init·자동 version-sync는 생성물 패치 실패로 멈추지 않지만, 실패한 단계는 숨기지 않고 stderr 한 줄로 알린다.
+// hint: 경로별로 덧붙일 다음 할 일(있을 때만).
+function reportFailedSteps(err: Out, failed: readonly SyncStepFailure[], hint?: string): void {
   if (failed.length === 0) return;
-  const steps = failed.map((f) => `${f.step} (${f.error})`).join('; ');
-  err(`[conceptpowers] some generated-artifact steps failed — ${steps}\n`);
+  const tail = hint ? ` — ${hint}` : '';
+  err(`[conceptpowers] some generated-artifact steps failed — ${formatFailedSteps(failed)}${tail}\n`);
 }
+
+// 자동 경로 실패 안내. 도장은 보류됐고 render 등 다른 명령도 도장을 찍지 않으므로, 다음 명령·version-sync가 다시 시도한다.
+const AUTO_SYNC_RETRY_HINT =
+  'auto version-sync held the version stamp; fix the cause, then run version-sync (the next command also retries)';
 
 export async function runCli(
   argv: string[],
@@ -98,9 +103,7 @@ export async function runCli(
             `${syncResult.generator ? ` (were v${syncResult.generator})` : ' (previously unstamped)'} — baseline untouched\n`
         );
       } else if (syncResult.failedSteps?.length) {
-        err(
-          `[conceptpowers] auto version-sync failed steps: ${syncResult.failedSteps.join(', ')} — run version-sync to check\n`
-        );
+        reportFailedSteps(err, syncResult.failedSteps, AUTO_SYNC_RETRY_HINT);
       }
     } catch {
       // best-effort: 자동 sync 경로의 어떤 실패도 본 명령 실행을 막지 않는다

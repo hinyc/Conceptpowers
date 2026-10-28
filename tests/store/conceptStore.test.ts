@@ -11,6 +11,8 @@
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다" +
 //    concept-inline-edit 불변 "확정된 개념을 고치면 예외 없이 검토 중 상태로 내려간다"
 //    → editConceptContent: green을 편집하면 pending으로 내려간다 / pending·red는 상태를 유지한다
+//  - concept-inline-edit 허용 "확정된 개념이 검토 중으로 내려간 사실을 저장 직후 알리는 것"
+//    → 편집 결과가 내려갔는지(downgradedToPending)를 함께 돌려준다 — pending·red 편집은 거짓
 //  - human-owns-contract 불변 "자동 추론한 red 제안은 규칙이 아니다 — 사용자가 승인해야만 개념의 규칙이 되고,
 //    승인 전에는 코드를 다스리지 않는다"
 //    → red는 편집해도 red로 남는다(편집이 승인을 대신하지 않는다) / settled red는 pending으로 되돌릴 수 없다
@@ -95,7 +97,10 @@ describe('conceptStore', () => {
     const qualified = {
       ...base,
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상이다'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     };
     await writeConcept(root, qualified as any);
@@ -125,7 +130,10 @@ describe('conceptStore', () => {
       ...base,
       status: 'pending',
       state: { managed: ['이 개념이 관리하는 대상'] },
-      principle: { immutableRules: ['이 개념의 규칙은 열 글자 이상이다'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+      principle: {
+        immutableRules: ['이 개념의 규칙은 열 글자 이상이다'],
+        operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+      },
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     };
     await writeConcept(root, qualified as any);
@@ -172,7 +180,7 @@ describe('writeConcept 원자적 저장 (상위 기준 문서: 갈아 끼우기 
 describe('editConceptContent', () => {
   it('본문 필드를 불변으로 교체한다', async () => {
     await writeConcept(root, { ...base, status: 'pending' } as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       title: 'New Title',
       actions: { allow: ['x'], restrict: ['y'], interaction: '' },
     });
@@ -180,20 +188,26 @@ describe('editConceptContent', () => {
     expect(updated.actions.allow).toEqual(['x']);
     expect((await readConcept(root, 'admin-role'))?.title).toBe('New Title');
   });
-  it('green 개념을 편집하면 pending으로 내려간다(재검증 유도)', async () => {
+  it('green 개념을 편집하면 pending으로 내려가고 그 사실을 함께 돌려준다(재검증 유도)', async () => {
     await writeConcept(root, { ...base, status: 'green' } as any);
-    const updated = await editConceptContent(root, 'admin-role', { title: 'Edited' });
-    expect(updated.status).toBe('pending');
+    const result = await editConceptContent(root, 'admin-role', { title: 'Edited' });
+    expect(result.concept.status).toBe('pending');
+    // 내려갔는지는 편집한 쪽이 직접 알려 준다 — 호출자가 편집 전 상태로 추측하지 않는다
+    expect(result.downgradedToPending).toBe(true);
   });
-  it('pending/red 개념은 편집해도 상태를 유지한다', async () => {
+  it('pending/red 개념은 편집해도 상태를 유지하고 내려가지 않았다고 알린다', async () => {
     await writeConcept(root, { ...base, status: 'pending' } as any);
-    expect((await editConceptContent(root, 'admin-role', { title: 'a' })).status).toBe('pending');
+    const fromPending = await editConceptContent(root, 'admin-role', { title: 'a' });
+    expect(fromPending.concept.status).toBe('pending');
+    expect(fromPending.downgradedToPending).toBe(false);
     await writeConcept(root, { ...base, status: 'red' } as any);
-    expect((await editConceptContent(root, 'admin-role', { title: 'b' })).status).toBe('red');
+    const fromRed = await editConceptContent(root, 'admin-role', { title: 'b' });
+    expect(fromRed.concept.status).toBe('red');
+    expect(fromRed.downgradedToPending).toBe(false);
   });
   it('slug/group/status 변경 시도는 무시한다', async () => {
     await writeConcept(root, { ...base, status: 'green' } as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       // @ts-expect-error — 화이트리스트 밖 필드는 타입상으로도 막힌다
       slug: 'hacked',
       group: 'evil',
@@ -215,7 +229,7 @@ describe('editConceptContent', () => {
   });
   it('런타임 임의 키(타입 우회)는 무시한다', async () => {
     await writeConcept(root, base as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       hacked: 'x',
       title: 'ok',
     } as any);
@@ -224,7 +238,7 @@ describe('editConceptContent', () => {
   });
   it('부제는 고칠 수 있는 항목이 아니라 저장 결과에 남지 않는다', async () => {
     await writeConcept(root, base as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       eyebrow: '되살아나면 안 되는 부제',
       title: 'ok',
     } as any);
@@ -236,7 +250,7 @@ describe('editConceptContent', () => {
   });
   it('sources도 편집 가능한 필드다', async () => {
     await writeConcept(root, { ...base, status: 'pending' } as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '테스트 근거' }],
     });
     expect(updated.sources).toEqual([
@@ -245,7 +259,7 @@ describe('editConceptContent', () => {
   });
   it('sources만 고쳐도 다른 필드와 똑같이 green이 pending으로 내려간다(특례 없음)', async () => {
     await writeConcept(root, { ...base, status: 'green' } as any);
-    const updated = await editConceptContent(root, 'admin-role', {
+    const { concept: updated } = await editConceptContent(root, 'admin-role', {
       sources: [{ kind: 'decision', locator: '2026-09-12', supports: '테스트 근거' }],
     });
     expect(updated.status).toBe('pending');

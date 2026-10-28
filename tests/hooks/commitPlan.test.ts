@@ -11,6 +11,11 @@
 //    → 앞선 명령이 파일·색인·저장소를 바꾸거나 다른 명령을 실행할 수 있으면, 또는 인자가 셸 확장으로
 //      정해지면 확정 불가로 표시한다
 //    → 커밋을 실행할 수 있는 어떤 우회 형태도 "커밋 아님"으로 판정되지 않는다(우회 회귀 표)
+//    → 확정하지 못한 커밋에도 위치(확정 여부 포함)를 싣는다 — source·셸 확장·~·저장소를 바꾸는 옵션·환경 변수·위치를
+//      바꾸는 래퍼(sudo -D)·조건부 cd(&&/|| 뒤·if 안)면 위치 불명, 하위 셸(sh -c)·파이프·백그라운드의 cd는 뒤 명령의 위치에
+//      남지 않는다, 괄호 서브셸 안 cd는 따라가고 닫히면 되돌린다 / 셸 alias 본문은 저장소 최상위에서 출발한다
+//    → 커밋 앞의 git 아닌 명령이 저장소 자체를 바꿀 수 있으면 위치에 표시한다(저장소 비교를 믿지 않게)
+//    → 일반 alias는 git처럼 공백·따옴표·역슬래시로만 나눈다 / 펼친 모양을 확정할 수 없는 alias는 확정 불가다
 //    → git commit이 아닌 명령이 만드는 커밋(cherry-pick·revert·am·commit-tree, merge·rebase 등의 --continue)은
 //      무엇이 커밋될지 실행하면서 정해지므로 확정 불가다 — git이 받아들이는 줄임 옵션(--cont)과
 //      am의 -n(커밋을 만드는 --no-verify)도 마찬가지다
@@ -189,6 +194,10 @@ describe('실행 전에 커밋 파일을 확정할 수 없음 [규칙: 확정할
     'export GIT_INDEX_FILE=/tmp/i; git commit -m x',
     'git --git-dir=/tmp/other commit -m x',
     'git -c core.worktree=/tmp/o commit -am x',
+    // 전역 옵션 뜻 풀이는 스테이징 가늠과 같은 함수(gitGlobalEffects) — -C ~·--config-env 저장소 바꿈 (M1)
+    'git -C ~/x commit -m x',
+    'git --config-env core.worktree=E commit -m x',
+    'git --config-env=core.worktree=E commit -am x',
     'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.zz GIT_CONFIG_VALUE_0=commit git zz -am x',
     'git commit -p',
     'git commit --interact',
@@ -298,4 +307,197 @@ describe('우회 회귀 표 — 커밋을 실행할 수 있으면 "커밋 아님
       expect((await planCommit(cmd, noAlias)).kind).not.toBe('none');
     });
   }
+});
+
+// 확정하지 못한 계획에도 커밋 위치(확정 여부 포함)를 싣는다 — 위치 불명과 "위치는 알지만 파일을 모름"을 가른다 (F1)
+// [규칙: 문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다 — 확정할 수 없으면 강도에 맞춰 대응]
+describe('커밋 위치 [규칙: 문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다]', () => {
+  const locationsOf = async (cmd: string) => {
+    const plan = await planCommit(cmd, noAlias);
+    return plan.kind === 'unresolved' ? plan.locations : 'not-unresolved';
+  };
+  const known: [string, unknown][] = [
+    ['git add -A && git ' + 'commit -m x', [{ known: true }]],
+    ['git add -A && git ' + 'commit -m "update source files"', [{ known: true }]],
+    ['cd /o && git add -A && git ' + 'commit -m x', [{ known: true, cwd: '/o' }]],
+    ['git -C sub add -A && git -C sub ' + 'commit -m x', [{ known: true, cwd: 'sub' }]],
+    [
+      'git ' + 'commit -m a && git -C /o ' + 'commit -m b',
+      [{ known: true }, { known: true, cwd: '/o' }],
+    ],
+    ["sh -c 'cd /o' && git add -A && git " + 'commit -m x', [{ known: true }]],
+    // 괄호 서브셸 안 cd는 따라간다 (G9)
+    ['(cd /o && git add -A && git ' + 'commit -m x)', [{ known: true, cwd: '/o' }]],
+    // git 명령(스테이징)은 저장소를 바꾸지 못한다 — 저장소 비교를 그대로 쓴다 (G1)
+    ['cd v && git add -A && git ' + 'commit -m x', [{ known: true, cwd: 'v' }]],
+    // git이 아닌 명령이 앞서면 저장소가 바뀔 수 있다 — 위치에 표시해 다른 저장소로 단정하지 않게 한다 (G1)
+    [
+      'cd v && rm -rf .git && git ' + 'commit -am x',
+      [{ known: true, cwd: 'v', repoMayChange: true }],
+    ],
+    [
+      'rm -rf v/.git && cd v && git add -A && git ' + 'commit -m x',
+      [{ known: true, cwd: 'v', repoMayChange: true }],
+    ],
+    ['git cherry-pick abc', [{ known: true }]],
+  ];
+  for (const [cmd, expected] of known) {
+    it(`위치를 안다: ${label(cmd)}`, async () => {
+      expect(await locationsOf(cmd)).toEqual(expected);
+    });
+  }
+  const unknown = [
+    'source ./env.sh && git ' + 'commit -m x',
+    '. ./env.sh && git ' + 'commit -m x',
+    '$CMD && git ' + 'commit -m x',
+    'cd ~/x && git add -A && git ' + 'commit -m x',
+    'GIT_DIR=/o/.git git ' + 'commit -m x',
+    'GIT_INDEX_FILE=/o/i git add -A && GIT_INDEX_FILE=/o/i git ' + 'commit -m x',
+    'export GIT_WORK_TREE=/o; git ' + 'commit -m x',
+    'git --git-dir=/o/.git ' + 'commit -m x',
+    'git -c core.worktree=/o ' + 'commit -m x',
+    'git ls-files | xargs git ' + 'commit -m x',
+  ];
+  for (const cmd of unknown) {
+    it(`위치 불명: ${label(cmd)}`, async () => {
+      expect(await locationsOf(cmd)).toBeUndefined();
+    });
+  }
+});
+
+// 줄바꿈이 든 alias 값·여러 구간으로 읽히는 alias는 펼친 모양을 확정할 수 없다 (F2)
+// [규칙: 확정할 수 없으면 통과시키지 않는다]
+describe('판단할 수 없는 alias [규칙: 확정할 수 없으면 통과시키지 않는다]', () => {
+  for (const cmd of [
+    "git -c 'alias.ci=commit\n-a' ci -m x",
+    // git은 일반 alias를 셸 연산자로 나누지 않는다 — ';'는 commit의 알 수 없는 옵션 글자가 된다 (G4-a)
+    "git -c 'alias.ci=commit -a;x' ci -m x",
+    // 닫히지 않은 따옴표는 git이 거절한다 — 펼친 모양을 확정할 수 없다
+    "git -c 'alias.ci=commit -m \"x' ci",
+  ]) {
+    it(`unresolved: ${label(cmd)}`, async () => {
+      expect((await planCommit(cmd, noAlias)).kind).toBe('unresolved');
+    });
+  }
+  it('저장소 설정의 alias 값에 줄바꿈이 있어도 확정 불가다', async () => {
+    const resolveAlias = async (name: string) => (name === 'ci' ? 'commit\n-a' : null);
+    expect((await planCommit('git ci -m x', { resolveAlias })).kind).toBe('unresolved');
+  });
+});
+
+const PLAIN = { kind: 'commit', scope: 'index', pathspecs: [] };
+
+// cd는 커밋과 같은 && 사슬에서 커밋보다 앞에 올 때만 위치를 확정한다 — 조건부·파이프·백그라운드 cd를 무조건
+// 적용하면 다른 저장소로 잘못 단정한다 (G2) [규칙: 확정할 수 없으면 통과시키지 않는다]
+describe('조건부·파이프·백그라운드 cd [규칙: 확정할 수 없으면 통과시키지 않는다]', () => {
+  const C = 'git ' + 'commit -m x';
+  for (const cmd of [
+    `false && cd ../other; ${C}`,
+    `test -d /x && cd ../other; ${C}`,
+    `git diff --quiet || cd ../other; ${C}`,
+    `true || cd ../other; ${C}`,
+    `false && cd ../other; git add -A && ${C}`,
+    `git status && cd ../other; ${C}`,
+    `cat x | cd ../other; ${C}`,
+    `if test -d x; then cd ../other; fi; ${C}`,
+    `cd ../other && true & ${C}`,
+  ]) {
+    it(`위치 불명: ${label(cmd)}`, async () => {
+      const plan = await planCommit(cmd, noAlias);
+      expect(plan.kind).toBe('unresolved');
+      if (plan.kind === 'unresolved') expect(plan.locations).toBeUndefined();
+    });
+  }
+  for (const cmd of [`cd ../other | cat; ${C}`, `cd ../other & ${C}`]) {
+    it(`다른 프로세스의 cd는 위치를 바꾸지 않는다: ${label(cmd)}`, async () => {
+      expect(await planCommit(cmd, noAlias)).toEqual(PLAIN);
+    });
+  }
+  for (const cmd of [`cd ../other && ${C}`, `cd ../other; ${C}`, `false && cd ../other && ${C}`]) {
+    it(`같은 사슬의 cd는 확정: ${label(cmd)}`, async () => {
+      expect(await planCommit(cmd, noAlias)).toMatchObject({ kind: 'commit', cwd: '../other' });
+    });
+  }
+});
+
+// 괄호 서브셸 안 cd는 따라가고 괄호가 닫히면 되돌린다 (G9) [규칙: 커밋에 실제로 들어갈 파일 기준]
+describe('괄호 서브셸 [규칙: 문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다]', () => {
+  const C = 'git ' + 'commit';
+  it('(cd X && git commit)은 cd X && git commit과 같게 판정한다', async () => {
+    const inside = await planCommit(`(cd ../other && ${C} -am x)`, noAlias);
+    expect(inside).toEqual(await planCommit(`cd ../other && ${C} -am x`, noAlias));
+    expect(inside).toMatchObject({ kind: 'commit', scope: 'all', cwd: '../other' });
+  });
+  it('닫힌 서브셸의 cd는 뒤 커밋에 남지 않는다', async () => {
+    expect(await planCommit(`(cd a); (${C} -m x)`, noAlias)).toEqual(PLAIN);
+  });
+  it('서브셸 안 커밋도 동시에 도는 뒤 명령이 있으면 확정 불가다', async () => {
+    expect((await planCommit(`(${C} -m x) & rm -rf src`, noAlias)).kind).toBe('unresolved');
+    expect((await planCommit(`(${C} -m x) | git add -A`, noAlias)).kind).toBe('unresolved');
+  });
+  it('서브셸 안 저장소 환경 변수 지정도 뒤 git에 닿는다', async () => {
+    expect((await planCommit(`(GIT_DIR=/o/.git; ${C} -m x)`, noAlias)).kind).toBe('unresolved');
+  });
+});
+
+// 셸 alias(!…) 본문은 git이 저장소 최상위에서 실행한다 (G3) [규칙: 커밋에 실제로 들어갈 파일 기준]
+describe('셸 alias의 출발 위치 [규칙: 문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다]', () => {
+  const C = 'git ' + 'commit';
+  const withAlias = (value: string) => ({
+    resolveAlias: async (name: string) => (name === 'ci' ? value : null),
+  });
+  it('본문의 커밋은 부른 위치의 저장소 최상위에서 실행된다', async () => {
+    const deps = withAlias(`!${C} docs/x.json -m x`);
+    expect(await planCommit('git ci', deps)).toEqual({
+      kind: 'commit',
+      scope: 'only',
+      pathspecs: ['docs/x.json'],
+      top: true,
+    });
+    expect(await planCommit('cd src && git ci', deps)).toMatchObject({ cwd: 'src', top: true });
+    expect(await planCommit('git -C sub ci', deps)).toMatchObject({ cwd: 'sub', top: true });
+  });
+  it('최상위를 모르는 채 상대 위치로 옮기면 위치 불명, 절대 위치면 다시 정해진다', async () => {
+    const rel = await planCommit('git ci', withAlias(`!cd sub && ${C} -m x`));
+    expect(rel.kind).toBe('unresolved');
+    expect(await planCommit('git ci', withAlias(`!cd /abs && ${C} -m x`))).toEqual({
+      ...PLAIN,
+      cwd: '/abs',
+    });
+  });
+});
+
+// 일반 alias 값은 git처럼 공백·따옴표·역슬래시로만 나눈다 (G4-a) [규칙: 커밋에 실제로 들어갈 파일 기준]
+describe('일반 alias 나누기 [규칙: 문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다]', () => {
+  for (const value of ['log --format=%h|%s', 'log --format=%C(auto)%h%d', 'log --oneline && x']) {
+    it(`셸 연산자 글자가 든 커밋 아닌 alias는 커밋이 아니다: ${value}`, async () => {
+      const deps = { resolveAlias: async (n: string) => (n === 'lp' ? value : null) };
+      expect((await planCommit('git lp', deps)).kind).toBe('none');
+    });
+  }
+  it('따옴표로 묶인 인자를 한 낱말로 읽는다', async () => {
+    const deps = { resolveAlias: async (n: string) => (n === 'ci' ? 'commit -m "a b" -a' : null) };
+    expect(await planCommit('git ci', deps)).toMatchObject({ kind: 'commit', scope: 'all' });
+  });
+});
+
+// 위치를 바꾸는 래퍼 옵션(sudo -D/--chdir/-i) 뒤의 커밋은 위치 불명 (G5) [규칙: 확정할 수 없으면 통과시키지 않는다]
+describe('위치를 바꾸는 래퍼 [규칙: 확정할 수 없으면 통과시키지 않는다]', () => {
+  const C = 'git ' + 'commit -m x';
+  for (const cmd of [
+    `sudo -D /o ${C}`,
+    `sudo -D/o ${C}`,
+    `sudo --chdir=/o ${C}`,
+    `sudo --chdir /o ${C}`,
+    `sudo -i ${C}`,
+  ]) {
+    it(`위치 불명: ${label(cmd)}`, async () => {
+      const plan = await planCommit(cmd, noAlias);
+      expect(plan.kind).toBe('unresolved');
+      if (plan.kind === 'unresolved') expect(plan.locations).toBeUndefined();
+    });
+  }
+  it('위치를 바꾸지 않는 래퍼는 그대로 확정한다', async () => {
+    expect(await planCommit(`sudo -u me ${C}`, noAlias)).toEqual(PLAIN);
+  });
 });

@@ -233,11 +233,17 @@ export type ConceptContentPatch = Partial<Pick<Concept, EditableField>>;
 // 정책: green 개념을 편집하면 status를 pending으로 내려 재검증을 유도한다
 // (이는 setConceptStatus 가드가 막는 전이이므로 별도의 의도된 연산으로 둔다).
 // pending/red는 내용만 바뀌고 상태를 유지한다.
+export interface ConceptContentEdit {
+  concept: Concept;
+  /** 확정(green)이던 개념이 이 편집으로 검토 중(pending)으로 내려갔는가 — 호출자가 추측하지 않게 여기서 알린다 */
+  downgradedToPending: boolean;
+}
+
 export async function editConceptContent(
   root: string,
   slug: string,
   patch: ConceptContentPatch
-): Promise<Concept> {
+): Promise<ConceptContentEdit> {
   const found = await readSingleEntry(root, slug);
   if (!found) throw new Error(`Concept not found: ${slug}`);
   const concept = found.entry.concept;
@@ -247,12 +253,14 @@ export async function editConceptContent(
       (safe as Record<string, unknown>)[key] = patch[key];
     }
   }
-  const nextStatus: ConceptStatus = concept.status === 'green' ? 'pending' : concept.status;
-  return rewriteConcept(root, found, {
+  const downgradedToPending = concept.status === 'green';
+  const nextStatus: ConceptStatus = downgradedToPending ? 'pending' : concept.status;
+  const saved = await rewriteConcept(root, found, {
     ...concept,
     ...safe,
     slug: concept.slug,
     group: concept.group,
     status: nextStatus,
   });
+  return { concept: saved, downgradedToPending };
 }

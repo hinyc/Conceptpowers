@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { isInitialized } from '../init/scaffold.js';
 import { readInitConfig } from '../init/readConfig.js';
 import { syncIfStale, findPluginRoot, type AutoSyncResult } from '../version/autoSync.js';
+import { formatFailedSteps } from '../init/syncGenerated.js';
 import { listConcepts } from '../store/conceptStore.js';
 import { listReferenceFiles } from '../init/reference.js';
 import { checkReferencePaths } from '../init/referencePaths.js';
@@ -60,11 +61,17 @@ function buildAutoSyncBlock(sync: AutoSyncResult, cli: string): string {
     );
   }
   if (!sync.failedSteps?.length) return '';
+  // 뷰어 단계도 실패했으면 "다시 그렸다"고 말하지 않는다 — 화면이 옛 상태일 수 있다.
+  const viewerFailed = sync.failedSteps.some((f) => f.step === 'viewer');
+  const viewerLine = viewerFailed
+    ? 'The viewer could not be redrawn either and the version stamp was held'
+    : 'The viewer was redrawn but the version stamp was held';
+  const steps = sanitizeText(formatFailedSteps(sync.failedSteps), 600);
   return (
     '\n' +
     [
       '<CONCEPTPOWERS-SYNC>',
-      `Auto-sync of plugin-generated artifacts to v${sync.installed} partly failed at session start — failed steps: ${sync.failedSteps.join(', ')}. The viewer was redrawn but the version stamp was held, so the next session retries.`,
+      `Auto-sync of plugin-generated artifacts to v${sync.installed} partly failed at session start — failed steps: ${steps}. ${viewerLine}, so the next session retries.`,
       `Tell the user in one concise line which steps failed and suggest running: node "${cli}" version-sync --root . (it reports each step's error).`,
       '</CONCEPTPOWERS-SYNC>',
     ].join('\n')

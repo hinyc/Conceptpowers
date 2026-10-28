@@ -5,16 +5,18 @@
 //  - plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
 //    → 도장은 생성물을 다 만든 뒤에만 찍는다: 에셋 복사가 도중에 실패하면 도장은 옛 값 그대로 남아
 //      다음 동기화가 다시 시도한다 / 모두 성공하면 새 도장이 찍힌다
+//    → 도장은 동기화(syncGenerated)만 찍는다: 동기화가 아닌 다시 그리기(render·approve·edit-concept·뷰어 편집)는
+//      기존 도장을 그대로 두고, 도장이 없으면 비워 둔다 — 새 버전으로 찍으면 보류된 재시도가 사라진다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { renderViewerToDisk } from '../../src/viewer/render.js';
+import { renderViewerToDisk, refreshManifestData } from '../../src/viewer/render.js';
 
 let root: string;
 const viewer = (rel: string) => join(root, 'docs/conceptpowers/concepts/viewer', rel);
 const stampOnDisk = () =>
-  JSON.parse(readFileSync(viewer('manifest.json'), 'utf8')).generatorVersion as string;
+  JSON.parse(readFileSync(viewer('manifest.json'), 'utf8')).generatorVersion as string | null;
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cp-stamp-'));
@@ -33,5 +35,31 @@ describe('renderViewerToDisk — 버전 도장은 마지막에', () => {
   it('에셋을 모두 쓰면 새 도장이 찍힌다', async () => {
     await renderViewerToDisk(root, '9.9.9-new');
     expect(stampOnDisk()).toBe('9.9.9-new');
+  });
+});
+
+// plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것" —
+// 도장은 "동기화로 맞췄다"는 표시다. 동기화가 아닌 다시 그리기가 도장을 새 버전으로 찍으면 실패로 보류된 재시도가 사라진다.
+describe('동기화가 아닌 다시 그리기 — 기존 도장 보존', () => {
+  it('도장 값을 넘기지 않으면 기존 도장을 그대로 둔다', async () => {
+    await renderViewerToDisk(root);
+    expect(stampOnDisk()).toBe('1.0.0-old');
+  });
+
+  it('도장이 없던 manifest면 도장을 비워 둔다(다음 동기화가 다시 시도)', async () => {
+    writeFileSync(viewer('manifest.json'), JSON.stringify({}));
+    await renderViewerToDisk(root);
+    expect(stampOnDisk()).toBeNull();
+  });
+
+  it('뷰어 편집 뒤 manifest 갱신도 도장이 없으면 비워 둔다', async () => {
+    writeFileSync(viewer('manifest.json'), JSON.stringify({}));
+    await refreshManifestData(root);
+    expect(stampOnDisk()).toBeNull();
+  });
+
+  it('뷰어 편집 뒤 manifest 갱신은 기존 도장을 그대로 둔다', async () => {
+    await refreshManifestData(root);
+    expect(stampOnDisk()).toBe('1.0.0-old');
   });
 });
