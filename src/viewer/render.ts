@@ -44,7 +44,8 @@ async function readPluginVersion(): Promise<string | null> {
 // 매니페스트(manifest.json)만 다시 쓴다. 정적 에셋 복사는 하지 않으므로
 // 실행 중인 뷰어 서버(serve.mjs)가 자신·에셋을 덮어쓰는 일 없이 데이터 변경을 반영할 수 있다.
 // stampVersion: 자동 sync가 "판단에 쓴 설치 버전"을 넘겨 도장과 비교 기준을 일치시킨다(수렴 보장).
-export async function writeManifest(root: string, stampVersion?: string): Promise<void> {
+// 생략하면 플러그인 자신의 버전, null이면 도장 없이(generatorVersion: null) 쓴다.
+export async function writeManifest(root: string, stampVersion?: string | null): Promise<void> {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
@@ -54,7 +55,7 @@ export async function writeManifest(root: string, stampVersion?: string): Promis
   await mkdir(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
-    generatorVersion: stampVersion ?? (await readPluginVersion()),
+    generatorVersion: stampVersion === undefined ? await readPluginVersion() : stampVersion,
   };
   await writeFile(
     join(p.conceptsViewer, 'manifest.json'),
@@ -84,8 +85,18 @@ export async function refreshManifestData(root: string): Promise<void> {
 
 // 버전 도장(manifest)은 에셋을 모두 쓴 뒤 마지막에 찍는다 — 도중에 실패하면 옛 도장이 남아
 // 자동 동기화가 다음에 다시 시도한다(plugin-version-sync). 먼저 찍으면 실패해도 최신으로 보인다.
-export async function renderViewerToDisk(root: string, stampVersion?: string): Promise<void> {
+// holdStamp: 다른 동기화 단계가 실패했을 때 화면은 새로 그리되 도장은 옛 값(없으면 비움)으로 둔다.
+export interface RenderViewerOpts {
+  holdStamp?: boolean;
+}
+
+export async function renderViewerToDisk(
+  root: string,
+  stampVersion?: string,
+  opts: RenderViewerOpts = {}
+): Promise<void> {
   const p = cpPaths(root);
+  const stamp = opts.holdStamp ? await readExistingStamp(root) : stampVersion;
 
   // 정적 셸/렌더러/서버/스타일을 복사한다(데이터와 분리된 자족 에셋).
   await copyAsset('index.html', join(p.conceptsViewer, 'index.html'));
@@ -94,5 +105,5 @@ export async function renderViewerToDisk(root: string, stampVersion?: string): P
   await copyAsset('topnav.js', join(p.conceptsViewer, 'assets', 'topnav.js'));
   await copyAsset('serve.mjs', join(p.conceptsViewer, 'serve.mjs'));
   await copyAsset('concept.css', p.cssTarget);
-  await writeManifest(root, stampVersion);
+  await writeManifest(root, stamp);
 }

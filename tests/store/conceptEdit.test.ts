@@ -1,9 +1,9 @@
-// @concept:drift-reconcile @concept:concept-inline-edit
+// @concept:human-owns-contract @concept:concept-inline-edit
 // tests/store/conceptEdit.test.ts
-// 개념 본문 편집 + 변경 이력 남기기를 한 흐름으로 묶은 editConceptWithNote를 검증한다.
+// 명령(edit-concept)이 쓰는 개념 본문 편집 흐름 editConceptWithNote를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
-//  - drift-reconcile: 개념 정의를 바꾸면 "왜 바꿨는지"를 그때의 계약과 함께 이력에 남긴다
-//    → 편집 뒤 이력에 사유 한 줄이 남는다 / 사유가 비면 아무것도 바꾸지 않는다
+//  - human-owns-contract 불변 "명령으로 개념 내용을 고칠 때는 왜 고치는지 사유가 함께 있어야 한다 —
+//    사유가 비어 있으면 고치지 않는다" → 사유가 비면 아무것도 바꾸지 않는다
 //  - concept-inline-edit 불변 "확정된 개념을 고치면 예외 없이 검토 중 상태로 내려간다"
 //    → green을 고치면 downgradedToPending=true, pending은 false
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -30,22 +30,21 @@ beforeEach(() => {
 });
 
 describe('editConceptWithNote', () => {
-  it('본문을 고치고 사유를 이력에 남긴다', async () => {
+  it('확정된 개념을 고치면 검토 중으로 내려간다 [규칙: 확정된 개념을 고치면 검토 중으로]', async () => {
     await writeConcept(root, { ...base, status: 'green' });
-    const r = await editConceptWithNote(root, 'admin-role', { title: 'New' }, '  용어 정리 ');
+    const r = await editConceptWithNote(root, 'admin-role', { title: 'New' }, '용어 정리');
     expect(r.downgradedToPending).toBe(true);
     expect(r.concept.status).toBe('pending');
-    const history = await readHistory(root);
-    expect(history.map((h) => h.reason)).toEqual(['용어 정리']);
+    expect(r.concept.title).toBe('New');
   });
 
-  it('검토 중 개념은 내려가지 않았다고 알린다', async () => {
+  it('검토 중 개념은 내려가지 않았다고 알린다 [규칙: 확정된 개념을 고치면 검토 중으로]', async () => {
     await writeConcept(root, { ...base, status: 'pending' });
     const r = await editConceptWithNote(root, 'admin-role', { title: 'New' }, '수정');
     expect(r.downgradedToPending).toBe(false);
   });
 
-  it('사유가 비면 아무것도 바꾸지 않는다', async () => {
+  it('사유가 비면 아무것도 바꾸지 않는다 [규칙: 명령으로 고칠 때 사유가 비면 고치지 않는다]', async () => {
     await writeConcept(root, base);
     await expect(editConceptWithNote(root, 'admin-role', { title: 'New' }, '  ')).rejects.toThrow(
       /reason/

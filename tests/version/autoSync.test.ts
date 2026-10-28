@@ -153,6 +153,17 @@ describe('syncIfStale — 단계 실패', () => {
     const manifest = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
     expect(manifest.generatorVersion).toBe('0.0.1');
   });
+
+  // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 실패도 조용히 숨기지 않는다.
+  it('실패한 단계 이름을 돌려주고, 뷰어는 새로 써 둔다', async () => {
+    stampGenerator(root, '0.0.1');
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    const index = join(cpPaths(root).conceptsViewer, 'index.html');
+    writeFileSync(index, 'stale viewer');
+    const r = await syncIfStale(root, makePluginRoot('9.9.9'));
+    expect(r.failedSteps).toEqual(['packageScript']);
+    expect(readFileSync(index, 'utf8')).not.toBe('stale viewer');
+  });
 });
 
 describe('findPluginRoot', () => {
@@ -239,6 +250,23 @@ describe('CLI 사용 시 자동 version sync', () => {
     expect(JSON.parse(captured)).toEqual([]);
     const manifest = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
     expect(manifest.generatorVersion).toBe('0.0.1'); // sync 못 했지만 막지도 않음
+  });
+
+  // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 자동 맞춤이 일부 실패하면
+  // stderr 한 줄로 실패 단계와 확인 방법을 알리고, 명령은 그대로 진행한다.
+  it('자동 sync 일부 단계가 실패하면 stderr 한 줄로 실패 단계를 알리고 명령은 계속된다', async () => {
+    stampGenerator(root, '0.0.1');
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    let captured = '';
+    let notice = '';
+    const code = await runCli(
+      ['drift', '--root', root],
+      (s) => (captured += s),
+      (s) => (notice += s)
+    );
+    expect(code).toBe(0);
+    expect(JSON.parse(captured)).toEqual([]);
+    expect(notice).toMatch(/^\[conceptpowers\] auto version-sync failed steps: packageScript .*version-sync.*\n$/);
   });
 
   it('stderr 알림 콜백이 throw해도 명령은 계속 실행된다', async () => {

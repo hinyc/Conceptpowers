@@ -10,6 +10,8 @@
 //  - governance-mode 불변 "어긋난 채 통과한 커밋은 강도와 무관하게 이력에 남는다"
 //    → 결산이 실패하면 조용히 삼키지 않고 사용자에게 알릴 안내를 돌려주며, 결산하지 못한 커밋은
 //      다음 결산 때 이어서 처리한다(그 커밋의 파일도 함께 결산한다)
+//    → 낡은 기록 정리만 실패하면 결산은 성공으로 끝나고(미결산으로 쌓지 않음), 깨진 기록 파일을 짧게 알린다
+//    → 결산 자체가 실패하면 안내는 실제로 남은 것과 남지 않은 것을 사실대로 말한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -220,6 +222,35 @@ describe('결산 실패 — 삼키지 않고 알리고 이어서 처리', () => 
     });
     expect(report.result).toBeNull();
     expect(report.failure).toContain('결산');
+  });
+
+  it('실패 안내는 이번 커밋이 이력·기준선에 반영되지 않았다고 사실대로 말한다 [규칙: 어긋난 채 통과한 커밋은 이력에 남는다]', async () => {
+    await driftedRepo();
+    touch(brokenFeature);
+    writeFileSync(join(root, brokenFeature), '{ broken');
+    const report = await runPostToolUseReport(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+    });
+    expect(report.failure).not.toContain('결산 결과는 남지 않았습니다');
+    expect(report.failure).toContain('반영되지 않았습니다');
+  });
+
+  it('기록 파일 하나만 깨졌으면 결산은 성공하고 그 파일을 고치라고 알린다 [규칙: 어긋난 채 통과한 커밋은 이력에 남는다]', async () => {
+    await driftedRepo();
+    const attest = join(root, 'docs/conceptpowers/concepts/.alignment/attest.json');
+    mkdirSync(dirname(attest), { recursive: true });
+    writeFileSync(attest, '{ broken');
+    const report = await runPostToolUseReport(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+    });
+    expect(report.result!.aligned).toContain('auth-token');
+    expect(report.failure).toBeNull();
+    expect(report.notice).toContain('docs/conceptpowers/concepts/.alignment/attest.json');
+    const c2 = await readConcept(root, 'auth-token');
+    expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
+    expect((await readHistory(root)).some((h) => h.slug === 'auth-token')).toBe(true);
   });
 
   it('결산하지 못한 커밋은 다음 결산 때 그 파일까지 이어서 결산한다', async () => {

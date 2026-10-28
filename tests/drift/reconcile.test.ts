@@ -15,10 +15,13 @@
 //    → 살아 있는 개념의 기록은 건드리지 않는다
 //  - drift-reconcile 이점 "삭제된 개념의 낡은 기록이 쌓이지 않는다"
 //    → 결산 뒤 어느 기록에도 사라진 개념의 항목이 남지 않는다
+//  - drift-reconcile 불변 "따라옴이든 무시함이든, 결산한 개념의 기준선은 반드시 현재 지문으로 다시 맞춘다"
+//    → 낡은 기록 정리는 결산에 딸린 일이다: 기록 파일 하나가 깨져도 결산(이력·기준선)은 성공하고,
+//      깨진 파일은 덮어쓰지 않은 채 어느 파일인지 따로 알린다
 //  - drift-reconcile 허용 "이제 존재하지 않는 파일 경로는 연결된 코드에서 빼고 판정하는 것"
 //    → 사라진 경로는 빼고 견준다 / 전부 사라졌으면 따라올 것이 없어 문서 커밋에서 aligned
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { reconcileAfterCommit } from '../../src/drift/reconcile.js';
@@ -269,6 +272,29 @@ describe('reconcileAfterCommit', () => {
       expect((await readAttestLog(root))['auth-token']?.result).toBe('pass');
       expect((await readTestReviewLog(root))['auth-token']?.result).toBe('updated');
       expect((await readPendingConflictsStrict(root))['auth-token']).toBe('살아있음');
+    });
+
+    it('기록 파일 하나가 깨져도 결산은 성공하고(이력·기준선 갱신) 깨진 파일을 알린다 [규칙: 결산한 개념의 기준선은 반드시 현재 지문으로 다시 맞춘다]', async () => {
+      await makeDrift();
+      const c2 = await readConcept(root, 'auth-token');
+      const attestPath = join(root, 'docs/conceptpowers/concepts/.alignment/attest.json');
+      mkdirSync(dirname(attestPath), { recursive: true });
+      writeFileSync(attestPath, '{ broken');
+      const res = await reconcileAfterCommit(root, ['src/login.ts'], 't2');
+      expect(res.aligned).toEqual(['auth-token']);
+      expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
+      expect((await readHistory(root)).some((h) => h.slug === 'auth-token' && h.aligned)).toBe(true);
+      expect(res.pruneFailures.map((f) => f.file)).toEqual([
+        'docs/conceptpowers/concepts/.alignment/attest.json',
+      ]);
+      expect(readFileSync(attestPath, 'utf8')).toBe('{ broken'); // 깨진 파일은 덮어쓰지 않는다
+    });
+
+    it('정리 실패가 없으면 pruneFailures는 비어 있다', async () => {
+      await writeConcept(root, concept());
+      seedLogs();
+      const res = await reconcileAfterCommit(root, [DOC]);
+      expect(res.pruneFailures).toEqual([]);
     });
 
     it('지울 것이 없으면 pruned는 비어 있다', async () => {

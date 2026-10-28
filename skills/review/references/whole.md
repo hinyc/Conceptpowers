@@ -12,7 +12,9 @@ reads it. The judgment rules, the concepts-only basis and the prohibitions stay 
 
 ## ③ 전체
 
-- `node "<cli>" audit --root .`로 매핑 무결성(`unknownTags`)을 먼저 확인하고, green 개념마다 ②를 돈다.
+- `node "<cli>" audit --root .`로 매핑 무결성(`unknownTags`, 같은 이름표 개념 파일이 둘 이상인 `duplicateSlugs`)을
+  먼저 확인하고, green 개념마다 ②를 돈다. `duplicateSlugs`가 있으면 그 개념은 어느 파일이 기준인지 정할 수 없으니
+  판정을 미루고 보고해, 사용자 확인 아래 `update-concepts`로 하나만 남게 정리하게 한다.
   red/pending 개념은 코드를 다스리지 않으므로 판정 대상이 아니다(목록만 보고).
 
 ## Report (②/③)

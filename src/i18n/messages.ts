@@ -146,12 +146,6 @@ export const seedTemplates: Record<Locale, SeedTemplates> = {
 // 에이전트에게 산출물 언어를 지시할 때 쓰는 사람이 읽는 라벨.
 export const localeLabel: Record<Locale, string> = { ko: 'Korean', en: 'English' };
 
-// 뷰어에서 개념을 편집했을 때 변경 이력에 남기는 고정 사유(뷰어에는 사유 입력 칸을 두지 않는다).
-export const viewerEditReason: Record<Locale, string> = {
-  ko: '뷰어에서 편집',
-  en: 'Edited in the viewer',
-};
-
 // init 완료 후 사람이 읽는 안내 문구 조각.
 export interface InitHintStrings {
   done: string;

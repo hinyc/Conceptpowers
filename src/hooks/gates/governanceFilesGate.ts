@@ -7,6 +7,7 @@ import { realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { CP_REL } from '../../paths.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
+import { InitConfigSchema } from '../../schema/initConfig.js';
 import { canonicalJson, sameJsonText } from '../../util/canonicalJson.js';
 import { isGitRepo, tryGit } from '../../util/git.js';
 import {
@@ -148,24 +149,63 @@ async function deletedSinceHead(root: string, includeWorktree: boolean): Promise
 }
 
 // 커밋될 수 있는 참고자료 변경 — 색인(그리고 명령이 담을 수 있으면 디스크의 추적 중인 변경·무시되지 않은 새 파일)에서
-// 마지막 커밋과 달라진 reference/ 파일. 무시 목록(.gitignore)에 걸린 파일은 강제 추가(-f) 없이 담기지 않으므로 뺀다.
-async function pendingReferenceFiles(root: string, includeWorktree: boolean): Promise<string[]> {
+// 마지막 커밋과 달라진 reference/ 파일. 무시 목록(.gitignore)에 걸린 파일은 강제 추가(-f) 없이 담기지 않으므로 빼되,
+// 명령이 강제 추가하는 참고자료 경로(forced)가 있으면 그 경로의 무시된 새 파일도 담길 수 있는 것으로 본다.
+async function pendingReferenceFiles(
+  root: string,
+  includeWorktree: boolean,
+  forced: readonly string[]
+): Promise<string[]> {
   const diff = ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=ACMR'];
   const queries = [[...diff, '--cached', 'HEAD', '--', REFERENCE_REL]];
   if (includeWorktree) {
     queries.push([...diff, 'HEAD', '--', REFERENCE_REL]);
     queries.push(['ls-files', '-z', '--others', '--exclude-standard', '--', REFERENCE_REL]);
   }
+  if (forced.length > 0) queries.push(['ls-files', '-z', '--others', '--', ...forced]);
   const lists = await Promise.all(
     queries.map(async (args) => ((await tryGit(root, args)) ?? '').split('\0').filter(Boolean))
   );
-  return [...new Set(lists.flat())];
+  return [...new Set(lists.flat())].filter((f) => f.startsWith(`${REFERENCE_REL}/`));
+}
+
+// 설정 항목의 기본값(스키마가 정한 값). 기본값이 없는 항목·모르는 항목은 undefined.
+function schemaDefault(key: string): unknown {
+  const shape = InitConfigSchema.shape as Record<
+    string,
+    { safeParse(v: unknown): { success: boolean; data?: unknown } }
+  >;
+  if (!Object.prototype.hasOwnProperty.call(shape, key)) return undefined;
+  const parsed = shape[key].safeParse(undefined);
+  return parsed.success ? parsed.data : undefined;
+}
+
+// 디스크 설정이 마지막 커밋의 설정에 없던 항목을 기본값 그대로 덧붙인 것뿐인가 — 플러그인 업데이트 뒤 자동 동기화
+// (ensureInitConfigDefaults)가 빠진 항목을 채운 경우다. 기존 항목이 바뀌거나 지워졌거나, 새 항목이 기본값과 다르거나
+// 모르는 항목이면 거짓(사람이 바꿨을 수 있다).
+function onlyDefaultsAdded(disk: string | null, head: string): boolean {
+  const next = parseRecord(disk);
+  const prev = parseRecord(head);
+  if (disk === null || next === null || prev === null) return false;
+  const keptSame = Object.keys(prev).every(
+    (key) =>
+      Object.prototype.hasOwnProperty.call(next, key) &&
+      canonicalJson(next[key]) === canonicalJson(prev[key])
+  );
+  if (!keptSame) return false;
+  return Object.keys(next)
+    .filter((key) => !Object.prototype.hasOwnProperty.call(prev, key))
+    .every((key) => {
+      const fallback = schemaDefault(key);
+      return fallback !== undefined && canonicalJson(next[key]) === canonicalJson(fallback);
+    });
 }
 
 // 확정된 커밋에서: 디스크의 거버넌스 설정이 마지막 커밋과 다른데 이번 커밋에 실리지 않는 경우. 문지기는 디스크의 설정
 // (강도·검사 범위·무시 목록)으로 판정하므로, 커밋되지 않은 설정 변경이 판정을 바꾼다 — 강도와 무관하게 묻는다
 // (governance-mode: 강도는 사람이 정한다). 설정이 커밋에 실리면 checkGovernanceFiles가 묻는다. 마지막 커밋에
-// 설정이 없으면(아직 커밋하지 않은 설정) 견줄 기준이 없어 묻지 않는다.
+// 설정이 없으면(아직 커밋하지 않은 설정) 견줄 기준이 없어 묻지 않는다. 도구가 빠진 항목을 기본값으로 보충한 것뿐이면
+// 사람이 바꾼 설정이 아니고 판정도 바뀌지 않으므로 묻지 않는다.
 export async function checkUncommittedConfig(
   root: string,
   files: string[]
@@ -175,7 +215,7 @@ export async function checkUncommittedConfig(
     diskContent(root).read(INIT_REL),
     headContent(root).read(INIT_REL),
   ]);
-  if (head === null || sameJsonText(disk, head)) return null;
+  if (head === null || sameJsonText(disk, head) || onlyDefaultsAdded(disk, head)) return null;
   return {
     gate: 'governance-files',
     reason: `[GOVERNANCE CONFIG] 거버넌스 설정(${INIT_REL})이 마지막 커밋과 다른데 이번 커밋에 들어오지 않습니다 — 문지기는 이 커밋되지 않은 설정(강도·검사 범위·무시 목록)으로 판정합니다. 사용자가 직접 바꾼 설정인지 확인하세요.`,
@@ -190,6 +230,8 @@ export async function checkUncommittedConfig(
 export interface PendingOptions {
   /** 명령이 디스크에만 있는 변경까지 스테이징할 수 있는가 — 거짓이면 색인의 변경만 본다 */
   includeWorktree: boolean;
+  /** 명령이 강제 추가(add -f)하는 참고자료 경로 — 그 경로의 무시된 새 파일도 담길 수 있다(stagingReach.forcedReferenceSpecs) */
+  forcedReference?: readonly string[];
 }
 
 export async function checkPendingGovernance(
@@ -213,7 +255,9 @@ export async function checkPendingGovernance(
   }
   // 참고자료 기밀 확인은 어느 강도에서나 묻는다 — 확정할 수 없는 커밋에 담길 수 있는 참고자료 변경도 모은다.
   return mergeAlwaysAsk(
-    checkReferenceGate(await pendingReferenceFiles(root, opts.includeWorktree)),
+    checkReferenceGate(
+      await pendingReferenceFiles(root, opts.includeWorktree, opts.forcedReference ?? [])
+    ),
     checkGovernanceFiles(
       configChanged ? [INIT_REL] : [],
       await deletedSinceHead(root, opts.includeWorktree)

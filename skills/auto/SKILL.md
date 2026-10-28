@@ -30,6 +30,10 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
    `[conceptpowers] auto version-sync` 안내가 있었으면 "완료됨"으로 보고한다. 수동 실행
    (`node "<cli>" version-sync --root .`)이 `skipped: up-to-date`를 내면 그대로 둔다 — `--force` 재생성은
    사용자가 명시적으로 요청할 때만(같은 버전 재생성은 로컬 산출물 수정을 되돌릴 수 있다).
+   version-sync가 `ok: false`이거나 `failedSteps`가 비어 있지 않으면(exit 1), 또는 자동 맞춤 안내에 실패한 단계가
+   있으면 "완료됨"으로 보고하지 않는다 — 실패한 단계와 오류를 한 줄로 알린다(예: package.json이 깨져
+   `packageScript` 실패 → package.json을 고친 뒤 version-sync 재실행). 뷰어는 새로 그려지지만 버전 도장은 보류돼
+   다음 동기화가 다시 시도한다.
 2. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿 그대로인지.
 3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
    그리고 `node "<cli>" reference-diff --quick --root .` — `unlocked`(기준점 없음), `changed/removed`(변경), `added`(새 파일), `truncated`(비교가 일부만 됨),
@@ -37,8 +41,9 @@ Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된�
 4. **개념**: 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red) — red/pending은 #6 audit의 `unapproved`/`pending`(개념 원본 기준)을
    1순위로 쓴다. `concepts/viewer/manifest.json`의 `concepts[].status`는 생성물이라 `render` 전이면 낡을 수 있으므로 보조(개수·green 확인)로만 쓴다.
 5. **feature**: `features/` 명세 개수.
-6. **무결성**: `node "<cli>" audit --root .` — **파일 인자 없이**(전체 스캔: `unknownTags` + `conceptless`).
-   exit 1은 진단 데이터이지 실패가 아니다.
+6. **무결성**: `node "<cli>" audit --root .` — **파일 인자 없이**(전체 스캔: `unknownTags` + `duplicateSlugs` + `conceptless`).
+   exit 1은 진단 데이터이지 실패가 아니다. `duplicateSlugs`(같은 이름표 개념 파일이 둘 이상)가 있으면
+   update-concepts로 하나만 남게 정리하는 것을 첫 할 일로 보고한다.
 
 결과를 **단계 지도**로 보고한다 — 각 단계가 완료/부분/미시작인지, 어디서부터 시작할지 — 그리고 첫 미완료
 단계로 진행할지 묻는다. 모두 완료면 그대로 보고하고 종료한다.

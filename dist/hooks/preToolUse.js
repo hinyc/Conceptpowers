@@ -4886,7 +4886,7 @@ function checkReferenceGate(files) {
 
 // src/hooks/gates/unknownTagsGate.ts
 var checkUnknownTags = async ({ report }) => {
-  if (report.ok) return null;
+  if (report.unknownTags.length === 0) return null;
   const detail = report.unknownTags.map((t) => `${sanitizeText(t.file)} -> @concept:${sanitizeText(t.slug)} (undefined)`).join(", ");
   return {
     gate: "unknown-tags",
@@ -5728,17 +5728,37 @@ async function deletedSinceHead(root, includeWorktree) {
   );
   return [...new Set(lists.flat())];
 }
-async function pendingReferenceFiles(root, includeWorktree) {
+async function pendingReferenceFiles(root, includeWorktree, forced) {
   const diff = ["diff", "--name-only", "-z", "--no-renames", "--diff-filter=ACMR"];
   const queries = [[...diff, "--cached", "HEAD", "--", REFERENCE_REL]];
   if (includeWorktree) {
     queries.push([...diff, "HEAD", "--", REFERENCE_REL]);
     queries.push(["ls-files", "-z", "--others", "--exclude-standard", "--", REFERENCE_REL]);
   }
+  if (forced.length > 0) queries.push(["ls-files", "-z", "--others", "--", ...forced]);
   const lists = await Promise.all(
     queries.map(async (args) => (await tryGit(root, args) ?? "").split("\0").filter(Boolean))
   );
-  return [...new Set(lists.flat())];
+  return [...new Set(lists.flat())].filter((f) => f.startsWith(`${REFERENCE_REL}/`));
+}
+function schemaDefault(key) {
+  const shape = InitConfigSchema.shape;
+  if (!Object.prototype.hasOwnProperty.call(shape, key)) return void 0;
+  const parsed = shape[key].safeParse(void 0);
+  return parsed.success ? parsed.data : void 0;
+}
+function onlyDefaultsAdded(disk, head) {
+  const next = parseRecord(disk);
+  const prev = parseRecord(head);
+  if (disk === null || next === null || prev === null) return false;
+  const keptSame = Object.keys(prev).every(
+    (key) => Object.prototype.hasOwnProperty.call(next, key) && canonicalJson(next[key]) === canonicalJson(prev[key])
+  );
+  if (!keptSame) return false;
+  return Object.keys(next).filter((key) => !Object.prototype.hasOwnProperty.call(prev, key)).every((key) => {
+    const fallback = schemaDefault(key);
+    return fallback !== void 0 && canonicalJson(next[key]) === canonicalJson(fallback);
+  });
 }
 async function checkUncommittedConfig(root, files) {
   if (files.map(normalizeRel).includes(INIT_REL)) return null;
@@ -5746,7 +5766,7 @@ async function checkUncommittedConfig(root, files) {
     diskContent(root).read(INIT_REL),
     headContent(root).read(INIT_REL)
   ]);
-  if (head === null || sameJsonText(disk, head)) return null;
+  if (head === null || sameJsonText(disk, head) || onlyDefaultsAdded(disk, head)) return null;
   return {
     gate: "governance-files",
     reason: `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815(${INIT_REL})\uC774 \uB9C8\uC9C0\uB9C9 \uCEE4\uBC0B\uACFC \uB2E4\uB978\uB370 \uC774\uBC88 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC624\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 \uBB38\uC9C0\uAE30\uB294 \uC774 \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC740 \uC124\uC815(\uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D)\uC73C\uB85C \uD310\uC815\uD569\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uBC14\uAFBC \uC124\uC815\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
@@ -5768,7 +5788,9 @@ async function checkPendingGovernance(root, opts) {
     if (config !== null && !sameJsonText(config, headConfig)) configChanged = true;
   }
   return mergeAlwaysAsk(
-    checkReferenceGate(await pendingReferenceFiles(root, opts.includeWorktree)),
+    checkReferenceGate(
+      await pendingReferenceFiles(root, opts.includeWorktree, opts.forcedReference ?? [])
+    ),
     checkGovernanceFiles(
       configChanged ? [INIT_REL] : [],
       await deletedSinceHead(root, opts.includeWorktree)
@@ -6842,8 +6864,11 @@ function findHumanRecordCommands(command) {
 }
 
 // src/hooks/command/stagingReach.ts
+var REFERENCE_PATH = "docs/conceptpowers/reference";
 var GOVERNANCE_PATHS = [
   "docs/conceptpowers/init.json",
+  REFERENCE_PATH,
+  // 참고자료 기밀 확인은 어느 강도에서나 묻는다
   "docs/conceptpowers/concepts/.alignment",
   "docs/conceptpowers/concepts/data"
 ];
@@ -6863,14 +6888,13 @@ var COMMIT_VALUE_OPTIONS = /* @__PURE__ */ new Set([
   "--reuse-message",
   "--reedit-message"
 ]);
+var cleanPath2 = (arg) => arg.replace(/^(\.\/)+/, "").replace(/\/+$/, "");
+var isWidePath = (path) => path === "" || path === "." || path.startsWith("..") || path.startsWith(":") || /[*?[]/.test(path);
+var overlaps2 = (g, path) => g === path || g.startsWith(`${path}/`) || path.startsWith(`${g}/`);
 function coversGovernance(arg) {
   if (arg.startsWith("-")) return false;
-  const path = arg.replace(/^(\.\/)+/, "").replace(/\/+$/, "");
-  if (path === "" || path === "." || path.startsWith("..") || path.startsWith(":")) return true;
-  if (/[*?[]/.test(path)) return true;
-  return GOVERNANCE_PATHS.some(
-    (g) => g === path || g.startsWith(`${path}/`) || path.startsWith(`${g}/`)
-  );
+  const path = cleanPath2(arg);
+  return isWidePath(path) || GOVERNANCE_PATHS.some((g) => overlaps2(g, path));
 }
 var isBroadAddFlag = (arg) => arg === "--all" || arg === "--update" || /^-[a-zA-Z]*[Au][a-zA-Z]*$/.test(arg);
 function commitStagesBroadly(args) {
@@ -6913,6 +6937,25 @@ function mayStageGovernance(command) {
     return true;
   }
   return false;
+}
+var isForceFlag = (arg) => arg === "--force" || /^-[a-zA-Z]*f[a-zA-Z]*$/.test(arg);
+function forcedSpecsOf(words, dynamic) {
+  const paths = words.filter((a, i) => !a.startsWith("-") || dynamic[i]);
+  if (paths.length === 0 || dynamic.some(Boolean)) return [REFERENCE_PATH];
+  return paths.flatMap((arg) => {
+    const path = cleanPath2(arg);
+    if (path.startsWith(`${REFERENCE_PATH}/`)) return [path];
+    return isWidePath(path) || overlaps2(REFERENCE_PATH, path) ? [REFERENCE_PATH] : [];
+  });
+}
+function forcedReferenceSpecs(command) {
+  const parsed = parseShellCommand(command);
+  const specs = parsed.segments.flatMap((seg) => {
+    const [head, sub, ...args] = seg.words;
+    if (head !== "git" || sub !== "add" && sub !== "stage" || !args.some(isForceFlag)) return [];
+    return forcedSpecsOf(args, seg.dynamicWords.slice(2));
+  });
+  return [...new Set(specs)];
 }
 
 // src/hooks/command/commitFiles.ts
@@ -7120,7 +7163,10 @@ async function decidePreToolUse(root, ev) {
     if (target.kind === "unresolved") {
       const ask = mergeAlwaysAsk(
         recordAsk,
-        await checkPendingGovernance(root, { includeWorktree: mayStageGovernance(command) })
+        await checkPendingGovernance(root, {
+          includeWorktree: mayStageGovernance(command),
+          forcedReference: forcedReferenceSpecs(command)
+        })
       );
       const level = ask && enforcement === "light" ? "standard" : enforcement;
       return escalateWithAsk(unresolvedCommitOutput(level, target.reason), ask);

@@ -6,7 +6,7 @@ var __export = (target, all) => {
 
 // src/viewer/serve.ts
 import { createServer } from "node:http";
-import { readFile as readFile9, realpath } from "node:fs/promises";
+import { readFile as readFile8, realpath } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve as resolve2, sep } from "node:path";
@@ -4587,226 +4587,9 @@ async function editConceptContent(root, slug3, patch) {
   });
 }
 
-// src/drift/history.ts
-import { createHash as createHash2 } from "node:crypto";
-import { readdir as readdir2, readFile as readFile3 } from "node:fs/promises";
-import { join as join4 } from "node:path";
-async function readLegacyHistory(root) {
-  try {
-    return History.parse(JSON.parse(await readFile3(cpPaths(root).alignmentHistory, "utf8")));
-  } catch {
-    return [];
-  }
-}
-async function readRecordFiles(root) {
-  const dir = cpPaths(root).alignmentHistoryDir;
-  let names;
-  try {
-    names = (await readdir2(dir)).filter((name) => name.endsWith(".json")).sort();
-  } catch {
-    return [];
-  }
-  const entries = await Promise.all(
-    names.map(async (name) => {
-      try {
-        return HistoryEntry.parse(JSON.parse(await readFile3(join4(dir, name), "utf8")));
-      } catch {
-        return null;
-      }
-    })
-  );
-  return entries.filter((entry) => entry !== null);
-}
-async function readHistory(root) {
-  const [legacy, records] = await Promise.all([readLegacyHistory(root), readRecordFiles(root)]);
-  return [...legacy, ...records];
-}
-function toEntry(input, prevHash) {
-  return HistoryEntry.parse({
-    slug: input.slug,
-    hash: input.hash,
-    prevHash,
-    reason: input.reason ?? "",
-    ignored: input.ignored ?? false,
-    aligned: input.aligned ?? false,
-    noCode: input.noCode ?? false,
-    note: input.note ?? "",
-    at: input.at ?? (/* @__PURE__ */ new Date()).toISOString()
-  });
-}
-function recordFileName(entry, order) {
-  const stamp = entry.at.replace(/[^0-9A-Za-z]/g, "") || "unknown";
-  const digest = createHash2("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
-  return `${stamp}-${String(order).padStart(3, "0")}-${entry.slug}-${digest}.json`;
-}
-async function appendHistoryMany(root, inputs) {
-  if (inputs.length === 0) return [];
-  const existing = await readHistory(root);
-  const lastHash = new Map(existing.map((entry) => [entry.slug, entry.hash]));
-  const dir = cpPaths(root).alignmentHistoryDir;
-  const added = [];
-  for (const [order, input] of inputs.entries()) {
-    const entry = toEntry(input, lastHash.get(input.slug) ?? "");
-    lastHash.set(entry.slug, entry.hash);
-    await writeFileAtomic(
-      join4(dir, recordFileName(entry, order)),
-      JSON.stringify(entry, null, 2) + "\n"
-    );
-    added.push(entry);
-  }
-  return added;
-}
-async function appendHistory(root, input) {
-  return (await appendHistoryMany(root, [input]))[0];
-}
-
-// src/drift/note.ts
-async function noteChange(root, slug3, reason, at) {
-  if (!reason.trim()) throw new Error("reason must not be empty");
-  const concept = await readConcept(root, slug3);
-  if (!concept) throw new Error(`Concept not found: ${slug3}`);
-  return appendHistory(root, { slug: slug3, hash: contractHash(concept), reason: reason.trim(), at });
-}
-
-// src/store/conceptEdit.ts
-async function editConceptWithNote(root, slug3, patch, reason) {
-  if (typeof reason !== "string" || reason.trim() === "") {
-    throw new Error("reason must not be empty \u2014 say why the concept is being changed");
-  }
-  const before = await readConcept(root, slug3);
-  if (!before) throw new Error(`Concept not found: ${slug3}`);
-  const concept = await editConceptContent(root, slug3, patch);
-  await noteChange(root, slug3, reason);
-  return { concept, downgradedToPending: before.status === "green" };
-}
-
-// src/init/readConfig.ts
-import { readFile as readFile4 } from "node:fs/promises";
-
-// src/schema/initConfig.ts
-var LocaleSchema = external_exports.enum(["ko", "en"]);
-var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
-var InitConfigSchema = external_exports.object({
-  version: external_exports.string(),
-  enabled: external_exports.literal(true),
-  locale: LocaleSchema.default("ko"),
-  versionCheck: external_exports.boolean().default(true),
-  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
-  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
-  conceptDrivenTests: external_exports.boolean().default(true),
-  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
-  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
-  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
-  testGlobs: external_exports.array(external_exports.string()).default([
-    "tests/**",
-    "test/**",
-    "__tests__/**",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/*_test.*",
-    "**/*_spec.*",
-    "**/test_*.py"
-  ]),
-  enforcement: EnforcementSchema.default("standard"),
-  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
-  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
-  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
-  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
-  ignoreGlobs: external_exports.array(external_exports.string()).default([
-    "docs/conceptpowers/**",
-    // 플러그인 생성물(뷰어 등)
-    "dist/**",
-    "build/**",
-    // 빌드 산출물
-    "node_modules/**",
-    // 외부 의존성
-    "**/*.generated.*"
-    // 코드 생성물
-  ]),
-  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
-  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
-  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([])
-});
-function parseInitConfig(input) {
-  return InitConfigSchema.parse(input);
-}
-
-// src/init/readConfig.ts
-async function readInitConfig(root) {
-  try {
-    const raw = await readFile4(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
-// src/i18n/messages.ts
-var REFERENCE_PATHS_KO = [
-  "# \uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \u2014 \uAC1C\uB150\uC744 \uB9CC\uB4E4 \uB54C \uCC38\uACE0\uD560 \uBC14\uAE65 \uBB38\uC11C \uBAA9\uB85D\uC785\uB2C8\uB2E4.",
-  "#",
-  '# \uD55C \uC904\uC5D0 \uACBD\uB85C \uD558\uB098\uC529 \uC801\uC2B5\uB2C8\uB2E4. "#"\uC73C\uB85C \uC2DC\uC791\uD558\uB294 \uC904\uC740 \uC8FC\uC11D\uC774\uB77C \uBB34\uC2DC\uB418\uBBC0\uB85C,',
-  "# \uC8FC\uC11D\uC774 \uC544\uB2CC \uC2E4\uC81C \uC904\uC744 \uB123\uAE30 \uC804\uAE4C\uC9C0 \uC774 \uD30C\uC77C\uC740 \uC544\uBB34\uAC83\uB3C4 \uB4F1\uB85D\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-  "#",
-  "# \uC774 \uACBD\uB85C\uB4E4\uC740 \uAC1C\uB150\uC744 \uC815\uC758\xB7\uC5C5\uADF8\uB808\uC774\uB4DC\xB7\uAC80\uC99D\uD560 \uB54C\uB9CC(update-concepts \uC2A4\uD0AC) \uC77D\uACE0,",
-  "# \uD3C9\uC18C \uCF54\uB4DC \uAC80\uD1A0 \uC911\uC5D0\uB294 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-  "# \uB3C4\uBA54\uC778 \uC6A9\uC5B4\uC9D1, \uBA85\uC138, \uACC4\uC57D\uC11C, \uAE30\uD68D \uBB38\uC11C \uB4F1\uC744 \uAC00\uB9AC\uD0A4\uAC8C \uD558\uC138\uC694.",
-  "#",
-  "# \uC5B4\uB5A4 \uD615\uD0DC\uB85C \uC801\uB098\uC694:",
-  '#   \uC774 \uC800\uC7A5\uC18C \uBC16 -> \uC808\uB300 \uACBD\uB85C. \uD648 \uC544\uB798\uB77C\uBA74 "~/"\uB97C \uC4F0\uC138\uC694.',
-  '#     \uC774 \uD30C\uC77C\uC740 \uCEE4\uBC0B\uB418\uBBC0\uB85C "/Users/<\uC774\uB984>/..."\uC740 \uB0B4 \uCEF4\uD4E8\uD130\uC5D0\uC11C\uB9CC \uD574\uC11D\uB429\uB2C8\uB2E4',
-  "#     (\uB3D9\uB8CC\uC5D0\uAC8C\uB294 \uC5C6\uB294 \uACBD\uB85C\uB85C \uBCF4\uACE0\uB429\uB2C8\uB2E4).",
-  "#       ~/Documents/domain-glossary/   \uD648 \uAE30\uC900 \uD3F4\uB354(\uC548\uC758 \uBAA8\uB4E0 \uD30C\uC77C, \uD558\uC704 \uD3F4\uB354 \uD3EC\uD568)",
-  "#       /Volumes/team-share/specs      \uD648 \uBC16\uC758 \uC808\uB300 \uACBD\uB85C",
-  "#   \uC774 \uC800\uC7A5\uC18C \uC548   -> \uC800\uC7A5\uC18C \uB8E8\uD2B8 \uAE30\uC900 \uC0C1\uB300 \uACBD\uB85C(\uD604\uC7AC \uC791\uC5C5 \uD3F4\uB354 \uAE30\uC900\uC774 \uC544\uB2D9\uB2C8\uB2E4).",
-  "#       docs/legal/contract.pdf",
-  "#",
-  "# \uC9C1\uC811 \uACE0\uCE58\uC9C0 \uC54A\uC544\uB3C4 \uB429\uB2C8\uB2E4: /conceptpowers:update-concepts \uC5D0 \uACBD\uB85C\uB97C \uC54C\uB824\uC8FC\uBA74 \uC5EC\uAE30\uC5D0",
-  "# \uB367\uBD99\uC774\uACE0, \uADF8 \uC704\uCE58\uC5D0 \uC77D\uC744 \uC790\uB8CC\uAC00 \uC5C6\uC73C\uBA74 \uC54C\uB824 \uC90D\uB2C8\uB2E4.",
-  "#",
-  "# \uC544\uB798 \uC608\uC2DC\uC758 \uC8FC\uC11D\uC744 \uD480\uC5B4 \uACE0\uCE58\uAC70\uB098, \uC9C1\uC811 \uCD94\uAC00\uD558\uC138\uC694:",
-  "#   ~/work/product-specs/",
-  "#   /absolute/path/to/domain-rules.md",
-  ""
-].join("\n");
-var REFERENCE_PATHS_EN = [
-  "# Reference paths \u2014 external documents to consult when authoring concepts.",
-  "#",
-  '# List one path per line. Lines starting with "#" are comments and are ignored,',
-  "# so this file registers nothing until you add real (uncommented) entries.",
-  "#",
-  "# These are read ONLY while defining, upgrading, or verifying a concept",
-  "# (the update-concepts skill) \u2014 never during ordinary code checks.",
-  "# Point them at domain glossaries, specs, contracts, planning docs, and so on.",
-  "#",
-  "# Which form to use:",
-  '#   OUTSIDE this repo -> an ABSOLUTE path. Prefer "~/" when it lives under your home,',
-  '#     because this file is committed and "/Users/<you>/..." only resolves on your machine',
-  "#     (teammates would see it reported as missing).",
-  "#       ~/Documents/domain-glossary/   home-relative folder (all files inside, recursively)",
-  "#       /Volumes/team-share/specs      absolute path outside home",
-  "#   INSIDE this repo   -> a path relative to the REPO ROOT (never to your current directory).",
-  "#       docs/legal/contract.pdf",
-  "#",
-  "# Or skip the editing: run /conceptpowers:update-concepts and give it the path \u2014 it appends the",
-  "# entry here and warns if the location holds no readable material.",
-  "#",
-  "# Uncomment and edit the examples below, or add your own:",
-  "#   ~/work/product-specs/",
-  "#   /absolute/path/to/domain-rules.md",
-  ""
-].join("\n");
-var viewerEditReason = {
-  ko: "\uBDF0\uC5B4\uC5D0\uC11C \uD3B8\uC9D1",
-  en: "Edited in the viewer"
-};
-
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile8 } from "node:fs/promises";
-import { join as join6, dirname as dirname3 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
+import { join as join5, dirname as dirname3 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4887,7 +4670,7 @@ function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) 
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile3 } from "node:fs/promises";
 
 // src/schema/feature.ts
 var slug2 = SlugSchema;
@@ -4910,7 +4693,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile5(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4919,26 +4702,90 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile6(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
+// src/init/readConfig.ts
+import { readFile as readFile5 } from "node:fs/promises";
+
+// src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
+var InitConfigSchema = external_exports.object({
+  version: external_exports.string(),
+  enabled: external_exports.literal(true),
+  locale: LocaleSchema.default("ko"),
+  versionCheck: external_exports.boolean().default(true),
+  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
+  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
+  conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
+  enforcement: EnforcementSchema.default("standard"),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
+  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
+  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  ignoreGlobs: external_exports.array(external_exports.string()).default([
+    "docs/conceptpowers/**",
+    // 플러그인 생성물(뷰어 등)
+    "dist/**",
+    "build/**",
+    // 빌드 산출물
+    "node_modules/**",
+    // 외부 의존성
+    "**/*.generated.*"
+    // 코드 생성물
+  ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+});
+function parseInitConfig(input) {
+  return InitConfigSchema.parse(input);
+}
+
+// src/init/readConfig.ts
+async function readInitConfig(root) {
+  try {
+    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    return parseInitConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
-import { readFile as readFile7, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
-import { join as join5, dirname as dirname2 } from "node:path";
+import { readFile as readFile6, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
+import { join as join4, dirname as dirname2 } from "node:path";
 var MAX_PLUGIN_ROOT_DEPTH = 6;
 function findPluginRoot(startDir) {
   let dir = startDir;
   for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
     try {
-      readFileSync(join5(dir, ".claude-plugin", "plugin.json"));
+      readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
       const parent = dirname2(dir);
@@ -4950,7 +4797,7 @@ function findPluginRoot(startDir) {
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile7(join5(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile6(join4(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -4972,17 +4819,17 @@ async function writeManifest(root, stampVersion) {
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
-    generatorVersion: stampVersion ?? await readPluginVersion()
+    generatorVersion: stampVersion === void 0 ? await readPluginVersion() : stampVersion
   };
   await writeFile3(
-    join6(p.conceptsViewer, "manifest.json"),
+    join5(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }
 async function readExistingStamp(root) {
   try {
-    const raw = await readFile8(join6(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
+    const raw = await readFile7(join5(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
     const stamp = JSON.parse(raw).generatorVersion;
     return typeof stamp === "string" && stamp !== "" ? stamp : null;
   } catch {
@@ -5137,23 +4984,18 @@ async function handleApi(projectRoot, req) {
     if (!patch || typeof patch !== "object")
       return { status: 400, json: { error: "patch object required" } };
     try {
-      const result = await editConceptWithNote(
-        projectRoot,
-        slug3,
-        patch,
-        await editReason(projectRoot)
-      );
+      const before = await readConcept(projectRoot, slug3);
+      const concept = await editConceptContent(projectRoot, slug3, patch);
       await refreshManifestData(projectRoot);
-      return { status: 200, json: { ok: true, ...result } };
+      return {
+        status: 200,
+        json: { ok: true, concept, downgradedToPending: before?.status === "green" }
+      };
     } catch (error) {
       return { status: engineErrorStatus(error), json: { error: error.message } };
     }
   }
   return { status: 404, json: { error: "not found" } };
-}
-async function editReason(projectRoot) {
-  const locale = (await readInitConfig(projectRoot))?.locale ?? "ko";
-  return viewerEditReason[locale];
 }
 function readBody(req) {
   return new Promise((resolvePromise, reject) => {
@@ -5268,7 +5110,7 @@ async function handle(root, projectRoot, req, res) {
     return;
   }
   try {
-    const file = await readFile9(real);
+    const file = await readFile8(real);
     res.writeHead(200, { "Content-Type": contentType(real), ...STATIC_SECURITY_HEADERS });
     res.end(file);
   } catch {

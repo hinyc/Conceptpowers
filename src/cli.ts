@@ -97,6 +97,10 @@ export async function runCli(
           `[conceptpowers] auto version-sync: generated artifacts patched to v${syncResult.installed}` +
             `${syncResult.generator ? ` (were v${syncResult.generator})` : ' (previously unstamped)'} — baseline untouched\n`
         );
+      } else if (syncResult.failedSteps?.length) {
+        err(
+          `[conceptpowers] auto version-sync failed steps: ${syncResult.failedSteps.join(', ')} — run version-sync to check\n`
+        );
       }
     } catch {
       // best-effort: 자동 sync 경로의 어떤 실패도 본 명령 실행을 막지 않는다
@@ -211,7 +215,7 @@ export async function runCli(
         code = 1;
         return;
       }
-      // 사유 검사 → 편집 → 이력 기록은 뷰어와 같은 흐름(editConceptWithNote)을 쓴다.
+      // 명령 전용 흐름: 사유 검사 → 편집 → 이력 기록(editConceptWithNote). 뷰어 편집은 사유를 요구하지 않는다.
       // 없는 개념이면 던지고, 바깥 catch가 {error} + exit 1로 바꾼다.
       const patch = JSON.parse(await readFile(o.file, 'utf8'));
       const { concept, downgradedToPending } = await editConceptWithNote(

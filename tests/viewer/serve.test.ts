@@ -1,4 +1,4 @@
-// @concept:concept-inline-edit @concept:settled-status @concept:human-owns-contract @concept:drift-reconcile @concept:plugin-version-sync @concept:output-locale
+// @concept:concept-inline-edit @concept:settled-status @concept:human-owns-contract @concept:plugin-version-sync
 // tests/viewer/serve.test.ts
 // 뷰어 서버의 파일 서빙과 편집 통로(/api)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -29,10 +29,8 @@
 //    → PUT 내용 편집: green이면 pending으로 내려가고 downgradedToPending=true
 //  - concept-inline-edit 제한 "고칠 수 없는 것으로 정해진 값을 저장에 끼워 넣는 것"
 //    → PUT 내용 편집: 스키마 위반은 400
-//  - drift-reconcile(변경 이력): 뷰어에서 고쳐도 명령으로 고칠 때처럼 "왜 바꿨는지"가 이력에 남는다
-//    → PUT 내용 편집: 고정 사유("뷰어에서 편집")를 이력에 남긴다(요청 본문의 사유는 받지 않는다)
-//  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
-//    → 설정 언어가 en이면 고정 사유도 영어로 남긴다
+//  - human-owns-contract 불변 "화면에서 사람이 직접 고칠 때는 고치는 사람이 곧 사유의 주인이므로 따로
+//    요구하지 않는다" → PUT 내용 편집: 사유 없이 보낸 편집도 받아들인다
 //  - plugin-version-sync 허용 "생성물에 찍힌 버전 도장이 깔린 도구와 다를 때만 생성물을 다시 만드는 것"
 //    → 뷰어 쓰기(상태·내용)는 manifest의 기존 버전 도장을 지우거나 바꾸지 않는다
 //  - settled-status 불변 "한 번 확정된 초록·빨강은 시스템 경로로는 되돌리지 않는다"
@@ -62,7 +60,6 @@ import {
   readConcept,
   ALLOWED_STATUS_TRANSITIONS,
 } from '../../src/store/conceptStore.js';
-import { readHistory } from '../../src/drift/history.js';
 import { recordAttest } from '../../src/concept/attest.js';
 import { parseConcept } from '../../src/schema/concept.js';
 
@@ -513,7 +510,7 @@ describe('handleApi', () => {
     expect(r.status).toBe(400);
   });
 
-  it('PUT 내용 편집: green이면 pending으로 내려가고 downgradedToPending=true', async () => {
+  it('PUT 내용 편집: 사유 없이도 받아들이고, green이면 pending으로 내려가고 downgradedToPending=true [규칙: 화면 편집은 사유를 요구하지 않는다 / 확정된 개념을 고치면 검토 중으로]', async () => {
     await writeConcept(root, { ...base, status: 'green' } as never);
     const r = await handleApi(
       root,
@@ -532,42 +529,6 @@ describe('handleApi', () => {
   it('GET /api/health는 엔진의 상태 전이표를 함께 싣는다 [규칙: 확정된 초록·빨강은 되돌리지 않는다]', async () => {
     const r = await handleApi(root, req({ method: 'GET', url: '/api/health' }));
     expect((r.json as { transitions: unknown }).transitions).toEqual(ALLOWED_STATUS_TRANSITIONS);
-  });
-
-  it('PUT 내용 편집: 설정 언어가 en이면 고정 사유를 영어로 남긴다 [규칙: 사람이 읽을 산출물은 설정 언어로]', async () => {
-    await writeConcept(root, base as never);
-    writeFileSync(
-      join(root, 'docs/conceptpowers/init.json'),
-      JSON.stringify({ version: '1', enabled: true, locale: 'en' })
-    );
-    const r = await handleApi(
-      root,
-      req({
-        method: 'PUT',
-        url: '/api/concept/admin-role',
-        body: JSON.stringify({ patch: { title: 'New' } }),
-      })
-    );
-    expect(r.status).toBe(200);
-    const history = await readHistory(root);
-    expect(history.map((h) => [h.slug, h.reason])).toEqual([
-      ['admin-role', 'Edited in the viewer'],
-    ]);
-  });
-
-  it('PUT 내용 편집: 본문의 사유는 받지 않고 고정 사유로 이력에 남긴다 [규칙: 왜 바꿨는지 이력에 남긴다]', async () => {
-    await writeConcept(root, base as never);
-    await handleApi(
-      root,
-      req({
-        method: 'PUT',
-        url: '/api/concept/admin-role',
-        body: JSON.stringify({ patch: { title: 'New' }, reason: '용어 정리' }),
-      })
-    );
-    const history = await readHistory(root);
-    expect(history).toHaveLength(1);
-    expect(history[0].reason).toBe('뷰어에서 편집');
   });
 
   it('뷰어 쓰기는 manifest의 기존 버전 도장을 보존한다 [규칙: 도장이 다를 때만 다시 만든다]', async () => {

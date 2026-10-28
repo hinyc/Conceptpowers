@@ -10,10 +10,11 @@ import { realpathSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { extname, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { ALLOWED_STATUS_TRANSITIONS } from '../store/conceptStore.js';
-import { editConceptWithNote } from '../store/conceptEdit.js';
-import { readInitConfig } from '../init/readConfig.js';
-import { viewerEditReason } from '../i18n/messages.js';
+import {
+  ALLOWED_STATUS_TRANSITIONS,
+  editConceptContent,
+  readConcept,
+} from '../store/conceptStore.js';
 import { refreshManifestData } from './render.js';
 import { SLUG_RE } from '../schema/concept.js';
 import { handleStatusApi, engineErrorStatus } from './statusApi.js';
@@ -190,27 +191,20 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
     if (!patch || typeof patch !== 'object')
       return { status: 400, json: { error: 'patch object required' } };
     try {
-      const result = await editConceptWithNote(
-        projectRoot,
-        slug,
-        patch,
-        await editReason(projectRoot)
-      );
+      // 화면에서 사람이 직접 고칠 때는 사유를 따로 요구하지 않는다(human-owns-contract) — 사유 이력도 쌓지 않는다.
+      const before = await readConcept(projectRoot, slug);
+      const concept = await editConceptContent(projectRoot, slug, patch);
       await refreshManifestData(projectRoot);
-      return { status: 200, json: { ok: true, ...result } };
+      return {
+        status: 200,
+        json: { ok: true, concept, downgradedToPending: before?.status === 'green' },
+      };
     } catch (error) {
       return { status: engineErrorStatus(error), json: { error: (error as Error).message } };
     }
   }
 
   return { status: 404, json: { error: 'not found' } };
-}
-
-// 뷰어 편집의 이력 사유는 고정 문구다(요청 본문의 사유는 받지 않는다) — 사람이 읽는 이력이라 프로젝트 설정
-// 언어로 남긴다(output-locale).
-async function editReason(projectRoot: string): Promise<string> {
-  const locale = (await readInitConfig(projectRoot))?.locale ?? 'ko';
-  return viewerEditReason[locale];
 }
 
 function readBody(req: IncomingMessage): Promise<string> {

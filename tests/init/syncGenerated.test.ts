@@ -157,6 +157,34 @@ describe('syncGenerated — 단계별 실패 격리', () => {
     expect(manifest().generatorVersion).toBe('0.0.1');
   });
 
+  // plugin-version-sync 목적 "도구를 올렸는데 화면이 옛 버전"을 막는다 — 앞 단계가 실패해도 뷰어는 새로 쓰고
+  // 도장만 보류한다(옛 도장 유지 → 다음 동기화가 다시 시도).
+  it('앞 단계가 실패해도 뷰어는 새로 쓰고 도장만 옛것으로 둔다', async () => {
+    await brokenPackageSetup();
+    writeFileSync(viewer('index.html'), 'stale viewer');
+    const r = await syncGenerated(root, { stampVersion: '9.9.9' });
+    expect(readFileSync(viewer('index.html'), 'utf8')).not.toBe('stale viewer');
+    expect(manifest().generatorVersion).toBe('0.0.1');
+    expect(r.failedSteps.map((f) => f.step)).not.toContain('viewer');
+  });
+
+  it('도장이 아직 없던 프로젝트에서 앞 단계가 실패해도 뷰어는 만들고 도장은 비워 둔다', async () => {
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    await scaffoldInit(root, {});
+    expect(existsSync(viewer('index.html'))).toBe(true);
+    expect(manifest().generatorVersion).toBeNull();
+  });
+
+  it('뷰어 단계 자체가 실패하면 실패 목록에 viewer가 오르고 도장은 옛것 그대로다', async () => {
+    await scaffoldInit(root, {});
+    writeFileSync(viewer('manifest.json'), JSON.stringify({ ...manifest(), generatorVersion: '0.0.1' }));
+    rmSync(viewer('assets'), { recursive: true, force: true });
+    writeFileSync(viewer('assets'), 'not a directory');
+    const r = await syncGenerated(root, { stampVersion: '9.9.9' });
+    expect(r.failedSteps.map((f) => f.step)).toContain('viewer');
+    expect(manifest().generatorVersion).toBe('0.0.1');
+  });
+
   it('모든 단계가 성공하면 실패 목록이 비고 도장을 찍는다', async () => {
     await scaffoldInit(root, {});
     const r = await syncGenerated(root, { stampVersion: '9.9.9' });

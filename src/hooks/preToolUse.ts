@@ -32,7 +32,7 @@ import { isMainModule } from '../util/isMain.js';
 import { exitAfterWrite } from '../util/exitAfterWrite.js';
 import { planCommit, type CommitPlan } from './command/commitPlan.js';
 import { findHumanRecordCommands } from './command/recordCommands.js';
-import { mayStageGovernance } from './command/stagingReach.js';
+import { forcedReferenceSpecs, mayStageGovernance } from './command/stagingReach.js';
 import type { CommitTarget } from './command/commitFiles.js';
 import { createAliasResolver } from './command/commitFiles.js';
 import { snapshotCommit, injectedContent } from './command/commitTree.js';
@@ -232,7 +232,10 @@ export async function decidePreToolUse(
       // 모아 함께 묻는다. 물어야 할 항목이 있으면 light도 경고로 흘려보내지 않는다.
       const ask = mergeAlwaysAsk(
         recordAsk,
-        await checkPendingGovernance(root, { includeWorktree: mayStageGovernance(command) })
+        await checkPendingGovernance(root, {
+          includeWorktree: mayStageGovernance(command),
+          forcedReference: forcedReferenceSpecs(command),
+        })
       );
       const level = ask && enforcement === 'light' ? 'standard' : enforcement;
       return escalateWithAsk(unresolvedCommitOutput(level, target.reason), ask);

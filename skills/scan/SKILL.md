@@ -21,7 +21,7 @@ description: Use when the user wants to find what is NOT yet covered by concepts
 ## Steps
 
 1. **무결성 + 격차 (결정적)**: 파일 인자 **없이** CLI 감사를 돌린다 — 전체 스캔 모드다. `git ls-files`를 걷고
-   (`ignoreGlobs` 적용) `{...report, conceptless: [...]}`를 낸다. `unknownTags`나 `conceptless`가 있으면 exit 1
+   (`ignoreGlobs` 적용) `{...report, conceptless: [...]}`를 낸다. `unknownTags`·`duplicateSlugs`·`conceptless`가 있으면 exit 1
    인데 이는 진단 데이터이지 실패가 아니다.
    `node "<cli>" audit --root .`
    전체 스캔 결과의 `brokenCodeLinks`는 개념의 근거·코드 연결 목록이 가리키는 코드 자리 가운데 지금 실재하지
@@ -29,6 +29,8 @@ description: Use when the user wants to find what is NOT yet covered by concepts
    보고해 사용자가 `update-concepts`(계기 C, 근거 좌표만 — 계약 지문 밖이라 정합성 재검사 없이 재정착)로 근거를 바로잡게 한다. `brokenCodeLinks`가 있어도 exit 1이며 이 역시
    진단 데이터다.
    - `unknownTags`: 없는 개념을 가리키는 태그.
+   - `duplicateSlugs`: 같은 이름표(slug)의 개념 파일이 둘 이상인 경우(`rels`에 파일들). 기준선이므로 직접 지우지
+     말고 보고해, 사용자 확인 아래 `update-concepts`로 하나만 남게 정리한다.
    - `conceptless`: `@concept` 마커가 전혀 없는 파일 — 2번 격차 판단의 결정적 출발점이다.
    - `unapproved`: 🔴 red 개념 전부, `unapprovedRefs`: 스캔한 파일이 가리키는 red.
    - `pending`: 🟡 pending 개념 전부, `pendingRefs`: 스캔한 파일이 가리키는 pending — 4번의 목록 출처다.

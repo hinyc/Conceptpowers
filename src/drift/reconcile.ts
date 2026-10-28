@@ -4,7 +4,9 @@ import { readLock, writeLock } from './lock.js';
 import { appendHistoryMany, type HistoryInput } from './history.js';
 import { computeDrift } from './detect.js';
 import { contractHash, hashVersion, CONTRACT_HASH_VERSION } from './hash.js';
-import { normalizeRel } from './safe.js';
+import { describeError, normalizeRel } from './safe.js';
+import { relative, sep } from 'node:path';
+import { cpPaths } from '../paths.js';
 import {
   isEngagedWithTags,
   isFollowedWithTags,
@@ -25,6 +27,50 @@ export interface ReconcileResult {
   ignored: string[];
   /** 사라진 개념이라 낡은 기록에서 지워진 slug 목록(중복 없음) */
   pruned: string[];
+  /** 낡은 기록 정리에 실패한 기록 파일(형식이 깨짐 등) — 결산 자체는 성공했다. 파일은 덮어쓰지 않았다. */
+  pruneFailures: PruneFailure[];
+}
+
+export interface PruneFailure {
+  /** 저장소 루트 기준 기록 파일 경로 */
+  file: string;
+  error: string;
+}
+
+type Pruner = (root: string, liveSlugs: ReadonlySet<string>) => Promise<string[]>;
+
+// 정리 대상 기록과 그 파일 자리. 정리는 결산에 딸린 일이라, 하나가 깨져도 나머지와 결산은 계속한다.
+function pruneTargets(root: string): Array<[Pruner, string]> {
+  const p = cpPaths(root);
+  return [
+    [pruneAttestLog, p.attestFile],
+    [pruneTestReviewLog, p.testReviewFile],
+    [prunePendingConflicts, p.pendingConflicts],
+    [pruneNoCodeLog, p.noCodeFile],
+  ];
+}
+
+// 각 정리를 따로 실행해 지운 slug와 실패한 기록 파일을 모은다. 깨진 파일은 엄격 판독에서 멈추므로 덮어쓰지 않는다.
+async function pruneStaleRecords(
+  root: string,
+  slugs: ReadonlySet<string>
+): Promise<{ pruned: string[]; failures: PruneFailure[] }> {
+  const targets = pruneTargets(root);
+  const settled = await Promise.allSettled(targets.map(([prune]) => prune(root, slugs)));
+  const pruned = new Set(
+    settled.flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
+  );
+  const failures = settled.flatMap((r, i): PruneFailure[] =>
+    r.status === 'rejected'
+      ? [
+          {
+            file: relative(root, targets[i][1]).split(sep).join('/'),
+            error: describeError(r.reason, root),
+          },
+        ]
+      : []
+  );
+  return { pruned: [...pruned], failures };
 }
 
 // 커밋 성공 후 호출. drift였던 개념을 "코드가 따라옴(aligned)" 또는 "override(ignored)"로
@@ -113,15 +159,7 @@ export async function reconcileAfterCommit(
   await appendHistoryMany(root, entries);
   await writeLock(root, cleaned);
   // 기준선 밖의 기록도 같은 잣대로 정리한다. 각 정리는 지울 것이 없으면 파일에 손대지 않는다.
-  const pruned = new Set(
-    (
-      await Promise.all([
-        pruneAttestLog(root, slugs),
-        pruneTestReviewLog(root, slugs),
-        prunePendingConflicts(root, slugs),
-        pruneNoCodeLog(root, slugs),
-      ])
-    ).flat()
-  );
-  return { aligned, ignored, pruned: [...pruned] };
+  // 이력·기준선은 이미 썼으므로 정리 실패는 결산 실패가 아니다 — 따로 담아 알린다.
+  const { pruned, failures } = await pruneStaleRecords(root, slugs);
+  return { aligned, ignored, pruned, pruneFailures: failures };
 }

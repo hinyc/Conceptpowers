@@ -115,6 +115,20 @@ describe('buildSessionStartOutput', () => {
     const after = JSON.parse(readFileSync(manifestPath, 'utf8'));
     expect(after.generatorVersion).not.toBe('0.0.1'); // 재도장 확인
   });
+  // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 자동 맞춤 실패도 알린다.
+  it('자동 sync 일부 단계가 실패하면 실패 단계와 version-sync 확인을 블록으로 알린다', async () => {
+    await scaffoldInit(root, {});
+    const manifestPath = join(root, 'docs/conceptpowers/concepts/viewer/manifest.json');
+    const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    writeFileSync(manifestPath, JSON.stringify({ ...m, generatorVersion: '0.0.1' }));
+    writeFileSync(join(root, 'package.json'), '{ not json');
+    const o = await buildSessionStartOutput(root, process.cwd());
+    const ctx = o!.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain('<CONCEPTPOWERS-SYNC>');
+    expect(ctx).toContain('packageScript');
+    expect(ctx).toContain('version-sync');
+    expect(ctx).not.toContain('were auto-synced');
+  });
   it('생성 버전이 설치 버전과 같으면 자동 sync 블록이 없다', async () => {
     await scaffoldInit(root, {});
     const o = await buildSessionStartOutput(root, process.cwd());

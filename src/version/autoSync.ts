@@ -5,7 +5,7 @@
 // 버전이 같으면 아무것도 하지 않고, 어떤 실패도 다음 단계를 막지 않는다(best-effort).
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { syncGenerated } from '../init/syncGenerated.js';
+import { syncGenerated, type SyncStep } from '../init/syncGenerated.js';
 import { cpPaths } from '../paths.js';
 import { isNewer } from './compareSemver.js';
 import { readInstalledVersion, findPluginRoot } from './checkUpdate.js';
@@ -16,6 +16,8 @@ export interface AutoSyncResult {
   synced: boolean;
   installed: string | null;
   generator: string | null;
+  // 일부 단계가 실패했을 때만 실린다 — 자동 경로(세션 시작·CLI 진입)가 한 줄로 알리는 데 쓴다.
+  failedSteps?: SyncStep[];
 }
 
 // 뷰어 manifest에 찍힌 "이 산출물을 만든 버전" 도장. 없거나 못 읽으면 null.
@@ -56,10 +58,9 @@ export async function syncIfStale(root: string, pluginRoot: string): Promise<Aut
     if (!installed) return { synced: false, installed: null, generator: null };
     if (!stale) return { synced: false, installed, generator };
     const { failedSteps } = await syncGenerated(root, { stampVersion: installed });
-    // 일부 단계가 실패하면 도장이 그대로라 다음 시작에 다시 시도된다 — 맞췄다고 알리지 않는다.
+    // 일부 단계가 실패하면 도장이 그대로라 다음 시작에 다시 시도된다 — 맞췄다고 알리지 않고 실패 단계를 돌려준다.
     if (failedSteps.length > 0) {
-      const steps = failedSteps.map((f) => `${f.step}: ${f.error}`).join('; ');
-      throw new Error(`some sync steps failed — ${steps}`);
+      return { synced: false, installed, generator, failedSteps: failedSteps.map((f) => f.step) };
     }
     return { synced: true, installed, generator };
   } catch (error) {

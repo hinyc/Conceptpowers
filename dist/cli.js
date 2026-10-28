@@ -8274,7 +8274,7 @@ async function writeManifest(root, stampVersion) {
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
     ...buildManifest(concepts, features, locale, mapping),
-    generatorVersion: stampVersion ?? await readPluginVersion()
+    generatorVersion: stampVersion === void 0 ? await readPluginVersion() : stampVersion
   };
   await writeFile3(
     join7(p.conceptsViewer, "manifest.json"),
@@ -8282,15 +8282,25 @@ async function writeManifest(root, stampVersion) {
     "utf8"
   );
 }
-async function renderViewerToDisk(root, stampVersion) {
+async function readExistingStamp(root) {
+  try {
+    const raw = await readFile7(join7(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
+    const stamp = JSON.parse(raw).generatorVersion;
+    return typeof stamp === "string" && stamp !== "" ? stamp : null;
+  } catch {
+    return null;
+  }
+}
+async function renderViewerToDisk(root, stampVersion, opts = {}) {
   const p = cpPaths(root);
+  const stamp = opts.holdStamp ? await readExistingStamp(root) : stampVersion;
   await copyAsset("index.html", join7(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join7(p.conceptsViewer, "assets", "viewer.js"));
   await copyAsset("sidebar.js", join7(p.conceptsViewer, "assets", "sidebar.js"));
   await copyAsset("topnav.js", join7(p.conceptsViewer, "assets", "topnav.js"));
   await copyAsset("serve.mjs", join7(p.conceptsViewer, "serve.mjs"));
   await copyAsset("concept.css", p.cssTarget);
-  await writeManifest(root, stampVersion);
+  await writeManifest(root, stamp);
 }
 
 // src/init/packageScript.ts
@@ -8847,7 +8857,6 @@ async function runStep(step, fn, fallback) {
     return { value: fallback, failure: { step, error: error.message } };
   }
 }
-var VIEWER_SKIPPED = "skipped: earlier steps failed \u2014 viewer and version stamp left as-is so the next sync retries";
 async function runPreparationSteps(root) {
   const refIgnore = await runStep(
     "referenceGitignore",
@@ -8876,7 +8885,12 @@ async function runPreparationSteps(root) {
 async function syncGenerated(root, opts = {}) {
   const steps = await runPreparationSteps(root);
   const earlier = Object.values(steps).flatMap((o) => o.failure ? [o.failure] : []);
-  const viewer = earlier.length > 0 ? { value: void 0, failure: { step: "viewer", error: VIEWER_SKIPPED } } : await runStep("viewer", () => renderViewerToDisk(root, opts.stampVersion), void 0);
+  const holdStamp = earlier.length > 0;
+  const viewer = await runStep(
+    "viewer",
+    () => renderViewerToDisk(root, opts.stampVersion, { holdStamp }),
+    void 0
+  );
   return {
     scriptStatus: steps.script.value,
     orphansRemoved: steps.orphans.value,
@@ -8956,8 +8970,7 @@ async function syncIfStale(root, pluginRoot) {
     if (!stale) return { synced: false, installed, generator };
     const { failedSteps } = await syncGenerated(root, { stampVersion: installed });
     if (failedSteps.length > 0) {
-      const steps = failedSteps.map((f) => `${f.step}: ${f.error}`).join("; ");
-      throw new Error(`some sync steps failed \u2014 ${steps}`);
+      return { synced: false, installed, generator, failedSteps: failedSteps.map((f) => f.step) };
     }
     return { synced: true, installed, generator };
   } catch (error) {
@@ -9630,6 +9643,11 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       if (syncResult.synced) {
         err(
           `[conceptpowers] auto version-sync: generated artifacts patched to v${syncResult.installed}${syncResult.generator ? ` (were v${syncResult.generator})` : " (previously unstamped)"} \u2014 baseline untouched
+`
+        );
+      } else if (syncResult.failedSteps?.length) {
+        err(
+          `[conceptpowers] auto version-sync failed steps: ${syncResult.failedSteps.join(", ")} \u2014 run version-sync to check
 `
         );
       }

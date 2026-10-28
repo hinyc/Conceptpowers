@@ -24,6 +24,10 @@
 //    않은 설정으로 판정하게 되므로) 어느 강도에서나 묻는다 / 같으면 묻지 않는다
 //  - governance-mode 불변 "참고자료 기밀 확인은 어느 강도에서나 반드시 사람에게 묻는다"
 //    → 커밋될 파일을 확정할 수 없는 명령이어도 색인(·디스크)의 참고자료 변경을 모아 묻는다 — light도 묻는다
+//    → 같은 명령 안에서 참고자료 경로를 가리켜 스테이징(add, add -f로 무시된 새 파일 포함)해도 light에서 묻는다
+//  - 작업 목적(사람이 아닌 우회를 잡는다) + plugin-version-sync(빠진 설정 항목만 기본값으로 보충)
+//    → 디스크 init.json이 마지막 커밋에 없던 항목을 기본값 그대로 덧붙인 것뿐이면 묻지 않는다
+//    → 기존 항목 값이 바뀌었거나 지워졌거나, 기본값과 다른·모르는 새 항목이 있으면 지금처럼 묻는다
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   mkdtempSync,
@@ -38,6 +42,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
+import { ensureInitConfigDefaults } from '../../src/init/ensureConfigDefaults.js';
+import { checkPendingGovernance } from '../../src/hooks/gates/governanceFilesGate.js';
+import { forcedReferenceSpecs, mayStageGovernance } from '../../src/hooks/command/stagingReach.js';
 
 let root: string;
 beforeEach(async () => {
@@ -330,5 +337,111 @@ describe('커밋되지 않은 설정·참고자료 변경 (git 저장소)', () =
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('spec.md');
+  });
+
+  it('light: git add <추적 중 참고자료> && git commit 한 명령도 묻는다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
+    setEnforcement('light');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/spec.md'), 'v1\n');
+    git('add', '-f', INIT, 'docs/conceptpowers/reference/spec.md');
+    git('commit', '-qm', 'ref');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/spec.md'), 'v2\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git add docs/conceptpowers/reference/spec.md && git commit -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('spec.md');
+  });
+
+  it('강제 추가(-f)하는 무시된 새 참고자료도 커밋될 수 있는 참고자료로 모은다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
+    writeFileSync(join(root, 'docs/conceptpowers/reference/new.md'), '기밀\n');
+    const command = 'git add -f docs/conceptpowers/reference/new.md && git commit -m x';
+    const finding = await checkPendingGovernance(root, {
+      includeWorktree: mayStageGovernance(command),
+      forcedReference: forcedReferenceSpecs(command),
+    });
+    expect(finding?.reason ?? '').toContain('new.md');
+    // 강제 추가가 없으면 무시된 파일은 담기지 않으므로 모으지 않는다
+    const plain = await checkPendingGovernance(root, { includeWorktree: true });
+    expect(plain?.reason ?? '').not.toContain('new.md');
+  });
+
+  // preToolUse가 checkPendingGovernance에 forcedReference: forcedReferenceSpecs(command)를 넘기면 켠다(외부 변경 대기).
+  it('light: git add -f <무시된 새 참고자료> && git commit 한 명령도 묻는다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
+    setEnforcement('light');
+    git('add', INIT);
+    git('commit', '-qm', 'light');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/new.md'), '기밀\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git add -f docs/conceptpowers/reference/new.md && git commit -m x' },
+    });
+    expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('new.md');
+  });
+
+  it('light: -f 없이 넓게 담는 명령은 무시된 로컬 참고자료로 묻지 않는다(강제 추가 없이는 담기지 않는다)', async () => {
+    setEnforcement('light');
+    git('add', INIT);
+    git('commit', '-qm', 'light');
+    writeFileSync(join(root, 'docs/conceptpowers/reference/local.md'), '기밀\n');
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git add -A && git commit -m x' },
+    });
+    expect(r?.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('local.md');
+  });
+});
+
+describe('도구가 보충한 설정 기본값은 묻지 않는다 [규칙: 사람이 아닌 우회를 잡는다 · plugin-version-sync 빠진 항목만 보충]', () => {
+  const git = (...args: string[]) =>
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=T', ...args], { cwd: root });
+  const initPath = () => join(root, INIT);
+  const readCfg = () => JSON.parse(readFileSync(initPath(), 'utf8')) as Record<string, unknown>;
+  const writeCfg = (cfg: Record<string, unknown>) =>
+    writeFileSync(initPath(), JSON.stringify(cfg, null, 2) + '\n');
+
+  // 마지막 커밋의 init.json에 noConceptGlobs가 없던(옛 플러그인 버전) 상태를 만든다.
+  beforeEach(() => {
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
+    const { noConceptGlobs: _dropped, ...older } = readCfg();
+    writeCfg(older);
+    git('init', '-q');
+    git('add', '-A');
+    git('add', '-f', INIT);
+    git('commit', '-qm', 'base');
+    writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 2;\n');
+  });
+
+  it('자동 동기화가 마지막 커밋에 없던 항목을 기본값 그대로 덧붙인 것뿐이면 묻지 않는다', async () => {
+    expect(await ensureInitConfigDefaults(root)).toEqual(['noConceptGlobs']);
+    const r = await commit(['src/a.ts']);
+    expect(r?.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('init.json');
+  });
+
+  it('새 항목이 기본값과 다르면 묻는다', async () => {
+    writeCfg({ ...readCfg(), noConceptGlobs: ['src/ui/**'] });
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  it('기본값 보충과 함께 기존 항목 값이 바뀌었으면 묻는다', async () => {
+    writeCfg({ ...readCfg(), noConceptGlobs: [], enforcement: 'light' });
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  it('도구가 모르는 새 항목이 생기면 묻는다', async () => {
+    writeCfg({ ...readCfg(), mystery: true });
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
+  it('마지막 커밋에 있던 항목이 지워졌으면 묻는다', async () => {
+    const { testGlobs: _dropped, ...rest } = readCfg();
+    writeCfg(rest);
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
   });
 });

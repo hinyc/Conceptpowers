@@ -45,7 +45,7 @@ export interface SyncResult {
   // 설정을 읽지 못하면 null이고 .gitignore는 건드리지 않는다(unchanged).
   referenceLockMode: ReferenceLockMode | null;
   referenceLockIgnore: ReferenceLockIgnoreStatus;
-  // 실패한 단계들. 비어 있지 않으면 버전 도장을 새로 찍지 않아 다음 동기화가 다시 시도한다.
+  // 실패한 단계들. 비어 있지 않으면 뷰어는 새로 쓰되 버전 도장을 새로 찍지 않아 다음 동기화가 다시 시도한다.
   failedSteps: SyncStepFailure[];
 }
 
@@ -105,9 +105,6 @@ async function runStep<T>(
   }
 }
 
-const VIEWER_SKIPPED =
-  'skipped: earlier steps failed — viewer and version stamp left as-is so the next sync retries';
-
 // 뷰어 앞의 단계들. 참고자료 추적 제외(reference/.gitignore)를 가장 먼저 보장한다.
 async function runPreparationSteps(root: string) {
   const refIgnore = await runStep(
@@ -135,15 +132,17 @@ async function runPreparationSteps(root: string) {
   return { refIgnore, readme, paths, alignIgnore, config, lockIgnore, orphans, script };
 }
 
-// 뷰어(버전 도장 포함)는 앞 단계가 모두 성공했을 때만 마지막에 쓴다 — 실패가 있으면 도장을
-// 그대로 둬 다음 동기화가 다시 시도하게 한다.
+// 뷰어는 늘 새로 그린다(도구를 올렸는데 화면이 옛 버전인 일을 막는다). 앞 단계가 하나라도 실패하면
+// 버전 도장만 보류해(옛 도장 유지) 다음 동기화가 다시 시도하게 한다. 뷰어 자체 실패도 실패 목록에 오른다.
 export async function syncGenerated(root: string, opts: SyncOpts = {}): Promise<SyncResult> {
   const steps = await runPreparationSteps(root);
   const earlier = Object.values(steps).flatMap((o) => (o.failure ? [o.failure] : []));
-  const viewer: StepOutcome<void> =
-    earlier.length > 0
-      ? { value: undefined, failure: { step: 'viewer', error: VIEWER_SKIPPED } }
-      : await runStep('viewer', () => renderViewerToDisk(root, opts.stampVersion), undefined);
+  const holdStamp = earlier.length > 0;
+  const viewer = await runStep(
+    'viewer',
+    () => renderViewerToDisk(root, opts.stampVersion, { holdStamp }),
+    undefined
+  );
   return {
     scriptStatus: steps.script.value,
     orphansRemoved: steps.orphans.value,
