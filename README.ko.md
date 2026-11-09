@@ -65,7 +65,22 @@ Conceptpowers는 **개념을 코드 위에 있는 1급의, 버전 관리되는 �
 
 ---
 
-## 빠른 시작 (Quick Start)
+## 요구 사항 (Requirements)
+
+- **`PATH`에 Node.js 20 이상.** 모든 훅이 `node dist/hooks/<이름>.js`로 실행되므로 `node`가 없으면 훅이 돌지 않는다(스킬은 그래도 로드된다).
+- **Claude Code**(훅은 Claude Code와 Cowork에서 동작하며, claude.ai 채팅에서는 스킬만 로드된다) 또는 **Codex**.
+- 커밋 게이트를 위한 **git**.
+- 검증된 플랫폼은 macOS와 Linux다. **Windows는 검증되지 않았다.**
+
+---
+
+## 설치 (Install)
+
+### 공식 플러그인 디렉터리에서 설치
+
+Conceptpowers가 Anthropic 공식 플러그인 디렉터리에 등록되면, Claude Code에서 `/plugin directory`를 열어 **Conceptpowers**를 찾아 설치한다. 이후 아래 "프로젝트에 활성화"로 이어 간다. 등록 전에는 Conceptpowers 마켓플레이스를 쓴다.
+
+### Conceptpowers 마켓플레이스에서 설치
 
 Claude Code 안에서 세 단계 — 하나씩 실행한다.
 
@@ -138,19 +153,18 @@ Codex는 플러그인 훅을 신뢰하기 전까지 실행하지 않는다 — C
 - **파일 수정 시점의 안내는 덜 정확하다.** Codex는 파일 수정을 `file_path` 대신 패치 본문을 담은 `apply_patch`로 알리므로, 수정 전 안내가 어느 파일을 바꾸는지 항상 알아내지는 못한다.
 - **스킬 문서에는 `/conceptpowers:init` 같은 Claude Code식 표기가 남아 있다.** Codex에서는 스킬 이름(예: `init`)으로 부르거나 하려는 일을 말로 설명하면 된다.
 
-> **메인테이너 (Codex):** 마켓플레이스 항목은 `"source": { "source": "url", "url": "./" }`여야 한다. 저장소 루트(`"./"`나 `"."`)를 가리키는 `"local"` 방식은 Codex가 `plugin not found`를 낸다. `url` 방식은 GitHub에서 마켓플레이스를 추가할 때 Codex가 받아 오는 Git 스냅샷을 기준으로 경로를 푼다. `.agents/plugins/marketplace.json`에는 `version` 필드가 없고, Codex가 설치하는 버전은 `.codex-plugin/plugin.json`에서 오며 `pnpm release`가 이를 함께 맞춘다.
+---
 
-> **메인테이너:** 사용자에게 업데이트가 반영되려면 `version` 문자열을 올려야 한다 — 커밋만 푸시해서는 반영되지 않는다. `pnpm release <patch|minor|major|x.y.z>`로 릴리스하면 `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json` 버전을 동기화하고 **`dist/`를 재빌드**한 뒤(훅이 `dist/*.js`를 직접 실행하므로, 재빌드 없는 릴리스는 낡은 훅을 배포한다) 커밋·태그까지 만든다. `git push --follow-tags`로 푸시한다.
+## 예시 프롬프트 (Example prompts)
 
-### 새 버전 알림 (version check)
+평범한 요청만으로 알맞은 스킬이 열린다(`init`을 뺀 나머지는 거버넌스가 켜져 있어야 한다, 즉 `init.json` 존재):
 
-conceptpowers가 활성화된 프로젝트는 세션 시작 시 GitHub의 최신 플러그인 버전을 확인하고,
-더 높은 버전이 있으면 한 줄로 알립니다(업데이트는 수동: `/plugin marketplace update conceptpowers-dev`).
-조회는 24h 캐시·짧은 타임아웃의 best-effort이며 실패해도 세션에 영향이 없습니다.
-
-끄려면 `docs/conceptpowers/init.json`에 `"versionCheck": false`를 두거나,
-환경변수 `CONCEPTPOWERS_NO_VERSION_CHECK=1`을 설정하세요.
-캐시 위치는 기본값 `~/.cache/conceptpowers`이며, `CONCEPTPOWERS_CACHE_DIR` 환경변수로 재정의할 수 있습니다.
+- _"이 프로젝트에 개념 거버넌스 켜줘."_ → `init`
+- _"다음 뭐하면 돼? 알아서 순서대로 진행해줘."_ → `auto`
+- _"참고자료가 바뀌었어, 개념 업데이트해줘."_ 또는 _"환불 처리 방식을 개념으로 정의해줘."_ → `update-concepts`
+- _"이 변경이 개념대로야? 수정하기 전에 검토해줘."_ → `review`
+- _"개념이 안 닿는 코드를 찾고 `@concept` 연결을 갱신해줘."_ → `scan`
+- _"방금 끝낸 작업을 레드팀으로 점검해줘: 중복, 과잉 구현, 부작용."_ → `redteam`
 
 ---
 
@@ -298,7 +312,7 @@ standard/strict에서 강행하면 `[Drift Ignored]`로 기록), `[WARNING] 미�
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `version`            | 임의의 문자열                                                                                                                                                                                                                              | 없음 (**필수**)                                                               | 설정 파일 형식 버전. init이 `"0.1.0"`을 기록하며 직접 수정할 일이 없다.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `enabled`            | `true`만 (다른 값은 검증 실패)                                                                                                                                                                                                             | 없음 (**필수**)                                                               | 활성화 마커. `false`는 존재하지 않는다 — 거버넌스를 끄려면 이 파일(또는 `docs/conceptpowers/`)을 삭제한다.                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `locale`             | `"ko"` \| `"en"` (그 외 검증 실패)                                                                                                                                                                                                         | `"ko"`                                                                        | 산출물(개념 정의·아키텍처 문서)과 사용자 메시지의 언어.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `locale`             | `"ko"` \| `"en"` (그 외 검증 실패)                                                                                                                                                                                                         | 필드가 없으면 `"ko"` (새 `init`은 `"en"`을 기록)                              | 산출물(개념 정의·아키텍처 문서)과 사용자 메시지의 언어.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `versionCheck`       | `true` \| `false` (boolean만, `"false"` 같은 문자열은 검증 실패)                                                                                                                                                                           | `true`                                                                        | 세션 시작 시 GitHub에서 새 플러그인 버전을 확인해 한 줄로 알린다. `false` 또는 환경 변수 `CONCEPTPOWERS_NO_VERSION_CHECK`로 끈다.                                                                                                                                                                                                                                                                                                                                                                                      |
 | `conceptDrivenTests` | `true` \| `false` (boolean만, 문자열은 검증 실패)                                                                                                                                                                                          | `true`                                                                        | 테스트도 개념의 지배를 받는다 — 켜져 있으면 세션 시작 규칙에 "테스트 작성·수정 전 대상 코드의 개념을 찾아 allow/restrict/immutableRules에서 시나리오를 도출하라"가 주입된다. 또한 이 스위치가 켜져 있어야 커밋 게이트 `concept-test-follow`·`concept-test-scope`가 동작한다(개념이 바뀌면 딸린 테스트를 반드시 검토·기록, 테스트는 개념 범위를 벗어나지 않는다). `false`로 명시하면 안내와 게이트가 모두 꺼진다.                                                                                                       |
 | `testGlobs`          | 문자열 배열. 글롭 문법은 `ignoreGlobs`와 같다                                                                                                                                                                                              | 흔히 쓰는 테스트 경로·이름 글롭 (`tests/**`, `**/*.test.*`, `**/*.spec.*` 등) | `conceptDrivenTests`의 두 게이트가 **무엇을 테스트로 볼지** 정한다 — `concept-test-follow`(바뀐 개념은 딸린 테스트를 함께 데려오거나 `attest-test-review` 기록을 남겨야 한다)와 `concept-test-scope`(스테이징된 테스트 파일은 실제 개념을 가리켜야 하며 `@concept:none`은 쓸 수 없다). **직접 지정하면 기본 목록을 대체한다.**                                                                                                                                                                                         |
@@ -317,7 +331,7 @@ standard/strict에서 강행하면 `[Drift Ignored]`로 기록), `[WARNING] 미�
 {
   "version": "0.1.0",
   "enabled": true,
-  "locale": "ko",
+  "locale": "en",
   "versionCheck": true,
   "conceptDrivenTests": true,
   "enforcement": "standard",
@@ -410,7 +424,7 @@ docs/conceptpowers/
 | 저장소 밖, 그 외   | `/Volumes/team-share/specs` (절대경로)      | 이 위치를 가리킬 수 있는 유일한 형태. 본질적으로 머신 종속이다.                |
 | 저장소 안          | `docs/legal/contract.pdf` (저장소 상대경로) | 모두에게 동일하게 해석된다 — 가장 이식성 높은 형태.                            |
 
-두 가지를 분명히 해둔다: 상대경로는 언제나 **저장소 루트 기준**이며 현재 작업 디렉터리 기준이 아니다. 그리고 `paths.md`는 커밋되므로 홈 아래를 절대경로로 적으면(`/Users/hiy/specs`) 본인 머신에서만 해석된다 — 동료에게는 `missing`으로 보인다. 그 자리엔 `~/`를 쓰는 게 맞다.
+두 가지를 분명히 해둔다: 상대경로는 언제나 **저장소 루트 기준**이며 현재 작업 디렉터리 기준이 아니다. 그리고 `paths.md`는 커밋되므로 홈 아래를 절대경로로 적으면(`/home/you/specs`) 본인 머신에서만 해석된다 — 동료에게는 `missing`으로 보인다. 그 자리엔 `~/`를 쓰는 게 맞다.
 
 `init`이 그런 경로가 있는지 한 번 물어보고(건너뛰기 가능), 이후에는 `/conceptpowers:update-concepts`(참고자료 경로 등록)로 언제든 등록한다:
 
@@ -449,11 +463,70 @@ docs/conceptpowers/
 
 ---
 
+## 실행·전송하는 것 (Privacy / Network)
+
+Conceptpowers는 로컬 우선이다. 전체 정책: [PRIVACY.md](PRIVACY.md) (영어).
+
+**내 컴퓨터에서 실행되는 것**
+
+- **훅** (`hooks/hooks.json`): `PreToolUse`(Edit / Write / MultiEdit / NotebookEdit / Bash), `PostToolUse`(Bash), `SessionStart`. 각각 플러그인 디렉터리의 `node dist/hooks/*.js`를 실행한다.
+- **git**: 커밋 게이트가 커밋에 담길 내용을 보려고 읽기 전용 `git` 명령을 실행한다.
+- **뷰어**: 개념 뷰어는 `127.0.0.1`에만 바인드된 로컬 HTTP 서버이며, OS에 기본 브라우저로 열어 달라고 요청한다. 직접 실행할 때만 돈다.
+- 플러그인 자체는 LLM을 호출하지 않는다. 판단은 에이전트 안에서 일어난다.
+
+**전송하는 것**
+
+- **네트워크 호출은 한 곳뿐:** 세션 시작 시 새 버전이 있는지 보려고 `raw.githubusercontent.com`(`main` 브랜치의 플러그인 `plugin.json`)에 `GET`을 보낸다. 거버넌스가 켜진 프로젝트에서만 동작하고, 24시간 캐시되며, 1.5초 뒤 타임아웃된다. 실패해도 아무것도 바뀌지 않는다.
+- **텔레메트리·분석·데이터 업로드 없음.** 이 플러그인을 통해 코드나 개념이 내 컴퓨터 밖으로 나가지 않는다.
+
+**쓰는 파일**
+
+- 프로젝트 안: `docs/conceptpowers/`(개념, 기록, 설정).
+- 프로젝트 밖: 버전 확인 캐시 `~/.cache/conceptpowers`뿐(`CONCEPTPOWERS_CACHE_DIR`로 바꿀 수 있다).
+
+**버전 확인 끄기**
+
+`docs/conceptpowers/init.json`에 `"versionCheck": false`를 두거나 환경변수 `CONCEPTPOWERS_NO_VERSION_CHECK=1`을 설정한다.
+새 버전이 있으면 한 줄로 알릴 뿐이며 업데이트는 수동이다(`/plugin marketplace update conceptpowers-dev`).
+
+---
+
+## 성능·비용 (Performance & cost)
+
+- `docs/conceptpowers/init.json`이 **없는** 프로젝트에서는 훅이 아무 출력 없이 바로 빠진다(약 60ms).
+- 거버넌스가 켜진 프로젝트에서는 Edit마다 약 **60ms**, 커밋 판정에 약 **200–260ms**가 걸린다.
+- 플러그인 자체는 토큰을 쓰지 않고 API도 부르지 않는다. 토큰은 에이전트가 스킬(review, scan, redteam)을 돌리고 세션 시작 규칙을 읽을 때 든다.
+
+---
+
+## FAQ / 문제 해결 (Troubleshooting)
+
+**훅이 돌지 않는 것 같다.**
+에이전트가 쓰는 셸의 `PATH`에 `node`(20 이상)가 있는지, 프로젝트에 `docs/conceptpowers/init.json`이 있는지 확인한다(마커가 없으면 훅도 없다). Codex에서는 `/hooks`에서 훅을 신뢰해야 한다. claude.ai 채팅에서는 훅이 돌지 않으니 Claude Code나 Cowork를 쓴다.
+
+**커밋이 막히거나 확인 요청이 뜬다.**
+게이트는 `PreToolUse` 검사라 명령을 실행하기 전에 읽는다. `git add`와 `git commit`을 **별도 명령**으로 실행한다. 한 명령으로 묶으면(`git add … && git commit`) 커밋될 파일을 미리 알 수 없어, `strict`는 막고 `standard`는 확인을 묻는다.
+
+**`strict`가 커밋이 아닌 명령을 막는다.**
+`strict`는 `git commit` 문자열이 들어 있을 뿐인 명령(예: 반복문이나 스크립트 안)을 오탐할 수 있다. 대부분의 사용자에게는 **`standard`**가 맞다: `docs/conceptpowers/init.json`에 `"enforcement": "standard"`를 둔다.
+
+**어떻게 끄나?**
+`docs/conceptpowers/init.json`(또는 `docs/conceptpowers/` 폴더 전체)을 지우면 그 프로젝트의 거버넌스가 꺼진다. 또는 `/plugin`에서 플러그인을 비활성화한다. 켜 둔 채 네트워크 호출만 끄려면 위 "버전 확인 끄기"를 본다.
+
+**출력 언어는 어떻게 바꾸나?**
+새 프로젝트의 기본값은 영어다. 한국어는 `init --lang ko`로 만들거나 `docs/conceptpowers/init.json`의 `"locale"`(`"en"` 또는 `"ko"`)을 고친다. `init.json`에 `locale`이 없는 기존 프로젝트는 한국어로 읽는다. 스킬 문서는 원본 옆에 한국어 번역본(`SKILL.ko.md`)이 있으며, 에이전트는 영어 원본만 따른다.
+
+**도움은 어디서 받나?**
+[GitHub Issue](https://github.com/hinyc/Conceptpowers/issues)를 연다. 보안 문제는 비공개 제보를 쓴다: [SECURITY.md](SECURITY.md) 참조(영어).
+
+---
+
 ## 라이선스 & 커뮤니티
 
 - **라이선스:** MIT — [`LICENSE`](LICENSE) 참조.
-- **이슈 & 아이디어:** [GitHub Issue](../../issues)를 열어주세요 — 버그 리포트, 개념 스키마 제안, CDD 워크플로우 아이디어 모두 환영합니다.
-- **기여:** PR을 환영합니다. 엔진은 `src/`(TypeScript, ESM)에 있으며, 제출 전 `pnpm build`와 `pnpm test`(커버리지 80%+)를 실행해 주세요.
+- **지원 & 아이디어:** [GitHub Issue](https://github.com/hinyc/Conceptpowers/issues)를 열어주세요 — 버그 리포트, 개념 스키마 제안, CDD 워크플로우 아이디어 모두 환영합니다.
+- **보안:** [SECURITY.md](SECURITY.md). **개인정보:** [PRIVACY.md](PRIVACY.md). **변경 내역:** [CHANGELOG.md](CHANGELOG.md). (모두 영어 문서)
+- **기여:** [CONTRIBUTING.md](CONTRIBUTING.md) 참조(영어).
 - **English:** 영문 가이드는 [README.md](README.md)를 참조하세요.
 
 Conceptpowers가 의도와 코드를 일치시키는 데 도움이 되었다면, 레포지토리에 ⭐를 눌러 다른 사람들도 찾을 수 있게 해주세요.

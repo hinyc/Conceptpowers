@@ -101,8 +101,18 @@ describe('ConceptSchema', () => {
     const c = parseConcept({
       ...valid,
       sources: [
-        { kind: 'code', path: 'src/drift/hash.ts', locator: 'contractHash()', supports: '계약 필드만 해시한다' },
-        { kind: 'reference', path: 'concept-centric-software-design.md', locator: 'p.12', supports: '개념은 혼자 서야 한다' },
+        {
+          kind: 'code',
+          path: 'src/drift/hash.ts',
+          locator: 'contractHash()',
+          supports: '계약 필드만 해시한다',
+        },
+        {
+          kind: 'reference',
+          path: 'concept-centric-software-design.md',
+          locator: 'p.12',
+          supports: '개념은 혼자 서야 한다',
+        },
         { kind: 'decision', locator: '2026-09-12 설계', supports: '위조 방지 출구가 필요하다' },
       ],
     });
@@ -130,7 +140,10 @@ describe('ConceptSchema', () => {
   });
   it('decision 근거는 path 없이 허용된다', () => {
     expect(() =>
-      parseConcept({ ...valid, sources: [{ kind: 'decision', locator: 'today', supports: '사람이 정함' }] })
+      parseConcept({
+        ...valid,
+        sources: [{ kind: 'decision', locator: 'today', supports: '사람이 정함' }],
+      })
     ).not.toThrow();
   });
 });

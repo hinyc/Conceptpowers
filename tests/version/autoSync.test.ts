@@ -279,7 +279,11 @@ describe('CLI 사용 시 자동 version sync', () => {
   it('자동 sync가 실패하면 render 명령이 도장을 찍지 않아, 원인을 고친 뒤 version-sync가 실제로 맞춘다', async () => {
     stampGenerator(root, '0.0.1');
     writeFileSync(join(root, 'package.json'), '{ not json');
-    const code = await runCli(['render', '--root', root], () => {}, () => {});
+    const code = await runCli(
+      ['render', '--root', root],
+      () => {},
+      () => {}
+    );
     expect(code).toBe(0);
     const held = JSON.parse(readFileSync(manifestPath(root), 'utf8'));
     expect(held.generatorVersion).toBe('0.0.1'); // 재시도가 살아 있다

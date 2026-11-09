@@ -9630,8 +9630,10 @@ function viewerHint() {
 function reportFailedSteps(err, failed, hint) {
   if (failed.length === 0) return;
   const tail = hint ? ` \u2014 ${hint}` : "";
-  err(`[conceptpowers] some generated-artifact steps failed \u2014 ${formatFailedSteps(failed)}${tail}
-`);
+  err(
+    `[conceptpowers] some generated-artifact steps failed \u2014 ${formatFailedSteps(failed)}${tail}
+`
+  );
 }
 var AUTO_SYNC_RETRY_HINT = "auto version-sync held the version stamp; fix the cause, then run version-sync (the next command also retries)";
 async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => process.stderr.write(s)) {
@@ -9951,4 +9953,3 @@ if (isMain) {
 export {
   runCli
 };
-//# sourceMappingURL=cli.js.map

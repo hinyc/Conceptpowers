@@ -25,7 +25,10 @@ function conceptInput(over: Record<string, unknown> = {}) {
     purpose: { reason: '이유' },
     actions: {},
     state: { managed: ['이 개념이 관리하는 대상'] },
-    principle: { immutableRules: [GOOD_RULE], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' },
+    principle: {
+      immutableRules: [GOOD_RULE],
+      operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+    },
     sources: [{ kind: 'decision', locator: '2026-09-12', supports: '검사용 결정' }],
     ...over,
   };
@@ -59,7 +62,12 @@ describe('green 승격 가드', () => {
 
   it('증빙이 stale(계약 변경 후)이면 승격 거부', async () => {
     const before = parseConcept(
-      conceptInput({ principle: { immutableRules: ['이전 규칙입니다 충분히 김'], operationalPrinciple: '조건이 갖춰지면 그대로 판정된다' } })
+      conceptInput({
+        principle: {
+          immutableRules: ['이전 규칙입니다 충분히 김'],
+          operationalPrinciple: '조건이 갖춰지면 그대로 판정된다',
+        },
+      })
     );
     await recordAttest(root, before, 'pass');
     await writeConcept(root, conceptInput()); // 계약이 다른 내용으로 저장됨

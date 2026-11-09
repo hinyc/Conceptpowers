@@ -1,11 +1,11 @@
 {
   "name": "conceptpowers",
   "version": "1.18.0",
-  "description": "Concept-driven development governance for AI coding agents",
+  "description": "Concept-driven development governance: define concepts before code; agents review changes against them and a commit gate keeps concepts, code links and evidence in step",
   "type": "module",
   "packageManager": "pnpm@10.12.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=20.0.0"
   },
   "bin": {
     "conceptpowers": "dist/cli.js"
@@ -32,5 +32,17 @@
     "prettier": "^3.9.6",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "inyeol Hong"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hinyc/Conceptpowers.git"
+  },
+  "homepage": "https://github.com/hinyc/Conceptpowers#readme",
+  "bugs": {
+    "url": "https://github.com/hinyc/Conceptpowers/issues"
   }
 }

@@ -12,7 +12,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readNoCodeLog, recordNoCode, freshNoCode, pruneNoCodeLog } from '../../src/drift/noCode.js';
+import {
+  readNoCodeLog,
+  recordNoCode,
+  freshNoCode,
+  pruneNoCodeLog,
+} from '../../src/drift/noCode.js';
 import { contractHash } from '../../src/drift/hash.js';
 import { parseConcept } from '../../src/schema/concept.js';
 

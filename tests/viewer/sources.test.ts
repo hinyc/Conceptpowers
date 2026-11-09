@@ -24,12 +24,22 @@ const src = readFileSync(join(here, '../../assets/viewer.js'), 'utf8').replace(
 );
 
 function load() {
-  const ctx: Record<string, unknown> = { window: {}, document: { createElementNS() {}, createTextNode() {} } };
+  const ctx: Record<string, unknown> = {
+    window: {},
+    document: { createElementNS() {}, createTextNode() {} },
+  };
   vm.createContext(ctx);
   vm.runInContext(src, ctx);
   return ctx as Record<string, unknown> & {
-    sourceToLine: (s: { kind: string; path?: string; locator?: string; supports?: string }) => string;
-    lineToSource: (line: string) => { kind: string; path: string; locator: string; supports: string } | null;
+    sourceToLine: (s: {
+      kind: string;
+      path?: string;
+      locator?: string;
+      supports?: string;
+    }) => string;
+    lineToSource: (
+      line: string
+    ) => { kind: string; path: string; locator: string; supports: string } | null;
     sourcesToLines: (sources: unknown[]) => string;
     linesToSources: (text: string) => unknown[];
     I18N: Record<string, Record<string, string>>;
@@ -39,7 +49,12 @@ function load() {
 describe('sourceToLine / lineToSource — 왕복 변환', () => {
   it('code 근거를 한 줄로 만들고 다시 되돌린다', () => {
     const { sourceToLine, lineToSource } = load();
-    const s = { kind: 'code', path: 'src/drift/hash.ts', locator: 'contractHash()', supports: '계약만 해시' };
+    const s = {
+      kind: 'code',
+      path: 'src/drift/hash.ts',
+      locator: 'contractHash()',
+      supports: '계약만 해시',
+    };
     const line = sourceToLine(s);
     expect(lineToSource(line)).toEqual(s);
   });

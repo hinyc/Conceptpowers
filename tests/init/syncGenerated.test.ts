@@ -177,7 +177,10 @@ describe('syncGenerated — 단계별 실패 격리', () => {
 
   it('뷰어 단계 자체가 실패하면 실패 목록에 viewer가 오르고 도장은 옛것 그대로다', async () => {
     await scaffoldInit(root, { locale: 'ko' });
-    writeFileSync(viewer('manifest.json'), JSON.stringify({ ...manifest(), generatorVersion: '0.0.1' }));
+    writeFileSync(
+      viewer('manifest.json'),
+      JSON.stringify({ ...manifest(), generatorVersion: '0.0.1' })
+    );
     rmSync(viewer('assets'), { recursive: true, force: true });
     writeFileSync(viewer('assets'), 'not a directory');
     const r = await syncGenerated(root, { stampVersion: '9.9.9' });

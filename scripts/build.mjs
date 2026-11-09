@@ -27,7 +27,8 @@ async function run() {
       platform: 'node',
       format: 'esm',
       target: 'node20',
-      sourcemap: true,
+      // sourcemap은 배포하지 않는다(디렉터리 제출 요건·용량). 원본은 main의 src/로 확인한다.
+      sourcemap: false,
       // node 내장 모듈만 외부로 두고, npm 의존성(zod/commander)은 번들에 인라인한다.
       // commander(CJS)가 require('node:events')를 호출하므로 ESM 출력에 require를 주입한다.
       banner: {

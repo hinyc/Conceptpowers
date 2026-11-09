@@ -25,13 +25,13 @@ beforeEach(async () => {
 
 describe('findHookRoot', () => {
   it('훅 입력의 작업 폴더가 하위 폴더면 위로 올라가 초기화된 루트를 찾는다', async () => {
-    expect(await findHookRoot({ cwd: join(root, 'src', 'deep'), env: {}, processCwd: plain })).toBe(root);
+    expect(await findHookRoot({ cwd: join(root, 'src', 'deep'), env: {}, processCwd: plain })).toBe(
+      root
+    );
   });
 
   it('입력 작업 폴더가 없으면 프로젝트 폴더 환경 변수를 쓴다', async () => {
-    expect(
-      await findHookRoot({ env: { CLAUDE_PROJECT_DIR: root }, processCwd: plain })
-    ).toBe(root);
+    expect(await findHookRoot({ env: { CLAUDE_PROJECT_DIR: root }, processCwd: plain })).toBe(root);
   });
 
   it('프로세스 작업 폴더의 상위도 찾는다', async () => {

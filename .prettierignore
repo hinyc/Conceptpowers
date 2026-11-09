@@ -15,3 +15,9 @@ docs/conceptpowers
 docs/plans
 docs/specs
 docs/superpowers
+
+# 뷰어 원본 — 포맷을 바꾸면 이 저장소의 뷰어 사본(docs/conceptpowers/concepts/viewer)도 다시 렌더해야 해서 viewer 롤이 다룬다
+assets/viewer.js
+
+# war-room 상태 문서 — 매니저 에이전트가 계속 갱신하는 기록물
+war-room

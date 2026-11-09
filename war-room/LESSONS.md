@@ -14,3 +14,8 @@
 - 원인·해결: 엔진이 한국어 입력을 해석하는 부분은 원본에서 코드 포인트(U+D589 등)로 적고 실제 글자는 번역본에 둔다. locale을 말할 때는 "키가 없으면 ko(LEGACY_LOCALE)"를 함께 적는다
 - 롤 문서 반영 후보: roles/skill-author.md "일하는 방식"에 위 두 줄
 
+## 2026-11-09 · manager · strict 게이트가 'git commit' 문자열이 든 셸 명령을 막음
+- 겪은 일: heredoc·파이썬 인라인 스크립트 안에 git과 commit 문자열이 들어 있으면 커밋 게이트(strict)가 [COMMIT UNRESOLVED]로 차단한다. release 롤과 매니저가 각각 한 번씩 겪었다
+- 원인·해결: 문서·스크립트 수정은 셸 명령 대신 Edit/Write 도구로 하고, 스크립트가 필요하면 파일로 써서 실행한다
+- 롤 문서 반영 후보: roles/manager.md "프로젝트별 규칙"과 roles/release.md "일하는 방식"에 한 줄
+

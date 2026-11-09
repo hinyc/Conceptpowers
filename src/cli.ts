@@ -61,7 +61,9 @@ function viewerHint(): { viewer: string; serve: string } {
 function reportFailedSteps(err: Out, failed: readonly SyncStepFailure[], hint?: string): void {
   if (failed.length === 0) return;
   const tail = hint ? ` — ${hint}` : '';
-  err(`[conceptpowers] some generated-artifact steps failed — ${formatFailedSteps(failed)}${tail}\n`);
+  err(
+    `[conceptpowers] some generated-artifact steps failed — ${formatFailedSteps(failed)}${tail}\n`
+  );
 }
 
 // 자동 경로 실패 안내. 도장은 보류됐고 render 등 다른 명령도 도장을 찍지 않으므로, 다음 명령·version-sync가 다시 시도한다.

@@ -65,7 +65,22 @@ Where spec-driven development actually breaks — one-shot generation flakiness,
 
 ---
 
-## Quick Start
+## Requirements
+
+- **Node.js 20 or later on your `PATH`.** Every hook runs as `node dist/hooks/<name>.js`, so without `node` the hooks cannot run (skills still load).
+- **Claude Code** (hooks run in Claude Code and Cowork; in claude.ai chat only the skills load) or **Codex**.
+- **git**, for the commit gate.
+- macOS and Linux are the tested platforms. **Windows has not been verified.**
+
+---
+
+## Install
+
+### From the official plugin directory
+
+Once Conceptpowers is listed in the official Anthropic plugin directory, open `/plugin directory` in Claude Code, find **Conceptpowers**, and install it from there. Then continue with "Enable it in your project" below. Until it is listed, use the Conceptpowers marketplace.
+
+### From the Conceptpowers marketplace
 
 Three steps inside Claude Code — run them one at a time.
 
@@ -138,19 +153,18 @@ Codex does not run plugin hooks until you trust them: open Codex, run `/hooks`, 
 - **Edit-time hints are less precise.** Codex reports file edits as `apply_patch` with a patch body instead of a `file_path`, so the pre-edit reminder cannot always tell which file is being changed.
 - **Skill text still uses Claude Code notation** such as `/conceptpowers:init`. In Codex, invoke the skill by name (e.g. `init`) or describe the task in plain words.
 
-> **Maintainers (Codex):** the marketplace entry must use `"source": { "source": "url", "url": "./" }`. A `"local"` source pointing at the repository root (`"./"` or `"."`) makes Codex report `plugin not found`. The `url` form resolves against the Git snapshot Codex clones when the marketplace is added from GitHub. `.agents/plugins/marketplace.json` has no `version` field; the version Codex installs comes from `.codex-plugin/plugin.json`, which `pnpm release` keeps in sync.
+---
 
-> **Maintainers:** updates only reach users when the `version` string is bumped — pushing commits alone is not enough. Cut a release with `pnpm release <patch|minor|major|x.y.z>`, which syncs the version across `.claude-plugin/plugin.json` / `.claude-plugin/marketplace.json` / `.codex-plugin/plugin.json` / `package.json`, **rebuilds `dist/`** (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks), then commits and tags. Push with `git push --follow-tags`.
+## Example prompts
 
-### Version check notifications
+Plain requests open the right skill (everything except `init` needs governance on, i.e. `init.json` exists):
 
-When Conceptpowers is active in a project, it checks GitHub for the latest plugin version at session start.
-If a newer version is available, it alerts you in one line (update is manual: `/plugin marketplace update conceptpowers-dev`).
-The check uses a 24h cache with a short timeout and is best-effort — even if it fails, your session is unaffected.
-
-To disable version checks, either set `"versionCheck": false` in `docs/conceptpowers/init.json`
-or set the environment variable `CONCEPTPOWERS_NO_VERSION_CHECK=1`.
-The cache is stored in `~/.cache/conceptpowers` by default; override with `CONCEPTPOWERS_CACHE_DIR`.
+- _"Turn on concept governance for this project."_ → `init`
+- _"What should I do next? Walk me through it in order."_ → `auto`
+- _"The reference docs changed — update the concepts."_ or _"Define a concept for how we handle refunds."_ → `update-concepts`
+- _"Does this change follow the concepts? Check before I edit."_ → `review`
+- _"Find code that no concept covers and refresh the `@concept` links."_ → `scan`
+- _"Red-team what I just finished: duplication, overreach, side effects."_ → `redteam`
 
 ---
 
@@ -309,7 +323,7 @@ already wrote are preserved, so a setting you turned off never flips back on.
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `version`            | any string                                                                                                                                                                                                                                                                                                            | none (**required**)                                                       | Settings file format version. init writes `"0.1.0"`; you never edit it by hand.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `enabled`            | only `true` (anything else fails validation)                                                                                                                                                                                                                                                                          | none (**required**)                                                       | The activation marker. There is no `false` — to switch governance off, delete this file (or `docs/conceptpowers/`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `locale`             | `"ko"` \| `"en"` (anything else fails validation)                                                                                                                                                                                                                                                                     | `"ko"`                                                                    | Language for generated artifacts (concept definitions, architecture docs) and user-facing messages.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `locale`             | `"ko"` \| `"en"` (anything else fails validation)                                                                                                                                                                                                                                                                     | `"ko"` if missing (new `init` writes `"en"`)                              | Language for generated artifacts (concept definitions, architecture docs) and user-facing messages.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `versionCheck`       | `true` \| `false` (boolean only — the string `"false"` fails validation)                                                                                                                                                                                                                                              | `true`                                                                    | Checks GitHub for a newer plugin version at session start and notifies in one line. Disable with `false` or the `CONCEPTPOWERS_NO_VERSION_CHECK` env var.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `conceptDrivenTests` | `true` \| `false` (boolean only — strings fail validation)                                                                                                                                                                                                                                                            | `true`                                                                    | Tests are governed too — when enabled, the session-start rules instruct the agent to locate the concept(s) for the code under test before writing or modifying tests and derive scenarios from their allow/restrict/immutableRules. It also gates commits: `concept-test-follow` (a changed concept must bring its tests along or carry a fresh `attest-test-review` record) and `concept-test-scope` (a staged test file must name a real concept). Only an explicit `false` disables the guidance and both gates.                                                                        |
 | `testGlobs`          | array of strings, same mini-glob syntax as `ignoreGlobs`                                                                                                                                                                                                                                                              | common test path/name globs (`tests/**`, `**/*.test.*`, `**/*.spec.*`, …) | Which paths count as **tests** for the two `conceptDrivenTests` gates: `concept-test-follow` (a changed concept must bring its tests along, or carry a fresh `attest-test-review` record) and `concept-test-scope` (a staged test file must name a real concept — `@concept:none` is not accepted for tests). **Setting it replaces the default list.**                                                                                                                                                                                                                                    |
@@ -329,7 +343,7 @@ into `docs/conceptpowers/init.json`, and change only what you need:
 {
   "version": "0.1.0",
   "enabled": true,
-  "locale": "ko",
+  "locale": "en",
   "versionCheck": true,
   "conceptDrivenTests": true,
   "enforcement": "standard",
@@ -424,7 +438,7 @@ Concepts are only as good as what they are written from. `reference/` is where t
 | Outside the repo, elsewhere       | `/Volumes/team-share/specs` (absolute)    | The only form that can address it. Machine-specific by nature.                                    |
 | Inside the repo                   | `docs/legal/contract.pdf` (repo-relative) | Resolves identically for everyone — the most portable form.                                       |
 
-Two things to be precise about: a relative entry always resolves **from the repo root**, never from your current working directory. And because `paths.md` is committed, a raw absolute path under your home (`/Users/you/specs`) resolves only on your machine — teammates will see it reported as `missing`. Prefer `~/` there.
+Two things to be precise about: a relative entry always resolves **from the repo root**, never from your current working directory. And because `paths.md` is committed, a raw absolute path under your home (`/home/you/specs`) resolves only on your machine — teammates will see it reported as `missing`. Prefer `~/` there.
 
 `init` asks once whether you have such paths (skippable), and `/conceptpowers:update-concepts` (참고자료 경로 등록) registers them anytime:
 
@@ -463,11 +477,70 @@ The graph is data-driven and re-derived on every `render` / `scan`, so it always
 
 ---
 
+## What it runs & sends (Privacy / Network)
+
+Conceptpowers is local-first. Full policy: [PRIVACY.md](PRIVACY.md).
+
+**What runs on your machine**
+
+- **Hooks** (`hooks/hooks.json`): `PreToolUse` (Edit / Write / MultiEdit / NotebookEdit / Bash), `PostToolUse` (Bash) and `SessionStart`. Each runs `node dist/hooks/*.js` from the plugin directory.
+- **git**: the commit gate runs read-only `git` commands to see what a commit would contain.
+- **Viewer**: the concept viewer is a local HTTP server bound to `127.0.0.1` only, and it asks your OS to open it in the default browser. It runs only when you start it.
+- No LLM is called by the plugin itself; judgment happens in your agent.
+
+**What it sends**
+
+- **One network call:** at session start, a `GET` to `raw.githubusercontent.com` (the plugin's own `plugin.json` on the `main` branch) to see whether a newer version exists. It runs only in projects with governance enabled, is cached for 24 hours, and times out after 1.5 seconds. If it fails, nothing changes.
+- **No telemetry, no analytics, no data upload.** Your code and concepts never leave your machine through this plugin.
+
+**What it writes**
+
+- In your project: `docs/conceptpowers/` (concepts, records, settings).
+- Outside the project: only the version-check cache in `~/.cache/conceptpowers` (override with `CONCEPTPOWERS_CACHE_DIR`).
+
+**Turning the version check off**
+
+Set `"versionCheck": false` in `docs/conceptpowers/init.json`, or set the environment variable `CONCEPTPOWERS_NO_VERSION_CHECK=1`.
+If a newer version exists, the notice is one line; updating is manual (`/plugin marketplace update conceptpowers-dev`).
+
+---
+
+## Performance & cost
+
+- In a project **without** `docs/conceptpowers/init.json`, hooks exit immediately with no output (about 60 ms).
+- In a governed project, each Edit adds about **60 ms**, and a commit decision takes about **200–260 ms**.
+- The plugin itself uses no tokens and calls no API. Token cost comes from your agent running the skills (review, scan, redteam) and reading the session-start rules.
+
+---
+
+## FAQ / Troubleshooting
+
+**The hooks don't seem to run.**
+Check that `node` (20 or later) is on the `PATH` of the shell your agent uses, and that `docs/conceptpowers/init.json` exists in the project (no marker, no hooks). On Codex, trust the hooks in `/hooks`. In claude.ai chat hooks never run; use Claude Code or Cowork.
+
+**My commit was blocked or I was asked to confirm.**
+The gate is a `PreToolUse` check, so it reads the command before it runs. Run `git add` and `git commit` as **separate commands**; chaining them (`git add … && git commit`) makes the committed files impossible to know in advance, which `strict` denies and `standard` asks about.
+
+**`strict` blocks a command that isn't really a commit.**
+`strict` can false-positive on commands that merely contain a `git commit` string, for example inside a loop or script. For most users **`standard`** is the right setting: set `"enforcement": "standard"` in `docs/conceptpowers/init.json`.
+
+**How do I turn it off?**
+Delete `docs/conceptpowers/init.json` (or the whole `docs/conceptpowers/` folder) to switch governance off for that project, or disable the plugin in `/plugin`. To keep it on but stop the network call, see "Turning the version check off" above.
+
+**How do I change the output language?**
+New projects default to English. Run `init --lang ko` for Korean, or edit `"locale"` in `docs/conceptpowers/init.json` (`"en"` or `"ko"`). Projects whose `init.json` has no `locale` are read as Korean. Skill text has a Korean translation next to each original (`SKILL.ko.md`); the agent follows only the English original.
+
+**Where do I get help?**
+Open a [GitHub Issue](https://github.com/hinyc/Conceptpowers/issues). For security problems, use a private report: see [SECURITY.md](SECURITY.md).
+
+---
+
 ## License & Community
 
 - **License:** MIT — see [`LICENSE`](LICENSE).
-- **Issues & ideas:** open a [GitHub Issue](../../issues) — bug reports, concept-schema proposals, and CDD workflow ideas are all welcome.
-- **Contributing:** PRs welcome. The engine lives in `src/` (TypeScript, ESM); run `pnpm build` and `pnpm test` (80%+ coverage) before submitting.
+- **Support & ideas:** open a [GitHub Issue](https://github.com/hinyc/Conceptpowers/issues) — bug reports, concept-schema proposals, and CDD workflow ideas are all welcome.
+- **Security:** see [SECURITY.md](SECURITY.md). **Privacy:** see [PRIVACY.md](PRIVACY.md). **Changes:** see [CHANGELOG.md](CHANGELOG.md).
+- **Contributing:** see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Korean users:** see [README.ko.md](README.ko.md) for the full Korean guide.
 
 If Conceptpowers helps you keep intent and code in sync, a ⭐ on the repo helps others find it.

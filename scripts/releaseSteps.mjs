@@ -27,7 +27,40 @@ export const RELEASE_PATHS = [...MANIFESTS, ...BUILD_OUTPUTS, ...RENDERED_OUTPUT
 export const VERIFY_COMMANDS = [
   ['pnpm', ['typecheck']],
   ['pnpm', ['test:coverage']],
+  ['pnpm', ['format:check']],
 ];
+
+// 개발 브랜치(릴리스를 시작하는 곳)와 배포 브랜치(사용자 설치가 따르는 곳).
+export const DEVELOP_BRANCH = 'develop';
+export const DEPLOY_BRANCH = 'main';
+
+// 배포 브랜치(main)에 두는 경로의 허용 목록. 이 밖의 파일(테스트·기획 문서·war-room·이 저장소의 개념 데이터·CLAUDE.md·.github 등)은
+// develop에만 둔다. src/는 디렉터리 보안 스캔이 번들을 읽지 못해 원본 소스를 봐야 하므로 포함한다.
+export const DEPLOY_ALLOWLIST = [
+  '.claude-plugin',
+  '.codex-plugin',
+  '.agents',
+  'hooks',
+  'skills',
+  'dist',
+  'assets',
+  'src',
+  'README.md',
+  'README.ko.md',
+  'LICENSE',
+  'CHANGELOG.md',
+  'SECURITY.md',
+  'PRIVACY.md',
+  'CONTRIBUTING.md',
+  'package.json',
+  '.gitignore',
+];
+
+// 허용 목록 안이라도 sourcemap·macOS 잡파일은 배포하지 않는다.
+const NEVER_DEPLOY = (path) => path.endsWith('.map') || path.split('/').pop() === '.DS_Store';
+
+// main에 처음 덮어쓰는 등 지울 파일이 이 수를 넘으면 --yes 없이는 멈춘다.
+export const REMOVAL_CONFIRM_THRESHOLD = 10;
 
 const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
 
@@ -70,4 +103,58 @@ export function changesOutsideRelease(porcelainZ) {
     }
   }
   return paths.filter((path) => !insideRelease(path));
+}
+
+// 저장소 상대 경로가 main(배포 브랜치)에 들어가는지 판정한다.
+export function isDeployPath(path) {
+  if (NEVER_DEPLOY(path)) return false;
+  return DEPLOY_ALLOWLIST.some((allowed) => path === allowed || path.startsWith(`${allowed}/`));
+}
+
+// develop 트리와 현재 main 트리의 파일 목록으로 main에 맞출 계획을 만든다.
+// keep: main에 둘 develop 파일 / remove: 지금 main에 있지만 새 main에는 없어야 하는 파일 / added: 새로 생기는 파일
+export function planMainSync(developFiles, mainFiles) {
+  const keep = developFiles.filter(isDeployPath);
+  const keepSet = new Set(keep);
+  const mainSet = new Set(mainFiles);
+  return {
+    keep,
+    remove: mainFiles.filter((path) => !keepSet.has(path)),
+    added: keep.filter((path) => !mainSet.has(path)),
+  };
+}
+
+export function needsRemovalConfirmation(plan, confirmed) {
+  return plan.remove.length > REMOVAL_CONFIRM_THRESHOLD && !confirmed;
+}
+
+// `pnpm release <bump> [--yes]` 인자를 읽는다. 알 수 없는 옵션은 오타로 보고 멈춘다.
+export function parseReleaseArgs(args) {
+  const flags = args.filter((a) => a.startsWith('--'));
+  const unknown = flags.filter((f) => f !== '--yes');
+  if (unknown.length > 0) {
+    throw new Error(`알 수 없는 옵션: ${unknown.join(', ')} (사용 가능: --yes)`);
+  }
+  const positional = args.filter((a) => !a.startsWith('--'));
+  if (positional.length !== 1) {
+    throw new Error('버전 인자가 필요합니다: pnpm release <patch|minor|major|x.y.z> [--yes]');
+  }
+  return { bump: positional[0], confirmed: flags.includes('--yes') };
+}
+
+// `git ls-tree -r -z` 출력(`<mode> <type> <sha>\t<path>\0`)을 항목으로 푼다.
+export function parseLsTree(output) {
+  return output
+    .split('\0')
+    .filter(Boolean)
+    .map((line) => {
+      const tab = line.indexOf('\t');
+      const [mode, type, sha] = line.slice(0, tab).split(' ');
+      return { mode, type, sha, path: line.slice(tab + 1) };
+    });
+}
+
+// 임시 index에 넣을 `git update-index -z --index-info` 입력을 만든다.
+export function toIndexInfo(entries) {
+  return entries.map((e) => `${e.mode} ${e.sha}\t${e.path}\0`).join('');
 }

@@ -5051,9 +5051,7 @@ function pruneTargets(root) {
 async function pruneStaleRecords(root, slugs) {
   const targets = pruneTargets(root);
   const settled = await Promise.allSettled(targets.map(([prune]) => prune(root, slugs)));
-  const pruned = new Set(
-    settled.flatMap((r) => r.status === "fulfilled" ? r.value : [])
-  );
+  const pruned = new Set(settled.flatMap((r) => r.status === "fulfilled" ? r.value : []));
   const failures = settled.flatMap(
     (r, i) => r.status === "rejected" ? [
       {
@@ -6803,4 +6801,3 @@ export {
   runPostToolUseReport,
   ungatedCommitFiles
 };
-//# sourceMappingURL=postToolUse.js.map

@@ -19,7 +19,14 @@
 //  - concept-code-mapping 허용 "…지도를 만들고 보관본으로 저장하는 것"
 //    → 보관본은 갈아 끼우기로 쓴다 — 기존 파일을 제자리에서 덮어쓰지 않는다(바로가기를 따라가 남의 파일을 덮지 않는다)
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, readdirSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  symlinkSync,
+  readdirSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
