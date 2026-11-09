@@ -4089,6 +4089,9 @@ var NEVER = INVALID;
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
 var LEGACY_LOCALE = "ko";
+function localeOf(cfg) {
+  return cfg?.locale ?? LEGACY_LOCALE;
+}
 var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
@@ -4324,7 +4327,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale = LEGACY_LOCALE, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -4804,7 +4807,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = localeOf(await readInitConfig(root));
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {

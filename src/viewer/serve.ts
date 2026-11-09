@@ -14,6 +14,9 @@ import { ALLOWED_STATUS_TRANSITIONS, editConceptContent } from '../store/concept
 import { refreshManifestData } from './render.js';
 import { SLUG_RE } from '../schema/concept.js';
 import { handleStatusApi, engineErrorStatus } from './statusApi.js';
+import { readInitConfig } from '../init/readConfig.js';
+import { localeOf } from '../schema/initConfig.js';
+import { SERVER_MESSAGES } from './i18n.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -421,13 +424,14 @@ if (isMain) {
   // (docs/conceptpowers), 엔진용 projectRoot는 네 단계 위(프로젝트 루트)다.
   const root = fileURLToPath(new URL('../../', import.meta.url));
   const projectRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+  const messages = readInitConfig(projectRoot).then((cfg) => SERVER_MESSAGES[localeOf(cfg)]);
   startServer({ root, projectRoot, entry: 'concepts/viewer/index.html', open: true })
-    .then(({ url }) => {
+    .then(async ({ url }) => {
       // eslint-disable-next-line no-console
-      console.log(`Conceptpowers 뷰어: ${url}  (편집 가능 · 종료: Ctrl+C)`);
+      console.log((await messages).started(url));
     })
-    .catch((err) => {
-      console.error('뷰어 서버 시작 실패:', err.message);
+    .catch(async (err) => {
+      console.error((await messages).startFailed, err.message);
       process.exit(1);
     });
 }

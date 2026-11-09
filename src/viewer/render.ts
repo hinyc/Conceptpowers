@@ -10,6 +10,7 @@ import { listConcepts } from '../store/conceptStore.js';
 import { listFeatures } from '../store/featureStore.js';
 import { readMappingCache } from '../mapping/scan.js';
 import { readInitConfig } from '../init/readConfig.js';
+import { localeOf } from '../schema/initConfig.js';
 import { findPluginRoot, readInstalledVersion } from '../version/checkUpdate.js';
 import { cpPaths } from '../paths.js';
 
@@ -49,7 +50,7 @@ export async function writeManifest(root: string, stampVersion?: string | null):
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = (await readInitConfig(root))?.locale ?? 'ko';
+  const locale = localeOf(await readInitConfig(root));
   const p = cpPaths(root);
 
   await mkdir(p.conceptsViewer, { recursive: true });
