@@ -88,7 +88,7 @@ describe('decidePreToolUse', () => {
     expect(r).toBeNull();
   });
   it('init 프로젝트의 Edit는 개념 검증 리마인더를 주입한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await decidePreToolUse(root, {
       tool: 'Edit',
       input: { file_path: join(root, 'src/a.ts') },
@@ -96,7 +96,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.additionalContext).toContain('conceptpowers:review');
   });
   it('git commit이면서 unknownTag가 있으면 ask한다 (changedFiles 제공)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'src/a.ts'), '// @concept:ghost\n');
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -108,7 +108,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('무시 목록 경로의 생성물 태그는 미지 개념으로 잡지 않는다 (docs/conceptpowers/**)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const rel = 'docs/conceptpowers/concepts/viewer/assets/viewer.js';
     mkdirSync(join(root, 'docs/conceptpowers/concepts/viewer/assets'), { recursive: true });
     writeFileSync(join(root, rel), '// @concept:home-search\n');
@@ -121,7 +121,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('home-search');
   });
   it('git commit이고 정합성 OK면 검증 리마인더만 주입(allow 유지)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -130,7 +130,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.additionalContext).toContain('update-concepts');
   });
   it('staged 파일이 미승인(red) 개념을 참조하면 경고하며 ask로 확인을 요구한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'red-one',
       category: ['feature'],
@@ -151,7 +151,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('red-one');
   });
   it('changedFiles 미제공 시 스테이징된 파일을 직접 조회하여 unknownTag가 있으면 ask한다 (C1)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // git init a temp repo so we can stage files
     execSync('git init', { cwd: root });
     execSync('git config user.email "test@test.com"', { cwd: root });
@@ -168,7 +168,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('비-ASCII 파일명도 원본 그대로 조회해 태그를 읽는다 (git이 따옴표로 감싸도)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     execSync('git init', { cwd: root });
     execSync('git config user.email "test@test.com"', { cwd: root });
     execSync('git config user.name "Test"', { cwd: root });
@@ -184,7 +184,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('태그 없는 신규 코드 파일을 커밋하려 하면 개념 없는 코드로 경고(ask)한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -197,7 +197,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('개념 없는 코드 경고는 기존 개념이면 scan(태그), 없으면 update-concepts 계기 B로 안내한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -209,7 +209,7 @@ describe('decidePreToolUse', () => {
     expect(reason).toContain('계기 B');
   });
   it('손으로 쓴 util 파일도 마커가 없으면 경고한다(이제 자동 제외 아님)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(join(root, 'src/utils'), { recursive: true });
     writeFileSync(join(root, 'src/utils/bar.ts'), 'export const bar = 1\n');
     const r = await decidePreToolUse(root, {
@@ -221,7 +221,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('개념 없는 코드');
   });
   it('@concept:none 마커를 명시하면(개념 없음) 경고하지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(join(root, 'src/utils'), { recursive: true });
     writeFileSync(join(root, 'src/utils/bar.ts'), '// @concept:none\nexport const bar = 1\n');
     const r = await decidePreToolUse(root, {
@@ -232,7 +232,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });
   it('개념 없음 영역 안의 파일은 마커가 없어도 경고하지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const p = join(root, 'docs/conceptpowers/init.json');
     writeFileSync(
       p,
@@ -248,7 +248,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });
   it('재생성물 경로(dist/**)는 마커 없어도 경고하지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(join(root, 'dist'), { recursive: true });
     writeFileSync(join(root, 'dist/out.js'), 'export const x = 1\n');
     const r = await decidePreToolUse(root, {
@@ -259,7 +259,7 @@ describe('decidePreToolUse', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });
   it('태그가 있는 신규 코드 파일은 개념 없는 코드 경고를 내지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'foo-feat',
       category: ['feature'],
@@ -280,7 +280,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('개념 drift여도 무관한 커밋은 막지 않고, 정말 무관한지 검토하라는 안내를 컨텍스트에 넣는다(allow)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -322,7 +322,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('다른 게이트가 ask로 물을 때도 무관 drift의 검토 안내는 컨텍스트에 유지된다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     // 무관한 drift: auth-token (이번 커밋과 맞물리지 않음)
     await writeConcept(root, {
@@ -377,7 +377,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('개념 drift인데 개념 문서만 스테이징되고 관련 코드가 하나도 없으면 ask로 경고한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -427,7 +427,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('drift 문서만 스테이징돼도 신선한 코드무관 기록이 있으면 막지 않는다 [규칙: 신선한 기록이 있는 개념은 문서만 커밋해도 문지기가 막지 않는다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -483,7 +483,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('개념 drift인데 맵핑된 코드만 스테이징되고 개념 문서가 빠지면 ask로 잡는다 (규칙: 개념 문서 동반 필수)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -523,7 +523,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('drift여도 관련 코드가 개념 문서와 함께 스테이지에 있으면 막지 않는다(allow)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -579,7 +579,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('drift여도 연결 코드 하나와 개념 문서가 스테이지에 있으면 막지 않는다 (규칙: 따라옴 = 하나라도 + 문서 동반)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     ['src/login.ts', 'src/session.ts', 'tests/login.test.ts'].forEach((p) => touch(p));
     await writeConcept(root, {
       slug: 'auth-token',
@@ -636,7 +636,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('충돌 기록이 있는 pending 개념을 참조하면 강한 알림(ask)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'pend-x',
       category: ['term'],
@@ -660,7 +660,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('충돌 기록 없는 pending 개념 참조는 막지 않는다(소프트 통과)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'pend-y',
       category: ['term'],
@@ -684,7 +684,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('drift reason의 인젝션 시도(각괄호/개행)를 새니타이즈해 컨텍스트에 넣는다 (보안 H1)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -732,7 +732,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('스테이징된 개념 변경에 신선한 pass 증빙이 없으면 ask', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'gated',
       category: ['behavior'],
@@ -756,7 +756,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('신선한 pass 증빙이 있으면 이 분기를 통과한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const c = parseConcept({
       slug: 'gated',
       category: ['behavior'],
@@ -787,7 +787,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('group 하위 경로(behavior/<slug>.json)로 스테이징된 개념도 파일명에서 slug를 뽑아 증빙을 요구한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'grouped',
       group: 'behavior',
@@ -812,7 +812,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('규칙 없는 green 개념을 직접 파일로 작성(bypass)해 스테이징하면 품질 미달로 ask한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // setConceptStatus를 거치지 않고 writeConcept로 직접 green을 쓰는 것이
     // define-concept 표준 흐름의 우회 경로다 — 규칙이 하나도 없다.
     await writeConcept(root, {
@@ -836,7 +836,7 @@ describe('decidePreToolUse', () => {
   });
 
   it('규칙 없고(품질 미달) 증빙도 없는 green 개념은 품질 미달 ask가 먼저 뜬다(순서 검증)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'no-rules-2',
       category: ['behavior'],
@@ -862,7 +862,7 @@ describe('decidePreToolUse', () => {
 
 describe('reference 문서 커밋 확인', () => {
   it('reference/ 문서가 스테이징되면 기밀 확인 ask', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -873,7 +873,7 @@ describe('reference 문서 커밋 확인', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('gitignore');
   });
   it('스캐폴드 README.md만 스테이징이면 이 분기는 건너뛴다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -884,7 +884,7 @@ describe('reference 문서 커밋 확인', () => {
 });
 
 it('경로 목록 파일(paths.md)만 스테이징이면 기밀 확인을 건너뛴다', async () => {
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   const r = await decidePreToolUse(root, {
     tool: 'Bash',
     input: { command: 'git commit -m x' },
@@ -894,7 +894,7 @@ it('경로 목록 파일(paths.md)만 스테이징이면 기밀 확인을 건너
 });
 
 it('reference/.gitignore(플러그인 메타 파일)만 스테이징이면 기밀 확인을 건너뛴다', async () => {
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   const r = await decidePreToolUse(root, {
     tool: 'Bash',
     input: { command: 'git commit -m x' },
@@ -907,7 +907,7 @@ it('reference/.gitignore(플러그인 메타 파일)만 스테이징이면 기�
 describe('참고자료 기준점 커밋 확인', () => {
   const LOCK = 'docs/conceptpowers/concepts/.alignment/reference.lock.json';
   it('설정이 local인데 기준점이 스테이징되면 ask', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const initFile = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(initFile, 'utf8'));
     writeFileSync(initFile, JSON.stringify({ ...cfg, referenceLock: 'local' }));
@@ -920,7 +920,7 @@ describe('참고자료 기준점 커밋 확인', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('referenceLock');
   });
   it('설정을 읽지 못하면 공유를 택했다고 보지 않고 기준점 스테이징을 묻는다 (안전한 쪽)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'docs/conceptpowers/init.json'), '{ broken');
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
@@ -931,7 +931,7 @@ describe('참고자료 기준점 커밋 확인', () => {
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('referenceLock');
   });
   it('설정이 shared(기본)면 기준점 스테이징을 묻지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await decidePreToolUse(root, {
       tool: 'Bash',
       input: { command: 'git commit -m x' },
@@ -942,7 +942,7 @@ describe('참고자료 기준점 커밋 확인', () => {
 });
 
 it('viewer 생성 산출물이 unstaged dirty면 최종 allow 대신 ask한다', async () => {
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   execSync('git init', { cwd: root });
   execSync('git config user.email "test@test.com"', { cwd: root });
   execSync('git config user.name "Test"', { cwd: root });
@@ -963,7 +963,7 @@ it('viewer 생성 산출물이 unstaged dirty면 최종 allow 대신 ask한다',
 });
 
 it('viewer 산출물 dirty여도 실질 위반(unknownTag)이 우선한다', async () => {
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   execSync('git init', { cwd: root });
   execSync('git config user.email "test@test.com"', { cwd: root });
   execSync('git config user.name "Test"', { cwd: root });
@@ -982,7 +982,7 @@ it('viewer 산출물 dirty여도 실질 위반(unknownTag)이 우선한다', asy
 });
 
 it('git 저장소가 아니면 stale 산출물 검사는 조용히 통과한다 (best-effort)', async () => {
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   const r = await decidePreToolUse(root, {
     tool: 'Bash',
     input: { command: 'git commit -m x' },
@@ -995,7 +995,7 @@ it('git 저장소가 아니면 stale 산출물 검사는 조용히 통과한다 
 // 차단에 함께 담는다" / "강도가 무엇이든 지키는 대상(검사 항목)은 같다"
 describe('standard·strict에서 결과가 서로 가려지지 않는다', () => {
   it('standard: 첫 발견으로 묻되 뒤 검사도 실행해 그 결과를 같은 질문의 컨텍스트에 싣는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(join(root, 'src'), { recursive: true });
     writeFileSync(join(root, 'src/ghost.ts'), '// @concept:ghost-rule\nexport const g = 1;\n');
     writeFileSync(join(root, 'src/plain.ts'), 'export const p = 1;\n');
@@ -1011,7 +1011,7 @@ describe('standard·strict에서 결과가 서로 가려지지 않는다', () =>
 
   for (const level of ['standard', 'strict'] as const) {
     it(`${level}: 항상 묻는 항목(설정 변경)이 정리 안내(미커밋 생성 산출물)를 가리지 않는다`, async () => {
-      await scaffoldInit(root, {});
+      await scaffoldInit(root, { locale: 'ko' });
       const initFile = join(root, 'docs/conceptpowers/init.json');
       const cfg = JSON.parse(readFileSync(initFile, 'utf8'));
       writeFileSync(initFile, JSON.stringify({ ...cfg, enforcement: level }, null, 2) + '\n');

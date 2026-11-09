@@ -44,7 +44,7 @@ describe('cli: quality / attest-consistency', () => {
   };
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-q-'));
-    await scaffoldInit(root, {}); // init 가드 통과 (CLI는 init 없이는 거부됨)
+    await scaffoldInit(root, { locale: 'ko' }); // init 가드 통과 (CLI는 init 없이는 거부됨)
     output = '';
   });
 

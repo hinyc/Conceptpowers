@@ -55,7 +55,7 @@ let root: string;
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-gov-'));
   mkdirSync(join(root, 'src'), { recursive: true });
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 function setEnforcement(level: 'strict' | 'standard' | 'light') {
@@ -361,11 +361,15 @@ describe('커밋되지 않은 설정·참고자료 변경 (git 저장소)', () =
   it('강제 추가(-f)하는 무시된 새 참고자료도 커밋될 수 있는 참고자료로 모은다 [규칙: 참고자료 기밀 확인은 어느 강도에서나 묻는다]', async () => {
     writeFileSync(join(root, 'docs/conceptpowers/reference/new.md'), '기밀\n');
     const command = 'git add -f docs/conceptpowers/reference/new.md && git commit -m x';
-    const finding = await checkPendingGovernance(root, pendingOptionsFor(command, root, root));
+    const finding = await checkPendingGovernance(
+      root,
+      pendingOptionsFor(command, root, root),
+      'ko'
+    );
     expect(finding?.reason ?? '').toContain('new.md');
     // 안내 문구("강제 추가(-f)를 빼세요")는 종단 검사(pendingReach.test)에서 한 번만 본다
     // 강제 추가가 없으면 무시된 파일은 담기지 않으므로 모으지 않는다
-    const plain = await checkPendingGovernance(root, { includeWorktree: true });
+    const plain = await checkPendingGovernance(root, { includeWorktree: true }, 'ko');
     expect(plain?.reason ?? '').not.toContain('new.md');
   });
 });
@@ -451,14 +455,14 @@ describe('커밋에 들어가지 않는 설정 기본값 보충은 묻지 않는
       await ensureInitConfigDefaults(root);
       const opts = pendingOptionsFor(command, root, root);
       expect(opts.configExplicit).toBe(true);
-      const finding = await checkPendingGovernance(root, opts);
+      const finding = await checkPendingGovernance(root, opts, 'ko');
       expect(finding?.reason ?? '').toContain('init.json');
     });
   }
 
   it('담을지 알 수 없는 명령(configExplicit 없음)이면 디스크의 기본값 보충은 묻지 않는다', async () => {
     await ensureInitConfigDefaults(root);
-    const finding = await checkPendingGovernance(root, { includeWorktree: true });
+    const finding = await checkPendingGovernance(root, { includeWorktree: true }, 'ko');
     expect(finding?.reason ?? '').not.toContain('init.json');
   });
 });

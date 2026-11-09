@@ -41,12 +41,13 @@ const bash = (command: string) => decidePreToolUse(root, { tool: 'Bash', input: 
 const bashIn = (command: string, cwd: string | null) =>
   decidePreToolUse(root, { tool: 'Bash', input: { command }, cwd });
 // 문지기와 같은 변환(pendingOptionsFor)을 거쳐 묻는 항목을 모은다.
-const pending = (command: string) => checkPendingGovernance(root, pendingOptionsFor(command, root));
+const pending = (command: string) =>
+  checkPendingGovernance(root, pendingOptionsFor(command, root), 'ko');
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-reach-'));
   mkdirSync(join(root, 'src'), { recursive: true });
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
   git('init', '-q');
 });

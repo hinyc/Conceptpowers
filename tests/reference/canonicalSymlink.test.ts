@@ -43,7 +43,7 @@ describe('symlinked registrations', () => {
   let target: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-link-root-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     refDir = cpPaths(root).reference;
     target = await mkdtemp(join(tmpdir(), 'cp-link-target-'));
     await writeFile(join(target, 'a.pdf'), 'v1');

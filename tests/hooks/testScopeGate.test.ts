@@ -35,7 +35,7 @@ async function input(files: string[]): Promise<GateInput> {
 
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-tscope-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 describe('concept-test-scope 문지기', () => {

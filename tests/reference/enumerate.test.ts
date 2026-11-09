@@ -23,7 +23,7 @@ import { cpPaths } from '../../src/paths.js';
 let root: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-enum-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 async function registerPaths(lines: string[]): Promise<void> {

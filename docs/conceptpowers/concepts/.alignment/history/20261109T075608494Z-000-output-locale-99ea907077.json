@@ -1,0 +1,11 @@
+{
+  "slug": "output-locale",
+  "hash": "3:6be3ee832a35",
+  "prevHash": "3:dc3ce369ff7d",
+  "reason": "2026-11-09 사용자 결정(영어 기본, 한국어는 번역본)에 맞춰, 커밋을 막거나 묻는 사유도 사용자에게 보이는 안내로 설정 언어를 따른다는 것과 도구 지시문의 번역본은 적용 밖임을 분명히 함",
+  "at": "2026-11-09T07:56:08.494Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

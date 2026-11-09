@@ -59,7 +59,7 @@ describe('buildSessionStartOutput', () => {
     expect(o).toBeNull();
   }, 30_000);
   it('init 되면 활성화 컨텍스트와 CLI 경로를 담는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain('Conceptpowers');
@@ -67,7 +67,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('conceptpowers:review');
   });
   it('활성화 컨텍스트에 커밋 패키징 규칙(스테이징 단위 게이트)을 담는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain('Commit packaging');
@@ -80,7 +80,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).not.toContain('requires ALL of its related paths');
   });
   it('reference/에 사용자 자료가 있으면 <CONCEPTPOWERS-REFERENCE> 블록을 넣는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'docs/conceptpowers/reference/glossary.md'), '용어집');
     const o = await buildSessionStartOutput(root, '/plugin');
     const ctx = o!.hookSpecificOutput.additionalContext;
@@ -89,12 +89,12 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('untrusted');
   });
   it('reference/에 seed README만 있으면 블록이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPTPOWERS-REFERENCE>');
   });
   it('paths.md의 경로가 없거나 비면 경고 블록으로 알린다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'docs/conceptpowers/reference/paths.md'), '- no/such/dir\n');
     const o = await buildSessionStartOutput(root, '/plugin');
     const ctx = o!.hookSpecificOutput.additionalContext;
@@ -103,7 +103,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('missing');
   });
   it('플러그인이 업데이트되면(설치>생성 버전) 자동 sync하고 블록으로 알린다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const manifestPath = join(root, 'docs/conceptpowers/concepts/viewer/manifest.json');
     const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
     expect(typeof m.generatorVersion).toBe('string'); // 생성 시 도장 확인
@@ -117,7 +117,7 @@ describe('buildSessionStartOutput', () => {
   });
   // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 자동 맞춤 실패도 알린다.
   it('자동 sync 일부 단계가 실패하면 실패 단계와 version-sync 확인을 블록으로 알린다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const manifestPath = join(root, 'docs/conceptpowers/concepts/viewer/manifest.json');
     const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
     writeFileSync(manifestPath, JSON.stringify({ ...m, generatorVersion: '0.0.1' }));
@@ -133,7 +133,7 @@ describe('buildSessionStartOutput', () => {
   // plugin-version-sync 허용 "무엇을 맞췄는지 사용자에게 한 줄로 알리는 것" — 알림은 사실이어야 한다:
   // 뷰어 단계가 실패했으면 "다시 그렸다"고 말하지 않고, 실패 단계의 오류 내용도 함께 싣는다.
   it('뷰어 단계가 실패하면 뷰어를 다시 그렸다고 알리지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const viewerDir = join(root, 'docs/conceptpowers/concepts/viewer');
     const manifestPath = join(viewerDir, 'manifest.json');
     const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -148,12 +148,12 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('next session retries');
   });
   it('생성 버전이 설치 버전과 같으면 자동 sync 블록이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, process.cwd());
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPTPOWERS-SYNC>');
   });
   it('paths.md의 경로가 전부 유효하면 경고 블록이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'spec.md'), '명세');
     writeFileSync(join(root, 'docs/conceptpowers/reference/paths.md'), '- spec.md\n');
     const o = await buildSessionStartOutput(root, '/plugin');
@@ -162,7 +162,7 @@ describe('buildSessionStartOutput', () => {
     );
   });
   it('폴더 파일이 없어도 유효한 외부 경로가 등록되면 참고자료 블록으로 알린다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(join(root, 'spec.md'), '명세');
     // reference 폴더엔 사용자 파일이 없고(템플릿 paths.md/README만), paths.md가 외부 파일을 가리킨다
     writeFileSync(join(root, 'docs/conceptpowers/reference/paths.md'), '- spec.md\n');
@@ -173,13 +173,13 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('spec.md');
   });
   it('빈 템플릿 paths.md만 있으면(등록 0) 참고자료 블록이 없다', async () => {
-    await scaffoldInit(root, {}); // paths.md 템플릿이 이미 깔림(전부 주석)
+    await scaffoldInit(root, { locale: 'ko' }); // paths.md 템플릿이 이미 깔림(전부 주석)
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPTPOWERS-REFERENCE>');
   });
   // 규칙 검증: "스위치 값이 설정에 없으면 켜진 것으로 본다" (concept-driven-tests)
   it('conceptDrivenTests 기본(필드 없음)이면 테스트 개념 규칙을 주입한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // scaffold는 필드를 기록하지만, 구버전 init.json(필드 없음)도 같아야 한다
     const initPath = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
@@ -190,13 +190,13 @@ describe('buildSessionStartOutput', () => {
   });
   // 규칙 검증: "스위치가 켜진 프로젝트에서 작업 시작 안내에 이 규칙 한 줄을 넣는 것" (allow)
   it('conceptDrivenTests: true면 테스트 개념 규칙을 주입한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).toContain('Test code is governed too');
   });
   // 규칙 검증: "스위치를 껐는데도 작업 시작 안내에 이 규칙을 넣는 것" 금지 (restrict)
   it('conceptDrivenTests: false면 테스트 개념 규칙이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const initPath = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
     writeFileSync(initPath, JSON.stringify({ ...cfg, conceptDrivenTests: false }, null, 2));
@@ -206,7 +206,7 @@ describe('buildSessionStartOutput', () => {
   // 규칙 검증: "개념이 바뀌면 그 개념에 딸린 검사를 반드시 다시 본다" (immutable) —
   // 스위치가 켜져 있으면 검토 의무와 기록 방법이 작업 시작 안내에 함께 들어간다.
   it('스위치가 켜져 있으면 개념 변경 시 검사 검토 의무와 기록 방법을 안내한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
       .additionalContext;
     expect(ctx).toContain('When a concept changes, its tests MUST be reviewed');
@@ -214,21 +214,21 @@ describe('buildSessionStartOutput', () => {
   });
   // 규칙 검증: "검사는 대상 개념의 규칙 범위 안에 머문다 — 범위 밖을 검사해야 한다면 개념을 먼저 고친다"
   it('스위치가 켜져 있으면 검사가 개념 범위를 벗어나지 않아야 함을 안내한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
       .additionalContext;
     expect(ctx).toContain('Test changes must stay inside the concept');
   });
   // 규칙 검증: "검사 파일에 '해당 개념 없음' 표시를 다는 것" 금지 (restrict)
   it('스위치가 켜져 있으면 검사 파일에 @concept:none을 쓸 수 없음을 안내한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
       .additionalContext;
     expect(ctx).toContain('`@concept:none` is not accepted for tests');
   });
   // 규칙 검증: 스위치를 끄면 세 줄 전부가 사라진다 (concept-driven-tests 정의: 스위치로 끌 수 있다)
   it('conceptDrivenTests: false면 검사 검토·범위 안내도 사라진다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const initPath = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
     writeFileSync(initPath, JSON.stringify({ ...cfg, conceptDrivenTests: false }, null, 2));
@@ -239,7 +239,7 @@ describe('buildSessionStartOutput', () => {
   });
   // 규칙 검증: governance-mode "엄격은 차단한다" + concept-driven-tests 허용 "붙잡는 방식은 문지기 강도가 정한다"
   it('strict면 두 검사 규칙이 차단 수준임을 안내한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const initPath = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(initPath, 'utf8'));
     writeFileSync(initPath, JSON.stringify({ ...cfg, enforcement: 'strict' }, null, 2));
@@ -248,7 +248,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('the two test rules above are DENY-level');
   });
   it('ko면 Output language 디렉티브가 Korean이다 (기본)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     const ctx = o!.hookSpecificOutput.additionalContext;
     expect(ctx).toContain('Output language');
@@ -262,7 +262,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('English');
   });
   it('보류(pending) 잔존과 자동승인 금지 규칙을 컨텍스트에 담는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'red-one',
       category: ['feature'],
@@ -292,7 +292,7 @@ describe('buildSessionStartOutput', () => {
     expect(ctx).toContain('consumed ONLY when authoring/upgrading concepts');
   });
   it('drift가 있으면 <CONCEPT-DRIFT> 블록과 이유를 주입한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, {
       slug: 'auth-token',
       category: ['behavior'],
@@ -324,7 +324,7 @@ describe('buildSessionStartOutput', () => {
     expect(o!.hookSpecificOutput.additionalContext).toContain('auth-token');
   });
   it('drift가 없으면 <CONCEPT-DRIFT> 블록이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, root);
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('<CONCEPT-DRIFT>');
   });
@@ -332,7 +332,7 @@ describe('buildSessionStartOutput', () => {
 
 describe('enforcement 세션 지침', () => {
   it('strict면 우회 금지 지침을 주입한다 [규칙: 도구/에이전트가 강도를 바꾸지 않는다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const p = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(p, 'utf8'));
     writeFileSync(p, JSON.stringify({ ...cfg, enforcement: 'strict' }, null, 2) + '\n');
@@ -340,7 +340,7 @@ describe('enforcement 세션 지침', () => {
     expect(o!.hookSpecificOutput.additionalContext).toContain('enforcement: strict');
   });
   it('light면 경고 요약 보고 지침을 주입한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const p = join(root, 'docs/conceptpowers/init.json');
     const cfg = JSON.parse(readFileSync(p, 'utf8'));
     writeFileSync(p, JSON.stringify({ ...cfg, enforcement: 'light' }, null, 2) + '\n');
@@ -348,7 +348,7 @@ describe('enforcement 세션 지침', () => {
     expect(o!.hookSpecificOutput.additionalContext).toContain('enforcement: light');
   });
   it('standard(기본)면 enforcement 지침 줄이 없다 — 기존 컨텍스트 불변', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin');
     expect(o!.hookSpecificOutput.additionalContext).not.toContain('enforcement:');
   });
@@ -356,7 +356,7 @@ describe('enforcement 세션 지침', () => {
 
 describe('플러그인 업데이트 알림', () => {
   it('새 버전이 있으면 <CONCEPTPOWERS-UPDATE> 블록과 업데이트 명령을 담는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin', {
       checkForUpdate: async () => ({ installed: '0.1.0', latest: '0.2.0' }),
     });
@@ -369,7 +369,7 @@ describe('플러그인 업데이트 알림', () => {
   // plugin-version-sync 허용: "새 버전이 나오면 작업을 시작할 때 알리고, 지금 올릴지 무시할지 사람이 고르게 하는 것 —
   // 무시하기를 고르면 작업을 막지 않고 그대로 이어 간다"
   it('새 버전 안내는 지금 올리기/무시하기를 사람에게 고르게 하고, 무시하면 막지 않고 이어 가라고 지시한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin', {
       checkForUpdate: async () => ({ installed: '0.1.0', latest: '0.2.0' }),
     });
@@ -382,7 +382,7 @@ describe('플러그인 업데이트 알림', () => {
   });
 
   it('업데이트가 없으면 블록이 없다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const o = await buildSessionStartOutput(root, '/plugin', {
       checkForUpdate: async () => null,
     });
@@ -390,7 +390,7 @@ describe('플러그인 업데이트 알림', () => {
   });
 
   it('versionCheck:false면 조회 자체를 안 한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // init.json의 versionCheck를 false로 덮어쓴다
     const { writeFile } = await import('node:fs/promises');
     const { cpPaths } = await import('../../src/paths.js');
@@ -411,7 +411,7 @@ describe('플러그인 업데이트 알림', () => {
   });
 
   it('CONCEPTPOWERS_NO_VERSION_CHECK=1이면 조회 자체를 안 한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const prev = process.env.CONCEPTPOWERS_NO_VERSION_CHECK;
     try {
       process.env.CONCEPTPOWERS_NO_VERSION_CHECK = '1';
@@ -436,7 +436,7 @@ describe('플러그인 업데이트 알림', () => {
 
 describe('규범과 현실을 가르는 안내', () => {
   async function context(setup?: () => Promise<void>) {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     if (setup) await setup();
     return (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext;
   }
@@ -487,7 +487,7 @@ describe('작업 시작 안내의 목록 상한', () => {
     }) as never;
 
   it('노랑 개념이 많아도 상한까지만 싣고 나머지는 개수와 전체 목록 명령으로 알린다 [규칙: 빨강·노랑 목록은 상한을 둔다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     for (let i = 0; i < 40; i++)
       await writeConcept(root, concept(`pending-${i}`, '정의', 'pending'));
     const ctx = (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput
@@ -498,7 +498,7 @@ describe('작업 시작 안내의 목록 상한', () => {
   });
 
   it('어긋난 개념이 많아도 상한까지만 싣고, 연결 코드도 개념마다 상한까지만 싣는다 [규칙: 어긋난 개념 목록은 상한을 둔다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const lock: Record<string, { hash: string; at: string }> = {};
     const mapping: Record<string, string[]> = {};
     for (let i = 0; i < 30; i++) {
@@ -530,7 +530,7 @@ describe('작업 시작 안내의 목록 상한', () => {
   });
 
   it('개념이 많아져도 세션 주입 크기가 일정한 범위에 머문다 [규칙: 목록은 상한을 두고 개수로만 알린다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const small = Buffer.byteLength(
       (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext
     );

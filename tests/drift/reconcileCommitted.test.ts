@@ -37,7 +37,7 @@ const body = (definition: string) => ({
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-reconcile-git-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   await writeConcept(root, body('v1'));
   const v1 = await readConcept(root, 'auth-token');
   await writeLock(root, {

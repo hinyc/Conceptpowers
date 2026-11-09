@@ -35,7 +35,7 @@ describe('ensureReference', () => {
     expect(readFileSync(ref('README.md'), 'utf8')).toContain('Reference materials');
   });
   it('이미 README가 있으면 덮어쓰지 않는다 (사용자 편집 보존)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(ref('README.md'), '내가 고친 내용');
     expect(await ensureReference(root)).toBe(false);
     expect(readFileSync(ref('README.md'), 'utf8')).toBe('내가 고친 내용');
@@ -44,7 +44,7 @@ describe('ensureReference', () => {
 
 describe('listReferenceFiles', () => {
   it('seed README는 제외하고 사용자 파일만, 정렬해서 반환한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     expect(await listReferenceFiles(root)).toEqual([]); // README만 있음
     writeFileSync(ref('glossary.md'), 'g');
     mkdirSync(ref('specs'), { recursive: true });
@@ -58,7 +58,7 @@ describe('listReferenceFiles', () => {
   // reference-first-duty "읽는 곳: 참고자료 폴더 안의 파일" — 자료 판정과 지문 목록이 같은 건너뛰기 규칙을 쓴다.
   // 점 파일(.DS_Store 등)·점 폴더 안 파일·0바이트 파일은 자료가 아니라 "자료 있음" 오신호를 내지 않는다.
   it('점 파일·점 폴더·0바이트 파일은 자료로 치지 않는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(ref('.DS_Store'), 'x');
     mkdirSync(ref('.hidden'), { recursive: true });
     writeFileSync(ref('.hidden/secret.md'), 'x');
@@ -67,7 +67,7 @@ describe('listReferenceFiles', () => {
     expect(await listReferenceFiles(root)).toEqual(['real.md']);
   });
   it('하위 폴더의 README.md·paths.md는 사용자 자료로 남긴다(메타 파일은 폴더 바로 아래만)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(ref('specs'), { recursive: true });
     writeFileSync(ref('specs/README.md'), 'r');
     writeFileSync(ref('specs/paths.md'), 'p');

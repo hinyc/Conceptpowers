@@ -40,7 +40,7 @@ describe('pendingConflicts', () => {
   let root: string;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), 'cp-conf-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
   });
   it('없으면 빈 객체를 반환한다', async () => {
     expect(await readPendingConflictsStrict(root)).toEqual({});
@@ -74,7 +74,7 @@ describe('pendingConflicts — 깨진 기록 파일', () => {
   let file: string;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), 'cp-conf-bad-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     file = join(root, 'docs/conceptpowers/concepts/.alignment/pending-conflicts.json');
     mkdirSync(dirname(file), { recursive: true });
   });

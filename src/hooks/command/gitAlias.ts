@@ -6,12 +6,14 @@
 // 나뉠지 확정할 수 없으면(줄바꿈이 든 값·git이 거절하는 값·셸 확장 인자를 받는 셸 alias) 판단 불가다 — 확정 못 한
 // 것을 확정한 것처럼 읽지 않는다(governance-mode).
 
+import { R, type Reason } from '../../i18n/commitReasons.js';
+
 export type GitAliasExpansion =
   | { kind: 'shell'; command: string }
   | { kind: 'git'; words: string[]; dynamic: boolean[] }
-  | { kind: 'undecidable'; reason: string };
+  | { kind: 'undecidable'; reason: Reason };
 
-const undecidable = (reason: string): GitAliasExpansion => ({ kind: 'undecidable', reason });
+const undecidable = (reason: Reason): GitAliasExpansion => ({ kind: 'undecidable', reason });
 const quote = (arg: string): string => `'${arg.replace(/'/g, `'\\''`)}'`;
 
 /** alias 값과 그 뒤에 붙은 인자(rest)를 실제로 실행될 모양으로 푼다 */
@@ -20,14 +22,13 @@ export function expandGitAlias(
   rest: readonly string[],
   restDyn: readonly boolean[]
 ): GitAliasExpansion {
-  if (/[\r\n]/.test(value)) return undecidable('줄바꿈이 든 git alias');
+  if (/[\r\n]/.test(value)) return undecidable(R.aliasNewline);
   if (value.startsWith('!')) {
-    if (restDyn.some(Boolean)) return undecidable('셸 확장 인자를 받는 셸 alias');
+    if (restDyn.some(Boolean)) return undecidable(R.shellAliasDyn);
     return { kind: 'shell', command: [value.slice(1), ...rest.map(quote)].join(' ') };
   }
   const words = splitCmdline(value);
-  if (words === null)
-    return undecidable('git이 나눌 수 없는 git alias(닫히지 않은 따옴표·끝의 역슬래시)');
+  if (words === null) return undecidable(R.aliasUnsplittable);
   return { kind: 'git', words, dynamic: words.map(() => false) };
 }
 

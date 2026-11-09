@@ -52,7 +52,7 @@ describe('등록 표기가 달라도 같은 자료', () => {
   let refDir: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-canon-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     refDir = cpPaths(root).reference;
     await mkdir(join(root, 'ext'), { recursive: true });
     await writeFile(join(root, 'ext', 'x.pdf'), 'pdf');
@@ -122,7 +122,7 @@ describe('등록 표기가 달라도 같은 자료', () => {
 describe('이미 읽어 둔 재료로 견주기', () => {
   it('넘겨받은 경로 확인·파일 목록·개념 목록·기준점을 그대로 쓴다', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cp-canon-deps-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const refDir = cpPaths(root).reference;
     await writeFile(join(refDir, 'a.md'), '자료');
     await writeConcept(root, {

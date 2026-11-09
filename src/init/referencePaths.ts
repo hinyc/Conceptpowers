@@ -9,6 +9,7 @@ import { isAbsolute, join } from 'node:path';
 import { cpPaths } from '../paths.js';
 import { walkUsableFiles } from './referenceWalk.js';
 import { readInitConfig } from './readConfig.js';
+import { LEGACY_LOCALE } from '../schema/initConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
 
 export type ReferencePathStatus = 'ok' | 'missing' | 'empty';
@@ -33,7 +34,7 @@ export async function ensureReferencePaths(root: string): Promise<boolean> {
   }
   await mkdir(dir, { recursive: true });
   // 안내 템플릿은 사람이 읽는 산출물이라 프로젝트 설정 언어로 쓴다(output-locale).
-  const locale = (await readInitConfig(root))?.locale ?? 'ko';
+  const locale = (await readInitConfig(root))?.locale ?? LEGACY_LOCALE;
   await writeFile(target, seedTemplates[locale].referencePaths, 'utf8');
   return true;
 }

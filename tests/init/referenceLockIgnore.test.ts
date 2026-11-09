@@ -22,7 +22,7 @@ let root: string;
 let target: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-rlock-gi-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   target = join(cpPaths(root).alignmentDir, '.gitignore');
 });
 

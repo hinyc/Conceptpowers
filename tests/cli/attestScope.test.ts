@@ -42,7 +42,7 @@ describe('cli: attest-consistency 비교 범위', () => {
 
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-scope-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, concept('target'));
     await writeConcept(root, concept('other-a'));
     await writeConcept(root, concept('other-b'));
@@ -79,7 +79,7 @@ describe('cli: attest-consistency 비교 범위', () => {
 
   it('다른 개념이 하나도 없으면 견줄 것이 없으므로 `all`로 기록할 수 있다', async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-scope-solo-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, concept('target'));
     expect(await attest('all')).toBe(0);
     const log = await readAttestLog(root);

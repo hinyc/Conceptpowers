@@ -63,7 +63,7 @@ async function inputFor(scope: CommitScope, pathspecs: string[] = []): Promise<G
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-evidence-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   await writeConcept(root, body('v1'));
   git('init', '-q');
   git('config', 'user.email', 't@t');
@@ -165,7 +165,7 @@ describe('evidence-staged 문지기', () => {
   });
   it('git 저장소가 아니면 판정을 던진다 — 조용히 통과시키지 않는다', async () => {
     const bare = mkdtempSync(join(tmpdir(), 'cp-evidence-nogit-'));
-    await scaffoldInit(bare, {});
+    await scaffoldInit(bare, { locale: 'ko' });
     await expect(
       checkEvidenceStaged({ root: bare, files: [DOC], cfg: null, report: {} as never })
     ).rejects.toThrow();

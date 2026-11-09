@@ -26,7 +26,7 @@ const viewer = (rel: string) => join(root, 'docs/conceptpowers/concepts/viewer',
 
 describe('syncGenerated', () => {
   it('뷰어 에셋과 manifest를 (재)생성한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await syncGenerated(root);
     expect(existsSync(viewer('index.html'))).toBe(true);
     expect(existsSync(viewer('assets/viewer.js'))).toBe(true);
@@ -42,7 +42,7 @@ describe('syncGenerated', () => {
 
   // 규칙 검증: "설정 파일에 아직 없는 설정 항목만 기본값으로 추가하는 것" (plugin-version-sync allow)
   it('구버전 init.json의 빠진 설정 항목을 기본값으로 보충한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const initPath = join(root, 'docs/conceptpowers/init.json');
     // 구버전 프로젝트를 재현: 새 항목이 아직 없는 설정 파일
     const old = JSON.parse(readFileSync(initPath, 'utf8'));
@@ -59,13 +59,13 @@ describe('syncGenerated', () => {
   });
 
   it('보충할 설정 항목이 없으면 configFieldsAdded가 비어 있다', async () => {
-    await scaffoldInit(root, {}); // scaffold가 이미 전 항목을 기록
+    await scaffoldInit(root, { locale: 'ko' }); // scaffold가 이미 전 항목을 기록
     expect((await syncGenerated(root)).configFieldsAdded).toEqual([]);
   });
 
   // reference-privacy 허용 "프로젝트 설정으로 공유를 택했을 때만 참고자료 기준점을 저장소에 함께 올리는 것"
   it('참고자료 기준점 공유 설정에 맞춰 .alignment/.gitignore를 맞춘다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const gi = join(root, 'docs/conceptpowers/concepts/.alignment/.gitignore');
     expect((await syncGenerated(root)).referenceLockMode).toBe('shared');
     expect(readFileSync(gi, 'utf8')).not.toContain('reference.lock.json');
@@ -79,7 +79,7 @@ describe('syncGenerated', () => {
   });
 
   it('옛 포맷 고아 *.html을 정리하고 index.html은 보존한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // 옛 포맷 잔재를 인위적으로 만든다
     mkdirSync(viewer('auth'), { recursive: true });
     mkdirSync(viewer('features'), { recursive: true });
@@ -105,7 +105,7 @@ describe('syncGenerated', () => {
         scripts: { [VIEWER_SCRIPT_NAME]: 'open docs/conceptpowers/concepts/viewer/index.html' },
       })
     );
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await syncGenerated(root);
     expect(r.scriptStatus).toBe('unchanged'); // scaffoldInit가 이미 표준으로 맞춤
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -117,7 +117,7 @@ describe('syncGenerated', () => {
 // 설정을 읽지 못하면 공유를 택했다고 볼 수 없으므로 .alignment/.gitignore에 손대지 않는다.
 describe('syncGenerated — 설정을 읽지 못할 때', () => {
   it('init.json이 깨졌으면 기준점 제외 줄을 빼지 않는다(unchanged)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const gi = join(root, 'docs/conceptpowers/concepts/.alignment/.gitignore');
     writeFileSync(gi, 'last-commit\nreference.lock.json\n');
     writeFileSync(join(root, 'docs/conceptpowers/init.json'), '{ broken');
@@ -136,7 +136,7 @@ describe('syncGenerated — 단계별 실패 격리', () => {
   const refGitignore = () => join(root, 'docs/conceptpowers/reference/.gitignore');
 
   async function brokenPackageSetup(): Promise<void> {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const m = manifest();
     writeFileSync(viewer('manifest.json'), JSON.stringify({ ...m, generatorVersion: '0.0.1' }));
     rmSync(refGitignore());
@@ -170,13 +170,13 @@ describe('syncGenerated — 단계별 실패 격리', () => {
 
   it('도장이 아직 없던 프로젝트에서 앞 단계가 실패해도 뷰어는 만들고 도장은 비워 둔다', async () => {
     writeFileSync(join(root, 'package.json'), '{ not json');
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     expect(existsSync(viewer('index.html'))).toBe(true);
     expect(manifest().generatorVersion).toBeNull();
   });
 
   it('뷰어 단계 자체가 실패하면 실패 목록에 viewer가 오르고 도장은 옛것 그대로다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     writeFileSync(viewer('manifest.json'), JSON.stringify({ ...manifest(), generatorVersion: '0.0.1' }));
     rmSync(viewer('assets'), { recursive: true, force: true });
     writeFileSync(viewer('assets'), 'not a directory');
@@ -186,7 +186,7 @@ describe('syncGenerated — 단계별 실패 격리', () => {
   });
 
   it('모든 단계가 성공하면 실패 목록이 비고 도장을 찍는다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const r = await syncGenerated(root, { stampVersion: '9.9.9' });
     expect(r.failedSteps).toEqual([]);
     expect(manifest().generatorVersion).toBe('9.9.9');

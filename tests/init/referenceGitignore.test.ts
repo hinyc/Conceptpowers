@@ -40,7 +40,7 @@ describe('ensureReferenceGitignore', () => {
   });
 
   it('init 스캐폴드가 reference/.gitignore까지 만들어준다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const content = await readFile(join(cpPaths(root).reference, '.gitignore'), 'utf8');
     expect(content).toContain('!paths.md');
   });

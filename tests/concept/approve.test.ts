@@ -37,7 +37,7 @@ describe('approveConcept', () => {
   let root: string;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), 'cp-approve-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, baseConcept);
   });
   it('red 개념을 green으로 승인한다', async () => {

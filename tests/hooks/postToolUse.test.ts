@@ -48,7 +48,7 @@ describe('runPostToolUseReport', () => {
     expect(r).toBeNull();
   });
   it('git commit이 아니면 null', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const { result: r } = await runPostToolUseReport(root, {
       tool: 'Bash',
       input: { command: 'ls' },
@@ -56,7 +56,7 @@ describe('runPostToolUseReport', () => {
     expect(r).toBeNull();
   });
   it('커밋 후 drift를 재조정한다(관련 코드 포함→aligned, lock 갱신)', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -98,7 +98,7 @@ describe('runPostToolUseReport', () => {
     execSync('git init -q', { cwd: root });
     execSync('git config user.email "t@t.com"', { cwd: root });
     execSync('git config user.name "T"', { cwd: root });
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     await writeConcept(root, {
       slug: 'auth-token',
@@ -148,7 +148,7 @@ describe('runPostToolUseReport', () => {
     execSync('git init -q', { cwd: root });
     execSync('git config user.email "t@t.com"', { cwd: root });
     execSync('git config user.name "T"', { cwd: root });
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     // 한자는 macOS의 유니코드 정규화(NFD 분해) 영향을 받지 않아 파일명 검증에 안전하다.
     touch('src/認証.ts');
     const base = {
@@ -187,7 +187,7 @@ describe('결산 실패 — 삼키지 않고 알리고 이어서 처리', () => 
     sh('git init -q');
     sh('git config user.email "t@t.com"');
     sh('git config user.name "T"');
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     touch('src/login.ts');
     const base = {
       slug: 'auth-token',
@@ -223,7 +223,7 @@ describe('결산 실패 — 삼키지 않고 알리고 이어서 처리', () => 
       input: { command: 'git commit -m x' },
     });
     expect(report.result).toBeNull();
-    expect(report.failure).toContain('결산');
+    expect(report.failure).toContain('reconcile');
   });
 
   it('실패 안내는 이번 커밋이 이력·기준선에 반영되지 않았다고 사실대로 말한다 [규칙: 어긋난 채 통과한 커밋은 이력에 남는다]', async () => {
@@ -234,8 +234,8 @@ describe('결산 실패 — 삼키지 않고 알리고 이어서 처리', () => 
       tool: 'Bash',
       input: { command: 'git commit -m x' },
     });
-    expect(report.failure).not.toContain('결산 결과는 남지 않았습니다');
-    expect(report.failure).toContain('반영되지 않았습니다');
+    expect(report.failure).not.toContain('reconcile result was not kept');
+    expect(report.failure).toContain('is not reflected in the history or baseline');
   });
 
   it('기록 파일 하나만 깨졌어도 결산은 성공하고, 안내는 기록 파일을 손으로 고치라고 시키지 않는다 [규칙: 어긋난 채 통과한 커밋은 이력에 남는다 · 증빙·검토·코드무관 기록을 정식 명령 밖에서 손으로 고치는 것(제한)]', async () => {
@@ -249,8 +249,8 @@ describe('결산 실패 — 삼키지 않고 알리고 이어서 처리', () => 
     });
     expect(report.result!.aligned).toContain('auth-token');
     expect(report.failure).toBeNull();
-    expect(report.notice).toContain('고칠지는 사용자가 정합니다');
-    expect(report.notice).not.toContain('파일을 고치고');
+    expect(report.notice).toContain("whether to fix it is the user's decision");
+    expect(report.notice).not.toContain('fix the file and');
     const c2 = await readConcept(root, 'auth-token');
     expect((await readLock(root))['auth-token'].hash).toBe(contractHash(c2!));
     expect((await readHistory(root)).some((h) => h.slug === 'auth-token')).toBe(true);

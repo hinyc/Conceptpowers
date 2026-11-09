@@ -49,7 +49,7 @@ describe('cli: audit 전체 스캔 모드', () => {
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), 'cp-audit-'));
     mkdirSync(join(root, 'src'), { recursive: true });
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     execSync('git init', { cwd: root });
     execSync('git config user.email "test@test.com"', { cwd: root });
     execSync('git config user.name "Test"', { cwd: root });

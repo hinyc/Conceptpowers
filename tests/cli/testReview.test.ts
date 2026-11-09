@@ -37,7 +37,7 @@ describe('cli: attest-test-review', () => {
   };
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-tr-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, conceptInput);
     output = '';
   });

@@ -37,7 +37,7 @@ const gitIn = (dir: string, ...args: string[]) =>
 // 루트(초기화된 프로젝트)를 만들고, 판단하면 반드시 묻게 되는 스테이징된 설정 변경을 둔다.
 async function makeProject(dir: string, repo: string): Promise<void> {
   mkdirSync(join(dir, 'src'), { recursive: true });
-  await scaffoldInit(dir, {});
+  await scaffoldInit(dir, { locale: 'ko' });
   writeFileSync(join(dir, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
   gitIn(repo, 'add', '-A');
   gitIn(repo, 'add', '-f', join(dir, INIT));

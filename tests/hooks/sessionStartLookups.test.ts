@@ -34,7 +34,7 @@ let root: string;
 
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-ss-lookups-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 describe('sessionStart: reference lookups', () => {

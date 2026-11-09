@@ -33,7 +33,7 @@ const commit = (files: string[]) =>
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-none-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   await writeConcept(root, {
     slug: 'auth-token',
     category: ['behavior'],

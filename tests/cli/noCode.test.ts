@@ -35,7 +35,7 @@ describe('cli: attest-no-code', () => {
   };
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-nc-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeConcept(root, conceptInput);
     output = '';
   });

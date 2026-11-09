@@ -28,7 +28,7 @@ let root: string;
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-fail-'));
   mkdirSync(join(root, 'src'), { recursive: true });
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 function setEnforcement(level: 'strict' | 'standard' | 'light') {
@@ -90,7 +90,7 @@ describe('커밋 게이트 실행 실패 (fail-closed)', () => {
       input: { command: 'git commit -m x' },
     });
     expect(r!.hookSpecificOutput.permissionDecision).toBe('deny');
-    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('커밋될 내용');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('content to be committed');
   });
 
   it('오류 문구의 프로젝트 절대경로는 상대경로로 줄여 싣는다', async () => {

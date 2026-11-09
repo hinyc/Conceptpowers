@@ -19,7 +19,7 @@ let plain: string;
 beforeEach(async () => {
   root = realpathSync(mkdtempSync(join(tmpdir(), 'cp-hroot-')));
   plain = realpathSync(mkdtempSync(join(tmpdir(), 'cp-hplain-')));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   mkdirSync(join(root, 'src', 'deep'), { recursive: true });
 });
 

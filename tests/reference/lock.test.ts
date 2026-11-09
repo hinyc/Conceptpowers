@@ -27,7 +27,7 @@ const AT = '2026-09-14T00:00:00.000Z';
 let root: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-rlock-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 describe('readReferenceLock', () => {

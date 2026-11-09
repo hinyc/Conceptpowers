@@ -37,7 +37,7 @@ function setEnforcement(level: 'strict' | 'standard' | 'light') {
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-gate-'));
   mkdirSync(join(root, 'src'), { recursive: true });
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   writeFileSync(join(root, 'src/tracked.ts'), '// @concept:none\nexport const t = 1\n');
   git('init', '-q');
   git('add', '-A');

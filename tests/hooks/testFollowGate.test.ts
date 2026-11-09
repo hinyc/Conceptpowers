@@ -69,7 +69,7 @@ async function input(files: string[]): Promise<GateInput> {
 
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-tfollow-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 describe('concept-test-follow 문지기', () => {

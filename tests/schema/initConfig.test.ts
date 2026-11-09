@@ -8,7 +8,7 @@
 //  - concept-driven-tests 구성요소 "검사 파일 판별 규칙: … 시작 설정에 적으며, 적지 않으면 흔히
 //    쓰는 기본 규칙을 쓴다" → testGlobs 누락 시 기본 규칙 / 사용자 지정 목록으로 덮어쓴다
 //  - output-locale 정의 "프로젝트마다 산출물의 언어를 하나로 정해 둔다"
-//    → 기본 locale은 ko / en 허용 / 알 수 없는 locale 거부
+//    → locale 없는 기존 설정은 ko로 읽고 새 프로젝트 기본은 en / en 허용 / 알 수 없는 locale 거부
 //  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 누락 시 합리적 기본값 / 스캐폴드 산출물 경로를 제외 / 사용자 지정 목록으로 덮어쓴다
 //  - concept-code-mapping 허용 "따를 개념이 없는 코드가 모인 폴더를 사람이 개념 없음 영역으로 정하는 것"
@@ -17,7 +17,12 @@
 //    → versionCheck 누락 시 true / false로 명시하면 false
 //  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / 옛 설정 키가 남아 있어도 검증 통과
 import { describe, it, expect } from 'vitest';
-import { parseInitConfig } from '../../src/schema/initConfig.js';
+import {
+  parseInitConfig,
+  LEGACY_LOCALE,
+  NEW_PROJECT_LOCALE,
+  localeOf,
+} from '../../src/schema/initConfig.js';
 
 describe('InitConfig', () => {
   // 읽히지 않던 옛 설정 키(backfillMode·enforceScope·project)는 스키마에서 빠졌다.
@@ -38,8 +43,17 @@ describe('InitConfig', () => {
   it('enabled가 true가 아니면 거부한다', () => {
     expect(() => parseInitConfig({ version: '0.1.0', enabled: false })).toThrow();
   });
-  it('기본 locale은 ko', () => {
+  it('locale 키가 없는 기존 설정은 ko로 읽는다 (읽을 때 기본값 = LEGACY_LOCALE)', () => {
+    expect(LEGACY_LOCALE).toBe('ko');
     expect(parseInitConfig({ version: '0.1.0', enabled: true }).locale).toBe('ko');
+  });
+  it('새 프로젝트에 써 넣는 기본 언어는 en이다 (NEW_PROJECT_LOCALE) — 읽기 기본값과 별개', () => {
+    expect(NEW_PROJECT_LOCALE).toBe('en');
+    expect(NEW_PROJECT_LOCALE).not.toBe(LEGACY_LOCALE);
+  });
+  it('localeOf: 설정을 못 읽었으면(null) 기존 프로젝트 기본(ko), 있으면 그 값', () => {
+    expect(localeOf(null)).toBe('ko');
+    expect(localeOf({ locale: 'en' })).toBe('en');
   });
   it('en locale을 허용한다', () => {
     expect(parseInitConfig({ version: '0.1.0', enabled: true, locale: 'en' }).locale).toBe('en');

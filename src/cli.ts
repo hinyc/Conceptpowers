@@ -18,7 +18,7 @@ import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
 import { findUnlinkedConcepts } from './audit/unlinked.js';
 import { listTrackedFiles } from './audit/tracked.js';
 import { readInitConfig } from './init/readConfig.js';
-import { defaultIgnoreGlobs } from './schema/initConfig.js';
+import { defaultIgnoreGlobs, NEW_PROJECT_LOCALE } from './schema/initConfig.js';
 import { matchesAny } from './util/glob.js';
 import { isMainModule } from './util/isMain.js';
 import { approveConcept } from './concept/approve.js';
@@ -113,7 +113,7 @@ export async function runCli(
   program
     .command('init')
     .option('--root <dir>', 'project root', process.cwd())
-    .option('--lang <lang>', 'ko|en', 'ko')
+    .option('--lang <lang>', 'ko|en (default: en)', NEW_PROJECT_LOCALE)
     .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
       const result = await scaffoldInit(o.root, {
@@ -121,8 +121,10 @@ export async function runCli(
         enforcement: o.enforcement,
       });
       reportFailedSteps(err, result.synced.failedSteps);
+      // 이미 초기화된 프로젝트는 init.json의 locale이 우선한다(다시 init해도 설정은 보존) — 안내도 그 언어로.
+      const hintLocale = (await readInitConfig(o.root))?.locale ?? (o.lang as Locale);
       out(
-        buildInitHint(o.lang as Locale, {
+        buildInitHint(hintLocale, {
           viewerScriptAdded: result.viewerScriptAdded,
           viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
           viewerPath: VIEWER_INDEX,

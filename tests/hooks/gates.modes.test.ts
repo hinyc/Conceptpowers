@@ -36,7 +36,7 @@ let root: string;
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-'));
   mkdirSync(join(root, 'src'), { recursive: true });
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
 });
 
 function setEnforcement(root: string, level: 'strict' | 'standard' | 'light') {

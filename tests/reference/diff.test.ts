@@ -30,7 +30,7 @@ let root: string;
 let refDir: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cp-rdiff-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   refDir = cpPaths(root).reference;
 });
 

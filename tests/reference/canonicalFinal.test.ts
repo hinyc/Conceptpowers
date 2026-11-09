@@ -76,7 +76,7 @@ describe('절대 이름 링크가 저장소를 가리키는 등록', () => {
 
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-final-root-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     refDir = cpPaths(root).reference;
     realRoot = await realpath(root);
     await mkdir(join(realRoot, 'ext'), { recursive: true });
@@ -144,7 +144,7 @@ describe('절대 이름 링크가 저장소를 가리키는 등록', () => {
 describe('/private 앞부분이 다른 저장소 이름', () => {
   it('실제 경로로 연 저장소에 /private 을 뗀 이름으로 등록해도 저장소 상대 열쇠다', async () => {
     const real = await realpath(await mkdtemp(join(tmpdir(), 'cp-final-private-')));
-    await scaffoldInit(real, {});
+    await scaffoldInit(real, { locale: 'ko' });
     await mkdir(join(real, 'ext'), { recursive: true });
     await writeFile(join(real, 'ext', 'x.pdf'), 'x');
     const stripped = real.startsWith('/private/') ? real.slice('/private'.length) : real;
@@ -158,7 +158,7 @@ describe('/private 앞부분이 다른 저장소 이름', () => {
 describe('객체 속성 이름과 겹치는 파일', () => {
   it('__proto__ 파일도 기준점을 찍은 뒤에는 추가로 잡히지 않는다(맨 이름 열쇠 포함)', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cp-final-proto-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await writeFile(join(root, '__proto__'), 'p');
     await writeFile(join(cpPaths(root).reference, 'paths.md'), '- .\n', 'utf8');
     await snapshotReference(root, AT);
@@ -181,7 +181,7 @@ describe('다른 기기가 저장소 안을 절대 경로로 등록한 기준점
     process.env.HOME = fakeHome;
     const root = join(fakeHome, 'code', 'repo');
     await mkdir(root, { recursive: true });
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await mkdir(join(root, 'ext'), { recursive: true });
     await writeFile(join(root, 'ext', 'x.pdf'), 'x');
     await writeFile(

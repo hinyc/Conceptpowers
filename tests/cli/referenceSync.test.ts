@@ -29,7 +29,7 @@ describe('cli: reference-snapshot / reference-diff', () => {
   };
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-rsync-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     output = '';
   });
 

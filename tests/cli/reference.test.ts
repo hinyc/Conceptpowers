@@ -24,7 +24,7 @@ describe('cli: reference-add', () => {
   };
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-cli-refadd-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     output = '';
   });
 

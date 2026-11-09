@@ -39,7 +39,7 @@ describe('ensureAlignmentGitignore', () => {
   });
 
   it('init 스캐폴드가 .alignment/.gitignore까지 만들어준다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     const content = await readFile(join(cpPaths(root).alignmentDir, '.gitignore'), 'utf8');
     expect(content).toContain('last-commit');
   });

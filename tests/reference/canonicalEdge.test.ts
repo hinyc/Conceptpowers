@@ -104,7 +104,7 @@ describe('integration', () => {
   let refDir: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cp-edge-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     refDir = cpPaths(root).reference;
     await mkdir(join(root, 'ext'), { recursive: true });
     await writeFile(join(root, 'ext', 'x.pdf'), 'pdf v1');

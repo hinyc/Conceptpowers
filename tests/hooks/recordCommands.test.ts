@@ -63,7 +63,7 @@ describe('기록 명령 실행 전 확인 [규칙: 사람의 확인 없이 기�
   let root: string;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), 'cp-record-'));
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
   });
   const setEnforcement = (level: string) => {
     const p = join(root, 'docs/conceptpowers/init.json');

@@ -10,6 +10,7 @@ import { join, relative } from 'node:path';
 import { walkUsableFiles } from './referenceWalk.js';
 import { cpPaths } from '../paths.js';
 import { readInitConfig } from './readConfig.js';
+import { LEGACY_LOCALE } from '../schema/initConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
 
 const SEED_README = 'README.md';
@@ -26,7 +27,7 @@ export async function ensureReference(root: string): Promise<boolean> {
   } catch {
     /* 없으면 생성 */
   }
-  const locale = (await readInitConfig(root))?.locale ?? 'ko';
+  const locale = (await readInitConfig(root))?.locale ?? LEGACY_LOCALE;
   await writeFile(readme, seedTemplates[locale].reference, 'utf8');
   return true;
 }

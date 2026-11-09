@@ -22,7 +22,7 @@ const input = (files: string[]): GateInput => ({ root, files, cfg: null, report:
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-attestgate-'));
-  await scaffoldInit(root, {});
+  await scaffoldInit(root, { locale: 'ko' });
   await writeConcept(root, {
     slug: 'auth-token',
     category: ['behavior'],

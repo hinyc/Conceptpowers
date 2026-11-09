@@ -3,7 +3,12 @@
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cpPaths } from '../paths.js';
-import { parseInitConfig, type Locale, type Enforcement } from '../schema/initConfig.js';
+import {
+  parseInitConfig,
+  NEW_PROJECT_LOCALE,
+  type Locale,
+  type Enforcement,
+} from '../schema/initConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
 import { syncGenerated, type SyncResult } from './syncGenerated.js';
 
@@ -45,7 +50,7 @@ export async function scaffoldInit(root: string, opts: ScaffoldOptions): Promise
     return { viewerScriptAdded: synced.scriptStatus !== 'no-package', synced };
   }
 
-  const locale: Locale = opts.locale ?? 'ko';
+  const locale: Locale = opts.locale ?? NEW_PROJECT_LOCALE;
   const config = parseInitConfig({
     version: '0.1.0',
     enabled: true,

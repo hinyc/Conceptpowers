@@ -116,6 +116,20 @@ describe('runCli', () => {
     expect(captured).toContain('docs/conceptpowers/concepts/viewer/index.html');
     expect(captured).not.toContain('npm run concepts:view');
   });
+  it('--lang 없이 새로 init하면 영어 안내를 출력하고 init.json에 en을 쓴다 (새 프로젝트 기본 en)', async () => {
+    let captured = '';
+    await runCli(['init', '--root', root], (s) => (captured += s));
+    expect(captured).toContain('Conceptpowers initialized');
+    expect(
+      JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8')).locale
+    ).toBe('en');
+  });
+  it('이미 ko로 초기화된 프로젝트에 --lang 없이 다시 init하면 안내도 ko로 나온다', async () => {
+    await runCli(['init', '--root', root, '--lang', 'ko'], () => undefined);
+    let captured = '';
+    await runCli(['init', '--root', root], (s) => (captured += s));
+    expect(captured).toContain('초기화 완료');
+  });
   it('--lang en이면 영어 안내를 출력한다', async () => {
     let captured = '';
     await runCli(['init', '--root', root, '--lang', 'en'], (s) => (captured += s));

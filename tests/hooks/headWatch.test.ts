@@ -130,14 +130,14 @@ describe('headWatch — 실행 중에 생긴 커밋 찾기', () => {
   it('안내는 문지기를 거치지 않았음과 되돌리지 말 것을 밝힌다', () => {
     const text = ungatedCommitNotice([{ sha: 'abcdef1234', subject: 'commit: release' }]);
     expect(text).toContain('abcdef1 commit: release');
-    expect(text).toContain('문지기의 검사를 거치지 않았습니다');
-    expect(text).toContain('되돌리지는 마세요');
+    expect(text).toContain('did not pass the pre-commit gate');
+    expect(text).toContain('Do not revert commits');
   });
 });
 
 describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
   it('커밋 명령으로 보이지 않던 명령의 커밋만 알린다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await recordHeadBefore(root, 'toolu_7');
     commitFile('b.txt', 'release');
     const found = (await commitsMadeBy(root, 'Bash', 'toolu_7', { command: 'pnpm release' }))
@@ -152,7 +152,7 @@ describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
   });
 
   it('확정 불가 커밋 명령이 커밋을 여럿 만들면 모두 결산 대상으로 모으되 문지기 우회로 알리지는 않는다 [규칙: 어긋난 채 통과한 커밋도 이력에 남는다]', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     await recordHeadBefore(root, 'toolu_10');
     commitFile('b.txt', 'one');
     commitFile('c.txt', 'two');
@@ -185,7 +185,7 @@ describe('사후 훅 — 문지기를 거치지 않은 커밋', () => {
   });
 
   it('커밋 명령이 아니어도 실행 중 커밋이 있으면 결산한다', async () => {
-    await scaffoldInit(root, {});
+    await scaffoldInit(root, { locale: 'ko' });
     commitFile('b.txt', 'release');
     const input = { command: 'pnpm release' };
     expect((await runPostToolUseReport(root, { tool: 'Bash', input })).result).toBeNull();

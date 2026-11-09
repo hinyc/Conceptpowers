@@ -8,7 +8,7 @@
 //  - human-owns-contract 불변 "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다"
 //    → 이미 초기화된 경우 init.json을 덮어쓰지 않는다 / 재실행 시 baseline을 보존한다
 //  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
-//    → init.json에 locale을 기록한다(기본 ko) / ko seed는 한글로, en seed는 영어로 작성된다
+//    → init.json에 locale을 기록한다(새 프로젝트 기본 en) / ko seed는 한글로, en seed는 영어로 작성된다
 //  - concept-driven-tests 구성요소 "스위치: 시작 설정 파일의 참/거짓 값 하나 — 값이 없으면 켜진 것으로
 //    보고, 거짓으로 적었을 때만 꺼진다" → 새 init.json에 conceptDrivenTests: true를 기록한다
 //  - generated-not-hand-edited 구성요소 "생성물: … 뷰어 화면 파일 …"
@@ -17,10 +17,11 @@
 //  - reference-privacy 구성요소 "안내용 파일: … 도구가 이 폴더에 쓸 수 있는 유일한 것"
 //    → reference 폴더와 안내 README를 생성한다
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scaffoldInit, isInitialized } from '../../src/init/scaffold.js';
+import { readInitConfig } from '../../src/init/readConfig.js';
 
 let root: string;
 beforeEach(() => {
@@ -75,10 +76,24 @@ describe('scaffoldInit', () => {
     expect(existsSync(join(v, 'graph.html'))).toBe(false);
     expect(existsSync(join(v, 'index.html'))).toBe(true);
   });
-  it('init.json에 locale을 기록한다 (기본 ko)', async () => {
+  it('새 init은 locale en을 init.json에 써 넣고 영어 seed를 만든다 (기본 en)', async () => {
     await scaffoldInit(root, {});
     const cfg = JSON.parse(readFileSync(join(root, 'docs/conceptpowers/init.json'), 'utf8'));
-    expect(cfg.locale).toBe('ko');
+    expect(cfg.locale).toBe('en');
+    const arch = readFileSync(
+      join(root, 'docs/conceptpowers/architecture/architecture.md'),
+      'utf8'
+    );
+    expect(arch).not.toMatch(/[가-힣]/);
+  });
+  it('locale 키가 없는 기존 init.json은 다시 init해도 en으로 바뀌지 않고 ko로 읽힌다', async () => {
+    const dir = join(root, 'docs/conceptpowers');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'init.json'), JSON.stringify({ version: '0.1.0', enabled: true }));
+    await scaffoldInit(root, {});
+    const raw = JSON.parse(readFileSync(join(dir, 'init.json'), 'utf8'));
+    expect(raw.locale).toBe('ko'); // 빈칸 채우기도 기존 프로젝트 기본(ko)을 채운다 — en으로 바꾸지 않는다
+    expect((await readInitConfig(root))?.locale).toBe('ko');
   });
   it('ko seed 템플릿은 한글로 작성된다', async () => {
     await scaffoldInit(root, { locale: 'ko' });
