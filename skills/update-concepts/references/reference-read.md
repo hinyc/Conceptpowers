@@ -1,4 +1,4 @@
-# Update Concepts — 참고자료 읽기 규칙 (references/reference-read.md)
+# Update Concepts — Rules for reading reference material (references/reference-read.md)
 
 This file is loaded by `conceptpowers:update-concepts` whenever a procedure reads reference material
 (`references/define.md`, `references/consistency.md`). It is not a skill of its own. Each procedure

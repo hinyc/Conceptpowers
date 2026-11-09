@@ -3,125 +3,139 @@ name: redteam
 description: Use when the user wants a critical, adversarial review of finished work in a governance-active project ("레드팀", "redteam", "비판적 검토", "중복 정리", "과잉 구현 점검", "목적에 맞는지 점검") — several reviewers attack the work from five angles (concept compliance, red-team critique, duplication, overreach and purpose drift, side effects) against its concepts and the purpose of the work, a refuter drops findings that do not survive, and only the findings the user picks are fixed. Three modes (changes, one concept, whole project). For a plain check that code follows its concepts use review instead. Never reads reference.
 ---
 
-# Conceptpowers: Redteam (비판적 점검)
+# Conceptpowers: Redteam (critical review)
 
 > **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
 > until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
-끝낸 작업을 **일부러 반대 입장에서** 점검한다. 기준은 대상에 걸린 green 개념과 이번 작업의 목적이다. 지적은
-반박을 견딘 것만 보고하고, **사용자가 고른 것만** 고친다. 개념 `redteam-review`가 이 스킬의 약속이다.
+Talk to the user in the project's output language (`locale` in `init.json`; missing → `ko`); quoted prompts, labels and report
+formats below are templates to render in that language.
 
-## 다른 스킬과의 경계
+Review finished work **deliberately from the opposing side**. The yardsticks are the green concepts attached to the
+target and the purpose of this work. Report only findings that survive refutation, and fix **only the ones the user
+picks**. Concept `redteam-review` is this skill's promise.
 
-| 하는 일                                     | 맡는 곳                                                |
-| ------------------------------------------- | ------------------------------------------------------ |
-| 개념 규칙 위반 판정                         | `conceptpowers:review`의 판정 절차를 **그대로** 따른다 |
-| 개념 최신 여부 진단                         | `conceptpowers:auto` Stage 0 진단을 **그대로** 쓴다    |
-| 표식 없는 코드·`none` 오분류·태그 정리      | `conceptpowers:scan`으로 넘긴다                        |
-| 개념 수정·판단 불가(개념 모호) 업그레이드   | `conceptpowers:update-concepts`로 넘긴다               |
-| 레드팀 비판·중복·과잉·목적 이탈·부작용 점검 | **이 스킬**                                            |
+## Boundaries with other skills
 
-이 스킬은 위 스킬들의 일을 다시 구현하지 않는다 — 가리키고 넘긴다.
+| Work                                                                   | Owner                                                             |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Judging concept-rule violations                                        | Follow the judgment procedure of `conceptpowers:review` **as is** |
+| Diagnosing whether concepts are up to date                             | Use the Stage 0 diagnosis of `conceptpowers:auto` **as is**       |
+| Unmarked code, `none` misclassification, tag cleanup                   | Hand off to `conceptpowers:scan`                                  |
+| Editing concepts, upgrading undecidable (vague) concepts               | Hand off to `conceptpowers:update-concepts`                       |
+| Red-team critique, duplication, overreach, purpose drift, side effects | **This skill**                                                    |
 
-## 모드
+This skill does not re-implement the work of the skills above — it points and hands off.
 
-| 모드            | 대상                                                       | 작업 목적의 출처                                      |
-| --------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
-| ① **변경분**    | 커밋 안 된 변경 + 기준점 이후 커밋 (+ 그 코드를 부르는 쪽) | 커밋 메시지, 관련 기능 명세(`features/`), 사용자 설명 |
-| ② **개념 하나** | 개념 slug 하나에 걸린 코드 전부                            | 그 개념 자체                                          |
-| ③ **전체**      | 모든 green 개념의 코드 + 개념 없음(`none`) 코드            | 각 개념, `none`은 그 코드의 쓰임새                    |
+## Modes
 
-대상 수집과 기준점 계산은 `references/modes.md`. 사용자가 **모드를 말하지 않고** 불렀으면 묻는다 — 변경분이
-있으면 ①을 먼저 권한다.
+| Mode                | Target                                                                          | Source of the purpose of the work                                            |
+| ------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| ① **Changes**       | Uncommitted changes + commits since the base point (+ the callers of that code) | Commit messages, related feature specs (`features/`), the user's explanation |
+| ② **One concept**   | All code attached to one concept slug                                           | The concept itself                                                           |
+| ③ **Whole project** | Code of every green concept + no-concept (`none`) code                          | Each concept; for `none`, what that code is used for                         |
 
-## 흐름 (세 모드 공통)
+Target collection and base-point computation are in `references/modes.md`. If the user called this **without naming a
+mode**, ask — if there are changes, recommend ① first.
 
-**시작 전:** 모드를 정하고 `references/modes.md`대로 대상 파일을 모은 뒤, 파일 첫머리 `@concept` 표식에서 대상
-개념 slug 집합을 뽑는다. 0단계는 이 두 목록으로 거르고, 2단계는 이 표식을 다시 쓴다.
+## Flow (common to all three modes)
 
-### 0단계 — 개념 최신 확인 (필수, 개념·코드는 고치지 않음)
+**Before starting:** pick the mode, collect the target files per `references/modes.md`, then extract the set of
+target concept slugs from the `@concept` markers at the top of the files. Step 0 filters with these two lists, and
+step 2 reuses these markers.
 
-이 단계는 개념과 코드를 고치지 않는다. 다만 CLI 명령 앞에서 생성물 자동 동기화가 일어날 수 있다 — stderr에
-그 안내가 나왔으면 보고서에 적는다.
+### Step 0 — Check that concepts are up to date (required; concepts and code are not edited)
 
-`conceptpowers:auto`의 **Stage 0** 진단 가운데 reference(3번)·개념 status(4번)·무결성(6번) 항목을 **그 문서에 적힌
-명령과 판독 그대로** 수행한다. 여기서 명령을 다시 정의하지 않는다 — 결과 목록을 대상 파일·대상 개념 slug로
-거르기만 한다.
+This step does not edit concepts or code. However, the automatic sync of generated artifacts may run before a CLI
+command — if stderr shows that notice, note it in the report.
 
-- `unlocked`(참고자료 기준점 없음)나 일부만 비교된 결과는 최신 여부를 모르는 것이므로 아래처럼 묻는다 —
-  "낡음 없음"으로 치지 않는다.
-- 대상 코드나 그 코드에 걸린 개념에 **닿는 낡음**이 있으면 멈추고, 무엇이 낡았는지 보인 뒤 묻는다:
-  (a) `conceptpowers:auto` 또는 해당 스킬로 먼저 최신화 / (b) 그대로 진행 — 보고서에 "낡은 개념 기준으로
-  점검함"을 남긴다.
-- 대상에 닿지 않는 낡음(다른 곳의 red/pending, 범위 밖 표식 없는 코드)은 멈추지 않고 보고서에 적기만 한다.
-- 이 스킬이 `update-concepts`를 직접 돌리지 않는다.
+Perform the reference (3), concept status (4) and integrity (6) items of the **Stage 0** diagnosis of
+`conceptpowers:auto` **with exactly the commands and readings written in that document**. Do not redefine the
+commands here — only filter the result lists by the target files and target concept slugs.
 
-### 1단계 — 목적 고정과 범위 확인
+- `unlocked` (no reference snapshot) or a partially compared result means freshness is unknown, so ask as below —
+  do not count it as "no staleness".
+- If there is **staleness that touches** the target code or the concepts attached to it, stop, show what is stale,
+  and ask: (a) bring it up to date first with `conceptpowers:auto` or the relevant skill / (b) proceed as is — record
+  "reviewed against stale concepts" in the report.
+- Staleness that does not touch the target (red/pending elsewhere, unmarked code out of scope) does not stop the
+  review; just note it in the report.
+- This skill does not run `update-concepts` itself.
 
-사용자에게 한 번에 보이고 확인받는다. 이후 모든 판단과 수정은 여기에 비춘다.
+### Step 1 — Fix the purpose and confirm the scope
 
-1. **개념 쪽 목적** — 대상에 걸린 green 개념의 `purpose`와 규칙(`actions.allow / restrict`,
-   `principle.immutableRules`)을 몇 줄로.
-2. **작업 쪽 목적** — 이번 변경이 하려던 일(모드별 출처). `none` 코드는 이것이 유일한 기준이다.
-3. **레드팀 범위** — **항상 묻는다**(묻지 않고 기본으로 넘어가지 않는다):
-   - 목적에 묶기(기본) — 지적마다 근거를 개념 규칙이나 작업 목적에 묶는다. 묶을 수 없는 지적은 내지 않는다.
-   - 일반 품질까지 — 보안·성능·읽기 쉬움도 지적한다. 보고서에서 "목적 밖 일반 품질"로 따로 묶는다.
+Show these to the user at once and get confirmation. Every later judgment and fix is measured against this.
 
-사용자가 개념 요약을 보고 낡았다고 짚으면 0단계와 같이 (a)/(b)를 묻는다.
+1. **Concept-side purpose** — the `purpose` and rules (`actions.allow / restrict`, `principle.immutableRules`) of the
+   green concepts attached to the target, in a few lines.
+2. **Work-side purpose** — what this change set out to do (source per mode). For `none` code this is the only yardstick.
+3. **Red-team scope** — **always ask** (never fall through to the default without asking):
+   - Bound to purpose (default) — tie every finding's grounds to a concept rule or the purpose of the work. Findings
+     that cannot be tied are not raised.
+   - Include general quality — also raise security, performance and readability findings. Group them separately in
+     the report as "out-of-purpose general quality".
 
-### 2단계 — 코드 분류
+If the user, looking at the concept summary, points out that it is stale, ask (a)/(b) as in step 0.
 
-대상 파일마다 첫머리 `@concept` 표식으로 셋 중 하나로 나눈다(개념 태그 있음 / `none`·개념 없음 영역 / 표식
-없음). 갈래별 기준은 `references/axes.md`의 분류표. 표식 없는 코드는 판단하지 않고 목록만 `conceptpowers:scan`으로.
+### Step 2 — Classify the code
 
-### 3단계 — 축별 리뷰어 (병렬)
+Sort each target file into one of three by the `@concept` marker at its top (concept tag present / `none` or
+no-concept area / no marker). The yardstick per branch is the classification table in `references/axes.md`. Do not
+judge unmarked code — only pass the list to `conceptpowers:scan`.
 
-축 하나에 리뷰어 하나, 최대 다섯을 동시에 띄운다: **개념 준수 · 레드팀 비판 · 중복 · 과잉·목적 이탈 · 부작용**.
-리뷰어마다 1단계 목적, 2단계 분류, 대상 파일 목록, 그 축의 지시(`references/axes.md`)를 준다.
+### Step 3 — Per-axis reviewers (parallel)
 
-- 2단계 뒤 맡을 대상이 없는 축은 띄우지 않고 보고서에 "해당 없음"으로 적는다(예: 태그 있는 파일이 없으면
-  개념 준수 축).
-- 판단할 대상이 하나도 남지 않으면(전부 표식 없음 등) 리뷰어를 띄우지 않고 `conceptpowers:scan`을 권한 뒤 멈춘다.
+One reviewer per axis, up to five at once: **concept compliance · red-team critique · duplication · overreach and
+purpose drift · side effects**. Give each reviewer the step-1 purpose, the step-2 classification, the target file list,
+and that axis's instructions (`references/axes.md`).
 
-### 4단계 — 반박 검증
+- An axis with nothing to cover after step 2 is not launched; record it as "not applicable" in the report (e.g. the
+  concept-compliance axis when no file has a tag).
+- If nothing at all is left to judge (everything unmarked, etc.), launch no reviewers, recommend `conceptpowers:scan`,
+  and stop.
 
-지적마다 "문제가 아니다" 쪽에서 따져 본다. 기각된 지적은 버린다. 반박자에게 줄 지시·결과 형식·묶음 방식·
-상한·미검증 처리는 `references/axes.md`.
+### Step 4 — Refutation
 
-### 5단계 — 보고
+Argue each finding from the "this is not a problem" side. Discard rejected findings. The refuter's instructions,
+result format, grouping, cap, and handling of unverified findings are in `references/axes.md`.
 
-심각도순(높음 → 중간 → 낮음). 항목마다: 파일·위치 / 축 / **위반인지 개선 제안인지** / 근거 / 제안 수정.
+### Step 5 — Report
 
-- **위반**은 개념에 적힌 규칙에 근거할 때만 쓴다(개념 준수 축). 작업 목적이나 일반 품질에 근거한 지적은
-  **개선 제안**이다 — 위반이라 부르지 않는다.
-- 따로 묶는 목록: 판단 불가(개념 모호 → `update-concepts` 개념 업그레이드 권장), `none` 오분류 후보, 표식 없는
-  코드(→ `scan`), 반박 상한으로 넘긴 지적(**미검증**이라고 밝혀서만 싣는다), 해당 없음으로 건너뛴 축, 표본
-  검사로 넘긴 파일, 0단계에서 낡음을 알고 진행했는지.
+By severity (high → medium → low). For each item: file and location / axis / **violation or improvement suggestion**
+/ grounds / suggested fix.
 
-### 6단계 — 승인 후 수정
+- Use **violation** only when grounded in a rule written in a concept (concept-compliance axis). Findings grounded in
+  the purpose of the work or general quality are **improvement suggestions** — never call them violations.
+- Separate lists: undecidable (vague concept → recommend a concept upgrade in `update-concepts`), `none`
+  misclassification candidates, unmarked code (→ `scan`), findings passed over by the refutation cap (included only
+  when marked **unverified**), axes skipped as not applicable, files only sampled rather than read in full, and whether you
+  proceeded knowing about staleness in step 0.
 
-1. 사용자가 고른 항목만 고친다. 고르지 않은 항목은 손대지 않는다.
-2. 개념 위반 항목은 사용자가 고른다: 코드 수정, 또는 `conceptpowers:review` 판정 ②의 선택지 그대로(개념 수정·
-   기능/개념 분리 — 개념을 고치면 green이 pending으로 내려가 정착 전까지 코드를 다스리지 않는다). 이 스킬은
-   개념을 고치지 않는다. 개념 수정이나 분리를 고르면 **이번 점검은 여기서 끝낸다** — 남은 항목은 손대지 않고
-   목록으로 넘기며, 개념이 정착한 뒤 새 점검으로 다시 시작한다.
-3. 동작을 바꾸는 수정은 테스트를 먼저 쓴다(개념 기반 테스트 규칙 포함). 코드를 고치면 `@concept` 표식과
-   매핑도 함께 갱신한다(`node "<cli>" map --root . <files...>`).
-4. 고친 뒤 고친 파일만 **과잉·목적 이탈·중복** 세 축으로 가볍게 다시 본다 — 수정이 새 과잉을 만들지 않았는지.
-   다섯 축 전체를 다시 돌리지 않는다.
-5. 커밋하지 않는다 — 사용자가 직접 하거나 따로 요청한다.
+### Step 6 — Fix after approval
 
-## 서브에이전트가 없을 때
+1. Fix only the items the user picked. Do not touch items they did not pick.
+2. For concept-violation items the user chooses: fix the code, or the options of verdict ② of `conceptpowers:review`
+   as is (edit the concept, or split the feature/concept — editing a concept drops green to pending, and it does not
+   govern code until it settles). This skill does not edit concepts. If the user picks editing or splitting a concept,
+   **this review ends here** — leave the remaining items untouched, hand them over as a list, and start a new review
+   after the concept settles.
+3. A fix that changes behavior writes the test first (including the concept-driven test rules). When fixing code,
+   update the `@concept` markers and the mapping too (`node "<cli>" map --root . <files...>`).
+4. After fixing, take a light second look at only the fixed files on the three axes of **overreach, purpose drift and
+   duplication** — check again that the fix did not create new overreach. Do not rerun all five axes.
+5. Do not commit — the user does it or asks for it separately.
 
-리뷰어를 따로 띄울 수 없는 환경이면 한 에이전트가 다섯 축을 **차례로** 본다. 축마다 지적을 모두 적은 뒤,
-반박 검증은 **다섯 축을 다 마친 다음 따로** 한다 — 지적을 쓴 직후 바로 반박하지 않는다(자기 지적을 감싸게
-된다). 보고서에 "순차 점검"이라고 밝힌다.
+## When no subagents are available
+
+If the environment cannot launch separate reviewers, one agent goes through the five axes **in turn**. After writing
+down all findings for each axis, do the refutation **separately, after all five axes are finished** — do not refute a
+finding right after writing it (you would end up defending your own finding). State "sequential review" in the report.
 
 ## Prohibited
 
-- `reference/`(참고자료)를 읽는 것 — 판정 기준은 개념과 작업 목적뿐이다.
-- 개념을 스스로 고치는 것 — 개념 수정은 사용자가 고른 뒤 `update-concepts`에서만.
-- 사용자가 고르지 않은 지적을 고치는 것, 커밋하는 것.
-- 반박을 거치지 않은 지적을 검증된 것처럼 보고하는 것.
-- `@concept:none`·개념 없음 영역의 코드를 "어느 개념도 요구하지 않는다"는 이유만으로 과잉이라 하는 것.
-- 개념 규칙에 근거하지 않은 지적을 "위반"이라 부르는 것.
+- Reading `reference/` (reference material) — the only yardsticks are the concepts and the purpose of the work.
+- Editing concepts on your own — concepts are edited only in `update-concepts`, after the user picks it.
+- Fixing findings the user did not pick, or committing.
+- Reporting findings that did not go through refutation as if verified.
+- Calling code with `@concept:none` or in a no-concept area overreach solely because "no concept requires it".
+- Calling a finding not grounded in a concept rule a "violation".

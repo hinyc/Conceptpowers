@@ -3,112 +3,143 @@ name: auto
 description: Use after init when the user wants guided operation ("auto", "다음 뭐하면 돼?", "알아서 순서대로 진행해줘") in a governance-active project, or when the viewer / concepts:view script looks stale after a plugin update. Diagnoses the current stage and walks baseline → update-concepts (reference changes + definitions) → scan (gaps + mapping) → review (code vs concepts) in the right order, then offers a redteam critique that runs only if the user picks it, asking at every stage boundary.
 ---
 
-# Conceptpowers: Auto (단계 안내 오케스트레이터)
+# Conceptpowers: Auto (guided stage orchestrator)
 
 > **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
 > until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
-Conceptpowers는 **올바른 순서로 써야** 개념 정의가 제대로 된다 — 기준 문서(baseline) 없이 개념을 정의하거나,
-바뀐 참고자료를 반영하지 않은 채 코드를 검토하거나, 격차를 메우지 않고 검토하면 결과가 부실해진다.
-이 스킬은 그 순서를 대신 기억한다: 현재 단계를 진단하고 **기준 문서 → 개념 업데이트 → 상태 탐색 → 검토**
-순서로 기존 스킬을 호출하며, 매 단계 경계에서 사용자에게 진행 여부를 묻는다.
+Talk to the user in the project's output language (`locale` in `init.json`; missing → `ko`); quoted prompts below are templates to
+render in that language.
+
+Conceptpowers only defines concepts well when it is **used in the right order** — defining concepts without a
+top-level baseline document, reviewing code without folding in changed reference material, or reviewing before closing gaps
+all produce weak results. This skill remembers that order for you: it diagnoses the current stage, calls the existing
+skills in the order **top-level baseline document → update concepts → scan → review**, and asks the user whether to continue at
+every stage boundary.
 
 ## Role (orchestrator only)
 
-- 이 스킬은 **호출과 안내만** 한다. 기준 문서·개념의 내용은 절대 직접 쓰지 않는다 — 작성은 각 스킬
-  (`update-concepts`) 안에서 사용자와 함께 이뤄진다.
-- **매 단계 경계에서 한 번 묻는다**: 무엇을 할지 한두 문장으로 안내 → 실행 → 결과 요약 →
-  "다음 단계로 진행할까요? (진행 / 이 단계 건너뛰기 / 여기서 중단)". 확인 없이 두 단계를 연속 실행하지 않는다.
-- 건너뛰기는 항상 허용된다(강제 없음). 건너뛴 단계는 최종 리포트에 남긴다.
-- **멱등**: 언제든 재실행 가능. 진단에서 이미 끝난 단계는 "완료됨"으로 보고하고 자동으로 넘어간다.
+- This skill **only calls and guides**. It never writes the content of top-level baseline documents or concepts itself —
+  authoring happens with the user inside the owning skill (`update-concepts`).
+- **Ask once at every stage boundary**: explain in one or two sentences what comes next → run it → summarize the
+  result → "Continue to the next stage? (continue / skip this stage / stop here)". Never run two stages back to back
+  without confirmation.
+- Skipping is always allowed (nothing is forced). Skipped stages are listed in the final report.
+- **Idempotent**: can be re-run at any time. Stages the diagnosis finds already done are reported as "done" and
+  passed over automatically.
 
-## Stage 0 — Diagnose (개념·코드는 고치지 않음, 항상 실행)
+## Stage 0 — Diagnose (changes no concept or code; always runs)
 
-개념·코드를 바꾸지 말고 현재 상태만 수집한다 — 생성물 자동 동기화는 #1 참고(CLI 경로는 `CONCEPTPOWERS-ACTIVE` 세션 컨텍스트 또는 플러그인 dist):
+Do not change concepts or code; only collect the current state — for the automatic sync of generated artifacts see #1
+(the CLI path is in the `CONCEPTPOWERS-ACTIVE` session context or the plugin dist):
 
-1. **버전 동기화**: 모든 CLI 명령 앞에서 자동으로 맞춰지므로 따로 할 일은 없다 — stderr에
-   `[conceptpowers] auto version-sync` 안내가 있었으면 "완료됨"으로 보고한다. 수동 실행
-   (`node "<cli>" version-sync --root .`)이 `skipped: up-to-date`를 내면 그대로 둔다 — `--force` 재생성은
-   사용자가 명시적으로 요청할 때만(같은 버전 재생성은 로컬 산출물 수정을 되돌릴 수 있다).
-   version-sync가 `ok: false`이거나 `failedSteps`가 비어 있지 않으면(exit 1), 또는 자동 맞춤 안내에 실패한 단계가
-   있으면 "완료됨"으로 보고하지 않는다 — 실패한 단계와 오류를 한 줄로 알린다(예: package.json이 깨져
-   `packageScript` 실패 → package.json을 고친 뒤 version-sync 재실행). 실패 단계에 `viewer`가 없으면 뷰어는 새로
-   그려진 상태이고, `viewer`가 있으면 뷰어도 옛 상태일 수 있다. 어느 경우든 버전 도장은 보류돼(render 등 다른 명령도
-   도장을 바꾸지 않는다) 다음 동기화(세션 시작·다음 CLI 명령·version-sync)가 다시 시도한다.
-2. **기준 문서(baseline)**: `architecture/architecture.md` / `infra/infra.md`가 스캐폴드 템플릿 그대로인지.
-3. **reference**: `reference/`가 비었는지(파일 없음 + `paths.md` 항목 없음) — **존재 확인만, 내용은 읽지 않는다.**
-   그리고 `node "<cli>" reference-diff --quick --root .` — `unlocked`(기준점 없음), `changed/removed`(변경), `added`(새 파일), `truncated`(비교가 일부만 됨),
-   `affected`(영향 개념), `newMaterial`(새 개념 후보 자료), `unreachable`.
-4. **개념**: 개수와 status 분포(🟢 green / 🟡 pending / 🔴 red) — red/pending은 #6 audit의 `unapproved`/`pending`(개념 원본 기준)을
-   1순위로 쓴다. `concepts/viewer/manifest.json`의 `concepts[].status`는 생성물이라 `render` 전이면 낡을 수 있으므로 보조(개수·green 확인)로만 쓴다.
-5. **feature**: `features/` 명세 개수.
-6. **무결성**: `node "<cli>" audit --root .` — **파일 인자 없이**(전체 스캔: `unknownTags` + `duplicateSlugs` + `conceptless`).
-   exit 1은 진단 데이터이지 실패가 아니다. `duplicateSlugs`(같은 이름표 개념 파일이 둘 이상)가 있으면
-   update-concepts로 하나만 남게 정리하는 것을 첫 할 일로 보고한다.
+1. **Version sync**: it runs automatically before every CLI command, so there is nothing to do — if stderr showed the
+   `[conceptpowers] auto version-sync` notice, report it as "done". If a manual run
+   (`node "<cli>" version-sync --root .`) returns `skipped: up-to-date`, leave it — regenerate with `--force` only
+   when the user explicitly asks (regenerating at the same version can revert local edits to generated artifacts).
+   If version-sync returns `ok: false` or a non-empty `failedSteps` (exit 1), or the automatic sync notice lists a
+   failed step, do not report "done" — state the failed step and the error in one line (e.g. a broken package.json
+   fails `packageScript` → fix package.json, then re-run version-sync). If `viewer` is not among the failed steps the
+   viewer has been redrawn; if `viewer` is among them the viewer may also be stale. Either way the version stamp is
+   held back (other commands such as render do not change the stamp either), so the next sync (session start, the
+   next CLI command, or version-sync) retries.
+2. **Top-level baseline documents**: whether `architecture/architecture.md` / `infra/infra.md` are still the scaffold template.
+3. **reference**: whether `reference/` is empty (no files + no entries in `paths.md`) — **existence check only; do
+   not read the content.** Then `node "<cli>" reference-diff --quick --root .` — `unlocked` (no reference snapshot),
+   `changed/removed` (changes), `added` (new files), `truncated` (only partly compared), `affected` (affected
+   concepts), `newMaterial` (material for new concept candidates), `unreachable`.
+4. **Concepts**: count and status distribution (🟢 green / 🟡 pending / 🔴 red) — for red/pending, use #6 audit's
+   `unapproved`/`pending` (based on the concept sources) first. `concepts[].status` in
+   `concepts/viewer/manifest.json` is a generated artifact that can be stale before `render`, so use it only as a
+   secondary source (counts, green check).
+5. **Features**: number of specs in `features/`.
+6. **Integrity**: `node "<cli>" audit --root .` — **with no file arguments** (full scan: `unknownTags` +
+   `duplicateSlugs` + `conceptless`). Exit 1 is diagnostic data, not a failure. If there are `duplicateSlugs`
+   (two or more concept files with the same slug), report cleaning them up through update-concepts so only one
+   remains as the first thing to do.
 
-결과를 **단계 지도**로 보고한다 — 각 단계가 완료/부분/미시작인지, 어디서부터 시작할지 — 그리고 첫 미완료
-단계로 진행할지 묻는다. 모두 완료면 그대로 보고하고 종료한다.
+Report the result as a **stage map** — whether each stage is done / partial / not started, and where to start — then
+ask whether to proceed to the first unfinished stage. If everything is done, report so and stop.
 
-## Stage 1 — Baseline (기준 문서 — 개념의 상위 기준)
+## Stage 1 — Baseline (top-level baseline documents — the higher standard for concepts)
 
-architecture.md / infra.md가 아직 템플릿이면:
+If architecture.md / infra.md are still the template:
 
-- 이것이 **개념의 상위 기준**(높은 층이 낮은 층의 개념을 제약)임을 한 줄로 설명하고 작성 방식을 묻는다:
-  1. **코드 분석 초안 (권장)** — 코드베이스를 분석해 현재 구현 기준의 초안을 보여준다. 초안은 **제안일 뿐
-     저장이 아니다** — 사용자가 리뷰·수정·확정한 뒤에만 `update-concepts`(C) 절차로 저장한다. 리뷰 때 반드시
-     안내: "이 초안은 **현재 구현(as-is)**을 읽은 것입니다. 기준 문서는 **의도(to-be)**의 기준이므로 구현과
-     다르게 가야 할 부분이 있으면 지금 고쳐주세요."
-  2. **직접 작성** — 사용자가 내용을 말하고 에이전트는 받아 적는다.
-  3. **건너뛰기** — "기준 문서 없이 정의된 개념은 나중에 상위 기준과 어긋날 수 있다"고 한 줄 경고.
-- 어느 방식이든 **사용자 확인 없이 저장하지 않는다**.
+- Explain in one line that these are the **higher standard for concepts** (a higher layer constrains the concepts of
+  lower layers) and ask how to write them:
+  1. **Draft from code analysis (recommended)** — analyze the codebase and show a draft based on the current
+     implementation. The draft is **only a proposal, not a save** — save it through the `update-concepts` (C)
+     procedure only after the user has reviewed, edited and confirmed it. During review, always say: "This draft
+     reads the **current implementation (as-is)**. The top-level baseline documents are the standard for **intent (to-be)**,
+     so fix now any part that should differ from the implementation."
+  2. **User writes it** — the user dictates the content and the agent writes it down.
+  3. **Skip** — warn in one line: "Concepts defined without top-level baseline documents may later conflict with the higher
+     standard."
+- Whatever the method, **never save without the user's confirmation**.
 
-## Stage 2 — Update concepts (개념 업데이트)
+## Stage 2 — Update concepts
 
-`conceptpowers:update-concepts` 호출. 진단 결과에 따라 계기가 정해진다:
+Call `conceptpowers:update-concepts`. The diagnosis decides the trigger:
 
-- `changed/removed` 또는 `added`가 있으면 **A(참고자료 변경 반영)** — 영향 개념부터. 끝나면 사용자 확인 후 기준점 기록.
-- 개념이 없거나 적으면 **B 일괄 정의(batch)**. 실행 전 reference가 비었으면 그 스킬의 안내대로 ① 진행 ② 파일
-  추가 ③ 바깥 경로 등록을 묻는다 — 조용히 건너뛰지 않는다. 개념 정의가 reference를 읽는 **유일한** 시점이다.
-- `unlocked`(기준점 없음)이고 개념이 이미 있으면, 정의·검토가 끝난 뒤 기준점을 한 번 찍자고 제안한다.
-- 스킬 안의 체크포인트(후보 범위 확정, 일괄 리뷰, 정합성 검사)는 그 스킬 규칙 그대로 — auto가 대신 답하지 않는다.
+- If there are `changed/removed` or `added` → **trigger A (applying reference changes)** — affected concepts first.
+  When done, record the reference snapshot after the user confirms.
+- If there are no or few concepts → **trigger B batch definition**. If reference is empty before running, ask as that
+  skill instructs: ① proceed ② add files ③ register an external path — never skip silently. Concept definition is the
+  **only** time reference is read.
+- If `unlocked` (no reference snapshot) and concepts already exist, propose recording the snapshot once after
+  definition and review are done.
+- Checkpoints inside the skill (confirming candidate scope, batch review, consistency check) follow that skill's rules
+  as written — auto does not answer them on the user's behalf.
 
-## Stage 3 — Scan (상태 탐색)
+## Stage 3 — Scan
 
-`conceptpowers:scan` 호출 — 개념 없는 코드·깨진 태그·기능 명세 누락·red/pending·품질 결격을 목록으로 받고,
-항목마다 어떻게 처리할지 묻는다:
+Call `conceptpowers:scan` — receive the list of concept-less code, broken tags, missing feature specs, red/pending
+concepts and quality deficiencies, and ask how to handle each item:
 
-- 개념 없는 코드 → 기존 개념 태그 / `update-concepts`(계기 B)로 정의(Stage 2 루프백) / `@concept:none` / 보류.
-- 🔴 red → 사용자가 원하면 `update-concepts`(D) 승인 흐름(사용자 게이트 — auto가 스스로 승인하지 않는다).
-- 🟡 pending → `update-concepts`(G) 재검사로 정착 시도 / 수정·분리 논의(C) / 보류.
-- 품질 미달 green → 사용자에게 물어 채운다(자동 채움 금지).
-- 태그 달기 + `map` + `render`는 scan 안에서 마친다.
+- Concept-less code → tag with an existing concept / define one with `update-concepts` (trigger B) (loop back to
+  Stage 2) / `@concept:none` / defer.
+- 🔴 red → if the user wants, the `update-concepts` (D) approval flow (a user gate — auto never approves on its own).
+- 🟡 pending → try to settle with an `update-concepts` (G) re-check / discuss editing or splitting (C) / defer.
+- Green below the quality floor → ask the user and fill it in together (no automatic filling).
+- Tagging + `map` + `render` finish inside scan.
 
-## Stage 4 — Review (검토)
+## Stage 4 — Review
 
-`conceptpowers:review` **전체 모드** 호출 — 매핑된 코드가 개념대로 구현됐는지 판정하고 **어긋남 목록**을 받는다.
+Call `conceptpowers:review` in **whole-project mode** — it judges whether mapped code is implemented as the concepts
+say and returns a **list of mismatches**.
 
-- 위반 → 사용자가 고른다: 코드 수정(TDD, 개념 안에서) / 개념 수정(`update-concepts` C) / 기능 분리.
-- 판단 불가(개념 모호) → `update-concepts`(F) 업그레이드 권장(Stage 2 루프백 — 그때 reference를 읽는다).
-- 루프백으로 개념이 바뀌었으면, 그 개념이 green으로 재정착했는지 먼저 확인한 뒤 review를 한 번 더 돌려 수렴을 확인한다. 아직 pending/red면 전체 모드의 판정 대상이 아니므로 "정착 전이라 판정 대상 아님"으로 남긴다.
-- review가 끝나면 선택지로 한 번 묻는다: "끝낸 작업을 레드팀(비판적 점검)까지 할까요? (`conceptpowers:redteam`)". **사용자가 하겠다고 고른 경우에만** 그 스킬을 실행한다 — 답이 없거나, 애매하거나, 다른 답이면 실행하지 않고 최종 리포트에 "건너뜀"으로 남긴다. auto가 스스로 판단해 실행하지 않는다.
+- Violation → the user chooses: fix the code (TDD, within the concept) / edit the concept (`update-concepts` C) /
+  split the feature.
+- Undecidable (vague concept) → recommend an `update-concepts` (F) upgrade (loop back to Stage 2 — reference is read
+  then).
+- If a loop-back changed a concept, first check that the concept has settled back to green, then run review once more
+  to confirm convergence. If it is still pending/red it is not judged in whole-project mode, so record it as "not
+  judged — not yet settled".
+- When review is done, ask once as an option: "Run a redteam (critical review) on the finished work?
+  (`conceptpowers:redteam`)". Run that skill **only if the user chooses to** — if there is no answer, an ambiguous
+  answer, or a different answer, do not run it and record it as "skipped" in the final report. auto never decides to
+  run it on its own.
 
 ## Final report
 
-진단(Stage 0) 스냅샷과 현재를 비교해 보고한다:
+Compare the diagnosis (Stage 0) snapshot with the current state and report:
 
-- 단계별 결과: 완료 / 건너뜀(사용자 선택) / 보류 항목.
-- 남은 일: 어긋남 목록, 미승인 🔴, 미정착 🟡, 보류한 격차, 아직 안 찍은 기준점 — 각각 어느 스킬로 이어가면 되는지.
-- `/conceptpowers:auto`는 언제든 재실행해 남은 단계부터 이어갈 수 있다고 안내.
-- 뷰어 확인: `npm run concepts:view`.
+- Result per stage: done / skipped (user's choice) / deferred items.
+- Remaining work: mismatch list, unapproved 🔴, unsettled 🟡, deferred gaps, a reference snapshot not yet recorded —
+  and for each, which skill to continue with.
+- Tell the user `/conceptpowers:auto` can be re-run at any time to resume from the remaining stages.
+- Viewer check: `npm run concepts:view`.
 
 ## Prohibited
 
-- 사용자 확인 없이 단계를 연속 실행하는 것.
-- 기준 문서·개념 내용을 **사용자 확인 없이** 저장하는 것(초안 제시는 허용, 확정은 언제나 사람).
-- 🔴 red 개념을 auto가 스스로 승인하는 것.
-- 검토 없이 기준점(`reference-snapshot`)을 찍는 것.
+- Running stages back to back without the user's confirmation.
+- Saving top-level baseline document or concept content **without the user's confirmation** (presenting drafts is allowed;
+  confirming is always the human's call).
+- auto approving a 🔴 red concept on its own.
+- Recording a reference snapshot (`reference-snapshot`) without review.
 
-## Viewer handoff (마지막 단계 — 생략 금지)
+## Viewer handoff (last step — never skip)
 
-`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
-있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.
+After `render`, end by handing over a clickable viewer link built from the viewer path and serve command that render
+printed (reuse the running server's URL if one is up). The deep-link format and fallback launch method are defined in
+the "Viewer handoff" section of `conceptpowers:update-concepts`.

@@ -1,6 +1,7 @@
 // @concept:redteam-review
 // tests/compat/redteamSkill.test.ts
-// redteam 스킬 문서가 개념 redteam-review의 약속을 절차로 담고 있는지, 해당 절 안에서 확인한다.
+// redteam 스킬 문서(영어 원본 SKILL.md·references/axes.md)가 개념 redteam-review의 약속을 절차로 담고 있는지, 해당 절 안에서 확인한다.
+// 번역본(.ko.md)은 도구가 따르지 않으므로 검사 대상이 아니다.
 // 시나리오마다 확인하는 규칙을 it 이름 앞 꼬리표로 밝힌다:
 //  [불변1] "점검 전에 개념이 최신인지 확인하고, 점검 대상에 닿는 낡음이 있으면 사람에게 묻기 전에는 진행하지 않는다"
 //  [불변2] "점검의 목적과 지적 범위를 점검할 때마다 사람에게 확인받는다"
@@ -36,70 +37,71 @@ const axes = (title: string) => section(read('references/axes.md'), title);
 
 describe('redteam 스킬 문서', () => {
   it('[불변1] 0단계는 auto Stage 0 진단을 가리킨다', () => {
-    const s = skill('0단계');
+    const s = skill('Step 0');
     expect(s).toContain('conceptpowers:auto');
     expect(s).toContain('Stage 0');
   });
 
   it('[불변1] 0단계는 기준점 없음(unlocked)을 최신으로 치지 않고 묻는다', () => {
-    const s = skill('0단계');
+    const s = skill('Step 0');
     expect(s).toContain('unlocked');
-    expect(s).toMatch(/unlocked[^\n]*묻/);
+    expect(s).toMatch(/unlocked[^\n]*ask/);
   });
 
   it('[불변2] 1단계는 목적과 함께 일반 품질 범위를 항상 묻는다', () => {
-    const s = skill('1단계');
-    expect(s).toContain('일반 품질');
-    expect(s).toContain('항상 묻는다');
+    const s = skill('Step 1');
+    expect(s).toContain('general quality');
+    expect(s).toContain('always ask');
   });
 
   it('[불변4] 보고는 위반과 개선 제안을 나눈다', () => {
-    const s = skill('5단계');
-    expect(s).toContain('위반');
-    expect(s).toContain('개선 제안');
+    const s = skill('Step 5');
+    expect(s).toContain('violation');
+    expect(s).toContain('improvement suggestion');
   });
 
   it('[불변4] 리뷰어 결과 종류에 판단 불가 자리가 있다', () => {
-    expect(axes('결과 형식')).toMatch(/종류:[^\n]*판단 불가/);
+    expect(axes('Result format')).toMatch(/Kind:[^\n]*undecidable/);
   });
 
   it('[허용3/제한2] 수정은 사람이 고른 항목만 한다', () => {
-    expect(skill('6단계')).toContain('고른 항목만');
+    expect(skill('Step 6')).toContain('only the items the user picked');
   });
 
   it('[불변3] 고친 뒤 과잉·목적 이탈·중복을 다시 본다', () => {
-    const s = skill('6단계');
-    for (const axis of ['과잉', '목적 이탈', '중복']) expect(s, axis).toContain(axis);
-    expect(s).toContain('다시 본다');
+    const s = skill('Step 6');
+    for (const axis of ['overreach', 'purpose drift', 'duplication'])
+      expect(s, axis).toContain(axis);
+    expect(s).toContain('check again');
   });
 
   it('[제한4] 개념 수정을 고르면 이번 점검은 거기서 끝낸다', () => {
-    expect(skill('6단계')).toContain('이번 점검은 여기서 끝낸다');
+    expect(skill('Step 6')).toContain('this review ends here');
   });
 
   it('[제한1] 반박자는 판정을 근거와 함께 돌려주고 기각된 지적은 버린다', () => {
-    const a = axes('반박 검증 (4단계)');
-    expect(a).toMatch(/판정:[^\n]*견딤[^\n]*기각/);
-    expect(a).toContain('근거:');
+    const a = axes('Refutation (step 4)');
+    expect(a).toMatch(/Verdict:[^\n]*holds[^\n]*rejected/);
+    expect(a).toContain('Grounds:');
   });
 
   it('[제한1] 반박을 거치지 않은 지적은 미검증으로 밝혀서만 보인다', () => {
-    expect(axes('반박 검증 (4단계)')).toContain('미검증');
-    expect(skill('5단계')).toContain('미검증');
+    expect(axes('Refutation (step 4)')).toContain('unverified');
+    expect(skill('Step 5')).toContain('unverified');
   });
 
   it('[제한1] 서브에이전트가 없어도 반박은 축 리뷰를 마친 뒤 따로 한다', () => {
-    expect(skill('서브에이전트가 없을 때')).toContain('따로');
+    expect(skill('When no subagents are available')).toContain('separately');
   });
 
   it('[제한3] 개념 없음 코드는 개념 부재만으로 과잉이 아니다', () => {
-    const a = axes('코드 분류표');
+    const a = axes('Code classification table');
     expect(a).toContain('@concept:none');
-    expect(a).toContain('과잉');
+    expect(a).toContain('overreach');
   });
 
   it('[제한4] 금지 절과 반박자 지시에 참고자료 읽기 금지가 있다', () => {
     expect(skill('Prohibited')).toContain('reference/');
-    expect(axes('반박 검증 (4단계)')).toContain('reference/');
+    expect(axes('Refutation (step 4)')).toContain('reference/');
   });
 });

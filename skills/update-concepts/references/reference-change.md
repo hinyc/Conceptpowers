@@ -1,28 +1,34 @@
-# Update Concepts — A. 참고자료 변경 반영 (references/reference-change.md)
+# Update Concepts — A. Applying reference changes (references/reference-change.md)
 
-This file is loaded by `conceptpowers:update-concepts` for 계기 A. The common wrap-up (공통 마무리) and
+This file is loaded by `conceptpowers:update-concepts` for trigger A. The common wrap-up and
 prohibitions stay in the skill's `SKILL.md`.
 
-1. `reference-diff` 결과를 사용자에게 보고한다: 변경·삭제·추가 개수, `affected`(영향 개념 slug와 상태),
-   `newMaterial`(새 개념 후보 자료), `unreachable`(이 기기에서 닿지 않는 등록 위치 — 삭제가 아니다),
-   `truncated`(비교가 일부만 됐다는 신호 — 있으면 결과가 전부가 아님을 알린다).
-   파일 이름은 사용자에게만 보이고, 내용은 발췌하지 않는다.
-   `unlocked: true`면 비교 기준점이 없다 — `added`·`newMaterial`이 바뀐 자료가 아니라 아무 개념도 인용하지 않은
-   자료 전체임을 알리고, 사용자가 말한 자료로 좁힐지 묻는다.
-2. **영향 개념마다** `references/upgrade.md`를 따른다 — 그 개념의 근거(`sources`)에 적힌 참고자료 좌표를
-   다시 읽고, 바뀐 자료와 현재 규칙이 어긋나는지 사용자와 함께 판단한다.
-   - 어긋남 없음 → 그대로 둔다(근거 좌표만 낡았으면 `sources`만 고친다).
-   - 어긋남 있음 → 고칠 문장을 사용자에게 제안하고, **승인 후** `references/edit.md`의 `edit-concept` 절차로 적용한다.
-   - 자료가 삭제됐다면 그 근거를 빼거나 `decision`으로 바꾸자고 제안한다.
-   - 참고자료가 **green 개념과 어긋나면 개념이 우선**이다 — 어느 문서의 어느 부분이 어느 규칙과 다른지
-     보고하고 사람이 정할 때까지 개념을 고치지 않는다.
-3. `newMaterial`이 있으면 `references/batch.md`의 후보 추출 규칙으로 그 자료에서 개념 후보를 뽑아 제안한다.
-   사용자가 고른 것만 `references/new-concept.md`로 정의한다. 조용히 건너뛰지 않는다.
-4. **기준점 기록**: 영향 개념을 모두 처리(갱신 또는 "그대로 둠")한 뒤에만, 사용자 확인을 받고 찍는다.
-   보류가 하나라도 있으면 찍지 않는다 — 엔진은 `--reviewed`만 보면 막지 않으므로 이 확인이 유일한 방어선이다:
+1. Report the `reference-diff` result to the user: counts of changed / removed / added, `affected` (affected concept
+   slugs and their status), `newMaterial` (material that may yield new concepts), `unreachable` (registered
+   locations not reachable on this machine — not a deletion), `truncated` (a sign the comparison was partial — if
+   present, say the result is not complete).
+   Show file names to the user only, and never excerpt contents.
+   If `unlocked: true`, there is no comparison snapshot — explain that `added` / `newMaterial` are not changed
+   material but all material no concept cites, and ask whether to narrow it to the material the user mentioned.
+2. **For each affected concept**, follow `references/upgrade.md` — re-read the reference locators written in that
+   concept's sources (`sources`) and decide with the user whether the changed material and the current rules
+   disagree.
+   - No disagreement → leave it as is (if only the source locator is stale, fix just `sources`).
+   - Disagreement → propose the sentence to change to the user and, **after approval**, apply it with the
+     `edit-concept` procedure of `references/edit.md`.
+   - If the material was deleted, propose removing that source or turning it into a `decision`.
+   - If reference material **disagrees with a green concept, the concept wins** — report which part of which
+     document differs from which rule, and do not edit the concept until the human decides.
+3. If there is `newMaterial`, draw concept candidates from that material with the candidate-extraction rules of
+   `references/batch.md` and propose them. Define only what the user picks, through `references/new-concept.md`.
+   Never skip silently.
+4. **Record the snapshot**: only after every affected concept has been handled (updated, or "left as is"), and
+   with the user's confirmation. If even one is on hold, do not record it — the engine does not block on
+   `--reviewed` alone, so this confirmation is the only line of defense:
    ```
    node "<cli>" reference-snapshot --reviewed --root .
    ```
-   `--reviewed`는 "영향 개념을 사람과 함께 다시 봤다"는 선언이다 — 검토 없이 붙이지 않는다.
-   보류가 남았으면 찍지 않는다(다음 세션에 다시 알림이 온다). 결과의 `skipped`(읽지 못해 빠진 파일)와
-   `mode`(`shared`/`local` — 기준점을 저장소에 올리는지)를 보고한다.
+   `--reviewed` is a declaration that "the affected concepts were re-examined with a human" — never add it without
+   a review. If anything is still on hold, do not record it (the notice will come again next session). Report the
+   result's `skipped` (files left out because they could not be read) and `mode` (`shared`/`local` — whether the
+   snapshot is committed to the repository).
