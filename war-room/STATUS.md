@@ -7,7 +7,7 @@
 ## 진행 중
 
 - 공식 디렉터리 배포 준비 (develop 브랜치). 단계: 1 개념(concept-steward) → 2 게이트 문구·기본 locale(engine) → 3 스킬 영어화(skill-author) → 4 뷰어(viewer) → 5 배포 준비 → 6 릴리스 흐름 develop→main(release) → 7 레드팀·directory strict validate
-- 지금: release · 아이콘 추가 + 첫 main 릴리스 v1.19.0 (사용자 승인 2026-11-11) · 시도 1/3. 다음은 사용자 push → 디렉터리 포털 제출
+- 지금: v1.19.0 릴리스 완료(로컬). 사용자 push 대기 → claude.ai/directory/manage 포털 제출
 
 ## 다음 할 일
 
@@ -29,7 +29,7 @@
 
 ## 최근 완료 (최대 10개, 넘치면 archive/로)
 
-- 2026-11-11 · release · 아이콘(.claude-plugin/icon.png) 추가, 첫 main 릴리스 v1.19.0 커밋·태그 (결과 예정, push는 사용자)
+- 2026-11-11 · release · 아이콘(.claude-plugin/icon.png) 추가, 첫 main 릴리스 v1.19.0 커밋·태그 (시도 1회, main 172개 파일, directory strict validate 통과, push는 사용자)
 - 2026-11-11 · engine+release+manager · 레드팀 지적 수정: locale 폴백 단일화(readProjectLocale), 커밋 제목 정제, 릴리스 --resume·원상복구·main 뒤처짐 검사·--atomic·description 검사, README 링크·뷰어·PRIVACY 문서 (검증 19/21 → 문서 2건 매니저 수정)
 - 2026-11-09 · redteam-reviewer · develop 변경분 레드팀 (지적 17건)
 - 2026-11-09 · release+manager · 매니페스트 URL 필드, sourcemap 제거, Node>=20, 릴리스 흐름 develop→main(--yes 안전장치), CI, format, README·CHANGELOG·SECURITY·PRIVACY·CONTRIBUTING (검증: 문서 1건 실패 → manager 수정)

@@ -270,9 +270,6 @@ async function finishDeploy(git, tag, log) {
     'push는 직접 하세요(이 스크립트는 push하지 않습니다). 한 번에 모두 반영되거나 모두 거절되도록 --atomic을 씁니다:'
   );
   log(`  ${pushCommand(tag)}`);
-  log(
-    '디렉터리 제출 전 아이콘: .claude-plugin/icon.png를 넣고 .claude-plugin/plugin.json에 "icon": "./.claude-plugin/icon.png"를 더하세요.'
-  );
   return { tag, mainCommit };
 }
 
