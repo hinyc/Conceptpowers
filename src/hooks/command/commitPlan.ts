@@ -5,6 +5,7 @@
 // 커밋 앞에 파일·색인·설정을 바꾸거나 다른 명령을 실행할 수 있는 명령이 있거나, 커밋 인자·위치·저장소가 셸 확장으로
 // 정해지거나, 반복문·함수·셸마다 다른 구문처럼 실행 순서를 알 수 없으면 unresolved — 게이트가 "검사한 척
 // 통과"하지 않게 한다(governance-mode 불변).
+import { R, otherCommit, impureBefore, type Reason } from '../../i18n/commitReasons.js';
 import { parseShellCommand, type ShellSegment } from './shellWords.js';
 import { analyzeCommitArgs, type CommitScope } from './commitArgs.js';
 type CommitArgs = ReturnType<typeof analyzeCommitArgs>;
@@ -44,7 +45,7 @@ export type CommitPlan =
   | { kind: 'none' }
   | { kind: 'commit'; scope: CommitScope; pathspecs: string[]; cwd?: string; top?: true }
   /** locations: 파일은 확정 못 했지만 위치를 아는 커밋들 — 없으면 위치 불명 */
-  | { kind: 'unresolved'; reason: string; locations?: CommitLocation[] };
+  | { kind: 'unresolved'; reason: Reason; locations?: CommitLocation[] };
 type Unresolved = Extract<CommitPlan, { kind: 'unresolved' }>;
 
 export interface PlanDeps {
@@ -57,13 +58,13 @@ interface WalkState {
   command: string;
   found: CommitPlan | null;
   /** 지금까지 나온, 커밋될 파일을 바꿀 수 있는 명령(첫 사유) */
-  impure: string | null;
+  impure: Reason | null;
   /** 지금까지 나온, 저장소 자체(.git)를 바꿀 수 있는 명령(첫 사유) — 색인만 바꾸는 git 명령은 빼고 */
-  repoChange: string | null;
+  repoChange: Reason | null;
   /** 해석하지 못한 자리(다른 명령에 넘긴 코드 등)에서 커밋을 실행할 수 있다는 흔적 */
-  netHit: string | null;
+  netHit: Reason | null;
   /** 커밋 흔적이 있으면 확정 불가로 만드는 구조(반복문·함수 정의·셸마다 다른 구문·닫히지 않은 구문) */
-  risky: string | null;
+  risky: Reason | null;
   cwd: string | undefined;
   cwdUnknown: boolean;
   /** 위치가 cwd 자체가 아니라 cwd의 저장소 최상위다(셸 alias 본문) */
@@ -74,7 +75,7 @@ interface WalkState {
   /** 지금까지 찾은 커밋들의 위치 */
   locations: CommitLocation[];
   /** 위치는 알지만 파일을 확정하지 못한 커밋의 첫 사유 — 뒤의 커밋 위치도 마저 모은다 */
-  pending: string | null;
+  pending: Reason | null;
 }
 
 interface Ctx {
@@ -105,7 +106,7 @@ export interface Unwrapped {
   relocated: boolean;
 }
 
-const unresolved = (reason: string): Unresolved => ({ kind: 'unresolved', reason });
+const unresolved = (reason: Reason): Unresolved => ({ kind: 'unresolved', reason });
 export const commandName = (word: string) => word.replace(/^=/, '').split('/').pop() ?? word;
 export const isGitName = (word: string) => ['git', 'git.exe'].includes(commandName(word));
 const joinPath = (base: string | undefined, next: string) =>
@@ -124,7 +125,7 @@ function looksLikeCommit(text: string): boolean {
 }
 
 // repoSafe: 색인만 바꾸고 저장소 자체(.git)는 바꾸지 못하는 명령(git add 등).
-function markImpure(state: WalkState, why: string, repoSafe = false): void {
+function markImpure(state: WalkState, why: Reason, repoSafe = false): void {
   state.impure ??= why;
   if (!repoSafe) state.repoChange ??= why;
 }
@@ -202,9 +203,9 @@ export function isDirMove(seg: ShellSegment): boolean {
 }
 
 function markParseRisk(state: WalkState, parsed: ReturnType<typeof parseShellCommand>): void {
-  if (parsed.incomplete) state.risky ??= '셸마다 다르게 읽힐 수 있는 닫히지 않은 따옴표·치환';
-  if (parsed.functionDefined) state.risky ??= '함수 정의가 있는 명령';
-  if (parsed.ambiguous) state.risky ??= '셸마다 다르게 읽히는 구문(명령 자리의 산술식)';
+  if (parsed.incomplete) state.risky ??= R.incompleteQuote;
+  if (parsed.functionDefined) state.risky ??= R.functionDefined;
+  if (parsed.ambiguous) state.risky ??= R.ambiguousSyntax;
 }
 
 // 괄호 서브셸 안의 cd는 따라가고 괄호가 닫히면 되돌린다. cd가 뒤 명령의 위치에 남는 방식은 dirEffects 규칙 하나로
@@ -212,7 +213,7 @@ function markParseRisk(state: WalkState, parsed: ReturnType<typeof parseShellCom
 async function walk(command: string, ctx: Ctx): Promise<Unresolved | null> {
   const { state } = ctx;
   if (ctx.depth > MAX_DEPTH) {
-    return looksLikeCommit(command) ? unresolved('명령 중첩이 너무 깊어 해석할 수 없음') : null;
+    return looksLikeCommit(command) ? unresolved(R.deepNesting) : null;
   }
   const parsed = parseShellCommand(command);
   markParseRisk(state, parsed);
@@ -245,7 +246,7 @@ async function visitWhole(segs: ShellSegment[], k: number, ctx: Ctx): Promise<Un
   }
   const foundBefore = state.found;
   const r = await visitSegment(seg, ctx);
-  if (seg.writes) markImpure(state, '파일에 쓰는 리다이렉션');
+  if (seg.writes) markImpure(state, R.redirectWrites);
   if (r) return r;
   if (!foundBefore && state.found) {
     const clash = concurrentClash(segs, k);
@@ -254,7 +255,7 @@ async function visitWhole(segs: ShellSegment[], k: number, ctx: Ctx): Promise<Un
   return null;
 }
 
-const CLASH = '파이프·백그라운드로 커밋과 동시에 실행되는 명령';
+const CLASH = R.clash;
 const isConcurrent = (c: string | undefined) => c === '|' || c === '&';
 // j 구간 앞의 구분자 — 괄호를 닫은 뒤면 닫은 다음의 구분자.
 const connectorBefore = (segs: ShellSegment[], j: number) =>
@@ -262,7 +263,7 @@ const connectorBefore = (segs: ShellSegment[], j: number) =>
 
 // 커밋과 파이프·백그라운드로 동시에 실행되는 뒤쪽 명령이 순수하지 않으면 경합으로 커밋 파일이 달라질 수 있다.
 // 서브셸 안 커밋은 그 서브셸이 통째로 파이프·백그라운드일 수 있으므로, 뒤에서 처음 동시 실행이 시작되는 곳부터 본다.
-function concurrentClash(segs: ShellSegment[], k: number): string | null {
+function concurrentClash(segs: ShellSegment[], k: number): Reason | null {
   if (segs[k].depth > 0) {
     const from = segs.findIndex((_, j) => j > k && isConcurrent(connectorBefore(segs, j)));
     return from >= 0 && segs.slice(from).some((s) => !isPureSegment(s)) ? CLASH : null;
@@ -327,7 +328,7 @@ export function unwrap(seg: ShellSegment): Unwrapped {
 async function visitSegment(seg: ShellSegment, ctx: Ctx): Promise<Unresolved | null> {
   const { state } = ctx;
   if (seg.words.some((w, k) => !seg.dynamicWords[k] && CONTROL_WORDS.has(w))) {
-    state.risky ??= '반복문·분기문 안에서 실행되는 명령';
+    state.risky ??= R.loopBranch;
   }
   const cmd = unwrap(seg);
   if (cmd.words.length === 0) {
@@ -336,9 +337,9 @@ async function visitSegment(seg: ShellSegment, ctx: Ctx): Promise<Unresolved | n
     return null;
   }
   if (cmd.dynamic[0]) {
-    markImpure(state, '셸 확장으로 정해지는 명령');
+    markImpure(state, R.expansionCommand);
     state.cwdUnknown = true; // 무엇이든(cd 포함) 될 수 있다 — 서브셸 안이면 괄호가 닫힐 때 되돌린다
-    return cmd.words.includes('commit') ? unresolved('셸 확장으로 정해지는 명령 속 커밋') : null;
+    return cmd.words.includes('commit') ? unresolved(R.expansionCommit) : null;
   }
   const name = commandName(cmd.words[0]);
   // 현재 셸에서 읽어 실행하는 스크립트(source·.)는 실행 위치를 바꿀 수 있다.
@@ -361,7 +362,7 @@ async function visitSegment(seg: ShellSegment, ctx: Ctx): Promise<Unresolved | n
     return null;
   }
   if (name === 'eval') {
-    markImpure(state, '셸 확장(eval)');
+    markImpure(state, R.evalExpansion);
     return walk(args.join(' '), deeper(ctx, true));
   }
   if (SHELLS.has(name)) return visitShell(seg, args, argsDyn, ctx);
@@ -369,7 +370,7 @@ async function visitSegment(seg: ShellSegment, ctx: Ctx): Promise<Unresolved | n
     return visitGit(args, argsDyn, cmd, ctx, new Map());
   }
   if (PURE_COMMANDS.has(name)) return null;
-  markImpure(state, '커밋될 파일을 바꾸거나 다른 명령을 실행할 수 있는 명령');
+  markImpure(state, R.mayChangeOrRun);
   if (!FILE_COMMANDS.has(name)) scanExecutor(seg, cmd, state);
   return null;
 }
@@ -384,14 +385,14 @@ function scanExecutor(seg: ShellSegment, cmd: Unwrapped, state: WalkState): void
     gitAt > 0 &&
     words.slice(gitAt + 1).some((w, k) => w === 'commit' || dynamic[gitAt + 1 + k])
   ) {
-    state.netHit ??= '다른 명령을 실행하는 명령 안의 git commit';
+    state.netHit ??= R.netExec;
     return;
   }
   const codeTexts = [
     ...seg.heredocs,
     ...words.filter((_, k) => k > 0 && CODE_FLAGS.has(words[k - 1])),
   ];
-  if (codeTexts.some(looksLikeCommit)) state.netHit ??= '다른 명령에 넘긴 코드 속 git commit';
+  if (codeTexts.some(looksLikeCommit)) state.netHit ??= R.netCode;
 }
 
 function markGitEnv(state: WalkState, cmd: Unwrapped): void {
@@ -443,9 +444,9 @@ async function visitShell(
     }
     return null;
   }
-  markImpure(ctx.state, '셸이 읽어 실행하는 스크립트');
+  markImpure(ctx.state, R.shellScript);
   if (looksLikeCommit(ctx.state.command)) {
-    ctx.state.netHit ??= '셸이 읽어 실행하는 입력 속 git commit';
+    ctx.state.netHit ??= R.shellInput;
   }
   return null;
 }
@@ -513,32 +514,32 @@ async function visitGit(
   const rest = args.slice(g.at + 1);
   const restDyn = dyn.slice(g.at + 1);
   if (dyn[g.at]) {
-    markImpure(state, '셸 확장으로 정해지는 git 명령');
-    return unresolved('셸 확장으로 정해지는 git 하위 명령');
+    markImpure(state, R.expansionGit);
+    return unresolved(R.expansionGitSub);
   }
 
   const kind = classifyGitCall(sub, rest);
   if (kind === 'unknown') return visitGitAlias(sub, args, dyn, cmd, ctx, g);
   if (kind === 'read') return null;
   if (kind === 'otherCommit') {
-    return deferCommit(ctx, g, `git commit이 아닌 명령(git ${sub})이 만드는 커밋`);
+    return deferCommit(ctx, g, otherCommit(sub));
   }
   if (kind === 'writeFiles') {
-    markImpure(state, '파일을 쓰는 git 명령');
+    markImpure(state, R.gitWritesFiles);
     return null;
   }
   if (kind === 'mutateConfig') {
     state.configChanged = true;
-    markImpure(state, 'git 설정을 바꾸는 명령');
+    markImpure(state, R.gitMutatesConfig);
     return null;
   }
   if (kind === 'mutateIndex') {
-    markImpure(state, '스테이징(색인)을 바꾸는 git 명령', true);
+    markImpure(state, R.gitMutatesIndex, true);
     return null;
   }
   if (kind === 'execute') {
-    markImpure(state, '다른 명령을 실행할 수 있는 git 명령');
-    if (rest.some(looksLikeCommit)) state.netHit ??= 'git이 실행하는 명령 속 git commit';
+    markImpure(state, R.gitExecutes);
+    if (rest.some(looksLikeCommit)) state.netHit ??= R.gitExecutesCommit;
     return null;
   }
   return visitCommit(rest, restDyn, g, ctx);
@@ -546,10 +547,10 @@ async function visitGit(
 
 // 커밋이 실행될 위치. 확정할 수 없으면 그 사유(셸 확장 안·저장소를 바꾸는 옵션·환경 변수·모르는 곳으로 옮김). 앞선
 // git 아닌 명령이 저장소 자체를 바꿀 수 있으면 위치에 표시한다 — 실행 전 디스크로 본 저장소 비교를 믿지 않게.
-function commitLocation(ctx: Ctx, g: GitGlobals): KnownLocation | string {
-  if (ctx.dynamic) return '셸 확장(eval·명령 치환) 안에서 실행되는 커밋';
-  if (g.repo) return '다른 저장소·색인을 가리키는 git 옵션·환경 변수';
-  if (ctx.state.cwdUnknown || g.unknownLocation) return '알 수 없는 위치로 옮긴 뒤의 커밋';
+function commitLocation(ctx: Ctx, g: GitGlobals): KnownLocation | Reason {
+  if (ctx.dynamic) return R.commitDynamic;
+  if (g.repo) return R.commitOtherRepo;
+  if (ctx.state.cwdUnknown || g.unknownLocation) return R.commitUnknownPlace;
   return {
     known: true,
     ...(g.cwd ? { cwd: g.cwd } : {}),
@@ -559,20 +560,20 @@ function commitLocation(ctx: Ctx, g: GitGlobals): KnownLocation | string {
 }
 
 // 위치는 알지만 커밋될 파일을 확정할 수 없는 사유.
-function commitDoubt(commit: CommitArgs, g: GitGlobals, state: WalkState): string | null {
+function commitDoubt(commit: CommitArgs, g: GitGlobals, state: WalkState): Reason | null {
   if (commit.unresolved) return commit.unresolved;
   if (g.pathspecMode && (commit.scope === 'only' || commit.scope === 'include')) {
-    return '경로 해석 방식을 바꾸는 git 옵션·환경 변수와 함께 쓴 경로 지정 커밋';
+    return R.pathspecMode;
   }
-  if (state.found || state.pending) return '한 명령에서 여러 번 커밋';
-  if (state.impure) return `커밋 앞의 명령이 커밋될 파일을 바꿀 수 있음(${state.impure})`;
+  if (state.found || state.pending) return R.multipleCommits;
+  if (state.impure) return impureBefore(state.impure);
   return null;
 }
 
 // 파일을 확정할 수 없는 커밋: 위치를 알면 모아 두고 사유를 남긴 채 뒤를 마저 훑는다.
-function deferCommit(ctx: Ctx, g: GitGlobals, why: string): Unresolved | null {
+function deferCommit(ctx: Ctx, g: GitGlobals, why: Reason): Unresolved | null {
   const at = commitLocation(ctx, g);
-  if (typeof at === 'string') return unresolved(why);
+  if (typeof at === 'function') return unresolved(why);
   ctx.state.locations.push(at);
   ctx.state.pending ??= why;
   return null;
@@ -590,7 +591,7 @@ function visitCommit(
   const commit = analyzeCommitArgs(rest, restDyn);
   if (commit.dryRun) return null;
   const at = commitLocation(ctx, g);
-  if (typeof at === 'string') return unresolved(at);
+  if (typeof at === 'function') return unresolved(at);
   state.locations.push(at);
   const doubt = commitDoubt(commit, g, state);
   if (doubt) {
@@ -624,20 +625,18 @@ async function visitGitAlias(
     // 내장 명령은 alias로 덮어쓸 수 없다 — 설정이 주입돼도 커밋으로 풀리지 않는다. 다만 읽기·변경 분류에
     // 없는 내장 명령은 무엇을 바꿀지 모르므로, 뒤따르는 커밋의 파일을 확정할 수 없게 표시한다.
     if (GIT_BUILTINS.has(sub)) {
-      markImpure(ctx.state, '분류되지 않은 git 내장 명령');
+      markImpure(ctx.state, R.unclassifiedGitBuiltin);
       return null;
     }
-    return g.configInjected
-      ? unresolved('같은 명령에서 주입·변경된 설정으로 정해질 수 있는 git 명령')
-      : null;
+    return g.configInjected ? unresolved(R.aliasInjected) : null;
   }
-  if (ctx.depth >= MAX_DEPTH) return unresolved('git alias가 너무 깊게 이어져 해석할 수 없음');
+  if (ctx.depth >= MAX_DEPTH) return unresolved(R.aliasTooDeep);
   // alias 풀이는 스테이징 가늠(stagingReach)과 같은 함수 하나로 한다.
   const expanded = expandGitAlias(alias, rest, restDyn);
   if (expanded.kind === 'undecidable') return unresolved(expanded.reason);
   if (expanded.kind === 'shell') {
     const r = await walkAliasBody(expanded.command, deeper(ctx), g);
-    markImpure(state, '셸 명령으로 풀리는 git alias');
+    markImpure(state, R.shellAlias);
     return r;
   }
   if (expanded.words.length === 0) return null;

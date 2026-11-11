@@ -4,6 +4,13 @@ import { z } from 'zod';
 export const LocaleSchema = z.enum(['ko', 'en']);
 export type Locale = z.infer<typeof LocaleSchema>;
 
+// 두 기본값은 용도가 다르다 — 헷갈리지 말 것.
+// - LEGACY_LOCALE: init.json에 locale 키가 없을 때 "읽는" 값. 키 없는 기존 프로젝트는 한국어로 유지한다
+//   (스키마 default·빈칸 채우기·설정을 못 읽은 폴백이 모두 이 값을 쓴다).
+// - NEW_PROJECT_LOCALE: 새로 `init`할 때 init.json에 "써 넣는" 값(영어 기본, 한국어는 번역본).
+export const LEGACY_LOCALE: Locale = 'ko';
+export const NEW_PROJECT_LOCALE: Locale = 'en';
+
 // 커밋 게이트 강도(governance-mode 개념): strict=차단, standard=확인(기본), light=경고만.
 // 설정이 없거나 깨졌으면 항상 standard로 동작한다(안전한 쪽).
 export const EnforcementSchema = z.enum(['strict', 'standard', 'light']);
@@ -12,7 +19,7 @@ export type Enforcement = z.infer<typeof EnforcementSchema>;
 export const InitConfigSchema = z.object({
   version: z.string(),
   enabled: z.literal(true),
-  locale: LocaleSchema.default('ko'),
+  locale: LocaleSchema.default(LEGACY_LOCALE),
   versionCheck: z.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.

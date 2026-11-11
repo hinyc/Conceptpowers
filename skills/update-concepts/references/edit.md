@@ -1,39 +1,45 @@
-# Update Concepts — C. 사용자 요청으로 개념·기준 문서 수정 (references/edit.md)
+# Update Concepts — C. Editing a concept or top-level baseline document at the user's request (references/edit.md)
 
-This file is loaded by `conceptpowers:update-concepts` for 계기 C, and by 계기 A·F when an approved
-sentence is applied. The common wrap-up (공통 마무리) and prohibitions stay in the skill's `SKILL.md`.
+This file is loaded by `conceptpowers:update-concepts` for trigger C, and by triggers A and F when an approved
+sentence is applied. The common wrap-up and prohibitions stay in the skill's `SKILL.md`.
 
-**사용자가 명시적으로 요청했을 때만** 실행한다 — 코드 작업 중 스스로 개념을 고치지 않는다.
+Run **only when the user explicitly asked** — never edit a concept on your own initiative during code work.
 
-1. 무엇을 고치는지 확인한다: 개념 / 기능 명세 / `architecture.md` / `infra.md`.
-2. **개념을 고칠 때** — 고칠 문장을 제안하기 전에 그 개념의 `sources` 가운데 참고자료 좌표만 확인한다
-   (`references/upgrade.md`의 Reference first와 같은 범위 — 폴더 전체를 읽지 않는다). 참고자료가 green 개념과
-   어긋나면 개념이 우선이다. 고칠 문장을 사용자에게 보여 승인을 받은 뒤:
-   - 바뀌는 항목만 담은 패치 JSON을 만든다(최상위 항목은 통째로 바뀐다 — 건드리는 절 전체를 넣는다).
-   - 엔진으로 적용해 pending 강등과 사유 기록을 보장한다:
-     `node "<cli>" edit-concept <slug> --file <patch.json> --reason "<왜 바뀌는지>" --root .`
-     `--reason`은 필수다 — 비었으면 엔진이 아무것도 고치지 않는다. 사유는 어긋남 안내와 이력에 그대로 남는다.
-     green이면 `pending`으로 내려가고(`"downgradedToPending": true`) 뷰어가 다시 그려진다.
-     red·pending은 상태를 그대로 유지한다(`"downgradedToPending": false`) — red는 고친 뒤에도 미승인 제안이므로
-     끝에 D(승인)를 안내하고, pending은 G처럼 정합성 검사 뒤 정착한다.
-   - **green을 유지하려고 JSON을 손으로 고치지 않는다.** `SKILL.md`의 공통 마무리(정합성 검사 → 증빙 → 사용자
-     확인 후 green 재정착)를 거친다.
-   - **계약 지문 밖 항목만 고쳤을 때**(`sources`·`codeLinks`·`title`·`aliases`·`actions.interaction` — 예: `scan`이
-     넘긴 깨진 근거 좌표): **고치기 전 green이었고, 마지막 정합성 증빙이 pass이며, 충돌 사유가 없을 때만** 지문이
-     그대로라 기존 pass 증빙이 계속 유효하다. 이때는 정합성 검사를 다시 돌리지 않고 사용자 확인 후 green으로
-     재정착한다(지문이 그대로라 코드·테스트 따라오기도 요구되지 않는다). 셋 중 하나라도 아니면 공통 마무리를 그대로 거친다.
-   - 개념이 바뀌면 코드 영향 범위(`@concept` 태그·feature `codePaths`)를 보고한다. 관련 코드도 바꿔야 하면
-     같은 커밋에 넣고, 정말 코드 변경이 필요 없으면 사용자 확인 후 기록한다:
+1. Confirm what is being edited: a concept / a feature spec / `architecture.md` / `infra.md`.
+2. **When editing a concept** — before proposing the sentence to change, check only the reference locators among
+   that concept's `sources` (the same scope as Reference first in `references/upgrade.md` — do not read the whole
+   folder). If reference material disagrees with a green concept, the concept wins. Show the user the sentence to
+   change, get approval, then:
+   - Build a patch JSON holding only the changed fields (a top-level field is replaced whole — include the entire
+     section you touch).
+   - Apply it through the engine so the pending demotion and the reason record are guaranteed:
+     `node "<cli>" edit-concept <slug> --file <patch.json> --reason "<why it changes>" --root .`
+     `--reason` is required — if empty, the engine changes nothing. The reason stays as is in the drift notice and
+     history. A green concept drops to `pending` (`"downgradedToPending": true`) and the viewer is redrawn.
+     red and pending keep their status (`"downgradedToPending": false`) — red is still an unapproved proposal after
+     the edit, so point to D (approval) at the end; pending settles after a consistency check, as in G.
+   - **Never hand-edit the JSON to keep it green.** Go through the common wrap-up of `SKILL.md` (consistency check
+     → attestation → re-settle to green after the user confirms).
+   - **When only fields outside the contract fingerprint changed** (`sources`, `codeLinks`, `title`, `aliases`,
+     `actions.interaction` — e.g. a broken source locator handed over by `scan`): **only if it was green before the
+     edit, its last consistency attestation is pass, and it has no conflict reason**, the fingerprint is unchanged
+     and the existing pass attestation stays valid. In that case do not re-run the consistency check; re-settle to
+     green after the user confirms (the fingerprint is unchanged, so code and tests are not required to follow
+     either). If any one of the three does not hold, go through the common wrap-up as usual.
+   - When a concept changes, report the code impact (`@concept` tags, feature `codePaths`). If related code must
+     change too, put it in the same commit; if truly no code change is needed, record that after the user
+     confirms:
      `node "<cli>" attest-no-code <slug> --note "<why>" --root .`
-   - **같은 커밋에서 그 개념의 테스트를 검토한다**(conceptDrivenTests, 커밋 게이트 `concept-test-follow` —
-     strict 차단·standard 질문·light 경고): 테스트는 매핑 캐시·`@concept` 태그로 찾는다. 새 규칙에서 시나리오를 다시 뽑아
-     옛 규칙을 검증하던 테스트를 고쳐 함께 스테이징한다 — 스테이징된 테스트만으로 게이트를 통과하므로 기록은
-     남기지 않는다. 고칠 것이 없거나 테스트가 아직 없을 때만 사용자 확인 후 기록한다(이 기록은 남길 때와 커밋할 때
-     사람에게 묻는다):
+   - **Review that concept's tests in the same commit** (conceptDrivenTests, commit gate `concept-test-follow` —
+     strict denies, standard asks, light warns): find the tests through the mapping cache and `@concept` tags.
+     Re-derive scenarios from the new rules, fix the tests that verified the old rules, and stage them together —
+     staged tests alone pass the gate, so leave no record. Only when there is nothing to fix or no tests exist yet,
+     record it after the user confirms (this record asks the human both when written and at commit):
      `node "<cli>" attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>" --root .`
-     (`--result updated`는 테스트를 이미 앞선 커밋에서 고친 경우에만 쓴다.)
-     테스트는 개념 범위 안에 머문다 — 개념에 없는 검사가 필요하면 그것은 또 하나의 개념 수정이다.
-3. **기능 명세·architecture·infra를 고칠 때** — 상위 기준이 하위 개념을 제약하므로, 이 변경이 어떤 개념을 함께
-   바꿔야 하는지 사용자와 검토한다. 저장은 사용자 확인 뒤에만.
-4. 요약을 보고하고 **수정된 개념의 지금 상태를 다시 알린다** — pending이면 정합성 검사 통과 + 사용자 확인으로
-   green에 재정착하기 전까지, red면 D(승인) 전까지 코드를 다스리지 않는다.
+     (Use `--result updated` only when the tests were already fixed in an earlier commit.)
+     Tests stay within the concept's scope — if a check outside the concept is needed, that is yet another concept
+     edit.
+3. **When editing a feature spec, architecture or infra** — the top-level baseline documents constrain the concepts below them,
+   so review with the user which concepts must change along with it. Save only after the user confirms.
+4. Report a summary and **restate the current status of the edited concept** — if pending, it governs no code until
+   it re-settles to green via a passing consistency check + the user's confirmation; if red, until D (approval).

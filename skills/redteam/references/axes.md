@@ -1,78 +1,92 @@
-# Redteam — 축별 리뷰어와 반박 검증 (references/axes.md)
+# Redteam — Per-axis reviewers and refutation (references/axes.md)
 
 This file is loaded by `conceptpowers:redteam` for steps 2–4. The flow, the report and the prohibitions stay
 in the skill's `SKILL.md`. Reviewers and refuters are given the parts of this file they need — they do not
 see `SKILL.md`, so every rule they must follow is written here.
 
-## 코드 분류표 (2단계)
+## Code classification table (step 2)
 
-| 코드 갈래                          | 개념 준수                 | 과잉·목적 이탈 기준                                                                                           | 중복·부작용·레드팀 |
-| ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ |
-| 개념 태그 있음 (`@concept:<slug>`) | review 판정 절차 그대로   | 그 개념이 요구하지 않는, **사용자에게 보이는** 동작·옵션·기능. 내부 보조 코드(헬퍼·타입·분기)는 과잉이 아니다 | 모두 적용          |
-| `@concept:none` / 개념 없음 영역   | 해당 없음 — 정상인 상태다 | **작업 목적**에 비해 과한 것 — 아무도 안 쓰는 내보내기·옵션, 작업 목적에 비해 필요 없는(쓸데없는) 추상화      | 모두 적용          |
-| 표식 없음                          | —                         | —                                                                                                             | 판단하지 않음      |
+| Code branch                             | Concept compliance                      | Overreach and purpose-drift yardstick                                                                                                                  | Duplication, side effects, red-team critique |
+| --------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| Concept tag present (`@concept:<slug>`) | The review judgment procedure as is     | **User-visible** behavior, options or features that the concept does not require. Internal supporting code (helpers, types, branches) is not overreach | All apply                                    |
+| `@concept:none` / no-concept area       | Not applicable — this is a normal state | Anything excessive for the **purpose of the work** — exports or options nobody uses, abstraction that the purpose of the work does not need (needless) | All apply                                    |
+| No marker                               | —                                       | —                                                                                                                                                      | Not judged                                   |
 
-- `@concept:none` 코드를 "어느 개념도 요구하지 않는다"는 이유만으로 과잉이라 하지 않는다. 개념 없음은 허용된 상태다.
-- `none`인데 실제로는 사용자에게 하는 약속(규칙)을 담은 코드는 **`none` 오분류 후보**로 보고만 한다 — 표식을
-  정하는 것은 `scan`의 일이다.
+- Do not call `@concept:none` code overreach solely because "no concept requires it". Having no concept is an
+  allowed state.
+- Code marked `none` that actually carries a promise (rule) to the user is only reported as a **`none`
+  misclassification candidate** — deciding the marker is `scan`'s job.
 
-## 축별 지시 (3단계)
+## Per-axis instructions (step 3)
 
-모든 리뷰어가 받는 것: 1단계에서 확인받은 목적(개념 쪽 · 작업 쪽)과 레드팀 범위, 분류표, 대상 파일 목록.
-모든 리뷰어가 지키는 것: `reference/`를 읽지 않는다, 코드·개념을 고치지 않는다, 지적마다 아래 결과 형식을 쓴다.
+What every reviewer receives: the purpose confirmed in step 1 (concept side · work side) and the red-team scope, the
+classification table, and the target file list.
+What every reviewer observes: do not read `reference/`, do not edit code or concepts, use the result format below for
+every finding.
 
-1. **개념 준수** — 태그 있는 파일만. `skills/review/SKILL.md`의 Judgment 절 판정 그대로: 위반 없음 / 위반(어느
-   규칙인지) / 판단 불가(어느 규칙이 어떻게 모호한지). 위반은 `종류: 위반`, 판단 불가는 `종류: 판단 불가`로 낸다.
-   이 축만 "위반"이라는 말을 쓴다.
-2. **레드팀 비판** — 반대 입장에서: 이 방식이 틀릴 수 있는 입력·상황, 더 단순한 방법, 목적을 이루지 못하는
-   경로. 범위가 "목적에 묶기"면 근거를 개념 규칙이나 작업 목적에 묶지 못한 지적은 버린다. "일반 품질까지"면
-   보안·성능·읽기 쉬움 지적을 더하되 `일반 품질` 꼬리표를 단다.
-3. **중복** — 같은 일을 하는 코드·문서가 두 곳 이상인 것. 이미 있는 유틸을 두고 새로 만든 것 포함. 합칠 곳을
-   하나 제안한다. 두 곳이 따로 바뀌어 어긋날 수 있는 것만 지적한다 — 원본을 가리키는 한 줄 요약은 중복이 아니다.
-4. **과잉·목적 이탈** — 분류표의 갈래별 기준. 작업 목적에 없던 기능·옵션·설정, 쓰이지 않는 코드, 하다 보니
-   끼어든 무관한 변경.
-5. **부작용** — 바뀐 코드를 부르는 쪽까지 따라가, 의도하지 않은 동작 변화(기본값·순서·오류 처리·출력 형식
-   변화)를 찾는다.
+1. **Concept compliance** — tagged files only. Judge exactly as the Judgment section of `skills/review/SKILL.md`: no
+   violation / violation (which rule) / undecidable (which rule is vague and how). Emit violations as
+   `Kind: violation` and undecidables as `Kind: undecidable`. Only this axis uses the word "violation".
+2. **Red-team critique** — from the opposing side: inputs and situations in which this approach can be wrong, a
+   simpler way, paths by which the purpose is not achieved. If the scope is "bound to purpose", discard findings whose
+   grounds cannot be tied to a concept rule or the purpose of the work. If it is "include general quality", add
+   security, performance and readability findings, tagged `general quality`.
+3. **Duplication** — code or documents that do the same thing in two or more places, including building something new
+   while an existing utility already exists. Propose one place to merge into. Flag only cases where the two places can
+   change separately and drift apart — a one-line summary pointing to the original is not duplication.
+4. **Overreach and purpose drift** — the per-branch yardstick in the classification table. Features, options or
+   settings that were not in the purpose of the work, unused code, unrelated changes that crept in along the way.
+5. **Side effects** — follow the changed code out to its callers and look for unintended behavior changes (changes in
+   defaults, ordering, error handling, output format).
 
-## 결과 형식
-
-```
-- 파일·위치: <path>:<line 또는 심볼>
-- 축: <다섯 축 중 하나>
-- 종류: 위반 | 판단 불가 | 개선 제안
-- 심각도: 높음 | 중간 | 낮음
-- 근거: <개념 slug와 규칙 문장> 또는 <작업 목적의 어느 부분> 또는 <일반 품질>
-- 제안 수정: <한두 줄>
-```
-
-심각도는 축마다 기본값이 있고, 영향이 크면 축과 관계없이 올린다:
-
-- 기본값 — 규칙 위반·부작용 = **높음**, 중복·과잉 = **중간**, 그 밖의 개선 제안 = **낮음**.
-- 축과 관계없이 **높음** — 목적을 이루지 못하는 경로, 데이터 손실 위험, 사용자에게 보이는 동작 변화.
-- 부작용을 **낮음**으로 내리는 것은 아래 셋을 **모두** 만족할 때뿐이다. 하나라도 아니면 높음 그대로다.
-  1. 사용자나 다른 도구가 받는 결과(화면·출력·저장되는 데이터·종료 코드)가 바뀌지 않는다.
-  2. 다른 파일이 쓰는 이름·인자·반환 형식·설정 키가 그대로다.
-  3. 기존 테스트를 고치지 않아도 그대로 통과한다.
-  - 예: 로그 문구만 바뀜, 내부 변수 이름만 바뀜, 결과는 같고 처리 순서만 바뀜.
-
-## 반박 검증 (4단계)
-
-반박자는 지적을 받아 "이것은 문제가 아니다"를 증명하려 한다: 이미 다른 곳에서 처리되는지, 근거 규칙을 잘못
-읽었는지, 목적이 실제로 그것을 요구하는지, 개념 없음 코드를 과잉으로 몬 것인지.
-
-반박자가 받는 것: 지적, 1단계에서 확인받은 목적, 대상 파일. 반박자가 지키는 것: `reference/`를 읽지 않는다,
-코드·개념을 고치지 않는다, 근거는 개념과 1단계 목적과 코드뿐이다.
-
-결과 형식 — 지적마다:
+## Result format
 
 ```
-판정: 견딤 | 기각 | 하향(<새 심각도>)
-근거: <파일·줄을 짚은 두세 줄>
+- File and location: <path>:<line or symbol>
+- Axis: <one of the five axes>
+- Kind: violation | undecidable | improvement suggestion
+- Severity: high | medium | low
+- Grounds: <concept slug and rule sentence> or <which part of the purpose of the work> or <general quality>
+- Suggested fix: <one or two lines>
 ```
 
-- **기각**에는 반드시 근거를 단다. 기각된 지적은 버린다 — 보고서에 싣지 않는다.
-- **하향**은 남기되 심각도를 내린다. 판단이 서지 않으면 **견딤**으로 두고 근거에 "이견"을 적는다.
-- 심각도 **높음**은 지적마다 반박자 하나. **중간·낮음**은 축별로 묶어 반박자 하나가 처리한다.
-- 한 번 실행의 반박자는 **최대 10**. 넘치면 심각도순으로 자르고, 잘린 지적은 반박을 거치지 않았으므로 보고서에
-  **미검증**이라고 밝혀서만 따로 싣는다 — 검증된 지적과 섞지 않는다.
-- 반박자는 리뷰어와 다른 에이전트여야 한다(서브에이전트가 없을 때의 순차 절차는 `SKILL.md`).
+Each axis has a default severity; raise it regardless of axis when the impact is large:
+
+- Defaults — rule violation and side effects = **high**, duplication and overreach = **medium**, other improvement
+  suggestions = **low**.
+- **High** regardless of axis — a path by which the purpose is not achieved, a risk of data loss, a user-visible
+  behavior change.
+- A side effect may be lowered to **low** only when **all** three below hold. If any one does not, it stays high.
+  1. The result received by the user or other tools (screen, output, stored data, exit code) does not change.
+  2. Names, arguments, return shapes and config keys used by other files stay the same.
+  3. Existing tests still pass without being modified.
+  - Examples: only a log message changed, only an internal variable name changed, the result is the same and only the
+    processing order changed.
+
+## Refutation (step 4)
+
+The refuter takes a finding and tries to prove "this is not a problem": whether it is already handled elsewhere,
+whether the grounding rule was misread, whether the purpose actually requires it, whether no-concept code was branded
+as overreach.
+
+What the refuter receives: the finding, the purpose confirmed in step 1, the target files. What the refuter observes:
+do not read `reference/`, do not edit code or concepts, the only grounds are the concepts, the step-1 purpose and the
+code.
+
+Result format — per finding:
+
+```
+Verdict: holds | rejected | downgraded(<new severity>)
+Grounds: <two or three lines pointing at file and line>
+```
+
+- **rejected** must always carry grounds. Rejected findings are discarded — they do not go into the report.
+- **downgraded** findings stay but with lower severity. If you cannot decide, leave it as **holds** and write
+  "dissent" in the grounds.
+- **High**-severity findings get one refuter each. **Medium and low** findings are grouped per axis and handled by one
+  refuter.
+- At most **10** refuters per run. If there are more, cut by severity; the findings cut off did not go through
+  refutation, so include them in the report only separately and marked **unverified** — never mixed with verified
+  findings.
+- The refuter must be a different agent from the reviewer (the sequential procedure for when no subagents are
+  available is in `SKILL.md`).

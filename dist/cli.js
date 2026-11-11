@@ -7131,11 +7131,13 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var LEGACY_LOCALE = "ko";
+var NEW_PROJECT_LOCALE = "en";
 var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
-  locale: LocaleSchema.default("ko"),
+  locale: LocaleSchema.default(LEGACY_LOCALE),
   versionCheck: external_exports.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
@@ -7408,7 +7410,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -8196,6 +8198,15 @@ async function readInitConfig(root) {
     return null;
   }
 }
+async function readProjectLocale(root) {
+  try {
+    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const parsed = LocaleSchema.safeParse(raw?.locale);
+    return parsed.success ? parsed.data : LEGACY_LOCALE;
+  } catch {
+    return LEGACY_LOCALE;
+  }
+}
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
@@ -8273,7 +8284,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
@@ -8409,7 +8420,7 @@ async function ensureReference(root) {
     return false;
   } catch {
   }
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   await writeFile4(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
@@ -8442,7 +8453,7 @@ async function ensureReferencePaths(root) {
   } catch {
   }
   await mkdir5(dir, { recursive: true });
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   await writeFile5(target2, seedTemplates[locale].referencePaths, "utf8");
   return true;
 }
@@ -8937,7 +8948,7 @@ async function scaffoldInit(root, opts) {
     const synced2 = await syncGenerated(root);
     return { viewerScriptAdded: synced2.scriptStatus !== "no-package", synced: synced2 };
   }
-  const locale = opts.locale ?? "ko";
+  const locale = opts.locale ?? NEW_PROJECT_LOCALE;
   const config = parseInitConfig({
     version: "0.1.0",
     enabled: true,
@@ -9625,8 +9636,10 @@ function viewerHint() {
 function reportFailedSteps(err, failed, hint) {
   if (failed.length === 0) return;
   const tail = hint ? ` \u2014 ${hint}` : "";
-  err(`[conceptpowers] some generated-artifact steps failed \u2014 ${formatFailedSteps(failed)}${tail}
-`);
+  err(
+    `[conceptpowers] some generated-artifact steps failed \u2014 ${formatFailedSteps(failed)}${tail}
+`
+  );
 }
 var AUTO_SYNC_RETRY_HINT = "auto version-sync held the version stamp; fix the cause, then run version-sync (the next command also retries)";
 async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => process.stderr.write(s)) {
@@ -9658,14 +9671,15 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     } catch {
     }
   });
-  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--lang <lang>", "ko|en", "ko").option("--enforcement <level>", "strict|standard|light (\uCEE4\uBC0B \uAC8C\uC774\uD2B8 \uAC15\uB3C4)", "standard").action(async (o) => {
+  program2.command("init").option("--root <dir>", "project root", process.cwd()).option("--lang <lang>", "ko|en (default: en)", NEW_PROJECT_LOCALE).option("--enforcement <level>", "strict|standard|light (\uCEE4\uBC0B \uAC8C\uC774\uD2B8 \uAC15\uB3C4)", "standard").action(async (o) => {
     const result = await scaffoldInit(o.root, {
       locale: o.lang,
       enforcement: o.enforcement
     });
     reportFailedSteps(err, result.synced.failedSteps);
+    const hintLocale = await readProjectLocale(o.root);
     out(
-      buildInitHint(o.lang, {
+      buildInitHint(hintLocale, {
         viewerScriptAdded: result.viewerScriptAdded,
         viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
         viewerPath: VIEWER_INDEX
@@ -9945,4 +9959,3 @@ if (isMain) {
 export {
   runCli
 };
-//# sourceMappingURL=cli.js.map

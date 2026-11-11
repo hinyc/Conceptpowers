@@ -1,24 +1,26 @@
-# Review — ② 특정 개념 · ③ 전체 (references/whole.md)
+# Review — ② One concept · ③ Whole project (references/whole.md)
 
 This file is loaded by `conceptpowers:review` for modes ② and ③ only. Mode ① (pre-change check) never
 reads it. The judgment rules, the concepts-only basis and the prohibitions stay in the skill's `SKILL.md`.
 
-## ② 개념 → 파일
+## ② Concept → files
 
-- `docs/conceptpowers/.cache/mapping.json`의 `slug → files` + 그 개념을 가리키는 feature의 `codePaths`
-  (`docs/conceptpowers/features/**`). 디스크에 없는 경로는 건너뛴다.
-- 파일이 많으면 규칙과 맞닿는 파일부터(허용·제한 행동이 바꾸는 관리 대상을 다루는 파일) 보고, 나머지는
-  표본 검사한다고 사용자에게 밝힌다.
+- `slug → files` in `docs/conceptpowers/.cache/mapping.json` + the `codePaths` of features that point to that concept
+  (`docs/conceptpowers/features/**`). Skip paths that are not on disk.
+- If there are many files, look first at the files that touch the rules (files handling the managed state that the
+  allowed/restricted actions change), and tell the user the rest are sample-checked.
 
-## ③ 전체
+## ③ Whole project
 
-- `node "<cli>" audit --root .`로 매핑 무결성(`unknownTags`, 같은 이름표 개념 파일이 둘 이상인 `duplicateSlugs`)을
-  먼저 확인하고, green 개념마다 ②를 돈다. `duplicateSlugs`가 있으면 그 개념은 어느 파일이 기준인지 정할 수 없으니
-  판정을 미루고 보고해, 사용자 확인 아래 `update-concepts`로 하나만 남게 정리하게 한다.
-  red/pending 개념은 코드를 다스리지 않으므로 판정 대상이 아니다(목록만 보고).
+- First check mapping integrity with `node "<cli>" audit --root .` (`unknownTags`, and `duplicateSlugs` — two or more
+  concept files with the same slug), then run ② for every green concept. If there are `duplicateSlugs`, it cannot be
+  decided which file is authoritative for that concept: postpone its judgment and report it, so the user can confirm
+  merging it into a single file via `update-concepts`.
+  Red/pending concepts do not govern code, so they are not judged (list them only).
 
 ## Report (②/③)
 
-개념별로: 검사한 파일 수 / 위반 목록(파일·규칙·근거) / 판단 불가 목록(어느 규칙이 모호한지) / 표본 검사로
-넘긴 파일. 권장 조치는 `SKILL.md` 판정표의 (a)/(b)/업그레이드 가운데 하나로 적는다. 기준선은 읽기 전용이므로 개념
-생성·수정은 사용자 확인 뒤 `update-concepts`에서만 한다.
+Per concept: number of files checked / violations (file, rule, grounds) / undecidables (which rule is vague) / files
+left to sample checking. Write the recommended action as one of (a)/(b)/upgrade from the judgment section of
+`SKILL.md`. The baseline is read-only, so concepts are created or edited only in `update-concepts` after the user's
+confirmation.

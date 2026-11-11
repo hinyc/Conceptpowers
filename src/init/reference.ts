@@ -9,7 +9,7 @@ import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { walkUsableFiles } from './referenceWalk.js';
 import { cpPaths } from '../paths.js';
-import { readInitConfig } from './readConfig.js';
+import { readProjectLocale } from './readConfig.js';
 import { seedTemplates } from '../i18n/messages.js';
 
 const SEED_README = 'README.md';
@@ -26,7 +26,7 @@ export async function ensureReference(root: string): Promise<boolean> {
   } catch {
     /* 없으면 생성 */
   }
-  const locale = (await readInitConfig(root))?.locale ?? 'ko';
+  const locale = await readProjectLocale(root);
   await writeFile(readme, seedTemplates[locale].reference, 'utf8');
   return true;
 }

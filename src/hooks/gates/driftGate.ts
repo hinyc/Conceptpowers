@@ -12,6 +12,7 @@ import { readNoCodeLog, freshNoCode } from '../../drift/noCode.js';
 import { pendingConceptDocs } from '../../drift/pendingDocs.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { defaultIgnoreGlobs } from '../../schema/initConfig.js';
+import { gateText, type GateText } from '../../i18n/gateMessages.js';
 import type { GateCheck, GateInput } from './types.js';
 
 const MAX_LISTED_PATHS = 8;
@@ -92,54 +93,48 @@ export async function engagedDrift(input: GateInput): Promise<DriftItem[]> {
   return (await splitDrift(input))?.engaged ?? [];
 }
 
-function capConcepts<T>(items: T[]): { shown: T[]; more: string } {
+function capConcepts<T>(items: T[], t: GateText): { shown: T[]; more: string } {
   const shown = items.slice(0, MAX_LISTED_CONCEPTS);
-  const more = items.length > shown.length ? ` 외 ${items.length - shown.length}개` : '';
+  const more = items.length > shown.length ? t.andMore(items.length - shown.length) : '';
   return { shown, more };
 }
 
 export const checkDrift: GateCheck = async (input) => {
   const split = await splitDrift(input);
   if (!split || (split.missingDoc.length === 0 && split.missingCode.length === 0)) return null;
+  const t = gateText[input.locale];
   const reasons: string[] = [];
   const contexts: string[] = [];
   if (split.missingDoc.length > 0) {
-    const { shown, more } = capConcepts(split.missingDoc);
+    const { shown, more } = capConcepts(split.missingDoc, t);
     const detail = shown
       .map(({ d, stagedRelated }) => {
         const paths = stagedRelated.slice(0, MAX_LISTED_PATHS).map((p) => sanitizeText(p));
         const pathsMore =
-          stagedRelated.length > paths.length ? ` 외 ${stagedRelated.length - paths.length}개` : '';
-        const label =
-          paths.length > 0
-            ? `${paths.join(', ')}${pathsMore}`
-            : '@concept 태그가 붙은 스테이징 파일';
-        return `${sanitizeText(d.slug)}(문서: ${sanitizeText(d.docPath)}) <- ${label}`;
+          stagedRelated.length > paths.length ? t.andMore(stagedRelated.length - paths.length) : '';
+        const label = paths.length > 0 ? `${paths.join(', ')}${pathsMore}` : t.driftNoTaggedLabel;
+        return t.driftDocLabel(sanitizeText(d.slug), sanitizeText(d.docPath), label);
       })
       .join(' / ');
-    reasons.push(
-      `[CONCEPT DRIFT] 수정된 개념과 맵핑된 코드가 커밋에 들어왔는데 개념 문서가 함께 오지 않았습니다 — ${detail}${more}. 표시된 개념 문서를 같은 커밋에 스테이징하세요.`
-    );
+    reasons.push(t.driftMissingDoc(detail, more));
     contexts.push(
       'Staged files are mapped to the listed changed concept(s), and the edited concept doc (path shown per slug) has uncommitted changes but is not staged. Stage the concept JSON together with the code in this commit.'
     );
   }
   if (split.missingCode.length > 0) {
-    const { shown, more } = capConcepts(split.missingCode);
+    const { shown, more } = capConcepts(split.missingCode, t);
     const detail = shown
       .map((d) => {
         // 코드가 하나도 안 들어온 경우에만 오므로 사실상 연결 코드 전부다 — 안내문 폭증을 막기 위해 상한을 둔다.
         const missing = missingRelatedPaths(d.relatedPaths, split.staged);
         const paths = missing.slice(0, MAX_LISTED_PATHS).map((p) => sanitizeText(p));
         const pathsMore =
-          missing.length > paths.length ? ` 외 ${missing.length - paths.length}개` : '';
+          missing.length > paths.length ? t.andMore(missing.length - paths.length) : '';
         const why = d.reason ? ` (reason: "${sanitizeText(d.reason)}")` : '';
         return `${sanitizeText(d.slug)}${why} -> related code (none staged): ${paths.join(', ')}${pathsMore}`;
       })
       .join(' / ');
-    reasons.push(
-      `[CONCEPT DRIFT] ${detail}${more}. 개념 문서가 커밋에 들어왔는데 연결된 코드가 하나도 안 따라왔습니다. 개념 변경에 맞춰 고친 코드를 함께 스테이징하세요 — 연결 코드 전부가 아니라 실제로 고친 파일이면 됩니다. 코드 변경이 정말 필요 없는 개념 수정이면 사용자 확인 후 기록하고 다시 커밋하세요: attest-no-code 슬러그 --note "사유" (개념의 현재 지문에 묶이며, 결산 이력에 사유가 함께 남습니다).`
-    );
+    reasons.push(t.driftMissingCode(detail, more));
     contexts.push(
       'The staged concept doc(s) changed but NONE of their related code is staged (any one related file staged counts as followed; a staged file whose leading comment block carries the @concept:<slug> tag also counts, even if the mapping cache is stale). If you did change code for this concept, add the @concept:<slug> tag to it and stage it (then run conceptpowers:scan). Otherwise run conceptpowers:review to update the code. When the concept change genuinely needs no code change, confirm with the user and record it — attest-no-code <slug> --note "<why>" — then retry the commit; the record is bound to the concept hash and the gate passes in every enforcement mode, with the reason kept in the reconcile history.'
     );
@@ -156,7 +151,7 @@ export const checkDrift: GateCheck = async (input) => {
 export async function driftReviewNote(input: GateInput): Promise<string | null> {
   const split = await splitDrift(input);
   if (!split || split.untouched.length === 0) return null;
-  const { shown, more } = capConcepts(split.untouched);
+  const { shown, more } = capConcepts(split.untouched, gateText.en); // 모델용 안내라 영어
   const listed = shown.map((d) => {
     const why = d.reason ? ` (reason: "${sanitizeText(d.reason)}")` : '';
     return `${sanitizeText(d.slug)}${why}`;

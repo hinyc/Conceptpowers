@@ -145,7 +145,7 @@ export async function snapshotCommit(root: string, plan: CommitTarget): Promise<
       );
     return { files: await diff('ACMR'), deleted: await diff('D'), content: treeContent(cwd, tree) };
   } catch (error) {
-    throw new Error(`커밋될 내용을 계산하지 못했습니다 — ${(error as Error).message}`);
+    throw new Error(`Could not compute the content to be committed — ${(error as Error).message}`);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

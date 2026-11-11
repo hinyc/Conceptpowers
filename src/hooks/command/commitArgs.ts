@@ -4,13 +4,15 @@
 // 풀고, 모르는·모호한 옵션이나 셸 확장으로 정해지는 옵션·경로는 확정 불가로 돌린다. 옵션 값(-m 메시지 등)은
 // 범위를 바꾸지 않으므로 셸 확장이어도 괜찮다.
 
+import { R, type Reason } from '../../i18n/commitReasons.js';
+
 export type CommitScope = 'index' | 'all' | 'only' | 'include';
 
 export interface CommitArgs {
   dryRun: boolean;
   scope: CommitScope;
   pathspecs: string[];
-  unresolved?: string;
+  unresolved?: Reason;
 }
 
 type OptionKind = 'flag' | 'value' | 'optional';
@@ -63,7 +65,7 @@ const LONG_OPTIONS: Record<string, OptionKind> = {
 const SHORT_VALUE = new Set(['m', 'F', 'C', 'c', 't']);
 const SHORT_OPTIONAL_ATTACHED = new Set(['S', 'u']);
 const SHORT_FLAGS = new Set(['a', 'i', 'o', 'e', 'n', 'q', 's', 'v', 'z', 'h']);
-const INTERACTIVE = '대화형으로 고르는 커밋(-p·--interactive)';
+const INTERACTIVE = R.interactive;
 
 // git처럼 정확히 같은 이름이 없으면 유일한 접두사로 푼다. 없거나 모호하면 null.
 function resolveLong(name: string): string | null {
@@ -77,7 +79,7 @@ export function analyzeCommitArgs(words: string[], dynamic: boolean[]): CommitAr
   const flags = { all: false, include: false, only: false };
   let afterDashDash = false;
   let dryRun = false; // git처럼 뒤에 나온 --dry-run / --no-dry-run이 이긴다
-  const stop = (unresolved: string): CommitArgs => ({
+  const stop = (unresolved: Reason): CommitArgs => ({
     dryRun: false,
     scope: 'index',
     pathspecs,
@@ -87,7 +89,7 @@ export function analyzeCommitArgs(words: string[], dynamic: boolean[]): CommitAr
   for (let i = 0; i < words.length; i++) {
     const arg = words[i];
     if (afterDashDash || !arg.startsWith('-') || arg === '-') {
-      if (dynamic[i]) return stop('셸 확장으로 정해지는 커밋 경로·옵션');
+      if (dynamic[i]) return stop(R.dynPathOpt);
       pathspecs.push(arg);
       continue;
     }
@@ -97,33 +99,33 @@ export function analyzeCommitArgs(words: string[], dynamic: boolean[]): CommitAr
     }
     if (arg.startsWith('--')) {
       const rawName = arg.slice(2).split('=')[0];
-      if (dynamic[i] && /[$`]/.test(rawName)) return stop('셸 확장으로 정해지는 커밋 옵션');
+      if (dynamic[i] && /[$`]/.test(rawName)) return stop(R.dynOpt);
       const name = resolveLong(rawName);
-      if (!name) return stop('알 수 없거나 모호한 커밋 옵션');
+      if (!name) return stop(R.unknownOpt);
       // 값이 붙은 옵션(--message="$MSG")의 값은 범위를 바꾸지 않는다 — 그 밖의 셸 확장 옵션은 알 수 없다.
       if (dynamic[i] && !(arg.includes('=') && LONG_OPTIONS[name] !== 'flag')) {
-        return stop('셸 확장으로 정해지는 커밋 옵션');
+        return stop(R.dynOpt);
       }
       if (name === 'dry-run' || name === 'no-dry-run') {
         dryRun = name === 'dry-run';
         continue;
       }
       if (name === 'interactive' || name === 'patch') return stop(INTERACTIVE);
-      if (name === 'pathspec-from-file') return stop('파일에서 읽는 커밋 경로');
+      if (name === 'pathspec-from-file') return stop(R.pathFromFile);
       if (name === 'all' || name === 'include' || name === 'only') flags[name] = true;
       if (LONG_OPTIONS[name] === 'value' && !arg.includes('=')) i++;
       continue;
     }
     for (let k = 1; k < arg.length; k++) {
       const ch = arg[k];
-      if (ch === '$' || ch === '`') return stop('셸 확장으로 정해지는 커밋 옵션');
+      if (ch === '$' || ch === '`') return stop(R.dynOpt);
       if (ch === 'p') return stop(INTERACTIVE);
       if (SHORT_VALUE.has(ch)) {
         if (k === arg.length - 1) i++;
         break;
       }
       if (SHORT_OPTIONAL_ATTACHED.has(ch)) break; // -S<key>, -u<mode>
-      if (!SHORT_FLAGS.has(ch)) return stop('알 수 없는 커밋 옵션');
+      if (!SHORT_FLAGS.has(ch)) return stop(R.unknownShortOpt);
       if (ch === 'a') flags.all = true;
       if (ch === 'i') flags.include = true;
       if (ch === 'o') flags.only = true;

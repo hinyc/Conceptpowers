@@ -17,8 +17,8 @@ import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
 import { findUnlinkedConcepts } from './audit/unlinked.js';
 import { listTrackedFiles } from './audit/tracked.js';
-import { readInitConfig } from './init/readConfig.js';
-import { defaultIgnoreGlobs } from './schema/initConfig.js';
+import { readInitConfig, readProjectLocale } from './init/readConfig.js';
+import { defaultIgnoreGlobs, NEW_PROJECT_LOCALE } from './schema/initConfig.js';
 import { matchesAny } from './util/glob.js';
 import { isMainModule } from './util/isMain.js';
 import { approveConcept } from './concept/approve.js';
@@ -61,7 +61,9 @@ function viewerHint(): { viewer: string; serve: string } {
 function reportFailedSteps(err: Out, failed: readonly SyncStepFailure[], hint?: string): void {
   if (failed.length === 0) return;
   const tail = hint ? ` — ${hint}` : '';
-  err(`[conceptpowers] some generated-artifact steps failed — ${formatFailedSteps(failed)}${tail}\n`);
+  err(
+    `[conceptpowers] some generated-artifact steps failed — ${formatFailedSteps(failed)}${tail}\n`
+  );
 }
 
 // 자동 경로 실패 안내. 도장은 보류됐고 render 등 다른 명령도 도장을 찍지 않으므로, 다음 명령·version-sync가 다시 시도한다.
@@ -113,7 +115,7 @@ export async function runCli(
   program
     .command('init')
     .option('--root <dir>', 'project root', process.cwd())
-    .option('--lang <lang>', 'ko|en', 'ko')
+    .option('--lang <lang>', 'ko|en (default: en)', NEW_PROJECT_LOCALE)
     .option('--enforcement <level>', 'strict|standard|light (커밋 게이트 강도)', 'standard')
     .action(async (o) => {
       const result = await scaffoldInit(o.root, {
@@ -121,8 +123,10 @@ export async function runCli(
         enforcement: o.enforcement,
       });
       reportFailedSteps(err, result.synced.failedSteps);
+      // 이미 초기화된 프로젝트는 init.json의 locale이 우선한다(다시 init해도 설정은 보존) — 안내도 그 언어로.
+      const hintLocale = await readProjectLocale(o.root);
       out(
-        buildInitHint(o.lang as Locale, {
+        buildInitHint(hintLocale, {
           viewerScriptAdded: result.viewerScriptAdded,
           viewerCommand: `npm run ${VIEWER_SCRIPT_NAME}`,
           viewerPath: VIEWER_INDEX,

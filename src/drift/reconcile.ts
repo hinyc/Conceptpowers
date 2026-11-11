@@ -57,9 +57,7 @@ async function pruneStaleRecords(
 ): Promise<{ pruned: string[]; failures: PruneFailure[] }> {
   const targets = pruneTargets(root);
   const settled = await Promise.allSettled(targets.map(([prune]) => prune(root, slugs)));
-  const pruned = new Set(
-    settled.flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
-  );
+  const pruned = new Set(settled.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])));
   const failures = settled.flatMap((r, i): PruneFailure[] =>
     r.status === 'rejected'
       ? [

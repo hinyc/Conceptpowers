@@ -14,6 +14,7 @@
 //    예전처럼 이 프로젝트 저장소로 본다.
 //  - 커밋이 여럿이면 전부 다른 저장소일 때만 foreign.
 import { resolve } from 'node:path';
+import { R, type Reason } from '../../i18n/commitReasons.js';
 import { canonicalPath, foldCase, repoRelative, rootRelative } from '../../paths.js';
 import { tryGit } from '../../util/git.js';
 import type { CommitLocation, CommitPlan } from './commitPlan.js';
@@ -68,7 +69,7 @@ export function createRepoLocator(root: string): RepoLocator {
   };
 }
 
-const unresolved = (reason: string): Planned => ({ kind: 'unresolved', reason });
+const unresolved = (reason: Reason): Planned => ({ kind: 'unresolved', reason });
 
 // 같은 저장소의 루트 밖 위치에서 친 확정 커밋: 경로 지정을 루트 기준 상대 경로로 풀어 루트 안에서 친 커밋과 같게
 // 넘긴다(루트를 품는 위 폴더의 `.`은 `..` — 그만큼 넓다). 최상위 기준 경로는 그대로, 위치 기준 magic이나 위치 글자에
@@ -82,9 +83,7 @@ function fromOutside(root: string, plan: Omit<Resolved, 'cwd' | 'top'>, dir: str
     return rel === '' ? '.' : rel;
   });
   if (specs.some((s) => s === null)) {
-    return unresolved(
-      '프로젝트 밖(같은 저장소)의 위치에서 루트 기준으로 풀 수 없는 경로를 지정한 커밋'
-    );
+    return unresolved(R.outsideRel);
   }
   return { ...plan, pathspecs: specs as string[] };
 }
@@ -106,11 +105,11 @@ async function locateResolved(
   locator: RepoLocator
 ): Promise<LocatedCommit> {
   const dir = await placeOf(plan, start, locator);
-  if (dir === null) return unresolved('저장소 최상위를 확인할 수 없는 셸 alias 속 커밋');
+  if (dir === null) return unresolved(R.aliasTop);
   const relation = await locator.relationOf(dir);
   if (relation === 'other') return FOREIGN;
   if (relation === 'unknown') {
-    return unresolved('git 저장소인지 확인할 수 없는 프로젝트 밖의 위치에서 실행되는 커밋');
+    return unresolved(R.unknownRepo);
   }
   const { cwd: _moved, top: _top, ...rest } = plan;
   const rel = repoRelative(root, dir);

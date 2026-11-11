@@ -4088,11 +4088,12 @@ var NEVER = INVALID;
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var LEGACY_LOCALE = "ko";
 var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
-  locale: LocaleSchema.default("ko"),
+  locale: LocaleSchema.default(LEGACY_LOCALE),
   versionCheck: external_exports.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
@@ -4323,7 +4324,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -4664,6 +4665,15 @@ async function readInitConfig(root) {
     return null;
   }
 }
+async function readProjectLocale(root) {
+  try {
+    const raw = JSON.parse(await readFile4(cpPaths(root).initFile, "utf8"));
+    const parsed = LocaleSchema.safeParse(raw?.locale);
+    return parsed.success ? parsed.data : LEGACY_LOCALE;
+  } catch {
+    return LEGACY_LOCALE;
+  }
+}
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
@@ -4803,7 +4813,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
@@ -4938,7 +4948,7 @@ async function ensureReference(root) {
     return false;
   } catch {
   }
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   await writeFile4(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
@@ -4971,7 +4981,7 @@ async function ensureReferencePaths(root) {
   } catch {
   }
   await mkdir5(dir, { recursive: true });
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   await writeFile5(target2, seedTemplates[locale].referencePaths, "utf8");
   return true;
 }
@@ -5803,7 +5813,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
   const cli = join18(pluginRoot, "dist", "cli.js");
   const autoSyncBlock = buildAutoSyncBlock(await syncIfStale(root, pluginRoot), cli);
   const config = await readInitConfig(root);
-  const locale = config?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   const conceptTestsLine = config?.conceptDrivenTests !== false ? [
     "- Test code is governed too: before writing or modifying tests, locate the concept(s) for the code under test (@concept tag \u2192 manifest index) and derive the test scenarios from their actions.allow / actions.restrict / principle.immutableRules \u2014 each scenario should state which rule it verifies. If no concept exists, define it first (conceptpowers:update-concepts). Every test file must carry an @concept tag naming a real concept; `@concept:none` is not accepted for tests (commit gate: concept-test-scope).",
     `- When a concept changes, its tests MUST be reviewed in the same commit: update them to match the new rules and stage them (staged tests pass the gate with no record), or \u2014 only when the change genuinely needs no test change, or the concept has no tests yet \u2014 get the user's confirmation and record it: attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>". The record is bound to the concept hash, so editing the concept again invalidates it (commit gate: concept-test-follow).`,
@@ -5950,6 +5960,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
           "Ask the user to choose, once at the start of this session: (a) update now, or (b) ignore and continue.",
           "To update now, the user runs:",
           "  /plugin marketplace update conceptpowers-dev",
+          "  /plugin update conceptpowers@conceptpowers-dev",
           "If the user chooses to ignore, do not block \u2014 continue the requested work as usual. Turning the check off is possible with `versionCheck: false` in init.json.",
           "After updating, generated artifacts (viewer assets, concepts:view script) are auto-synced at the next session start or the next Conceptpowers CLI use \u2014 no manual sync needed. The baseline (concepts/specs/architecture/infra) is never touched.",
           "Updates are manual by design; do not nag repeatedly within this session.",
@@ -5996,4 +6007,3 @@ export {
   buildSessionStartOutput,
   buildSessionStartOutputSafe
 };
-//# sourceMappingURL=sessionStart.js.map

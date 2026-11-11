@@ -3,115 +3,142 @@ name: scan
 description: Use when the user wants to find what is NOT yet covered by concepts in a governance-active project ("상태 탐색", "개념 전수 점검", "audit", "감사", "개념 없는 코드 찾기", "구멍 찾기", "기능 명세", "feature spec", "매핑 갱신", "태그 달기") and after modifying, moving, or deleting code to resync @concept tags — concept-less code, broken @concept links, features missing a spec, unapproved red / lingering pending concepts — and to wire @concept tags and the mapping cache. Finds gaps; it does not judge code against rules (that is review), nor critique finished work (that is redteam).
 ---
 
-# Conceptpowers: Scan (상태 탐색 — 개념이 안 걸린 것 찾기)
+# Conceptpowers: Scan (find what no concept covers)
 
 > **Init required:** if `docs/conceptpowers/init.json` is missing, **STOP** — governance is disabled
 > until `/conceptpowers:init` runs (the engine CLI refuses too). Offer to run init now.
 
-프로젝트에서 **개념이 걸리지 않은 것**을 찾아 목록으로 만들고, 사용자와 함께 처리한다. 코드가 개념대로인지
-판정하지는 않는다 — 그것은 `conceptpowers:review`다. 개념을 새로 쓰는 일도 하지 않는다 — 필요하면
-`conceptpowers:update-concepts`로 넘긴다.
+Talk to the user in the project's output language (`locale` in `init.json`; missing → `ko`); quoted prompts below are templates to
+render in that language.
 
-> **Concepts ONLY**: 여기서는 `reference/` 내용을 읽지 않는다. 허용되는 것은 비어 있는지 확인(폴더 목록 +
-> `paths.md` 항목 유무)뿐이다.
+Find **what no concept covers** in the project, list it, and work through it with the user. This skill does not judge
+whether code follows its concepts — that is `conceptpowers:review`. It does not author concepts either — when one is
+needed, hand off to `conceptpowers:update-concepts`.
 
-> **코드 수정 뒤 매핑만 갱신할 때**(파일 몇 개의 태그·캐시, 파일 이동·삭제 뒤): 아래 Steps를 건너뛰고
-> 「태그 규칙과 매핑 갱신」만 실행한다. 전체 점검은 사용자가 "상태 탐색 / 구멍 찾기 / 전수 점검"을 요청했을 때.
+> **Concepts ONLY**: never read the content of `reference/` here. The only thing allowed is checking whether it is
+> empty (folder listing + whether `paths.md` has entries).
+
+> **When only refreshing the mapping after a code change** (tags/cache for a few files, after moving or deleting
+> files): skip the Steps below and run only "Tag rules and mapping refresh". Run the full check when the user asks
+> to "scan / find gaps / check everything".
 
 ## Steps
 
-1. **무결성 + 격차 (결정적)**: 파일 인자 **없이** CLI 감사를 돌린다 — 전체 스캔 모드다. `git ls-files`를 걷고
-   (`ignoreGlobs` 적용) `{...report, conceptless: [...]}`를 낸다. `unknownTags`·`duplicateSlugs`·`conceptless`가 있으면 exit 1
-   인데 이는 진단 데이터이지 실패가 아니다.
+1. **Integrity + gaps (deterministic)**: run the CLI audit **with no file arguments** — that is full-scan mode. It
+   walks `git ls-files` (applying `ignoreGlobs`) and outputs `{...report, conceptless: [...]}`. If there are
+   `unknownTags`, `duplicateSlugs` or `conceptless`, it exits 1 — that is diagnostic data, not a failure.
    `node "<cli>" audit --root .`
-   전체 스캔 결과의 `brokenCodeLinks`는 개념의 근거·코드 연결 목록이 가리키는 코드 자리 가운데 지금 실재하지
-   않는 것(없는 파일·사라진 심볼·파일 길이를 넘는 줄 범위)이다. 개념 문서는 기준선이므로 고치지 말고 목록을
-   보고해 사용자가 `update-concepts`(계기 C, 근거 좌표만 — 계약 지문 밖이라 정합성 재검사 없이 재정착)로 근거를 바로잡게 한다. `brokenCodeLinks`가 있어도 exit 1이며 이 역시
-   진단 데이터다.
-   - `unknownTags`: 없는 개념을 가리키는 태그.
-   - `duplicateSlugs`: 같은 이름표(slug)의 개념 파일이 둘 이상인 경우(`rels`에 파일들). 기준선이므로 직접 지우지
-     말고 보고해, 사용자 확인 아래 `update-concepts`로 하나만 남게 정리한다.
-   - `conceptless`: `@concept` 마커가 전혀 없는 파일 — 2번 격차 판단의 결정적 출발점이다.
-   - `unapproved`: 🔴 red 개념 전부, `unapprovedRefs`: 스캔한 파일이 가리키는 red.
-   - `pending`: 🟡 pending 개념 전부, `pendingRefs`: 스캔한 파일이 가리키는 pending — 4번의 목록 출처다.
-   - `unlinkedConcepts`: 표식으로도 기능 명세로도 연결된 코드가 하나도 없는 🟢 green 개념. 이런 개념은 문서만
-     고쳐도 커밋 게이트가 따라올 코드를 묻지 않으므로, 약속을 지키는 코드에 태그를 달거나 기능 명세를 잇자고
-     권한다. 정말 코드가 필요 없는 개념(용어·운영 원칙)이면 그대로 둔다 — 이것만으로는 exit 1이 아니다.
-   - (파일 인자를 주면 태그 정합성만 검사하고 격차 탐지는 건너뛴다 — 전체 점검엔 인자 없이.)
-2. **격차 처리 (의미 판단)**: `conceptless` 목록의 파일마다 무엇이 필요한지 가린다. 개념이 필요한 기능·동작·역할·
-   권한·용어인데 태그가 없는 것을 찾는다.
-   - **기존 개념이 이미 있음** → 태그를 제안한다(아래 태그 규칙).
-   - **개념이 없음** → `conceptpowers:update-concepts`(계기 B, 새 개념 정의)로 넘긴다. 넘기기 전에 reference가
-     비어 있는지 확인(존재 확인만)하고, 비었으면 "reference/가 비어 있습니다 — 이 상태로 개념을 정의하면 근거
-     자료 없이 작성됩니다"라고 알린 뒤 ① 그대로 진행 ② 파일 추가 ③ 바깥 경로 등록(`update-concepts` 계기 E)을 묻는다.
-   - **개념과 무관한 코드**(utils/types/config/scripts, 여러 기능이 함께 쓰는 공통 UI — 버튼·모달·레이아웃·
-     디자인 시스템) → 명시적 **`@concept:none`**(침묵이 아니라). 공통 UI에 개념을 붙여 화면의 자유도를 묶지 않는다.
-     그런 파일이 한 폴더에 모여 있으면 파일마다 `none`을 다는 대신 사용자에게 **개념 없음 영역**
-     (`init.json`의 `noConceptGlobs`, 예: `src/components/ui/**`)을 제안한다 — 설정 파일은 사용자가 고친다.
-     영역 안에서도 표식을 단 파일은 그 표식을 따르므로, 어떤 약속을 지키는 파일이 섞인 폴더는 영역으로 정하지 않는다.
-   - **특정 기능만을 위한 화면·모달**(예: 관리자 삭제 확인 창) → 그 기능의 개념 태그를 단다. 모달 하나를 떼어
-     따로 개념으로 세우지 않는다(한 개념의 일부 동작은 별도 개념이 아니다).
-   - **공통 UI의 동작 자체가 사용자에게 하는 약속**일 때만(예: 저장하지 않은 입력은 확인 없이 버려지지 않는다) 그
-     약속을 개념 후보로 넘긴다 — 생김새·배치·글자는 개념이 아니라 상위 기준 문서 몫이다.
-   - 커밋 게이트도 마커 없는 코드를 잡는다(`[WARNING] 개념 없는 코드`). `@concept:none`은 마커로 친다.
-     `init.json`의 `ignoreGlobs`(`dist/**`, `**/*.generated.*` …)에 맞는 재생성물·외부 코드만 예외이고,
-     `noConceptGlobs` 안의 표식 없는 파일은 `none`으로 친다. 이 경고는 어느 강도에서도 이것만으로 커밋을 막지 않는다.
-3. **기능 커버리지 (지식 지도)**: 사용자가 기능을 쓰는 입구(폼 제출·메뉴·라우트·명령 등 기능 단위)마다 `features/`에 기능 명세가 있고
-   `concepts`(기능 → 개념)와 `codePaths`(기능 → 코드)가 채워졌는지 본다. 없거나 비었으면 아래 **기능 명세
-   기록** 절차로 만든다. 이것이 `#/graph`를 연결된 상태로 유지한다. 버튼·모달 같은 공통 UI 요소 하나하나에
-   명세를 만들지 않는다 — 명세는 기능 단위다.
-4. **red / pending (상태)**:
-   - 🔴 red(자동 추론, 미승인) → 목록을 보이고 사용자가 검토·승인을 원하면 `conceptpowers:update-concepts`(계기 D)로.
-     **scan이 스스로 승인하지 않는다.**
-   - 🟡 pending(사람이 쓴 초안, 미정착) → 목록을 보이고 `update-concepts`(계기 G, 정합성 재검사·정착)를 권한다.
-     pending을 "미승인"이라 부르지 않는다 — 초안이지 추론이 아니다.
-5. **green 품질 최소치**: `node "<cli>" quality --root .`(slug 없이 전수). 결격이 있으면 보고하고 사용자와 함께
-   채우자고 권한다(자동 채움 금지, 강등도 사람 판단).
-6. **태그 달기 + 매핑 갱신** (아래 규칙), 그리고 `node "<cli>" render --root .`.
-7. **보고**: 격차 / 깨진 태그 / 기능 명세 누락 / red / pending / 품질 결격 + 각각 권장 조치. 기준선은 읽기
-   전용이므로 개념 생성·수정은 사용자 확인 뒤 `update-concepts`에서만 한다. 코드가 개념대로인지는 여기서
-   판정하지 않았다 — 전수 판정을 원하면 `conceptpowers:review` 전체 모드로 이어간다.
+   `brokenCodeLinks` in the full-scan result are code locations named by concepts' sources and code links that do not
+   exist now (missing file, vanished symbol, line range past the file length). Concept documents are the baseline, so
+   do not fix them — report the list so the user corrects the sources through `update-concepts` (trigger C, sources
+   only — outside the contract fingerprint, so it re-settles without a new consistency check). `brokenCodeLinks` also
+   cause exit 1, and that too is diagnostic data.
+   - `unknownTags`: tags pointing at a concept that does not exist.
+   - `duplicateSlugs`: two or more concept files with the same slug (the files are in `rels`). They are the baseline,
+     so do not delete them directly — report them, and under the user's confirmation clean them up through
+     `update-concepts` so only one remains.
+   - `conceptless`: files with no `@concept` marker at all — the deterministic starting point for the gap judgment in
+     step 2.
+   - `unapproved`: every 🔴 red concept; `unapprovedRefs`: red concepts referenced by scanned files.
+   - `pending`: every 🟡 pending concept; `pendingRefs`: pending concepts referenced by scanned files — the source
+     of the list in step 4.
+   - `unlinkedConcepts`: 🟢 green concepts with no linked code at all, neither by marker nor by feature spec. For such
+     a concept the commit gate never asks for following code even when only its document changes, so recommend
+     tagging the code that keeps the promise or linking a feature spec. If the concept truly needs no code (a term,
+     an operating principle), leave it — this alone does not cause exit 1.
+   - (With file arguments it checks tag consistency only and skips gap detection — run without arguments for a full
+     check.)
+2. **Gap handling (semantic judgment)**: for each file in the `conceptless` list, decide what it needs. Look for
+   features, behaviors, roles, permissions or terms that need a concept but carry no tag.
+   - **A concept already exists** → propose a tag (tag rules below).
+   - **No concept exists** → hand off to `conceptpowers:update-concepts` (trigger B: defining a new concept). Before
+     handing off, check whether reference is empty (existence check only); if it is, say "reference/ is empty —
+     defining a concept now means writing it with no source material", then ask: ① proceed as is ② add files
+     ③ register an external path (`update-concepts` trigger E).
+   - **Code unrelated to any concept** (utils/types/config/scripts, shared UI used by many features — buttons,
+     modals, layouts, design system) → an explicit **`@concept:none`** (not silence). Do not attach concepts to
+     shared UI and tie down the screen's freedom. If such files gather in one folder, instead of marking each file
+     `none`, propose a **no-concept area** to the user (`noConceptGlobs` in `init.json`, e.g.
+     `src/components/ui/**`) — the user edits the config file. Files inside the area that carry a marker follow their
+     marker, so do not declare a folder as an area if it mixes in files that keep some promise.
+   - **A screen or modal for one specific feature** (e.g. an admin delete-confirmation dialog) → tag it with that
+     feature's concept. Do not carve one modal out as a separate concept (part of one concept's behavior is not a
+     separate concept).
+   - **Only when the behavior of shared UI is itself a promise to the user** (e.g. unsaved input is never discarded
+     without confirmation) hand that promise off as a concept candidate — appearance, layout and wording belong to
+     the top-level baseline documents, not to concepts.
+   - The commit gate also catches code with no marker (`[WARNING] Code without a concept`, shown in the project's `locale`). `@concept:none` counts as
+     a marker. Only regenerated or external code matching `ignoreGlobs` in `init.json` (`dist/**`,
+     `**/*.generated.*` …) is exempt, and unmarked files inside `noConceptGlobs` count as `none`. At no enforcement
+     level does this warning alone block a commit.
+3. **Feature coverage (knowledge graph)**: for every entry point through which the user uses a feature (form submit,
+   menu, route, command, etc. — per feature), check that `features/` has a feature spec with `concepts`
+   (feature → concept) and `codePaths` (feature → code) filled in. If missing or empty, create it with the
+   **Recording a feature spec** procedure below. This keeps `#/graph` connected. Do not create a spec for each shared
+   UI element such as a button or modal — specs are per feature.
+4. **red / pending (status)**:
+   - 🔴 red (auto-inferred, unapproved) → show the list, and if the user wants to review and approve, go to
+     `conceptpowers:update-concepts` (trigger D). **scan never approves on its own.**
+   - 🟡 pending (user-authored draft, not yet settled) → show the list and recommend `update-concepts` (trigger G,
+     consistency re-check and settling). Do not call pending "unapproved" — it is a draft, not an inference.
+5. **Green quality floor**: `node "<cli>" quality --root .` (no slug — every concept). If there are deficiencies,
+   report them and recommend filling them in with the user (no automatic filling; demotion is also the human's call).
+6. **Tagging + mapping refresh** (rules below), then `node "<cli>" render --root .`.
+7. **Report**: gaps / broken tags / missing feature specs / red / pending / quality deficiencies + the recommended
+   action for each. The baseline is read-only, so concepts are created or edited only in `update-concepts` after the
+   user confirms. Whether code follows its concepts was not judged here — for a full judgment continue with
+   `conceptpowers:review` in whole-project mode.
 
-## 태그 규칙과 매핑 갱신
+## Tag rules and mapping refresh
 
-1. **다스려지는 코드 파일은 모두 첫머리에 명시적 `@concept` 마커를 가진다** — 조용한 공백은 없다.
-   - 개념이 있으면 **첫머리 주석 블록 안, 첫 코드 줄 앞**에 `@concept:<slug>`. 엔진은 그 블록만 훑는다 —
-     `'use client';`, docstring, `<template>`이 먼저 오면 마커가 보이지 않는다. slug는 개념 slug와 정확히
-     같아야 한다. 한 파일이 여러 개념에 걸치면 태그를 여럿 단다(개념 `concept-code-binding`의 분리 검토 뒤).
-   - 개념이 없으면 같은 자리에 **`@concept:none`**. 예약어라 게이트는 통과하지만 개념으로 취급되지 않는다.
-   - `ignoreGlobs`는 재생성물·외부 코드만 자동 제외한다. 손으로 쓴 코드는 마커가 필요하다 — 사용자가
-     `noConceptGlobs`로 정한 개념 없음 영역 안이면 마커 없이 `none`으로 친다.
-     `ignoreGlobs`에 경로를 더하는 것은 진짜 생성물일 때만 — 감사를 피하려고 넓히지 않는다.
-2. 매핑 캐시 갱신:
+1. **Every governed code file carries an explicit `@concept` marker at the top** — no silent gaps.
+   - If a concept applies, put `@concept:<slug>` **inside the top comment block, before the first line of code**.
+     The engine scans only that block — if `'use client';`, a docstring or `<template>` comes first, the marker is
+     not seen. The slug must match the concept slug exactly. If a file spans several concepts, add several tags
+     (after the split review of concept `concept-code-binding`).
+   - If no concept applies, put **`@concept:none`** in the same place. It is a reserved word: it passes the gate but
+     is not treated as a concept.
+   - `ignoreGlobs` auto-excludes only regenerated and external code. Hand-written code needs a marker — inside a
+     no-concept area the user declared with `noConceptGlobs`, it counts as `none` without a marker.
+     Add a path to `ignoreGlobs` only when it is truly generated — never widen it to dodge the audit.
+2. Refresh the mapping cache:
    `node "<cli>" map --root . <changed files...>`
-   - 기본은 증분: 넘긴 파일의 항목만 바꾸고 나머지는 보존한다. **삭제한 파일도 인자에 넣어야** 낡은 항목이 빠진다.
-   - 처음부터 다시 만들려면(캐시 손상 복구) `--full`: `node "<cli>" map --full --root . <all source files...>`.
-   - 이어서 `node "<cli>" render --root .`.
-3. 태그가 없는 개념을 가리키면(`unknownTags`) 개념을 정의하거나(`update-concepts` 계기 B) 태그를 고친다.
-4. 파일을 옮기거나 지울 때는 **같은 커밋**에서 태그를 옮기고 매핑을 갱신한다.
-5. `mapping.json`은 **캐시**이지 기준선이 아니다. 진실은 코드의 `@concept` 태그다.
+   - Incremental by default: only entries for the given files change; the rest are kept. **Deleted files must also be
+     passed as arguments** for their stale entries to be removed.
+   - To rebuild from scratch (recovering a corrupted cache) use `--full`:
+     `node "<cli>" map --full --root . <all source files...>`.
+   - Then `node "<cli>" render --root .`.
+3. If a tag points at a concept that does not exist (`unknownTags`), define the concept (`update-concepts` trigger B)
+   or fix the tag.
+4. When moving or deleting files, move the tags and refresh the mapping in the **same commit**.
+5. `mapping.json` is a **cache**, not the baseline. The truth is the `@concept` tags in the code.
 
-## 기능 명세 기록 (feature → concept, feature → code)
+## Recording a feature spec (feature → concept, feature → code)
 
-> reference를 읽지 않는다 — 기능 명세는 지도 배선이지 계약 작성이 아니다. 기능 명세는 기능→개념·기능→코드
-> 링크의 **유일한 출처**다(엔진은 검증·기록만). 내용은 `init.json`의 `locale`로 쓴다.
+> Does not read reference — a feature spec is graph wiring, not contract authoring. Feature specs are the **only
+> source** of feature→concept and feature→code links (the engine only validates and records). Write the content in
+> the `locale` of `init.json` (missing → `ko`).
 
-1. **기능 식별** — 구체적 사용자 접점 하나: 버튼, 폼 제출, 메뉴 동작, 라우트, 명령. 짧은 `title`과 한 줄 `description`.
-2. **기능 → 코드**(`codePaths`): 구현 파일 목록.
-3. **기능 → 개념**(`concepts`): 이 기능이 실현하는 개념 slug. 없으면 `update-concepts`(계기 B)로 먼저 정의하고 돌아온다.
-4. slug(kebab-case, 유일)와 `group`(선택) 결정.
-5. 엔진으로 검증·기록(스키마 검사, 중복 slug 거부):
+1. **Identify the feature** — one concrete user surface: a button, form submit, menu action, route, command. A short
+   `title` and a one-line `description`.
+2. **Feature → code** (`codePaths`): the list of implementing files.
+3. **Feature → concept** (`concepts`): the concept slugs this feature realizes. If none exists, define it first with
+   `update-concepts` (trigger B) and come back.
+4. Decide the slug (kebab-case, unique) and `group` (optional).
+5. Validate and record through the engine (schema check, duplicate slugs rejected):
    `node "<cli>" feature --root . --file <feature.json>`
    JSON: `{ slug, group?, title, description?, concepts[], codePaths[] }` → `docs/conceptpowers/features/[group/]<slug>.json`.
-6. 같은 파일들에 `@concept:<slug>` 태그가 있는지 확인하고 `map`으로 갱신 — 개념과 기능이 같은 파일 노드에서 만난다.
-7. `render`. `concepts`의 slug는 정확해야 한다 — 없는 개념으로의 간선은 조용히 버려진다.
+6. Check that the same files carry `@concept:<slug>` tags and refresh with `map` — concept and feature meet at the
+   same file node.
+7. `render`. Slugs in `concepts` must be exact — edges to a concept that does not exist are silently dropped.
 
 ## Backfill modes
 
-- incremental: 격차만 보고하고 점진적 보충을 권한다 — 기능 명세와 링크 누락 포함.
-- strict: 모든 격차를 즉시 해소하도록 밀어붙인다(init strict 또는 사용자 요청).
+- incremental: report gaps only and recommend gradual backfill — including missing feature specs and links.
+- strict: push to resolve every gap immediately (init strict or at the user's request).
 
-## Viewer handoff (마지막 단계 — 생략 금지)
+## Viewer handoff (last step — never skip)
 
-`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
-있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.
+After `render`, end by handing over a clickable viewer link built from the viewer path and serve command that render
+printed (reuse the running server's URL if one is up). The deep-link format and fallback launch method are defined in
+the "Viewer handoff" section of `conceptpowers:update-concepts`.

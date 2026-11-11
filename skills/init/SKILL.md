@@ -7,6 +7,9 @@ description: Use when the user wants to enable concept governance on a project (
 
 Enable concept-driven governance on this project (opt-in, D3/D15).
 
+Talk to the user in their language; the output language (`locale`) is not set until step 4, and the quoted prompts
+below are templates to render in the user's language.
+
 ## Steps
 
 1. Confirm the backfill mode with the user (default: incremental) — it only decides whether step 9 runs the full scan now; it is not passed to the CLI:
@@ -19,38 +22,38 @@ Enable concept-driven governance on this project (opt-in, D3/D15).
      > incremental unless the user explicitly wants a one-shot full backfill. Always state this cost
      > before running strict.
 2. Confirm the commit-gate enforcement level with the user (default: standard):
-   - **strict**: 개념과 어긋난 커밋을 차단합니다. 진행하려면 개념을 먼저 수정하고 충돌이
-     없어야 합니다. 장기 운영·다인 협업·개념 우선 원칙을 강하게 지킬 프로젝트에 권합니다.
-   - **standard** (default): 문제를 보여주고 "그래도 진행할까요?"라고 묻습니다. 대부분의
-     프로젝트에 알맞습니다.
-   - **light**: 커밋을 멈추지 않고 경고만 모아 보고합니다. 소규모·단기·실험 프로젝트의
-     도입 장벽을 낮춥니다. 나중에 standard/strict로 올릴 수 있습니다(init.json의
-     `enforcement`를 사용자가 직접 수정).
+   - **strict**: "Blocks commits that conflict with a concept. To proceed, the concept must be fixed first and
+     have no conflicts. Recommended for long-lived projects, multi-person collaboration, and projects that hold
+     strongly to concept-first."
+   - **standard** (default): "Shows the problem and asks 'Proceed anyway?'. Suits most projects."
+   - **light**: "Never stops a commit; it only collects and reports warnings. Lowers the adoption barrier for
+     small, short-lived or experimental projects. Can be raised to standard/strict later (edit `enforcement` in
+     init.json directly)."
      Pass the choice as `--enforcement <strict|standard|light>`.
-3. Confirm the output language with the user and pass it as `--lang` (`ko` or `en`, default `ko`).
+3. Confirm the output language with the user and pass it as `--lang` (`ko` or `en`, default `en`).
    This sets `locale` in `init.json`; the agent then produces concept content, architecture/infra
    docs, and user-facing messages in that language.
 4. Scaffold via the CLI (the CLI path is in the `CONCEPTPOWERS-ACTIVE` session context or the plugin dist):
    `node "<cli>" init --root . --lang <ko|en> --enforcement <strict|standard|light>`
 5. Report the result to the user: the 5 elements under `docs/conceptpowers/` (init/features/concepts/architecture/infra).
 6. **Guide the user to fill in architecture.md / infra.md** (the high-level basis for concepts).
-7. **Ask for reference material paths (skippable).** "개념을 작성할 때 참고할 문서 폴더나 파일이
-   있나요? 경로를 알려주시면 등록해 두겠습니다 (여러 개 가능 — 건너뛰어도 됩니다).
-   저장소 밖 자료는 절대 경로로(홈 아래면 `~/…`), 저장소 안 자료는 저장소 루트 기준
-   상대 경로로 알려주세요."
+7. **Ask for reference material paths (skippable).** "Are there document folders or files to consult when writing
+   concepts? Tell me the paths and I'll register them (several are fine — you can also skip this). Give material
+   outside the repository as an absolute path (`~/…` if under your home) and material inside the repository as a
+   path relative to the repository root."
    - If the user gives paths: `node "<cli>" reference-add "<path1>" "<path2>" --root .`, then report
      `added`/`skipped` and **warn about any `external[].status` that is not `ok`** — `missing`
-     (경로 없음) or `empty` (경로는 있으나 참고할 자료가 없음).
+     (the path does not exist) or `empty` (the path exists but holds no material to consult).
    - If the user skips: tell them once that they can register paths anytime with
-     `/conceptpowers:update-concepts` (참고자료 경로 등록), or by writing one path per line in
+     `/conceptpowers:update-concepts` (registering a reference path), or by writing one path per line in
      `docs/conceptpowers/reference/paths.md`, and that material can also be dropped straight into
      `docs/conceptpowers/reference/`. Do not ask again.
-   - See the 경로 등록(계기 E) flow of `/conceptpowers:update-concepts` for the full flow.
-8. **Offer update-concepts as the immediate next step.** Explain it in one line — "update-concepts는
-   프로젝트의 규칙과 의도(예: '결제 후 가격은 불변')를 기계가 검사할 수 있는 계약(개념)으로
-   작성하는 단계입니다. 참고자료를 reference/에 넣어두거나 `reference/paths.md`에 외부 로컬
-   경로(여러 개 가능)를 등록해두면 그걸 근거로 함께 작성합니다." — then
-   **ask the user whether to continue with `/conceptpowers:update-concepts` (계기 B — 새 개념 정의) right now.** Proceed only
+   - See the trigger E (registering a reference path) flow of `/conceptpowers:update-concepts` for the full flow.
+8. **Offer update-concepts as the immediate next step.** Explain it in one line — "update-concepts is the step that
+   writes the project's rules and intent (e.g. 'the price is immutable after checkout') as contracts (concepts) a
+   machine can check. If you put reference material in reference/ or register external local paths (several are
+   fine) in `reference/paths.md`, you and I write the concepts together based on that material." — then
+   **ask the user whether to continue with `/conceptpowers:update-concepts` (trigger B: defining a new concept) right now.** Proceed only
    on yes; if they decline, remind them it is available anytime.
 9. If strict (full scan): run the **full-scan procedure** below, then continue with `conceptpowers:scan`.
 
@@ -64,19 +67,20 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
 2. **Enumerate features by screen**: analyze what each screen/view renders and list the features it
    exposes to the user. Merge with step 1 into a deduplicated feature list.
 3. **Record each feature and wire it to code**: for each feature, write a feature spec with its
-   implementing `codePaths` filled in (the _feature → code_ link) via the 기능 명세 기록 procedure of `conceptpowers:scan`.
-4. **Infer concepts and wire features to them**: run the **자동 추론 모드** of `conceptpowers:update-concepts`
-   (its batch procedure) — it reads the reference material too, applies the 「자격 기준 관문」, and saves every
+   implementing `codePaths` filled in (the _feature → code_ link) via the "Recording a feature spec" procedure of `conceptpowers:scan`.
+4. **Infer concepts and wire features to them**: run the **auto-inference mode** of `conceptpowers:update-concepts`
+   (its batch procedure) — it reads the reference material too, applies the "Qualification gate", and saves every
    new concept as `status: red` — an unapproved proposal, not a rule: per concept `human-owns-contract` it becomes
-   a rule only after the user approves it, and governs no code before that. 기능은 접점마다 하나씩이지만 **개념은 접점마다 하나가 아니다** — 여러 기능이 한 개념을
-   가리키는 것이 정상이다. Then write each concept slug (new or existing) into the matching feature's
+   a rule only after the user approves it, and governs no code before that. There is one feature per surface, but
+   **not one concept per surface** — many features pointing at one concept is normal.
+   Then write each concept slug (new or existing) into the matching feature's
    `concepts` (the _feature → concept_ link). Candidates that fail the gate go to feature specs or a one-line
    proposal for `architecture.md` / `infra.md`.
 5. **Tag every code file (concept → code, no gaps)**: add `@concept:<slug>` tags to the implementing
    files. **Every governed code file must carry an explicit marker at the top** — for files where no
    concept applies (utils/types/config/scripts, shared UI used across features — buttons, modals, layouts,
    design-system components — etc.), write **`@concept:none`** explicitly rather than
-   leaving them untagged. Then run the 태그·매핑 step of `conceptpowers:scan` (`node "<cli>" map ...`) so concept and
+   leaving them untagged. Then run the "Tag rules and mapping refresh" step of `conceptpowers:scan` (`node "<cli>" map ...`) so concept and
    feature converge on the same file. (`none` is a reserved marker: it satisfies the gate but is never a
    real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.
    When such conceptless files share a folder — e.g. a shared UI kit — suggest the user declare it once as a

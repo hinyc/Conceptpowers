@@ -2,3 +2,5 @@ node_modules/
 coverage/
 .worktrees/
 .DS_Store
+.claude/
+.superpowers/
