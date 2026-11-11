@@ -7,12 +7,15 @@ Versions before 1.14.0 are not summarized here; see the git history and tags.
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-11-11
+
 ### Added
 
 - Commit-gate messages are available in English and Korean, following the project's `locale`.
 - `init` writes `en` as the default output language for new projects (`init --lang ko` for Korean). Projects whose `init.json` has no `locale` are still read as Korean.
 - Each skill's original text is now English. Korean translations live next to them as `SKILL.ko.md` (and `references/*.ko.md`) for human readers and are never loaded as skills.
 - User-facing docs for the plugin directory: Requirements, Example prompts, Privacy / Network, Performance, and FAQ in the README, plus this changelog and the security, privacy, and contributing documents.
+- A plugin icon for the plugin directory listing.
 
 ### Changed
 
