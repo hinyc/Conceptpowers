@@ -2040,10 +2040,11 @@ function boot() {
     .then(function (res) {
       var m = res[0];
       state.manifest = m;
-      // UI 문구는 기본 영어. 개념/기능 본문(data/*.json)은 작성된 언어 그대로 렌더되며,
-      // UI 언어만 바꾸려면 manifest의 uiLocale(예: 'ko')을 지정한다.
-      state.t = I18N[m.uiLocale] || I18N.en;
-      document.documentElement.lang = m.locale || 'en';
+      // UI 문구는 프로젝트 locale(manifest.locale)을 따른다. locale이 없는 옛 manifest는 한국어(기존 프로젝트 기본).
+      // 개념/기능 본문(data/*.json)은 작성된 언어 그대로 렌더한다.
+      var uiLocale = m.locale || 'ko';
+      state.t = I18N[uiLocale] || I18N.en;
+      document.documentElement.lang = uiLocale;
       window.addEventListener('hashchange', route);
       route();
     })

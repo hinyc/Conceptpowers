@@ -13,7 +13,6 @@ import { pendingConceptDocs } from '../../drift/pendingDocs.js';
 import { normalizeRel, sanitizeText } from '../../drift/safe.js';
 import { defaultIgnoreGlobs } from '../../schema/initConfig.js';
 import { gateText, type GateText } from '../../i18n/gateMessages.js';
-import { localeOf } from '../../schema/initConfig.js';
 import type { GateCheck, GateInput } from './types.js';
 
 const MAX_LISTED_PATHS = 8;
@@ -103,7 +102,7 @@ function capConcepts<T>(items: T[], t: GateText): { shown: T[]; more: string } {
 export const checkDrift: GateCheck = async (input) => {
   const split = await splitDrift(input);
   if (!split || (split.missingDoc.length === 0 && split.missingCode.length === 0)) return null;
-  const t = gateText[localeOf(input.cfg)];
+  const t = gateText[input.locale];
   const reasons: string[] = [];
   const contexts: string[] = [];
   if (split.missingDoc.length > 0) {

@@ -61,7 +61,7 @@ Conceptpowers는 **개념을 코드 위에 있는 1급의, 버전 관리되는 �
 
 개념은 코드를 생성하는 청사진이 아니라 **코드를 판정하는 계약**이다. 근거는 검증의 비대칭성이다: _"관리자는 하드 삭제되지 않는다"_ — 이 한 줄로 구현을 만들 수는 없지만, 어떤 변경이 이 규칙을 **위반했는지는** 언제나 판정할 수 있다. 그래서 개념은 **의도적으로 불완전**하다: *how*의 source of truth는 여전히 코드이고, 개념은 *왜*와 불변 규칙만 소유한다. "충분히 상세해질" 압력 자체가 없으므로 코드로 수렴하지도 않는다.
 
-스펙 기반 개발이 실제로 깨지는 지점들 — 1회 생성의 불안정성, 문서 팽창, 코드가 변한 뒤의 스펙 부패, AI가 쓴 slop이 source of truth가 되는 문제 — 과 그 지점마다 Conceptpowers가 무엇을 다르게 하는지는 [`docs/concepts-vs-specs.md`](docs/concepts-vs-specs.md) 참고.
+스펙 기반 개발이 실제로 깨지는 지점들 — 1회 생성의 불안정성, 문서 팽창, 코드가 변한 뒤의 스펙 부패, AI가 쓴 slop이 source of truth가 되는 문제 — 과 그 지점마다 Conceptpowers가 무엇을 다르게 하는지는 [`docs/concepts-vs-specs.md`](https://github.com/hinyc/Conceptpowers/blob/develop/docs/concepts-vs-specs.md) 참고.
 
 ---
 
@@ -399,13 +399,13 @@ docs/conceptpowers/
 └── .cache/mapping.json             # 자동 매핑 캐시 — 첫 scan 시 생성 (수정 금지)
 ```
 
-뷰어는 **클라이언트사이드 SPA**다 — 개념마다 HTML을 굽지 않고, `index.html` + `assets/viewer.js`가 런타임에 `manifest.json`과 원본 `data/*.json`을 fetch한다. 로컬 JSON을 `fetch`하므로 `file://`로 직접 열면 안 되고 HTTP로 서빙해야 한다 — 그래서 `init`은 `package.json`이 있으면 **`concepts:view`** 스크립트(`node …/viewer/serve.mjs`)도 함께 추가한다.
+뷰어는 **클라이언트사이드 SPA**다 — 개념마다 HTML을 굽지 않고, `index.html` + `assets/viewer.js`가 런타임에 `manifest.json`과 원본 `data/*.json`을 fetch한다. 로컬 JSON을 `fetch`하므로 `file://`로 직접 열면 안 되고 HTTP로 서빙해야 한다 — 그래서 플러그인은 프로젝트 루트의 `package.json`이 있으면 **`concepts:view`** 스크립트(`node docs/conceptpowers/concepts/viewer/serve.mjs`)도 함께 추가한다. `init`(다시 실행할 때 포함) 때 넣고, 플러그인 업데이트 뒤 자동 버전 동기화나 `node <cli> version-sync --force` 때 다시 넣는다. 그 사이에 지우면 다음 동기화 전까지는 다시 생기지 않는다. 직접 만든 `concepts:view` 명령이 있으면 건드리지 않고, 플러그인이 예전에 만든 명령만 교체한다. `package.json`이 없으면 아무것도 만들지 않는다.
 
-뷰어의 **UI 문구는 프로젝트 `locale`과 무관하게 기본 영어**다(내비게이션·버튼·배지·범례). 개념·기능 **본문**은 JSON에 작성된 언어 그대로 렌더된다. UI 문구까지 현지화하려면 `manifest.json`에 `uiLocale`(예: `"ko"`)을 지정한다.
+뷰어의 **UI 문구는 `init.json`의 프로젝트 `locale`을 따른다**(내비게이션·버튼·배지·범례). 뷰어를 만들 때 `manifest.json`에 복사되며, `locale`이 없는 프로젝트는 한국어로 보인다. 개념·기능 **본문**은 JSON에 작성된 언어 그대로 렌더된다. UI 문구 언어를 바꾸려면 `init.json`의 `locale`을 고치고 `node <cli> render`로 뷰어를 다시 만든다(다음 플러그인 업데이트 전까지는 자동으로 다시 만들어지지 않는다).
 
 기준 문서(baseline — 개념·명세·아키텍처·인프라) 전체는 **사용자 전속** 수정이다 — 에이전트가 임의로 다시 쓰지 않는다.
 
-자세한 설계: `docs/specs/2026-06-18-conceptpowers-design.md`.
+자세한 설계: [`docs/specs/2026-06-18-conceptpowers-design.md`](https://github.com/hinyc/Conceptpowers/blob/develop/docs/specs/2026-06-18-conceptpowers-design.md) (`develop` 브랜치에 있다).
 
 ### 참고자료 (reference)
 
@@ -470,7 +470,7 @@ Conceptpowers는 로컬 우선이다. 전체 정책: [PRIVACY.md](PRIVACY.md) (�
 **내 컴퓨터에서 실행되는 것**
 
 - **훅** (`hooks/hooks.json`): `PreToolUse`(Edit / Write / MultiEdit / NotebookEdit / Bash), `PostToolUse`(Bash), `SessionStart`. 각각 플러그인 디렉터리의 `node dist/hooks/*.js`를 실행한다.
-- **git**: 커밋 게이트가 커밋에 담길 내용을 보려고 읽기 전용 `git` 명령을 실행한다.
+- **git**: 커밋 게이트가 커밋에 담길 내용을 보려고 로컬 `git` 명령을 실행한다. 브랜치·인덱스·작업 트리는 바꾸지 않지만, 커밋이 만들 트리를 계산하는 과정에서 일반 git 객체가 `.git`에 쓰일 수 있다.
 - **뷰어**: 개념 뷰어는 `127.0.0.1`에만 바인드된 로컬 HTTP 서버이며, OS에 기본 브라우저로 열어 달라고 요청한다. 직접 실행할 때만 돈다.
 - 플러그인 자체는 LLM을 호출하지 않는다. 판단은 에이전트 안에서 일어난다.
 
@@ -482,12 +482,13 @@ Conceptpowers는 로컬 우선이다. 전체 정책: [PRIVACY.md](PRIVACY.md) (�
 **쓰는 파일**
 
 - 프로젝트 안: `docs/conceptpowers/`(개념, 기록, 설정).
+- 프로젝트 루트의 `package.json`(있을 때만): 뷰어를 여는 `concepts:view` 스크립트. `init` 때, 그리고 플러그인 업데이트 뒤 뷰어 파일을 다시 맞출 때(또는 `version-sync --force` 때) 넣는다. 직접 만든 `concepts:view`는 덮어쓰지 않고, `package.json`이 없으면 만들지 않는다.
 - 프로젝트 밖: 버전 확인 캐시 `~/.cache/conceptpowers`뿐(`CONCEPTPOWERS_CACHE_DIR`로 바꿀 수 있다).
 
 **버전 확인 끄기**
 
 `docs/conceptpowers/init.json`에 `"versionCheck": false`를 두거나 환경변수 `CONCEPTPOWERS_NO_VERSION_CHECK=1`을 설정한다.
-새 버전이 있으면 한 줄로 알릴 뿐이며 업데이트는 수동이다(`/plugin marketplace update conceptpowers-dev`).
+새 버전이 있으면 한 줄로 알릴 뿐이며 업데이트는 수동이다(`/plugin marketplace update conceptpowers-dev` 다음 `/plugin update conceptpowers@conceptpowers-dev`).
 
 ---
 

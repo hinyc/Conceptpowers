@@ -128,18 +128,71 @@ export function needsRemovalConfirmation(plan, confirmed) {
   return plan.remove.length > REMOVAL_CONFIRM_THRESHOLD && !confirmed;
 }
 
-// `pnpm release <bump> [--yes]` 인자를 읽는다. 알 수 없는 옵션은 오타로 보고 멈춘다.
+// `pnpm release <bump> [--yes]` 또는 `pnpm release --resume [--yes]` 인자를 읽는다. 알 수 없는 옵션은 오타로 보고 멈춘다.
+// --resume은 이미 만든 develop 릴리스 커밋에서 main 반영·태그만 다시 하므로 버전 인자를 받지 않는다.
 export function parseReleaseArgs(args) {
   const flags = args.filter((a) => a.startsWith('--'));
-  const unknown = flags.filter((f) => f !== '--yes');
+  const unknown = flags.filter((f) => f !== '--yes' && f !== '--resume');
   if (unknown.length > 0) {
-    throw new Error(`알 수 없는 옵션: ${unknown.join(', ')} (사용 가능: --yes)`);
+    throw new Error(`알 수 없는 옵션: ${unknown.join(', ')} (사용 가능: --yes, --resume)`);
   }
   const positional = args.filter((a) => !a.startsWith('--'));
-  if (positional.length !== 1) {
-    throw new Error('버전 인자가 필요합니다: pnpm release <patch|minor|major|x.y.z> [--yes]');
+  const confirmed = flags.includes('--yes');
+  if (flags.includes('--resume')) {
+    if (positional.length > 0) {
+      throw new Error('--resume은 버전 인자 없이 씁니다: pnpm release --resume [--yes]');
+    }
+    return { bump: null, confirmed, resume: true };
   }
-  return { bump: positional[0], confirmed: flags.includes('--yes') };
+  if (positional.length !== 1) {
+    throw new Error(
+      '버전 인자가 필요합니다: pnpm release <patch|minor|major|x.y.z> [--yes] (중단된 릴리스는 pnpm release --resume)'
+    );
+  }
+  return { bump: positional[0], confirmed, resume: false };
+}
+
+// 매니페스트 4곳의 description이 모두 같아야 한다(디렉터리 제출·자동 업데이트 화면에 같은 소개가 보이도록).
+// marketplace.json은 최상위 description이 마켓플레이스 소개라 별개이고, 플러그인 항목(plugins[0])의 description이 대상이다.
+// texts: { 상대경로: JSON 텍스트 }. 불일치하면 `경로=값` 목록을, 모두 같으면 빈 배열을 돌려준다.
+export function findDescriptionMismatch(texts) {
+  const entries = Object.entries(texts).map(([rel, text]) => {
+    const json = JSON.parse(text);
+    const value = rel.endsWith('marketplace.json')
+      ? json.plugins?.[0]?.description
+      : json.description;
+    return { rel, value };
+  });
+  const unique = new Set(entries.map((e) => e.value));
+  return unique.size <= 1 ? [] : entries.map((e) => `${e.rel}=${JSON.stringify(e.value)}`);
+}
+
+// 로컬 main/원격 추적 ref 상태로 배포 시작 가능 여부를 정한다. 네트워크는 보지 않는다.
+// 돌려주는 값은 { ok: true } 또는 { ok: false, reason }, 첫 배포(둘 다 없음)는 { ok: true, firstDeploy: true }.
+export function judgeMainState({ localMain, remoteMain, localContainsRemote }) {
+  if (!localMain && remoteMain) {
+    return {
+      ok: false,
+      reason:
+        '로컬 main이 없는데 origin/main이 있습니다. 부모 없는 main 커밋을 만들지 않도록 멈춥니다. ' +
+        '`git fetch origin main && git branch main origin/main` 뒤 다시 실행하세요.',
+    };
+  }
+  if (!localMain) return { ok: true, firstDeploy: true };
+  if (remoteMain && !localContainsRemote) {
+    return {
+      ok: false,
+      reason:
+        '로컬 main이 origin/main보다 뒤처졌거나 갈라졌습니다. 이대로 만들면 push가 거절됩니다. ' +
+        '`git fetch origin main` 뒤 `git branch -f main origin/main`(로컬 main에 따로 쌓은 커밋이 없을 때)으로 맞추고 다시 실행하세요.',
+    };
+  }
+  return { ok: true, firstDeploy: false };
+}
+
+// 사람이 그대로 복사해 쓸 push 명령. 한 번에 모두 반영되거나 모두 거절되도록 --atomic을 쓴다.
+export function pushCommand(tag) {
+  return `git push --atomic origin ${DEVELOP_BRANCH} ${DEPLOY_BRANCH} refs/tags/${tag}`;
 }
 
 // `git ls-tree -r -z` 출력(`<mode> <type> <sha>\t<path>\0`)을 항목으로 푼다.

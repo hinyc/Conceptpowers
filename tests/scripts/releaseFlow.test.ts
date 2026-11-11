@@ -155,8 +155,144 @@ describe('릴리스 흐름 (임시 저장소)', { timeout: 60_000 }, () => {
 
   it('main 브랜치가 아직 없어도 첫 배포 커밋을 만든다', async () => {
     git('branch', '-D', 'main');
-    const { tag } = await run('patch');
+    await expect(run('patch')).rejects.toThrow('--yes'); // 부모 없는 첫 배포는 확인을 요구한다
+    expect(git('status', '--porcelain')).toBe('');
+    const { tag } = await run('patch', '--yes');
     expect(files('main').filter((p) => !isDeployPath(p))).toEqual([]);
     expect(git('rev-parse', `${tag}^{commit}`)).toBe(git('rev-parse', 'main'));
+  });
+
+  it('완료 안내의 push 명령은 --atomic이다', async () => {
+    const logs: string[] = [];
+    await runRelease({ root: repo, args: ['patch', '--yes'], log: (m: string) => logs.push(m) });
+    expect(logs.join('\n')).toContain('git push --atomic origin develop main refs/tags/v1.0.1');
+  });
+});
+
+// 중간 실패 복구 — 주입한 실패로 릴리스를 깨고, 안내(--resume)대로 같은 버전을 완성한다.
+const verifyCompleted = (tag: string) => {
+  expect(git('cat-file', '-t', tag)).toBe('tag');
+  expect(git('rev-parse', `${tag}^{commit}`)).toBe(git('rev-parse', 'main'));
+  expect(files('main').filter((p) => !isDeployPath(p))).toEqual([]);
+  expect(git('show', 'main:package.json')).toContain('"version": "1.0.1"');
+};
+
+describe('릴리스 중간 실패 복구 (임시 저장소)', { timeout: 60_000 }, () => {
+  it('main ref를 못 옮기면(main.lock) 복구 안내를 내고, --resume으로 같은 버전을 완성한다', async () => {
+    const mainBefore = git('rev-parse', 'main');
+    const lock = join(repo, '.git/refs/heads/main.lock');
+    writeFileSync(lock, '');
+    const error = await run('patch', '--yes').then(
+      () => null,
+      (e: Error) => e
+    );
+    expect(error?.message).toContain('pnpm release --resume');
+    expect(error?.message).toContain('main.lock');
+    expect(git('rev-parse', 'main')).toBe(mainBefore);
+    expect(git('tag', '--list')).toBe('');
+    expect(git('log', '-1', '--format=%s', 'develop')).toBe('chore(release): v1.0.1');
+
+    // 같은 버전을 다시 올리려 하면 거절되지만 안내가 --resume을 가리킨다
+    await expect(run('1.0.1', '--yes')).rejects.toThrow('--resume');
+
+    rmSync(lock);
+    const { tag } = await run('--resume', '--yes');
+    expect(tag).toBe('v1.0.1');
+    verifyCompleted(tag);
+    expect(git('rev-parse', 'main~1')).toBe(mainBefore);
+    expect(git('status', '--porcelain')).toBe('');
+  });
+
+  it('태그 단계만 실패하면(서명 실패 흉내) main은 옮겨졌고, --resume이 태그만 단다', async () => {
+    git('config', 'tag.gpgSign', 'true');
+    git('config', 'gpg.program', 'false');
+    const error = await run('patch', '--yes').then(
+      () => null,
+      (e: Error) => e
+    );
+    expect(error?.message).toContain('pnpm release --resume');
+    expect(git('tag', '--list')).toBe('');
+    const movedMain = git('rev-parse', 'main');
+    expect(git('log', '-1', '--format=%s', 'main')).toBe('chore(release): v1.0.1');
+
+    git('config', '--unset', 'tag.gpgSign');
+    const { tag, mainCommit } = await run('--resume', '--yes');
+    expect(mainCommit).toBe(movedMain); // main 커밋을 또 쌓지 않는다
+    verifyCompleted(tag);
+    expect(git('rev-list', '--count', 'main')).toBe('2');
+  });
+
+  it('이미 끝난 릴리스에 --resume을 하면 아무것도 바꾸지 않는다', async () => {
+    await run('patch', '--yes');
+    const main = git('rev-parse', 'main');
+    await run('--resume', '--yes');
+    expect(git('rev-parse', 'main')).toBe(main);
+  });
+
+  it('develop HEAD가 릴리스 커밋이 아니면 --resume은 멈춘다', async () => {
+    await expect(run('--resume', '--yes')).rejects.toThrow('릴리스 커밋이 아닙니다');
+  });
+
+  it('build가 실패하면 릴리스 경로를 되돌리고 트리가 깨끗하게 남는다', async () => {
+    put('build-stub.mjs', 'process.exit(3);\n');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'break build');
+    const head = git('rev-parse', 'develop');
+    await expect(run('patch', '--yes')).rejects.toThrow();
+    expect(git('status', '--porcelain')).toBe('');
+    expect(git('rev-parse', 'develop')).toBe(head);
+    expect(readFileSync(join(repo, 'package.json'), 'utf8')).toContain('"version": "1.0.0"');
+  });
+
+  it('릴리스 경로 밖이 더럽혀져도 되돌리는 건 릴리스 경로뿐이다(릴리스 밖 파일은 남는다)', async () => {
+    put(
+      'build-stub.mjs',
+      `${BUILD_STUB}\nimport { writeFileSync as w } from 'node:fs';\nw('stray.txt', 'x');\n`
+    );
+    git('add', '-A');
+    git('commit', '-q', '-m', 'stray output');
+    await expect(run('patch', '--yes')).rejects.toThrow('stray.txt');
+    expect(git('status', '--porcelain')).toBe('?? stray.txt');
+    expect(readFileSync(join(repo, 'package.json'), 'utf8')).toContain('"version": "1.0.0"');
+    expect(readFileSync(join(repo, 'dist/cli.js'), 'utf8')).toBe('// built 1.0.0\n');
+  });
+});
+
+describe('main 상태 점검 (임시 저장소)', { timeout: 60_000 }, () => {
+  it('로컬 main이 없고 origin/main이 있으면 멈춘다(--yes여도)', async () => {
+    git('update-ref', 'refs/remotes/origin/main', git('rev-parse', 'main'));
+    git('branch', '-D', 'main');
+    const developBefore = git('rev-parse', 'develop');
+    await expect(run('patch', '--yes')).rejects.toThrow('origin/main');
+    expect(git('rev-parse', 'develop')).toBe(developBefore);
+    expect(git('status', '--porcelain')).toBe('');
+    expect(git('branch', '--list', 'main')).toBe('');
+  });
+
+  it('로컬 main이 origin/main보다 뒤처지면 멈춘다', async () => {
+    const tree = git('rev-parse', 'main^{tree}');
+    const ahead = git('commit-tree', tree, '-p', 'main', '-m', 'remote only');
+    git('update-ref', 'refs/remotes/origin/main', ahead);
+    const developBefore = git('rev-parse', 'develop');
+    await expect(run('patch', '--yes')).rejects.toThrow('뒤처졌');
+    expect(git('rev-parse', 'develop')).toBe(developBefore);
+  });
+
+  it('로컬 main이 origin/main을 포함하면 진행한다', async () => {
+    git('update-ref', 'refs/remotes/origin/main', git('rev-parse', 'main'));
+    const { tag } = await run('patch', '--yes');
+    verifyCompleted(tag);
+  });
+});
+
+describe('매니페스트 description 일치 (임시 저장소)', { timeout: 60_000 }, () => {
+  it('description이 다르면 아무것도 바꾸기 전에 멈춘다', async () => {
+    put('.codex-plugin/plugin.json', manifest(',\n  "description": "다른 소개"'));
+    git('add', '-A');
+    git('commit', '-q', '-m', 'diverge description');
+    const head = git('rev-parse', 'develop');
+    await expect(run('patch', '--yes')).rejects.toThrow('description');
+    expect(git('rev-parse', 'develop')).toBe(head);
+    expect(git('status', '--porcelain')).toBe('');
   });
 });

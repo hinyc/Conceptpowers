@@ -30,7 +30,7 @@ async function touch(rel: string, body = '\n') {
 }
 
 async function input(files: string[]): Promise<GateInput> {
-  return { root, files, cfg: await readInitConfig(root), report: {} as never };
+  return { root, files, cfg: await readInitConfig(root), locale: 'ko', report: {} as never };
 }
 
 beforeEach(async () => {

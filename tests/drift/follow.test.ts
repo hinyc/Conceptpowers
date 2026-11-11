@@ -193,7 +193,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   }
   it('코드와 개념 문서가 함께 들어오면 문지기 통과, 결산은 aligned (규칙: 서로 동반)', async () => {
     await makeDrift(['src/a.ts', 'src/b.ts']);
-    const gate = await checkDrift({ root, files: ['src/b.ts', DOC] } as never);
+    const gate = await checkDrift({ root, files: ['src/b.ts', DOC], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['src/b.ts', DOC], 't2');
     expect(r.aligned).toContain('auth-token');
@@ -201,7 +201,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   });
   it('연결 코드만 들어오고 개념 문서가 빠지면 문지기가 잡는다 (규칙: 개념 문서 동반 필수)', async () => {
     await makeDrift(['src/a.ts', 'src/b.ts']);
-    const gate = await checkDrift({ root, files: ['src/b.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/b.ts'], locale: 'ko' } as never);
     expect(gate).not.toBeNull();
     expect(gate!.reason).toContain('개념 문서');
     // git 정보가 없는 환경의 후퇴 동작: 결산은 코드 따라옴을 인정한다. git 저장소에서는
@@ -211,7 +211,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   });
   it('개념 문서만 들어오고 연결 코드가 하나도 없으면 문지기가 잡고, 강행 시 결산은 ignored', async () => {
     await makeDrift(['src/a.ts']);
-    const gate = await checkDrift({ root, files: [DOC] } as never);
+    const gate = await checkDrift({ root, files: [DOC], locale: 'ko' } as never);
     expect(gate).not.toBeNull();
     const r = await reconcileAfterCommit(root, [DOC], 't2');
     expect(r.ignored).toContain('auth-token');
@@ -219,7 +219,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   });
   it('무관한 커밋은 문지기가 막지 않고, 결산도 하지 않는다 (규칙: 맞물리지 않은 커밋은 막지 않는다)', async () => {
     await makeDrift(['src/a.ts']);
-    const gate = await checkDrift({ root, files: ['README.md'] } as never);
+    const gate = await checkDrift({ root, files: ['README.md'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['README.md'], 't2');
     expect(r.aligned).toEqual([]);
@@ -227,7 +227,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   });
   it('빈 커밋(파일 없음)도 맞물리지 않으므로 막지 않고 결산하지 않는다', async () => {
     await makeDrift(['src/a.ts']);
-    const gate = await checkDrift({ root, files: [] } as never);
+    const gate = await checkDrift({ root, files: [], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, [], 't2');
     expect(r.aligned).toEqual([]);
@@ -260,6 +260,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
     const gate = await checkDrift({
       root,
       files: ['src/a.ts', 'docs/conceptpowers/concepts/data/session-rule.json'],
+      locale: 'ko',
     } as never);
     expect(gate).not.toBeNull();
     expect(gate!.reason).toContain('개념 문서'); // auth-token: 문서 미동반
@@ -269,7 +270,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   });
   it('연결 코드가 없는 개념은 문서만 커밋해도 통과하고 aligned로 결산한다 (따라올 것이 없다)', async () => {
     await makeDrift([]);
-    const gate = await checkDrift({ root, files: [DOC] } as never);
+    const gate = await checkDrift({ root, files: [DOC], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, [DOC], 't2');
     expect(r.aligned).toContain('auth-token');
@@ -285,7 +286,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('연결 목록에 없어도 첫머리에 @concept 태그를 단 파일이 개념 문서와 함께 들어오면 따라옴이다', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/store.ts', '// @concept:auth-token\nexport const s = 1;\n');
-    const gate = await checkDrift({ root, files: ['src/store.ts', DOC] } as never);
+    const gate = await checkDrift({ root, files: ['src/store.ts', DOC], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['src/store.ts', DOC], 't2');
     expect(r.aligned).toContain('auth-token');
@@ -294,14 +295,14 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('태그 파일만 들어오고 개념 문서가 빠지면 문지기가 잡는다 (맞물림인데 문서 미동반)', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/store.ts', '// @concept:auth-token\nexport const s = 1;\n');
-    const gate = await checkDrift({ root, files: ['src/store.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/store.ts'], locale: 'ko' } as never);
     expect(gate).not.toBeNull();
     expect(gate!.reason).toContain('개념 문서');
   });
   it('다른 개념의 태그는 이 개념의 맞물림이 아니다 — 막지 않고 결산하지 않는다', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/store.ts', '// @concept:other-concept\nexport const s = 1;\n');
-    const gate = await checkDrift({ root, files: ['src/store.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/store.ts'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['src/store.ts'], 't2');
     expect(r.aligned).toEqual([]);
@@ -310,7 +311,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('ignoreGlobs에 걸리는 생성물의 태그는 세지 않는다 — 맞물림 아님', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('dist/copy.js', '// @concept:auth-token\nvar s = 1;\n');
-    const gate = await checkDrift({ root, files: ['dist/copy.js'] } as never);
+    const gate = await checkDrift({ root, files: ['dist/copy.js'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['dist/copy.js'], 't2');
     expect(r.aligned).toEqual([]);
@@ -319,7 +320,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('본문 중간의 태그는 세지 않는다 — 첫머리 주석 블록만 본다', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/late.ts', 'export const s = 1;\n// @concept:auth-token\n');
-    const gate = await checkDrift({ root, files: ['src/late.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/late.ts'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['src/late.ts'], 't2');
     expect(r.aligned).toEqual([]);
@@ -328,7 +329,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('표식만 있고 코드가 없는 파일은 따라온 코드가 아니다 — 문지기가 잡고 결산은 ignored (규칙: 표식만 있는 파일은 세지 않는다)', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/noop.ts', '// @concept:auth-token\n\n');
-    const gate = await checkDrift({ root, files: ['src/noop.ts', DOC] } as never);
+    const gate = await checkDrift({ root, files: ['src/noop.ts', DOC], locale: 'ko' } as never);
     expect(gate).not.toBeNull();
     expect(gate!.reason).toContain('연결된 코드가 하나도');
     const r = await reconcileAfterCommit(root, ['src/noop.ts', DOC], 't2');
@@ -338,7 +339,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('연결 목록에 든 파일이라도 표식만 있고 코드가 없으면 따라온 코드가 아니다 — 문지기가 잡고 결산은 ignored (규칙: 표식만 있는 파일은 세지 않는다)', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/a.ts', '// @concept:auth-token\n\n');
-    const gate = await checkDrift({ root, files: ['src/a.ts', DOC] } as never);
+    const gate = await checkDrift({ root, files: ['src/a.ts', DOC], locale: 'ko' } as never);
     expect(gate).not.toBeNull();
     expect(gate!.reason).toContain('연결된 코드가 하나도');
     const r = await reconcileAfterCommit(root, ['src/a.ts', DOC], 't2');
@@ -349,7 +350,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
     await makeDrift(['src/a.ts']);
     // 마크다운 헤딩(#)은 leadingCommentBlock에서 주석으로 오인될 수 있는 형태다.
     writeTagged('docs/note.md', '# 개념 노트: @concept:auth-token\n## 배경\n');
-    const gate = await checkDrift({ root, files: ['docs/note.md'] } as never);
+    const gate = await checkDrift({ root, files: ['docs/note.md'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['docs/note.md'], 't2');
     expect(r.aligned).toEqual([]);
@@ -358,7 +359,7 @@ describe('문지기·결산 동일 잣대 (맞물림·따라옴)', () => {
   it('@concept:none 예약 마커는 어떤 개념의 맞물림도 아니다', async () => {
     await makeDrift(['src/a.ts']);
     writeTagged('src/unrelated.ts', '// @concept:none\nexport const u = 1;\n');
-    const gate = await checkDrift({ root, files: ['src/unrelated.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/unrelated.ts'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     const r = await reconcileAfterCommit(root, ['src/unrelated.ts'], 't2');
     expect(r.aligned).toEqual([]);
@@ -411,7 +412,7 @@ describe('문서 정착과 결산 유예 (git 저장소)', () => {
     await makeGitDrift();
     git('add', DOC);
     git('commit', '-q', '-m', 'v2 doc'); // 문서 정착 — 단 lock은 여전히 v1(머지 유입과 같은 상태)
-    const gate = await checkDrift({ root, files: ['src/a.ts'] } as never);
+    const gate = await checkDrift({ root, files: ['src/a.ts'], locale: 'ko' } as never);
     expect(gate).toBeNull();
     // 결산은 정착한 문서의 지문으로 기준선을 닫는다.
     const c2 = await readConcept(root, 'auth-token');

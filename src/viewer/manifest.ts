@@ -5,7 +5,7 @@
 // 본문(설명/허용·제한 등)은 뷰어가 개별 data/*.json을 fetch해서 가져온다.
 import type { Concept, ConceptStatus, ConceptCategory } from '../schema/concept.js';
 import type { Feature } from '../schema/feature.js';
-import { LEGACY_LOCALE, type Locale } from '../schema/initConfig.js';
+import { type Locale } from '../schema/initConfig.js';
 import { buildGraphData, type GraphData } from './graph.js';
 
 export interface ConceptEntry {
@@ -52,7 +52,7 @@ const mergeLinks = (c: Concept, codeLinksBySlug: Record<string, string[]>) => [
 export function buildManifest(
   concepts: Concept[],
   features: Feature[],
-  locale: Locale = LEGACY_LOCALE,
+  locale: Locale,
   codeLinksBySlug: Record<string, string[]> = {}
 ): Manifest {
   const defined = new Set(concepts.map((c) => c.slug));

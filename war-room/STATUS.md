@@ -2,13 +2,12 @@
 
 > 매니저가 작업이 끝날 때마다 통째로 다시 쓴다. 지난 내용은 남기지 않는다.
 
-갱신: 2026-11-09 18:41
+갱신: 2026-11-11 10:25
 
 ## 진행 중
 
 - 공식 디렉터리 배포 준비 (develop 브랜치). 단계: 1 개념(concept-steward) → 2 게이트 문구·기본 locale(engine) → 3 스킬 영어화(skill-author) → 4 뷰어(viewer) → 5 배포 준비 → 6 릴리스 흐름 develop→main(release) → 7 레드팀·directory strict validate
-- 지금: 7단계 레드팀 점검 (redteam-reviewer) 준비
-- 3단계 skill-author 완료 (603a9d7)
+- 지금: 첫 main 릴리스 대기 (사용자 확인 필요: main 파일 대량 삭제, --yes). 아이콘·Private vulnerability reporting은 사용자 작업
 
 ## 다음 할 일
 
@@ -30,6 +29,8 @@
 
 ## 최근 완료 (최대 10개, 넘치면 archive/로)
 
+- 2026-11-11 · engine+release+manager · 레드팀 지적 수정: locale 폴백 단일화(readProjectLocale), 커밋 제목 정제, 릴리스 --resume·원상복구·main 뒤처짐 검사·--atomic·description 검사, README 링크·뷰어·PRIVACY 문서 (검증 19/21 → 문서 2건 매니저 수정)
+- 2026-11-09 · redteam-reviewer · develop 변경분 레드팀 (지적 17건)
 - 2026-11-09 · release+manager · 매니페스트 URL 필드, sourcemap 제거, Node>=20, 릴리스 흐름 develop→main(--yes 안전장치), CI, format, README·CHANGELOG·SECURITY·PRIVACY·CONTRIBUTING (검증: 문서 1건 실패 → manager 수정)
 - 2026-11-09 · skill-author · 스킬 6개·references 14개 영어 원본 + .ko.md 번역본, skill-surface 개념 반영 (검증 통과 2회째)
 - 2026-11-09 · viewer · 뷰어 locale 버그 수정(ko 프로젝트도 영어로 보이던 문제), 서버 안내 en/ko (검증 통과 1회)

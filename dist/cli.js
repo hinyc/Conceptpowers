@@ -7133,9 +7133,6 @@ var NEVER = INVALID;
 var LocaleSchema = external_exports.enum(["ko", "en"]);
 var LEGACY_LOCALE = "ko";
 var NEW_PROJECT_LOCALE = "en";
-function localeOf(cfg) {
-  return cfg?.locale ?? LEGACY_LOCALE;
-}
 var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
@@ -7413,7 +7410,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = LEGACY_LOCALE, codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -8201,6 +8198,15 @@ async function readInitConfig(root) {
     return null;
   }
 }
+async function readProjectLocale(root) {
+  try {
+    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const parsed = LocaleSchema.safeParse(raw?.locale);
+    return parsed.success ? parsed.data : LEGACY_LOCALE;
+  } catch {
+    return LEGACY_LOCALE;
+  }
+}
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
@@ -8278,7 +8284,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = localeOf(await readInitConfig(root));
+  const locale = await readProjectLocale(root);
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
@@ -8414,7 +8420,7 @@ async function ensureReference(root) {
     return false;
   } catch {
   }
-  const locale = (await readInitConfig(root))?.locale ?? LEGACY_LOCALE;
+  const locale = await readProjectLocale(root);
   await writeFile4(readme, seedTemplates[locale].reference, "utf8");
   return true;
 }
@@ -8447,7 +8453,7 @@ async function ensureReferencePaths(root) {
   } catch {
   }
   await mkdir5(dir, { recursive: true });
-  const locale = (await readInitConfig(root))?.locale ?? LEGACY_LOCALE;
+  const locale = await readProjectLocale(root);
   await writeFile5(target2, seedTemplates[locale].referencePaths, "utf8");
   return true;
 }
@@ -9671,7 +9677,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       enforcement: o.enforcement
     });
     reportFailedSteps(err, result.synced.failedSteps);
-    const hintLocale = (await readInitConfig(o.root))?.locale ?? o.lang;
+    const hintLocale = await readProjectLocale(o.root);
     out(
       buildInitHint(hintLocale, {
         viewerScriptAdded: result.viewerScriptAdded,

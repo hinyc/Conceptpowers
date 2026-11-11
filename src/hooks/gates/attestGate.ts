@@ -5,13 +5,12 @@ import { readAttestLog, freshPassAttest } from '../../concept/attest.js';
 import { sanitizeText } from '../../drift/safe.js';
 import { stagedConceptSlugs } from './conceptSlugs.js';
 import { gateText } from '../../i18n/gateMessages.js';
-import { localeOf } from '../../schema/initConfig.js';
 import type { GateCheck } from './types.js';
 
 // 충돌 검사 증빙: 스테이징된 개념 데이터 변경에 신선한 pass 증빙이 없으면 알린다.
 // 파일 이름으로 slug를 찾을 수 없는 개념 파일(파일 이름≠안의 slug)은 건너뛰지 않고 함께 알린다 —
 // 조용히 건너뛰면 증빙·품질 판정 대상에서 사라지는 통로가 된다. 읽기 실패는 던져서 실패한 검사로 드러낸다.
-export const checkAttest: GateCheck = async ({ root, files, cfg }) => {
+export const checkAttest: GateCheck = async ({ root, files, locale }) => {
   const slugs = stagedConceptSlugs(files);
   if (slugs.length === 0) return null;
   const attestLog = await readAttestLog(root);
@@ -24,7 +23,7 @@ export const checkAttest: GateCheck = async ({ root, files, cfg }) => {
     else if (!freshPassAttest(attestLog, c)) unattested.push(slug);
   }
   if (unattested.length === 0 && unmatched.length === 0) return null;
-  const t = gateText[localeOf(cfg)];
+  const t = gateText[locale];
   const reasons: string[] = [];
   if (unattested.length > 0) {
     const list = unattested.map((s) => sanitizeText(s)).join(', ');

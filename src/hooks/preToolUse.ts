@@ -1,8 +1,8 @@
 // @concept:governance-mode @concept:concept-driven-tests
 // src/hooks/preToolUse.ts
 import { isInitialized } from '../init/scaffold.js';
-import { readInitConfig } from '../init/readConfig.js';
-import { defaultIgnoreGlobs, localeOf, type InitConfig } from '../schema/initConfig.js';
+import { readInitConfig, readProjectLocale } from '../init/readConfig.js';
+import { defaultIgnoreGlobs, type InitConfig, type Locale } from '../schema/initConfig.js';
 import { gateText, type GateText } from '../i18n/gateMessages.js';
 import { auditIntegrity } from '../audit/audit.js';
 import { checkReferenceGate, checkReferenceLockGate } from './gates/referenceGate.js';
@@ -221,7 +221,7 @@ export async function decidePreToolUse(
     const records = findHumanRecordCommands(command);
     // 설정은 한 번만 읽는다 — 사람에게 보이는 사유의 언어(locale)와 강도를 정한다. 못 읽으면(null) 기존 프로젝트 기본 언어.
     const cfg = await readInitConfig(root);
-    const locale = localeOf(cfg);
+    const locale = await readProjectLocale(root);
     const t = gateText[locale];
     const recordAsk = records.length > 0 ? recordCommandFinding(records, t) : null;
     // 명령 글자가 아니라 실제로 실행될 커밋 호출을 해석하고, 실제로 커밋될 파일을 검사한다
@@ -248,12 +248,12 @@ export async function decidePreToolUse(
       const level = ask && enforcement === 'light' ? 'standard' : enforcement;
       return escalateWithAsk(unresolvedCommitOutput(level, target.reason(locale), t), ask, t);
     }
-    return decideCommit(root, ev, target, cfg, recordAsk);
+    return decideCommit(root, ev, target, cfg, locale, recordAsk);
   }
 
   if (EDIT_TOOLS.has(ev.tool)) {
     // 거버넌스를 정하는 파일(설정·개념 문서·증빙 기록)의 직접 편집은 사람에게 묻는다(human-owns-contract).
-    const locale = localeOf(await readInitConfig(root));
+    const locale = await readProjectLocale(root);
     const t = gateText[locale];
     const governed = governedEditFinding(
       root,
@@ -359,11 +359,11 @@ async function decideCommit(
   ev: PreToolEvent,
   target: CommitTarget,
   cfg: InitConfig | null,
+  locale: Locale,
   recordAsk: GateFinding | null
 ): Promise<PreToolOutput> {
   // 커밋될 트리를 미리 만들어 목록과 파일마다 커밋될 내용을 git에게서 받는다. 호출자가 목록을 준 경우(테스트)는
   // 목록에 든 파일은 디스크 내용, 나머지는 마지막 커밋 내용이 커밋된다고 본다.
-  const locale = localeOf(cfg);
   const snapshot = ev.changedFiles ? null : await snapshotCommit(root, target);
   const files = ev.changedFiles ?? snapshot!.files;
   const deleted = snapshot ? snapshot.deleted : (ev.deletedFiles ?? []);
@@ -384,7 +384,7 @@ async function decideCommit(
   // 필터는 audit 입력에만 적용한다(드리프트·기밀 게이트는 원본 files를 봐야 한다).
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
   const report = await auditIntegrity(root, files, ignoreGlobs);
-  const input: GateInput = { root, files, cfg, report, commit };
+  const input: GateInput = { root, files, cfg, locale, report, commit };
   const enforcement = cfg?.enforcement ?? 'standard';
   if (enforcement === 'standard') return decideStandard(input, ref);
   if (enforcement === 'strict') return decideStrict(input, ref);
@@ -395,7 +395,7 @@ async function decideCommit(
 // 함께 싣는다 — 승인 뒤 다시 검사하지 않으므로 뒤 검사 결과가 가려지지 않게 한다(governance-mode: 지키는 대상은 같다).
 // 항상 묻는 항목과 정리 안내(stale)도 같은 질문에 합친다.
 async function decideStandard(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
-  const t = gateText[localeOf(input.cfg)];
+  const t = gateText[input.locale];
   const { findings, failedGates } = await runGates(input);
   const stale = await checkStaleArtifacts(input);
   if (findings.length > 0) {
@@ -440,7 +440,7 @@ const NON_BLOCKING_GATES = new Set(['conceptless-code']);
 
 // strict: 위반 전부를 모아 막는다. 검사하지 못한 게이트가 있으면 위반이 없어도 막는다.
 async function decideStrict(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
-  const t = gateText[localeOf(input.cfg)];
+  const t = gateText[input.locale];
   const { findings, failedGates } = await runGates(input);
   const blocking = findings.filter((f) => !NON_BLOCKING_GATES.has(f.gate));
   // 항상 묻는 항목이 있어도 위반이 있으면 ask로 내려가지 않고 deny에 함께 담는다.
@@ -460,7 +460,7 @@ async function decideStrict(input: GateInput, ref: GateFinding | null): Promise<
 
 // light: 막지 않고 전부 경고로 모은다. 항상 묻는 항목은 경고로 내려가지 않는다.
 async function decideLight(input: GateInput, ref: GateFinding | null): Promise<PreToolOutput> {
-  const t = gateText[localeOf(input.cfg)];
+  const t = gateText[input.locale];
   const { findings, failedGates } = await runGates(input);
   let stale: GateFinding | null = null;
   try {
@@ -569,7 +569,7 @@ export async function decidePreToolUseSafe(
       records = [];
     }
     const cfg = await readInitConfig(root);
-    const t = gateText[localeOf(cfg)];
+    const t = gateText[await readProjectLocale(root)];
     const recordAsk = records.length > 0 ? recordCommandFinding(records, t) : null;
     // 해석조차 실패하면 글자로라도 커밋 가능성을 본다(보수적으로 대응).
     const plan = await planCommit(command).catch(() => null);

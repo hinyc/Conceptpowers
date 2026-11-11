@@ -10,12 +10,16 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   DEPLOY_ALLOWLIST,
+  MANIFESTS,
   REMOVAL_CONFIRM_THRESHOLD,
+  findDescriptionMismatch,
   isDeployPath,
+  judgeMainState,
   needsRemovalConfirmation,
   parseLsTree,
   parseReleaseArgs,
   planMainSync,
+  pushCommand,
   toIndexInfo,
   VERIFY_COMMANDS,
 } from '../../scripts/releaseSteps.mjs';
@@ -108,14 +112,31 @@ describe('needsRemovalConfirmation', () => {
 
 describe('parseReleaseArgs', () => {
   it('버전 인자와 --yes를 읽는다', () => {
-    expect(parseReleaseArgs(['patch'])).toEqual({ bump: 'patch', confirmed: false });
-    expect(parseReleaseArgs(['--yes', 'minor'])).toEqual({ bump: 'minor', confirmed: true });
-    expect(parseReleaseArgs(['1.2.0', '--yes'])).toEqual({ bump: '1.2.0', confirmed: true });
+    expect(parseReleaseArgs(['patch'])).toEqual({ bump: 'patch', confirmed: false, resume: false });
+    expect(parseReleaseArgs(['--yes', 'minor'])).toEqual({
+      bump: 'minor',
+      confirmed: true,
+      resume: false,
+    });
+    expect(parseReleaseArgs(['1.2.0', '--yes'])).toEqual({
+      bump: '1.2.0',
+      confirmed: true,
+      resume: false,
+    });
   });
   it('버전 인자가 없거나 여럿이면 거부한다', () => {
     expect(() => parseReleaseArgs([])).toThrow('버전 인자');
     expect(() => parseReleaseArgs(['--yes'])).toThrow('버전 인자');
     expect(() => parseReleaseArgs(['patch', 'minor'])).toThrow('버전 인자');
+  });
+  it('--resume은 버전 인자 없이 읽고, 버전 인자와 함께면 거부한다', () => {
+    expect(parseReleaseArgs(['--resume'])).toEqual({ bump: null, confirmed: false, resume: true });
+    expect(parseReleaseArgs(['--resume', '--yes'])).toEqual({
+      bump: null,
+      confirmed: true,
+      resume: true,
+    });
+    expect(() => parseReleaseArgs(['--resume', 'patch'])).toThrow('--resume');
   });
   it('알 수 없는 옵션은 오타로 보고 거부한다', () => {
     expect(() => parseReleaseArgs(['patch', '--force'])).toThrow('--force');
@@ -144,5 +165,83 @@ describe('배포 구성', () => {
   it('빌드는 sourcemap을 만들지 않는다', () => {
     const build = readFileSync(join(repoRoot, 'scripts/build.mjs'), 'utf8');
     expect(build).not.toMatch(/sourcemap:\s*true/);
+  });
+});
+
+describe('main 상태 판정', () => {
+  it('로컬 main이 없고 origin/main이 있으면 멈추고 fetch를 안내한다', () => {
+    const verdict = judgeMainState({
+      localMain: false,
+      remoteMain: true,
+      localContainsRemote: true,
+    });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reason).toContain('git fetch');
+  });
+  it('둘 다 없으면 첫 배포로 본다', () => {
+    expect(
+      judgeMainState({ localMain: false, remoteMain: false, localContainsRemote: true })
+    ).toEqual({
+      ok: true,
+      firstDeploy: true,
+    });
+  });
+  it('로컬 main이 origin/main을 포함하지 않으면 멈춘다', () => {
+    const verdict = judgeMainState({
+      localMain: true,
+      remoteMain: true,
+      localContainsRemote: false,
+    });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reason).toContain('뒤처졌');
+  });
+  it('로컬 main이 있고 원격이 없거나 앞서 있으면 진행한다', () => {
+    expect(
+      judgeMainState({ localMain: true, remoteMain: false, localContainsRemote: true }).ok
+    ).toBe(true);
+    expect(
+      judgeMainState({ localMain: true, remoteMain: true, localContainsRemote: true }).ok
+    ).toBe(true);
+  });
+});
+
+describe('push 안내', () => {
+  it('원자적(--atomic)으로 develop·main·태그를 한 번에 민다', () => {
+    expect(pushCommand('v1.2.3')).toBe('git push --atomic origin develop main refs/tags/v1.2.3');
+  });
+});
+
+describe('매니페스트 description 일치', () => {
+  const plain = (description?: string) => JSON.stringify({ description });
+  const market = (description?: string) =>
+    JSON.stringify({ description: 'Marketplace intro', plugins: [{ description }] });
+
+  it('같으면 통과하고, marketplace는 플러그인 항목의 description을 본다', () => {
+    expect(
+      findDescriptionMismatch({
+        'package.json': plain('same'),
+        '.claude-plugin/plugin.json': plain('same'),
+        '.claude-plugin/marketplace.json': market('same'),
+        '.codex-plugin/plugin.json': plain('same'),
+      })
+    ).toEqual([]);
+  });
+  it('하나라도 다르면 경로와 값을 알려 준다', () => {
+    const mismatch = findDescriptionMismatch({
+      'package.json': plain('same'),
+      '.claude-plugin/plugin.json': plain('same'),
+      '.claude-plugin/marketplace.json': market('different'),
+      '.codex-plugin/plugin.json': plain('same'),
+    });
+    expect(mismatch.join(' ')).toContain('.claude-plugin/marketplace.json="different"');
+  });
+  it('하나만 비어 있어도 다른 것으로 본다', () => {
+    expect(findDescriptionMismatch({ a: plain('x'), b: plain(undefined) })).not.toEqual([]);
+  });
+  it('이 저장소의 실제 매니페스트 4곳은 일치한다', () => {
+    const texts = Object.fromEntries(
+      MANIFESTS.map((rel) => [rel, readFileSync(join(repoRoot, rel), 'utf8')])
+    );
+    expect(findDescriptionMismatch(texts)).toEqual([]);
   });
 });

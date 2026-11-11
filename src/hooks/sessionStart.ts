@@ -4,8 +4,7 @@ import { hookRootOf } from './hookRoot.js';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isInitialized } from '../init/scaffold.js';
-import { readInitConfig } from '../init/readConfig.js';
-import { LEGACY_LOCALE } from '../schema/initConfig.js';
+import { readInitConfig, readProjectLocale } from '../init/readConfig.js';
 import { syncIfStale, findPluginRoot, type AutoSyncResult } from '../version/autoSync.js';
 import { formatFailedSteps } from '../init/syncGenerated.js';
 import { listConcepts } from '../store/conceptStore.js';
@@ -91,7 +90,7 @@ export async function buildSessionStartOutput(
   // 구버전 플러그인이 신버전 산출물을 덮어쓰는 다운그레이드는 하지 않는다.
   const autoSyncBlock = buildAutoSyncBlock(await syncIfStale(root, pluginRoot), cli);
   const config = await readInitConfig(root);
-  const locale = config?.locale ?? LEGACY_LOCALE;
+  const locale = await readProjectLocale(root);
   // 테스트도 개념의 지배를 받는다(conceptDrivenTests) — false로 명시한 경우에만 끈다.
   const conceptTestsLine =
     config?.conceptDrivenTests !== false
@@ -295,6 +294,7 @@ export async function buildSessionStartOutput(
             'Ask the user to choose, once at the start of this session: (a) update now, or (b) ignore and continue.',
             'To update now, the user runs:',
             '  /plugin marketplace update conceptpowers-dev',
+            '  /plugin update conceptpowers@conceptpowers-dev',
             'If the user chooses to ignore, do not block — continue the requested work as usual. Turning the check off is possible with `versionCheck: false` in init.json.',
             'After updating, generated artifacts (viewer assets, concepts:view script) are auto-synced at the next session start or the next Conceptpowers CLI use — no manual sync needed. The baseline (concepts/specs/architecture/infra) is never touched.',
             'Updates are manual by design; do not nag repeatedly within this session.',

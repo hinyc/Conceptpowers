@@ -19,6 +19,7 @@ The concept viewer is a local HTTP server bound to `127.0.0.1` only; it is not r
 ## Files the plugin writes
 
 - In your project: `docs/conceptpowers/` (concepts, alignment records, mapping cache, settings, and generated viewer files). Whether the reference fingerprint file is committed is your choice (`referenceLock` in `init.json`); it holds file names and hashes, never content.
+- In your project root `package.json`, only when that file already exists: a `concepts:view` script (`node docs/conceptpowers/concepts/viewer/serve.mjs`) that opens the viewer. The plugin adds it at `init` (including re-runs) and re-adds it when the viewer files are re-synced after a plugin update or by `version-sync --force`; if you delete it in between, it stays gone until then. A `concepts:view` you wrote yourself is never overwritten (only a command the plugin generated earlier is replaced), and the plugin never creates a `package.json`. Your indentation and trailing newline are kept.
 - Outside your project: the version-check cache in `~/.cache/conceptpowers` (or the directory named by `CONCEPTPOWERS_CACHE_DIR`). It contains a timestamp and a version string.
 
 Hooks also run local `git` commands in your repository to inspect what a commit would contain. They do not change your branches, index, or working tree, but working out the tree a commit would produce can write ordinary git objects into `.git`.

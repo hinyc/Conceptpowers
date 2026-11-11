@@ -364,6 +364,7 @@ describe('플러그인 업데이트 알림', () => {
     expect(ctx).toContain('<CONCEPTPOWERS-UPDATE>');
     expect(ctx).toContain('0.2.0');
     expect(ctx).toContain('/plugin marketplace update conceptpowers-dev');
+    expect(ctx).toContain('/plugin update conceptpowers@conceptpowers-dev');
   });
 
   // plugin-version-sync 허용: "새 버전이 나오면 작업을 시작할 때 알리고, 지금 올릴지 무시할지 사람이 고르게 하는 것 —

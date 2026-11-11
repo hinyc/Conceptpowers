@@ -61,7 +61,7 @@ A well-known critique of spec-driven development goes: a spec document detailed 
 
 A concept is not a blueprint that generates code; it is a **contract that judges code**. The difference rests on an asymmetry of verification: _"admins are never hard-deleted"_ — one line can never produce an implementation, but it can always judge whether a change **violates** the rule. So a concept is **incomplete by design**: the code remains the sole source of truth for _how_, while the concept owns only the _why_ and the invariants. There is no pressure for it to become "sufficiently detailed," and therefore no convergence into code.
 
-Where spec-driven development actually breaks — one-shot generation flakiness, document bloat, spec rot after the code moves on, AI-written slop becoming the source of truth — and what Conceptpowers does at each of those points: see [`docs/concepts-vs-specs.md`](docs/concepts-vs-specs.md).
+Where spec-driven development actually breaks — one-shot generation flakiness, document bloat, spec rot after the code moves on, AI-written slop becoming the source of truth — and what Conceptpowers does at each of those points: see [`docs/concepts-vs-specs.md`](https://github.com/hinyc/Conceptpowers/blob/develop/docs/concepts-vs-specs.md).
 
 ---
 
@@ -413,13 +413,13 @@ docs/conceptpowers/
 └── .cache/mapping.json             # auto mapping cache — created on first scan / map (do not edit)
 ```
 
-The viewer is a **client-side SPA**: it doesn't bake one HTML file per concept — `index.html` + `assets/viewer.js` fetch `manifest.json` and the original `data/*.json` at runtime. Because it `fetch`es local JSON, it must be served over HTTP, not opened as a `file://` — so `init` also adds a **`concepts:view`** script (`node …/viewer/serve.mjs`) to your `package.json` when one exists.
+The viewer is a **client-side SPA**: it doesn't bake one HTML file per concept — `index.html` + `assets/viewer.js` fetch `manifest.json` and the original `data/*.json` at runtime. Because it `fetch`es local JSON, it must be served over HTTP, not opened as a `file://` — so the plugin also adds a **`concepts:view`** script (`node docs/conceptpowers/concepts/viewer/serve.mjs`) to the `package.json` at your project root when one exists. It is written at `init` (and when you re-run `init`), and again by the automatic version sync after a plugin update or by `node <cli> version-sync --force`; if you delete it in between, it stays gone until the next of those. If you already set `concepts:view` to your own command it is left alone; only a command the plugin generated earlier is replaced. With no `package.json`, nothing is created.
 
-The viewer's **UI chrome defaults to English** (nav, buttons, badges, legend) regardless of the project `locale`; your concept/feature **content** renders in whatever language its JSON was authored in. To localize the chrome too, set `uiLocale` (e.g. `"ko"`) in `manifest.json`.
+The viewer's **UI chrome follows the project `locale`** from `init.json` (nav, buttons, badges, legend), copied into `manifest.json` when the viewer is generated; a project without `locale` is shown in Korean. Your concept/feature **content** renders in whatever language its JSON was authored in. To change the chrome language, change `locale` in `init.json` and regenerate the viewer with `node <cli> render` (it is not regenerated automatically until the next plugin update).
 
 The entire baseline (concepts, specs, architecture, infra) is edited **exclusively by the user** — the agent never rewrites it on its own.
 
-Detailed design: `docs/specs/2026-06-18-conceptpowers-design.md`.
+Detailed design: [`docs/specs/2026-06-18-conceptpowers-design.md`](https://github.com/hinyc/Conceptpowers/blob/develop/docs/specs/2026-06-18-conceptpowers-design.md) (on the `develop` branch).
 
 ### Reference material
 
@@ -484,7 +484,7 @@ Conceptpowers is local-first. Full policy: [PRIVACY.md](PRIVACY.md).
 **What runs on your machine**
 
 - **Hooks** (`hooks/hooks.json`): `PreToolUse` (Edit / Write / MultiEdit / NotebookEdit / Bash), `PostToolUse` (Bash) and `SessionStart`. Each runs `node dist/hooks/*.js` from the plugin directory.
-- **git**: the commit gate runs read-only `git` commands to see what a commit would contain.
+- **git**: the commit gate runs local `git` commands to see what a commit would contain. They do not change your branches, index, or working tree, but working out the tree a commit would produce can write ordinary git objects into `.git`.
 - **Viewer**: the concept viewer is a local HTTP server bound to `127.0.0.1` only, and it asks your OS to open it in the default browser. It runs only when you start it.
 - No LLM is called by the plugin itself; judgment happens in your agent.
 
@@ -496,12 +496,13 @@ Conceptpowers is local-first. Full policy: [PRIVACY.md](PRIVACY.md).
 **What it writes**
 
 - In your project: `docs/conceptpowers/` (concepts, records, settings).
+- In your project root `package.json`, when one exists: a `concepts:view` script that opens the viewer. The plugin writes it at `init` and again when the viewer files are re-synced after a plugin update (or by `version-sync --force`); a `concepts:view` you wrote yourself is never overwritten, and no `package.json` is ever created.
 - Outside the project: only the version-check cache in `~/.cache/conceptpowers` (override with `CONCEPTPOWERS_CACHE_DIR`).
 
 **Turning the version check off**
 
 Set `"versionCheck": false` in `docs/conceptpowers/init.json`, or set the environment variable `CONCEPTPOWERS_NO_VERSION_CHECK=1`.
-If a newer version exists, the notice is one line; updating is manual (`/plugin marketplace update conceptpowers-dev`).
+If a newer version exists, the notice is one line; updating is manual (`/plugin marketplace update conceptpowers-dev`, then `/plugin update conceptpowers@conceptpowers-dev`).
 
 ---
 

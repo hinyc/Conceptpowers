@@ -18,7 +18,13 @@ import type { GateInput } from '../../src/hooks/gates/types.js';
 
 const DATA = 'docs/conceptpowers/concepts/data';
 let root: string;
-const input = (files: string[]): GateInput => ({ root, files, cfg: null, report: {} as never });
+const input = (files: string[]): GateInput => ({
+  root,
+  files,
+  cfg: null,
+  locale: 'ko',
+  report: {} as never,
+});
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), 'cp-attestgate-'));

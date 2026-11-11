@@ -58,7 +58,14 @@ const commitAttest = () => {
 };
 async function inputFor(scope: CommitScope, pathspecs: string[] = []): Promise<GateInput> {
   const snap = await snapshotCommit(root, { kind: 'commit', scope, pathspecs });
-  return { root, files: snap.files, cfg: null, report: {} as never, commit: snap.content };
+  return {
+    root,
+    files: snap.files,
+    cfg: null,
+    locale: 'ko',
+    report: {} as never,
+    commit: snap.content,
+  };
 }
 
 beforeEach(async () => {
@@ -167,7 +174,13 @@ describe('evidence-staged 문지기', () => {
     const bare = mkdtempSync(join(tmpdir(), 'cp-evidence-nogit-'));
     await scaffoldInit(bare, { locale: 'ko' });
     await expect(
-      checkEvidenceStaged({ root: bare, files: [DOC], cfg: null, report: {} as never })
+      checkEvidenceStaged({
+        root: bare,
+        files: [DOC],
+        cfg: null,
+        locale: 'ko',
+        report: {} as never,
+      })
     ).rejects.toThrow();
   });
 });

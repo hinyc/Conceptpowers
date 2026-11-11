@@ -42,21 +42,32 @@ Updates reach users only when the `version` string changes, so pushing commits a
 
 ```bash
 pnpm release <patch|minor|major|x.y.z> [--yes]
+pnpm release --resume [--yes]
 ```
 
 The command requires a clean tree on `develop` and then:
 
-1. verifies (type check, tests against the coverage threshold, format check);
+1. checks that the four manifests carry the same `description` and that local `main` is usable (see below), then verifies (type check, tests against the coverage threshold, format check);
 2. syncs the version across `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and `package.json`;
 3. rebuilds `dist/` (hooks run `dist/*.js` directly, so a release without a rebuild ships stale hooks);
 4. commits the release on `develop`, then commits only the allowed files to `main` and tags that `main` commit with an annotated tag `vX.Y.Z`.
 
 If the sync would delete more than 10 files from `main` (for example the first release after the `develop`/`main` split), the command lists them and stops before changing anything. Review the list and run it again with `--yes`.
 
-The command never pushes. A person pushes both branches and the tag after checking the result, using the command the script prints:
+Local `main` is checked against the remote-tracking ref only (no fetch). If `main` is missing but `origin/main` exists, or `main` is behind `origin/main`, the command stops and tells you how to sync. A first deployment with neither requires `--yes`.
+
+If anything fails between the version bump and the `develop` release commit (build, render, commit), the release paths are restored to the starting state, so you can fix the cause and run it again. If it fails after the `develop` release commit (for example a stale `.git/refs/heads/main.lock`, or a tag signing failure), `develop` already carries the new version and the command prints a recovery note. Fix the cause and finish the same version with:
 
 ```bash
-git push origin develop main refs/tags/vX.Y.Z
+pnpm release --resume
+```
+
+`--resume` requires `develop` HEAD to be the `chore(release): vX.Y.Z` commit. It reuses `main` if it already has that tree and only adds the missing tag. The same `--yes` rule applies: if the failed release was the first one (or would still delete more than 10 files from `main`), run `pnpm release --resume --yes`.
+
+The command never pushes. A person pushes both branches and the tag after checking the result, using the command the script prints (`--atomic`, so all refs update or none do):
+
+```bash
+git push --atomic origin develop main refs/tags/vX.Y.Z
 ```
 
 `git push --follow-tags` is not enough: the tag points at a `main` commit, which is not reachable from `develop`. Add the release to [CHANGELOG.md](CHANGELOG.md) before cutting it.

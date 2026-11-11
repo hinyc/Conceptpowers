@@ -14,8 +14,7 @@ import { ALLOWED_STATUS_TRANSITIONS, editConceptContent } from '../store/concept
 import { refreshManifestData } from './render.js';
 import { SLUG_RE } from '../schema/concept.js';
 import { handleStatusApi, engineErrorStatus } from './statusApi.js';
-import { readInitConfig } from '../init/readConfig.js';
-import { localeOf } from '../schema/initConfig.js';
+import { readProjectLocale } from '../init/readConfig.js';
 import { SERVER_MESSAGES } from './i18n.js';
 
 const MIME: Record<string, string> = {
@@ -424,7 +423,7 @@ if (isMain) {
   // (docs/conceptpowers), 엔진용 projectRoot는 네 단계 위(프로젝트 루트)다.
   const root = fileURLToPath(new URL('../../', import.meta.url));
   const projectRoot = fileURLToPath(new URL('../../../../', import.meta.url));
-  const messages = readInitConfig(projectRoot).then((cfg) => SERVER_MESSAGES[localeOf(cfg)]);
+  const messages = readProjectLocale(projectRoot).then((locale) => SERVER_MESSAGES[locale]);
   startServer({ root, projectRoot, entry: 'concepts/viewer/index.html', open: true })
     .then(async ({ url }) => {
       // eslint-disable-next-line no-console

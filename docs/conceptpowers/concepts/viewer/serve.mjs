@@ -4643,7 +4643,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = "ko", codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -4718,11 +4718,12 @@ import { readFile as readFile5 } from "node:fs/promises";
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
+var LEGACY_LOCALE = "ko";
 var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
 var InitConfigSchema = external_exports.object({
   version: external_exports.string(),
   enabled: external_exports.literal(true),
-  locale: LocaleSchema.default("ko"),
+  locale: LocaleSchema.default(LEGACY_LOCALE),
   versionCheck: external_exports.boolean().default(true),
   // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
   // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
@@ -4763,17 +4764,15 @@ var InitConfigSchema = external_exports.object({
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
   noConceptGlobs: external_exports.array(external_exports.string()).default([])
 });
-function parseInitConfig(input) {
-  return InitConfigSchema.parse(input);
-}
 
 // src/init/readConfig.ts
-async function readInitConfig(root) {
+async function readProjectLocale(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
+    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const parsed = LocaleSchema.safeParse(raw?.locale);
+    return parsed.success ? parsed.data : LEGACY_LOCALE;
   } catch {
-    return null;
+    return LEGACY_LOCALE;
   }
 }
 
@@ -4815,7 +4814,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = (await readInitConfig(root))?.locale ?? "ko";
+  const locale = await readProjectLocale(root);
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
@@ -4865,6 +4864,18 @@ async function handleStatusApi(projectRoot, method, rawSlug, body) {
     return { status: engineErrorStatus(error), json: { error: error.message } };
   }
 }
+
+// src/viewer/i18n.ts
+var SERVER_MESSAGES = {
+  ko: {
+    started: (url) => `Conceptpowers \uBDF0\uC5B4: ${url}  (\uD3B8\uC9D1 \uAC00\uB2A5 \xB7 \uC885\uB8CC: Ctrl+C)`,
+    startFailed: "\uBDF0\uC5B4 \uC11C\uBC84 \uC2DC\uC791 \uC2E4\uD328:"
+  },
+  en: {
+    started: (url) => `Conceptpowers viewer: ${url}  (editable \xB7 stop: Ctrl+C)`,
+    startFailed: "Failed to start viewer server:"
+  }
+};
 
 // src/viewer/serve.ts
 var MIME = {
@@ -5162,10 +5173,11 @@ var isMain = runAsMain();
 if (isMain) {
   const root = fileURLToPath2(new URL("../../", import.meta.url));
   const projectRoot = fileURLToPath2(new URL("../../../../", import.meta.url));
-  startServer({ root, projectRoot, entry: "concepts/viewer/index.html", open: true }).then(({ url }) => {
-    console.log(`Conceptpowers \uBDF0\uC5B4: ${url}  (\uD3B8\uC9D1 \uAC00\uB2A5 \xB7 \uC885\uB8CC: Ctrl+C)`);
-  }).catch((err) => {
-    console.error("\uBDF0\uC5B4 \uC11C\uBC84 \uC2DC\uC791 \uC2E4\uD328:", err.message);
+  const messages = readProjectLocale(projectRoot).then((locale) => SERVER_MESSAGES[locale]);
+  startServer({ root, projectRoot, entry: "concepts/viewer/index.html", open: true }).then(async ({ url }) => {
+    console.log((await messages).started(url));
+  }).catch(async (err) => {
+    console.error((await messages).startFailed, err.message);
     process.exit(1);
   });
 }

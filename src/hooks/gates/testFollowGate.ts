@@ -15,7 +15,6 @@ import { scanTags } from '../../mapping/scan.js';
 import { matchesAny } from '../../util/glob.js';
 import { InitConfigSchema } from '../../schema/initConfig.js';
 import { gateText } from '../../i18n/gateMessages.js';
-import { localeOf } from '../../schema/initConfig.js';
 import type { GateCheck } from './types.js';
 
 const MAX_LISTED_PATHS = 8;
@@ -24,7 +23,7 @@ const MAX_LISTED_PATHS = 8;
 const defaultTestGlobs = (): string[] => InitConfigSchema.shape.testGlobs.parse(undefined);
 
 export const checkTestFollow: GateCheck = async (input) => {
-  const { root, files, cfg, commit } = input;
+  const { root, files, cfg, commit, locale } = input;
   if (cfg?.conceptDrivenTests === false) return null; // 스위치로 끌 수 있다
   const testGlobs = cfg?.testGlobs?.length ? cfg.testGlobs : defaultTestGlobs();
 
@@ -66,7 +65,7 @@ export const checkTestFollow: GateCheck = async (input) => {
 
   if (pending.length === 0) return null;
 
-  const t = gateText[localeOf(cfg)];
+  const t = gateText[locale];
   const detail = pending
     .map((x) => {
       const slug = sanitizeText(x.slug);

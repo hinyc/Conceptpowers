@@ -4593,61 +4593,6 @@ import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from 
 import { join as join5, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// src/schema/initConfig.ts
-var LocaleSchema = external_exports.enum(["ko", "en"]);
-var LEGACY_LOCALE = "ko";
-function localeOf(cfg) {
-  return cfg?.locale ?? LEGACY_LOCALE;
-}
-var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
-var InitConfigSchema = external_exports.object({
-  version: external_exports.string(),
-  enabled: external_exports.literal(true),
-  locale: LocaleSchema.default(LEGACY_LOCALE),
-  versionCheck: external_exports.boolean().default(true),
-  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
-  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
-  conceptDrivenTests: external_exports.boolean().default(true),
-  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
-  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
-  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
-  testGlobs: external_exports.array(external_exports.string()).default([
-    "tests/**",
-    "test/**",
-    "__tests__/**",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/*_test.*",
-    "**/*_spec.*",
-    "**/test_*.py"
-  ]),
-  enforcement: EnforcementSchema.default("standard"),
-  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
-  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
-  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
-  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
-  ignoreGlobs: external_exports.array(external_exports.string()).default([
-    "docs/conceptpowers/**",
-    // 플러그인 생성물(뷰어 등)
-    "dist/**",
-    "build/**",
-    // 빌드 산출물
-    "node_modules/**",
-    // 외부 의존성
-    "**/*.generated.*"
-    // 코드 생성물
-  ]),
-  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
-  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
-  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([])
-});
-function parseInitConfig(input) {
-  return InitConfigSchema.parse(input);
-}
-
 // src/viewer/graph.ts
 var conceptHref = (c) => `#/concept/${c.slug}`;
 var featureHref = (f) => `#/feature/${f.slug}`;
@@ -4698,7 +4643,7 @@ var own2 = (o, k) => Object.prototype.hasOwnProperty.call(o, k) ? o[k] : [];
 var mergeLinks = (c, codeLinksBySlug) => [
   .../* @__PURE__ */ new Set([...c.codeLinks ?? [], ...own2(codeLinksBySlug, c.slug)])
 ];
-function buildManifest(concepts, features, locale = LEGACY_LOCALE, codeLinksBySlug = {}) {
+function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
   const defined = new Set(concepts.map((c) => c.slug));
   return {
     version: 1,
@@ -4770,12 +4715,64 @@ async function readMappingCache(root) {
 
 // src/init/readConfig.ts
 import { readFile as readFile5 } from "node:fs/promises";
-async function readInitConfig(root) {
+
+// src/schema/initConfig.ts
+var LocaleSchema = external_exports.enum(["ko", "en"]);
+var LEGACY_LOCALE = "ko";
+var EnforcementSchema = external_exports.enum(["strict", "standard", "light"]);
+var InitConfigSchema = external_exports.object({
+  version: external_exports.string(),
+  enabled: external_exports.literal(true),
+  locale: LocaleSchema.default(LEGACY_LOCALE),
+  versionCheck: external_exports.boolean().default(true),
+  // 테스트 코드도 개념의 지배를 받는다 — 켜져 있으면(기본) 세션 시작 규칙에
+  // "테스트 작성 전 대상 코드의 개념을 찾아 규칙 기반 시나리오를 도출하라"가 주입된다.
+  conceptDrivenTests: external_exports.boolean().default(true),
+  // 어떤 파일을 "검사(테스트)"로 볼지 정하는 이름 규칙 — concept-driven-tests의 두 문지기
+  // (개념이 바뀌면 딸린 검사가 따라왔는지 / 검사 파일이 어떤 개념을 가리키는지)가 함께 쓴다.
+  // 적지 않으면 흔히 쓰는 기본 규칙을 쓴다.
+  testGlobs: external_exports.array(external_exports.string()).default([
+    "tests/**",
+    "test/**",
+    "__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/*_spec.*",
+    "**/test_*.py"
+  ]),
+  enforcement: EnforcementSchema.default("standard"),
+  // 참고자료 기준점(파일 이름·지문 목록)을 저장소에 올릴지(shared, 기본) 내 컴퓨터에만 둘지(local).
+  // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
+  referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
+  // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
+  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  ignoreGlobs: external_exports.array(external_exports.string()).default([
+    "docs/conceptpowers/**",
+    // 플러그인 생성물(뷰어 등)
+    "dist/**",
+    "build/**",
+    // 빌드 산출물
+    "node_modules/**",
+    // 외부 의존성
+    "**/*.generated.*"
+    // 코드 생성물
+  ]),
+  // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
+  // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
+  // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
+  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+});
+
+// src/init/readConfig.ts
+async function readProjectLocale(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
-    return parseInitConfig(JSON.parse(raw));
+    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const parsed = LocaleSchema.safeParse(raw?.locale);
+    return parsed.success ? parsed.data : LEGACY_LOCALE;
   } catch {
-    return null;
+    return LEGACY_LOCALE;
   }
 }
 
@@ -4817,7 +4814,7 @@ async function writeManifest(root, stampVersion) {
   const concepts = await listConcepts(root);
   const features = await listFeatures(root);
   const mapping = await readMappingCache(root);
-  const locale = localeOf(await readInitConfig(root));
+  const locale = await readProjectLocale(root);
   const p = cpPaths(root);
   await mkdir3(p.conceptsViewer, { recursive: true });
   const manifest = {
@@ -5176,7 +5173,7 @@ var isMain = runAsMain();
 if (isMain) {
   const root = fileURLToPath2(new URL("../../", import.meta.url));
   const projectRoot = fileURLToPath2(new URL("../../../../", import.meta.url));
-  const messages = readInitConfig(projectRoot).then((cfg) => SERVER_MESSAGES[localeOf(cfg)]);
+  const messages = readProjectLocale(projectRoot).then((locale) => SERVER_MESSAGES[locale]);
   startServer({ root, projectRoot, entry: "concepts/viewer/index.html", open: true }).then(async ({ url }) => {
     console.log((await messages).started(url));
   }).catch(async (err) => {

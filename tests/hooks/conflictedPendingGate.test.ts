@@ -20,7 +20,7 @@ beforeEach(() => {
 });
 
 const input = (pendingRefs: string[]): GateInput =>
-  ({ root, files: [], cfg: null, report: { pendingRefs } }) as never;
+  ({ root, files: [], cfg: null, locale: 'ko', report: { pendingRefs } }) as never;
 
 function writeConflicts(text: string) {
   const p = cpPaths(root).pendingConflicts;

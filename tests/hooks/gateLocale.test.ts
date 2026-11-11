@@ -165,4 +165,28 @@ describe('게이트 사유의 언어 (ko)', () => {
     const reason = await commitReason(['src/a.ts']);
     expect(reason).toContain('개념 없는 코드');
   });
+  it('locale이 en이고 다른 키(enforcement)가 무효여도 영어로 나온다 (설정 검증 실패 ≠ 언어 변경)', async () => {
+    await project('en', 'standard');
+    const cfg = JSON.parse(readFileSync(initFile(), 'utf8'));
+    writeFileSync(initFile(), JSON.stringify({ ...cfg, enforcement: 'Strict' }, null, 2));
+    const edit = reasonOf(
+      await decidePreToolUse(root, { tool: 'Edit', input: { file_path: initFile() } })
+    );
+    expect(edit).toContain('[GOVERNANCE CONFIG]');
+    expect(edit).not.toMatch(HANGUL);
+    write('src/a.ts', 'export const a = 1;\n');
+    expect(await commitReason(['src/a.ts'])).not.toMatch(HANGUL);
+  });
+  it('init.json이 깨졌거나 locale 값이 무효이면 기존 프로젝트 기본(ko)이다', async () => {
+    await project('en', 'standard');
+    writeFileSync(initFile(), '{ not json');
+    expect(
+      reasonOf(await decidePreToolUse(root, { tool: 'Edit', input: { file_path: initFile() } }))
+    ).toContain('거버넌스 설정 파일');
+    const cfg = { version: '0.1.0', enabled: true, locale: 'fr' };
+    writeFileSync(initFile(), JSON.stringify(cfg));
+    expect(
+      reasonOf(await decidePreToolUse(root, { tool: 'Edit', input: { file_path: initFile() } }))
+    ).toContain('거버넌스 설정 파일');
+  });
 });

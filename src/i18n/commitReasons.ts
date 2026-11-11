@@ -10,7 +10,13 @@ export type Reason = (locale: Locale) => string;
 const pair =
   (ko: string, en: string): Reason =>
   (locale) =>
-    locale === 'ko' ? ko : en;
+    TEXTS[locale](ko, en);
+
+// 문구표와 같은 방식 — Record<Locale, …>라 locale이 늘면 여기서 타입 오류가 난다.
+const TEXTS: Record<Locale, (ko: string, en: string) => string> = {
+  ko: (ko) => ko,
+  en: (_ko, en) => en,
+};
 
 export const R = {
   incompleteQuote: pair(

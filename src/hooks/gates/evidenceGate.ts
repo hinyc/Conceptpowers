@@ -12,7 +12,6 @@ import { diskContent, injectedContent } from '../command/commitTree.js';
 import { stagedConceptSlugs } from './conceptSlugs.js';
 import { engagedDrift } from './driftGate.js';
 import { gateText, type GateText } from '../../i18n/gateMessages.js';
-import { localeOf } from '../../schema/initConfig.js';
 import type { GateCheck, GateInput } from './types.js';
 
 const ALIGN_REL = `${CP_REL}/concepts/.alignment`;
@@ -79,7 +78,7 @@ export const checkEvidenceStaged: GateCheck = async (input) => {
   if (!(await engaged(input))) return null;
   const problems = await evidenceProblems(input);
   if (problems.length === 0) return null;
-  const t = gateText[localeOf(input.cfg)];
+  const t = gateText[input.locale];
   return {
     gate: 'evidence-staged',
     reason: t.evidence(describe(problems, t)),

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the latest release receives security fixes. Please update to the newest version (`/plugin marketplace update conceptpowers-dev`) before reporting.
+Only the latest release receives security fixes. Please update to the newest version before reporting. If you installed from the Conceptpowers marketplace, run both `/plugin marketplace update conceptpowers-dev` (refresh marketplace metadata) and `/plugin update conceptpowers@conceptpowers-dev` (update the plugin). If you installed from the official plugin directory, follow the "From the official plugin directory" section of the [README](README.md#install).
 
 ## Reporting a vulnerability
 

@@ -17,12 +17,7 @@
 //    → versionCheck 누락 시 true / false로 명시하면 false
 //  - init-gate 구성요소 "초기화 표시" → enabled가 true가 아니면 거부 / 옛 설정 키가 남아 있어도 검증 통과
 import { describe, it, expect } from 'vitest';
-import {
-  parseInitConfig,
-  LEGACY_LOCALE,
-  NEW_PROJECT_LOCALE,
-  localeOf,
-} from '../../src/schema/initConfig.js';
+import { parseInitConfig, LEGACY_LOCALE, NEW_PROJECT_LOCALE } from '../../src/schema/initConfig.js';
 
 describe('InitConfig', () => {
   // 읽히지 않던 옛 설정 키(backfillMode·enforceScope·project)는 스키마에서 빠졌다.
@@ -50,10 +45,6 @@ describe('InitConfig', () => {
   it('새 프로젝트에 써 넣는 기본 언어는 en이다 (NEW_PROJECT_LOCALE) — 읽기 기본값과 별개', () => {
     expect(NEW_PROJECT_LOCALE).toBe('en');
     expect(NEW_PROJECT_LOCALE).not.toBe(LEGACY_LOCALE);
-  });
-  it('localeOf: 설정을 못 읽었으면(null) 기존 프로젝트 기본(ko), 있으면 그 값', () => {
-    expect(localeOf(null)).toBe('ko');
-    expect(localeOf({ locale: 'en' })).toBe('en');
   });
   it('en locale을 허용한다', () => {
     expect(parseInitConfig({ version: '0.1.0', enabled: true, locale: 'en' }).locale).toBe('en');

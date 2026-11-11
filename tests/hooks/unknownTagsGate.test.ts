@@ -21,7 +21,7 @@ const baseReport: AuditReport = {
 };
 
 const run = (report: AuditReport) =>
-  checkUnknownTags({ root: '/nowhere', files: [], cfg: null, report });
+  checkUnknownTags({ root: '/nowhere', files: [], cfg: null, locale: 'ko', report });
 
 describe('checkUnknownTags', () => {
   it('중복 slug만 있고 미지 태그가 없으면 null [규칙: 정의되지 않은 개념을 가리키는 표식을 감사가 보고하고 커밋 문지기가 검사 항목으로 붙잡는 것 — 막을지 물을지 알릴지는 문지기 강도가 정한다]', async () => {

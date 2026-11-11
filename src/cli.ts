@@ -17,7 +17,7 @@ import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
 import { findUnlinkedConcepts } from './audit/unlinked.js';
 import { listTrackedFiles } from './audit/tracked.js';
-import { readInitConfig } from './init/readConfig.js';
+import { readInitConfig, readProjectLocale } from './init/readConfig.js';
 import { defaultIgnoreGlobs, NEW_PROJECT_LOCALE } from './schema/initConfig.js';
 import { matchesAny } from './util/glob.js';
 import { isMainModule } from './util/isMain.js';
@@ -124,7 +124,7 @@ export async function runCli(
       });
       reportFailedSteps(err, result.synced.failedSteps);
       // 이미 초기화된 프로젝트는 init.json의 locale이 우선한다(다시 init해도 설정은 보존) — 안내도 그 언어로.
-      const hintLocale = (await readInitConfig(o.root))?.locale ?? (o.lang as Locale);
+      const hintLocale = await readProjectLocale(o.root);
       out(
         buildInitHint(hintLocale, {
           viewerScriptAdded: result.viewerScriptAdded,

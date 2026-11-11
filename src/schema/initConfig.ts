@@ -11,11 +11,6 @@ export type Locale = z.infer<typeof LocaleSchema>;
 export const LEGACY_LOCALE: Locale = 'ko';
 export const NEW_PROJECT_LOCALE: Locale = 'en';
 
-/** 설정(없거나 깨졌으면 null)에서 출력 언어를 정한다 — 읽을 수 없으면 기존 프로젝트 기본(LEGACY_LOCALE). */
-export function localeOf(cfg: { locale?: Locale } | null | undefined): Locale {
-  return cfg?.locale ?? LEGACY_LOCALE;
-}
-
 // 커밋 게이트 강도(governance-mode 개념): strict=차단, standard=확인(기본), light=경고만.
 // 설정이 없거나 깨졌으면 항상 standard로 동작한다(안전한 쪽).
 export const EnforcementSchema = z.enum(['strict', 'standard', 'light']);
