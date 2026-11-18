@@ -33,6 +33,7 @@ it('단일 SPA 에셋(index.html, viewer.js, serve.mjs, css)을 디스크에 쓴
   expect(existsSync(viewer('assets/viewer.js'))).toBe(true);
   expect(existsSync(viewer('assets/sidebar.js'))).toBe(true);
   expect(existsSync(viewer('assets/topnav.js'))).toBe(true);
+  expect(existsSync(viewer('assets/conceptDiff.js'))).toBe(true);
   expect(existsSync(viewer('serve.mjs'))).toBe(true);
   expect(existsSync(viewer('assets/concept.css'))).toBe(true);
 });
@@ -112,6 +113,10 @@ it('viewer.js와 index.html이 서로를 참조한다', async () => {
   expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/viewer.js');
   expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/sidebar.js');
   expect(readFileSync(viewer('index.html'), 'utf8')).toContain('assets/topnav.js');
+  // 비교 함수는 화면(viewer.js)보다 먼저 올라와야 한다(@concept:pending-diff).
+  const html = readFileSync(viewer('index.html'), 'utf8');
+  expect(html).toContain('assets/conceptDiff.js');
+  expect(html.indexOf('assets/conceptDiff.js')).toBeLessThan(html.indexOf('assets/viewer.js'));
 });
 
 it('렌더링된 CSS에 badge--pending 규칙이 포함된다', async () => {

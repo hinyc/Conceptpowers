@@ -1,4 +1,4 @@
-/* @concept:viewer-readability @concept:feature-spec-bridge @concept:knowledge-graph-view @concept:globally-unique-slug */
+/* @concept:pending-diff @concept:viewer-readability @concept:feature-spec-bridge @concept:knowledge-graph-view @concept:globally-unique-slug */
 /* assets/concept.css — 가독성 우선 뷰어 스타일 */
 
 :root {
@@ -17,6 +17,11 @@
   --feature-node: #8250df; /* 지식 그래프의 기능 점 */
   --alias: #d1495b; /* 상세 화면의 별칭 줄 — 미승인 빨강(--restrict)과 구별되는 값 */
   --maxw: 1280px; /* 본문 최대폭 */
+  /* 승인본과 달라진 점(pending-diff) 글자 배경 — 글자색 var(--fg) 대비 4.5:1 이상(라이트 11~13) */
+  --diff-add-bg: #ccefd5;
+  --diff-rem-bg: #ffd4d1;
+  --diff-before-bg: #ffe9a8;
+  --diff-after-bg: #c6dcff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,6 +40,10 @@
     --pending: #d29922;
     --feature-node: #a371f7;
     --alias: #e8798f;
+    --diff-add-bg: #14452a; /* 글자색 var(--fg) 대비 7.9~10 */
+    --diff-rem-bg: #62202a;
+    --diff-before-bg: #5a4300;
+    --diff-after-bg: #1d3e6e;
   }
 }
 
@@ -1296,4 +1305,125 @@ body.viewing-graph .graph-shell {
 }
 .toast--err {
   border-left-color: #b42318;
+}
+
+/* ---- 승인본과 달라진 점(pending-diff) ----
+   추가·삭제·수정은 색(배경)만이 아니라 글자 표시(.diff-tag)와 모양(삭제=취소선, 수정 전=점선 밑줄,
+   수정 후=실선 밑줄)으로도 구분된다. */
+.diff-box {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 14px 18px;
+  margin-bottom: 28px;
+}
+.diff-summary {
+  margin: 0 0 12px;
+  color: var(--fg-soft);
+  font-size: 0.92rem;
+}
+.diff-notice {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.diff-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.diff-item {
+  border-left: 4px solid var(--border);
+  padding: 2px 0 2px 12px;
+}
+.diff-item--added {
+  border-left-color: var(--allow);
+}
+.diff-item--removed {
+  border-left-color: var(--restrict);
+}
+.diff-item--changed {
+  border-left-color: var(--pending);
+}
+.diff-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.diff-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.diff-tag--added {
+  background: var(--diff-add-bg);
+  border-color: var(--allow);
+}
+.diff-tag--removed {
+  background: var(--diff-rem-bg);
+  border-color: var(--restrict);
+}
+.diff-tag--changed {
+  background: var(--diff-before-bg);
+  border-color: var(--pending);
+}
+.diff-field {
+  font-weight: 600;
+}
+.diff-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.diff-text {
+  color: var(--fg);
+  text-decoration: none;
+  padding: 1px 4px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.diff-text--added {
+  background: var(--diff-add-bg);
+}
+.diff-text--removed {
+  background: var(--diff-rem-bg);
+  text-decoration: line-through;
+}
+.diff-text--before {
+  background: var(--diff-before-bg);
+  text-decoration: underline dotted;
+}
+.diff-text--after {
+  background: var(--diff-after-bg);
+  text-decoration: underline solid;
+}
+.diff-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+.diff-side {
+  min-width: 0;
+}
+.diff-side__label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.diff-list {
+  margin: 2px 0 0;
+  padding-left: 1.4em;
+}
+@media (max-width: 640px) {
+  .diff-pair {
+    grid-template-columns: 1fr;
+  }
 }

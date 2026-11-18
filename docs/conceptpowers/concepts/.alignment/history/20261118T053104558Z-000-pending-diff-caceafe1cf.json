@@ -1,0 +1,11 @@
+{
+  "slug": "pending-diff",
+  "hash": "3:aabc04bed72b",
+  "prevHash": "3:aabc04bed72b",
+  "reason": "목록 칸 비교 구현이 바뀌어 코드 근거 문장을 현재 사실로 고침(규칙 변경 없음)",
+  "at": "2026-11-18T05:31:04.558Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

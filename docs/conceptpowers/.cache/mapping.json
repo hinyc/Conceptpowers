@@ -1,21 +1,21 @@
 {
   "viewer-readability": [
-    "assets/concept.css",
-    "assets/sidebar.js",
     "assets/topnav.js",
-    "assets/viewer.js",
     "src/schema/concept.ts",
     "tests/viewer/detailTitle.test.ts",
     "tests/viewer/heroSummary.test.ts",
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/sources.test.ts",
     "tests/viewer/conceptDetail.test.ts",
+    "tests/store/conceptStore.test.ts",
+    "assets/concept.css",
+    "assets/sidebar.js",
+    "assets/viewer.js",
     "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/viewer/pendingDiffView.test.ts",
+    "tests/viewer/sidebarSearch.test.ts"
   ],
   "feature-spec-bridge": [
-    "assets/concept.css",
-    "assets/viewer.js",
     "src/schema/feature.ts",
     "src/store/featureStore.ts",
     "tests/cli/feature.test.ts",
@@ -28,24 +28,24 @@
     "tests/viewer/graph.test.ts",
     "tests/viewer/listLayout.test.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/viewer/conceptDetail.test.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts"
-  ],
-  "knowledge-graph-view": [
+    "tests/hooks/sessionStart.test.ts",
     "assets/concept.css",
     "assets/viewer.js",
+    "tests/viewer/renderDisk.test.ts"
+  ],
+  "knowledge-graph-view": [
     "src/viewer/graph.ts",
     "tests/viewer/copyPath.test.ts",
     "tests/viewer/graph.test.ts",
     "tests/viewer/highlight.test.ts",
-    "tests/viewer/subgraph.test.ts"
+    "tests/viewer/subgraph.test.ts",
+    "assets/concept.css",
+    "assets/viewer.js"
   ],
   "globally-unique-slug": [
-    "assets/concept.css",
-    "assets/viewer.js",
     "src/audit/audit.ts",
     "src/schema/concept.ts",
     "src/schema/feature.ts",
@@ -62,34 +62,39 @@
     "tests/viewer/search.test.ts",
     "tests/viewer/subgraph.test.ts",
     "tests/store/movedConcept.test.ts",
-    "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "assets/concept.css",
+    "assets/viewer.js",
+    "src/store/conceptStore.ts"
   ],
   "list-filter": [
-    "assets/sidebar.js",
     "tests/viewer/listLayout.test.ts",
-    "tests/viewer/sidebarState.test.ts"
+    "assets/sidebar.js",
+    "tests/viewer/sidebarState.test.ts",
+    "tests/viewer/sidebarSearch.test.ts"
   ],
   "viewer-navigation": [
-    "assets/sidebar.js",
     "assets/topnav.js",
+    "tests/viewer/topnav.test.ts",
+    "assets/sidebar.js",
     "tests/viewer/sidebarState.test.ts",
-    "tests/viewer/topnav.test.ts"
+    "tests/viewer/sidebarSearch.test.ts"
   ],
   "home-search": [
-    "assets/viewer.js",
     "tests/viewer/listLayout.test.ts",
-    "tests/viewer/search.test.ts"
+    "tests/viewer/search.test.ts",
+    "assets/viewer.js"
   ],
   "concept-inline-edit": [
-    "assets/viewer.js",
     "tests/store/conceptEdit.test.ts",
-    "tests/viewer/serve.test.ts",
+    "tests/store/conceptStore.test.ts",
+    "assets/viewer.js",
     "src/viewer/serve.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/viewer/serve.test.ts",
+    "tests/store/approvedSnapshot.test.ts",
+    "tests/viewer/pendingDiffView.test.ts"
   ],
   "settled-status": [
-    "assets/viewer.js",
     "src/concept/approve.ts",
     "src/concept/attest.ts",
     "src/concept/attestScope.ts",
@@ -115,22 +120,23 @@
     "tests/integration/smoke.test.ts",
     "tests/schema/alignment.test.ts",
     "tests/schema/concept.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "src/viewer/statusApi.ts",
     "tests/hooks/conflictedPendingGate.test.ts",
     "tests/store/movedConcept.test.ts",
     "tests/viewer/conceptDetail.test.ts",
     "tests/viewer/statusApi.test.ts",
-    "tests/viewer/serve.test.ts",
     "src/hooks/sessionStart.ts",
-    "src/store/conceptStore.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "assets/viewer.js",
+    "src/store/conceptStore.ts",
+    "tests/viewer/renderDisk.test.ts",
+    "tests/viewer/serve.test.ts",
+    "tests/store/approvedSnapshot.test.ts"
   ],
   "concept-provenance": [
-    "assets/viewer.js",
     "src/audit/codeCoordinates.ts",
     "src/concept/quality.ts",
     "src/schema/concept.ts",
@@ -140,8 +146,9 @@
     "tests/reference/affected.test.ts",
     "tests/schema/concept.test.ts",
     "tests/viewer/sources.test.ts",
-    "src/store/conceptStore.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/store/conceptStore.test.ts",
+    "assets/viewer.js",
+    "src/store/conceptStore.ts"
   ],
   "generated-not-hand-edited": [
     "scripts/build.mjs",
@@ -155,11 +162,11 @@
     "tests/integration/smoke.test.ts",
     "tests/scripts/release.test.ts",
     "tests/viewer/manifest.test.ts",
-    "tests/viewer/renderDisk.test.ts",
     "tests/init/syncGenerated.test.ts",
-    "src/viewer/render.ts",
     "tests/hooks/sessionStart.test.ts",
-    "tests/version/autoSync.test.ts"
+    "tests/version/autoSync.test.ts",
+    "src/viewer/render.ts",
+    "tests/viewer/renderDisk.test.ts"
   ],
   "plugin-version-sync": [
     "scripts/release.mjs",
@@ -175,14 +182,14 @@
     "tests/version/checkUpdate.test.ts",
     "tests/version/compareSemver.test.ts",
     "tests/init/syncGenerated.test.ts",
-    "tests/viewer/serve.test.ts",
     "src/cli.ts",
     "src/hooks/sessionStart.ts",
     "src/init/syncGenerated.ts",
     "src/version/autoSync.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/version/autoSync.test.ts",
-    "tests/viewer/renderStamp.test.ts"
+    "tests/viewer/renderStamp.test.ts",
+    "tests/viewer/serve.test.ts"
   ],
   "concept-code-mapping": [
     "src/audit/audit.ts",
@@ -208,8 +215,8 @@
     "tests/paths.test.ts",
     "tests/schema/initConfig.test.ts",
     "tests/util/glob.test.ts",
-    "tests/viewer/renderDisk.test.ts",
-    "tests/hooks/unknownTagsGate.test.ts"
+    "tests/hooks/unknownTagsGate.test.ts",
+    "tests/viewer/renderDisk.test.ts"
   ],
   "init-gate": [
     "src/init/scaffold.ts",
@@ -294,7 +301,6 @@
     "src/hooks/preToolUse.ts",
     "src/hooks/sessionStart.ts",
     "tests/hooks/commitPlan.test.ts",
-    "tests/hooks/governanceFiles.test.ts",
     "tests/hooks/postToolUse.test.ts",
     "tests/hooks/sessionStart.test.ts",
     "tests/hooks/stagingReach.test.ts",
@@ -305,19 +311,21 @@
     "tests/hooks/commitLocation.test.ts",
     "tests/hooks/dirFlow.test.ts",
     "tests/hooks/gitAlias.test.ts",
-    "tests/hooks/pendingReach.test.ts"
+    "tests/hooks/pendingReach.test.ts",
+    "tests/hooks/governanceFiles.test.ts"
   ],
   "human-owns-contract": [
     "tests/cli/cli.test.ts",
     "tests/hooks/entrypoint.e2e.test.ts",
     "tests/store/conceptEdit.test.ts",
-    "tests/viewer/serve.test.ts",
     "src/cli.ts",
     "src/hooks/gates/governanceFilesGate.ts",
     "src/store/conceptEdit.ts",
+    "tests/store/conceptStore.test.ts",
     "src/viewer/serve.ts",
     "tests/hooks/governanceFiles.test.ts",
-    "tests/store/conceptStore.test.ts"
+    "tests/viewer/serve.test.ts",
+    "tests/store/approvedSnapshot.test.ts"
   ],
   "concept-scope": [
     "src/concept/conceptReference.ts",
@@ -381,13 +389,14 @@
     "tests/mapping/leadingComment.test.ts",
     "tests/schema/alignment.test.ts",
     "src/hooks/command/unreconciled.ts",
-    "src/drift/reconcile.ts",
     "src/hooks/gates/governanceFilesGate.ts",
     "src/hooks/sessionStart.ts",
     "src/store/conceptEdit.ts",
     "tests/drift/reconcile.test.ts",
     "tests/hooks/postToolUse.test.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "src/drift/reconcile.ts",
+    "tests/drift/reconcileApproved.test.ts"
   ],
   "untrusted-text-sanitization": [
     "src/drift/safe.ts",
@@ -462,9 +471,9 @@
     "tests/init/readConfig.test.ts",
     "tests/init/scaffold.test.ts",
     "tests/schema/initConfig.test.ts",
-    "tests/viewer/sidebarState.test.ts",
     "src/i18n/messages.ts",
-    "tests/hooks/sessionStart.test.ts"
+    "tests/hooks/sessionStart.test.ts",
+    "tests/viewer/sidebarState.test.ts"
   ],
   "reference-first-duty": [
     "src/init/addReferencePath.ts",
@@ -487,5 +496,20 @@
   "skill-surface": [
     "tests/compat/skillFrontmatter.test.ts",
     "tests/compat/skillNames.test.ts"
+  ],
+  "pending-diff": [
+    "assets/concept.css",
+    "assets/viewer.js",
+    "src/drift/reconcile.ts",
+    "src/store/conceptStore.ts",
+    "src/viewer/serve.ts",
+    "tests/viewer/serve.test.ts",
+    "assets/conceptDiff.js",
+    "src/store/approvedSnapshot.ts",
+    "src/viewer/approvedApi.ts",
+    "tests/drift/reconcileApproved.test.ts",
+    "tests/store/approvedSnapshot.test.ts",
+    "tests/viewer/conceptDiff.test.ts",
+    "tests/viewer/pendingDiffView.test.ts"
   ]
 }

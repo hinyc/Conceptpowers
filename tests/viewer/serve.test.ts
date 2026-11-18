@@ -1,4 +1,4 @@
-// @concept:concept-inline-edit @concept:settled-status @concept:human-owns-contract @concept:plugin-version-sync
+// @concept:concept-inline-edit @concept:settled-status @concept:pending-diff @concept:human-owns-contract @concept:plugin-version-sync
 // tests/viewer/serve.test.ts
 // 뷰어 서버의 파일 서빙과 편집 통로(/api)를 검증한다.
 // 검증 대상 규칙 ↔ 시나리오:
@@ -62,6 +62,8 @@ import {
 } from '../../src/store/conceptStore.js';
 import { recordAttest } from '../../src/concept/attest.js';
 import { parseConcept } from '../../src/schema/concept.js';
+import { saveApprovedSnapshot } from '../../src/store/approvedSnapshot.js';
+import { cpPaths } from '../../src/paths.js';
 
 describe('contentType', () => {
   it('확장자별 MIME을 반환한다', () => {
@@ -524,6 +526,98 @@ describe('handleApi', () => {
     expect((r.json as { downgradedToPending: boolean }).downgradedToPending).toBe(true);
     expect((await readConcept(root, 'admin-role'))?.status).toBe('pending');
     expect((await readConcept(root, 'admin-role'))?.title).toBe('New');
+  });
+
+  describe('GET /api/concept/:slug/approved [규칙: pending-diff — 읽기만 한다]', () => {
+    const get = (url: string, over: Partial<ApiRequest> = {}) =>
+      handleApi(root, req({ method: 'GET', url, ...over }));
+    const dirOf = () => cpPaths(root).approvedDir;
+
+    it('승인본이 없으면 200 { approved: null }', async () => {
+      await writeConcept(root, { ...base, status: 'pending' } as never);
+      const r = await get('/api/concept/admin-role/approved');
+      expect(r).toEqual({ status: 200, json: { approved: null } });
+    });
+
+    it('승인본이 있으면 200 { approved: { savedAt, concept } }', async () => {
+      const green = await writeConcept(root, { ...base, status: 'green' } as never);
+      await saveApprovedSnapshot(root, green);
+      await writeConcept(root, { ...base, title: 'New', status: 'pending' } as never);
+      const r = await get('/api/concept/admin-role/approved');
+      expect(r.status).toBe(200);
+      const a = (r.json as { approved: { savedAt: string; concept: { title: string } } }).approved;
+      expect(Number.isNaN(Date.parse(a.savedAt))).toBe(false);
+      expect(a.concept.title).toBe('Admin Role');
+    });
+
+    it('잘못된 slug는 400', async () => {
+      expect((await get('/api/concept/Bad_Slug/approved')).status).toBe(400);
+      expect((await get('/api/concept/%E0%A4%A/approved')).status).toBe(400);
+      expect((await get('/api/concept/..%2Fx/approved')).status).toBe(400);
+    });
+
+    it('GET이 아니면 405', async () => {
+      for (const method of ['POST', 'PUT', 'DELETE']) {
+        const r = await get('/api/concept/admin-role/approved', { method });
+        expect(r.status).toBe(405);
+      }
+    });
+
+    it('비로컬 Host는 403', async () => {
+      const r = await get('/api/concept/admin-role/approved', {
+        headers: { ...SAME_ORIGIN, host: 'evil.example:4173' },
+      });
+      expect(r.status).toBe(403);
+    });
+
+    it('개념이 없으면 404 { error }', async () => {
+      const r = await get('/api/concept/ghost/approved');
+      expect(r.status).toBe(404);
+      expect(typeof (r.json as { error: string }).error).toBe('string');
+    });
+
+    it('승인본 파일이 깨졌으면 500 { error }이고 경로·내부 정보는 담지 않는다', async () => {
+      await writeConcept(root, { ...base, status: 'pending' } as never);
+      mkdirSync(dirOf(), { recursive: true });
+      writeFileSync(join(dirOf(), 'admin-role.json'), '{ not json');
+      const r = await get('/api/concept/admin-role/approved');
+      expect(r.status).toBe(500);
+      const body = JSON.stringify(r.json);
+      expect(body).not.toContain(root);
+      expect(body).not.toContain('approved/');
+      expect(body).not.toContain('Malformed');
+    });
+
+    it('읽기만 한다: 개념 상태·승인본 파일·manifest를 바꾸지 않는다', async () => {
+      const green = await writeConcept(root, { ...base, status: 'green' } as never);
+      await saveApprovedSnapshot(root, green);
+      await writeConcept(root, { ...base, title: 'New', status: 'pending' } as never);
+      const file = join(dirOf(), 'admin-role.json');
+      const before = readFileSync(file, 'utf8');
+      const conceptBefore = JSON.stringify(await readConcept(root, 'admin-role'));
+      await get('/api/concept/admin-role/approved');
+      await get('/api/concept/ghost/approved');
+      expect(readFileSync(file, 'utf8')).toBe(before);
+      expect(JSON.stringify(await readConcept(root, 'admin-role'))).toBe(conceptBefore);
+    });
+
+    it('PUT/status 라우트와 충돌하지 않는다', async () => {
+      await writeConcept(root, { ...base, status: 'pending' } as never);
+      const put = await handleApi(
+        root,
+        req({
+          method: 'PUT',
+          url: '/api/concept/admin-role',
+          body: JSON.stringify({ patch: { title: 'T2' } }),
+        })
+      );
+      expect(put.status).toBe(200);
+      const st = await handleApi(
+        root,
+        req({ method: 'POST', url: '/api/concept/admin-role/status', body: '{"status":"red"}' })
+      );
+      expect(st.status).toBe(200);
+    });
   });
 
   it('GET /api/health는 엔진의 상태 전이표를 함께 싣는다 [규칙: 확정된 초록·빨강은 되돌리지 않는다]', async () => {

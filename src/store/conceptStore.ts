@@ -1,4 +1,4 @@
-// @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug @concept:concept-provenance
+// @concept:settled-status @concept:viewer-readability @concept:globally-unique-slug @concept:concept-provenance @concept:pending-diff
 // src/store/conceptStore.ts
 import { readFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
@@ -9,6 +9,12 @@ import { clearPendingConflict } from '../concept/pendingConflicts.js';
 import { checkConceptQuality } from '../concept/quality.js';
 import { readAttestLog, freshPassAttest } from '../concept/attest.js';
 import { walkJson } from './walkJson.js';
+import {
+  saveApprovedSnapshot,
+  removeApprovedSnapshot,
+  readApprovedRaw,
+  restoreApprovedRaw,
+} from './approvedSnapshot.js';
 
 function fileFor(root: string, c: Concept): string {
   const dataDir = cpPaths(root).conceptsData;
@@ -89,18 +95,27 @@ function duplicateError(slug: string, root: string, paths: string[]): Error {
 
 // 정해진 위치(target)에 개념을 쓴다. 같은 이름표가 target 밖에도 있으면 쓰지 않는다 —
 // 쓰면 같은 이름표 파일이 둘로 갈라져 읽는 순서에 따라 다른 내용이 보인다.
-async function persistConcept(
+function assertWritable(
   root: string,
   concept: Concept,
   target: string,
   entries: ConceptEntry[]
-): Promise<Concept> {
+): void {
   const all = locationsOf(root, entries, concept.slug);
   if (all.length > 1) throw duplicateError(concept.slug, root, all);
   if (all.length === 1 && all[0] !== target) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
   assertAliasesFree(concept, entries, target, root);
+}
+
+async function persistConcept(
+  root: string,
+  concept: Concept,
+  target: string,
+  entries: ConceptEntry[]
+): Promise<Concept> {
+  assertWritable(root, concept, target, entries);
   // baseline 본문도 원자적으로 저장한다 — 도중에 멈춰도 깨진 JSON이 남지 않는다.
   await writeFileAtomic(target, JSON.stringify(concept, null, 2) + '\n');
   return concept;
@@ -205,7 +220,11 @@ export async function setConceptStatus(
     }
   }
   const updated = await rewriteConcept(root, found, { ...concept, status });
-  if (status === 'green') await clearPendingConflict(root, slug);
+  if (status === 'green') {
+    // 다시 확정되면 승인본은 쓸 일이 없다(pending-diff). pending→red는 승인본을 그대로 둔다.
+    await removeApprovedSnapshot(root, slug);
+    await clearPendingConflict(root, slug);
+  }
   return updated;
 }
 
@@ -255,12 +274,28 @@ export async function editConceptContent(
   }
   const downgradedToPending = concept.status === 'green';
   const nextStatus: ConceptStatus = downgradedToPending ? 'pending' : concept.status;
-  const saved = await rewriteConcept(root, found, {
+  const next = parseConcept({
     ...concept,
     ...safe,
     slug: concept.slug,
     group: concept.group,
     status: nextStatus,
   });
-  return { concept: saved, downgradedToPending };
+  const target = resolve(root, found.entry.rel);
+  // 쓰기 전 검증(별칭·중복 이름표)을 모두 통과한 뒤에야 승인본을 만든다.
+  assertWritable(root, next, target, found.entries);
+  if (!downgradedToPending) {
+    return { concept: await persistConcept(root, next, target, found.entries), downgradedToPending };
+  }
+  // 승인본 저장 → 개념 쓰기 순서. 승인본 저장이 실패하면 개념은 그대로다.
+  const previous = await readApprovedRaw(root, slug);
+  await saveApprovedSnapshot(root, concept);
+  try {
+    const saved = await persistConcept(root, next, target, found.entries);
+    return { concept: saved, downgradedToPending };
+  } catch (error) {
+    // 개념 쓰기가 실패했으면 방금 쓴 승인본을 직전 상태로 되돌린다(되돌리기 실패는 원래 오류를 가리지 않는다).
+    await restoreApprovedRaw(root, slug, previous).catch(() => undefined);
+    throw error;
+  }
 }

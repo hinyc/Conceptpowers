@@ -1,0 +1,11 @@
+{
+  "slug": "pending-diff",
+  "hash": "3:aabc04bed72b",
+  "prevHash": "",
+  "reason": "구현에 맞춰 코드 연결과 근거만 채움(규칙 변경 없음)",
+  "at": "2026-11-18T05:25:06.216Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

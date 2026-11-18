@@ -10,6 +10,12 @@
 - 영향: 관련 롤·파일
 -->
 
+## 2026-11-18 · 뷰어 곁 목록 전체 검색과 승인본 보관
+- 결정: 곁 목록은 글자를 넣는 동안만 모든 묶음의 개념에서 걸러낸다. 승인본은 green→pending 편집 때 `docs/conceptpowers/concepts/.approved/<slug>.json`에 보관하고 커밋 대상으로 두며, green 복귀·개념 삭제 때 정리한다
+- 이유: 평소 곁 목록의 짧음은 유지하면서 다른 묶음도 찾게 한다. git 이력 조회 대신 저장 방식을 사용자가 골랐다. `.alignment` 밖에 두어 정리할 때마다 거버넌스 삭제 질문이 뜨지 않게 했다
+- 정한 사람: 사용자 (폴더 위치는 매니저 판단)
+- 영향: engine · viewer · concept-steward 롤, list-filter · home-search · pending-diff 개념
+
 ## 2026-11-11 · main 허용 목록 보완 (2026-11-09 "main은 배포 전용" 결정에 추가)
 - 결정: main 허용 목록에 PRIVACY.md · CONTRIBUTING.md · .gitignore를 더한다. 기준은 scripts/releaseSteps.mjs의 DEPLOY_ALLOWLIST다
 - 이유: PRIVACY.md는 plugin.json privacyPolicyUrl이 main의 파일을 가리키고, CONTRIBUTING.md는 GitHub 저장소 첫 화면의 기여 안내로 쓰인다. 레드팀 #13에서 결정 로그와 코드가 어긋난 것이 드러남

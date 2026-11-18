@@ -4,12 +4,16 @@
   "title": "개념 상세 화면",
   "description": "개념 하나를 펼쳐 읽는 화면. 제목 한 줄과 끊어 보여주는 요약으로 시작한다.",
   "concepts": [
-    "viewer-readability"
+    "viewer-readability",
+    "pending-diff"
   ],
   "codePaths": [
     "assets/viewer.js",
     "assets/concept.css",
     "src/schema/concept.ts",
-    "src/store/conceptStore.ts"
+    "src/store/conceptStore.ts",
+    "assets/conceptDiff.js",
+    "src/store/approvedSnapshot.ts",
+    "src/viewer/approvedApi.ts"
   ]
 }

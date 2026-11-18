@@ -67,12 +67,37 @@
   "home-search": {
     "hash": "3:0a8841576155",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.852Z",
+    "at": "2026-11-18T05:05:15.551Z",
     "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "redteam-review",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "knowledge-graph-view",
       "list-filter",
-      "globally-unique-slug"
+      "pending-diff",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "상호작용 문장만 바뀌어 계약 지문은 같지만, 기존 증빙이 두 개념과만 견준 기록이라 다른 모든 개념과 다시 견줌. 목록 좁히기의 새 동작과 경계가 일치하고 다른 개념과 충돌 없음"
   },
   "concept-inline-edit": {
     "hash": "3:d6d5b56a7b40",
@@ -441,15 +466,39 @@
     "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
   },
   "list-filter": {
-    "hash": "3:903b1846070f",
+    "hash": "3:323cb656e6a6",
     "result": "pass",
-    "at": "2026-09-12T10:13:00.951Z",
+    "at": "2026-11-18T05:05:15.493Z",
     "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "redteam-review",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
       "home-search",
-      "viewer-readability",
-      "viewer-navigation"
+      "knowledge-graph-view",
+      "pending-diff",
+      "viewer-navigation",
+      "viewer-readability"
     ],
-    "note": "sources(근거) 필드만 추가된 편집 — 계약 지문 불변(drift 0 확인), 허용·제한·불변규칙·관리 대상·작동 원리 전부 그대로라 다른 개념과의 충돌 여부는 마지막 green 확정 시점과 동일함. 규칙 변경 없음 → 충돌 불가"
+    "note": "다른 모든 개념과 권한·용어·불변 규칙·상호작용을 견줌. 찾아오기의 상호작용 문장이 새 경계로 고쳐져 앞선 충돌이 해소됨. 찾아오기는 개념·기능·파일 경로를 결과 화면으로 찾고 이쪽은 곁 목록에서 개념만 걸러내 역할이 겹치지 않음. 사람 선택 우선, 누구나 같은 품으로 읽기, 개념 이름과 충돌 없음"
   },
   "concept-code-binding": {
     "hash": "3:833eb6e346a2",
@@ -592,5 +641,40 @@
       "viewer-navigation",
       "viewer-readability"
     ]
+  },
+  "pending-diff": {
+    "hash": "3:aabc04bed72b",
+    "result": "pass",
+    "at": "2026-11-18T04:59:44.009Z",
+    "compared": [
+      "concept-code-binding",
+      "concept-code-mapping",
+      "concept-driven-tests",
+      "concept-provenance",
+      "concept-scope",
+      "drift-reconcile",
+      "feature-spec-bridge",
+      "globally-unique-slug",
+      "governance-mode",
+      "human-owns-contract",
+      "output-locale",
+      "redteam-review",
+      "reference-first-duty",
+      "reference-sync",
+      "settled-status",
+      "generated-not-hand-edited",
+      "init-gate",
+      "plugin-version-sync",
+      "reference-privacy",
+      "skill-surface",
+      "untrusted-text-sanitization",
+      "concept-inline-edit",
+      "home-search",
+      "knowledge-graph-view",
+      "list-filter",
+      "viewer-navigation",
+      "viewer-readability"
+    ],
+    "note": "다른 모든 개념과 권한·용어·불변 규칙·상호작용을 견줌. 개념 상태, 뷰어에서 개념 고치기, 누구나 같은 품으로 읽기, 사람 선택 우선, 찾아오기, 목록 좁히기와 충돌 없음. 이 개념은 읽기 전용 비교이며 상태 전이와 저장 절차를 바꾸지 않는다. 기능 기록 연결은 내용 충돌이 아닌 후속 작업으로 남김"
   }
 }

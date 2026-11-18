@@ -43,7 +43,7 @@
     "restrict": [
       "입력한 검색어를 다음 방문까지 저장해 두는 것"
     ],
-    "interaction": "이미 눈앞에 떠 있는 목록을 좁히는 일은 목록 좁히기(list-filter)가 맡는다 — 이쪽은 없던 것을 데려오고, 저쪽은 있던 것을 숨긴다. 별칭을 검색 대상에 넣는 근거는 개념 이름(globally-unique-slug)이 정한다."
+    "interaction": "보고 있던 화면을 둔 채 곁 목록에서 개념만 걸러내는 일은 목록 좁히기(list-filter)가 맡는다 — 이쪽은 개념·기능·파일 경로를 가로질러 결과 화면으로 찾아오고, 저쪽은 곁 목록 안에서 개념만 걸러낸다. 별칭을 검색 대상에 넣는 근거는 개념 이름(globally-unique-slug)이 정한다."
   },
   "principle": {
     "immutableRules": [

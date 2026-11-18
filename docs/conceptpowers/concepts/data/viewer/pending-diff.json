@@ -1,0 +1,132 @@
+{
+  "slug": "pending-diff",
+  "group": "viewer",
+  "category": [
+    "feature"
+  ],
+  "status": "green",
+  "title": "승인본과 달라진 점",
+  "aliases": [],
+  "description": {
+    "definition": "검토 중인 개념을 열면, 마지막으로 승인된 내용과 지금 내용이 어디가 다른지 그 자리에서 보여준다.",
+    "analogy": "고쳐 쓰는 계약서 초안을 펼치면, 도장 찍힌 원본과 달라진 곳마다 표시가 붙어 있는 것.",
+    "components": [
+      "승인본: 확정 개념이 검토 중으로 내려가기 직전의 내용",
+      "달라진 항목: 승인본과 지금 내용을 항목마다 견주어 나온 추가·삭제·수정",
+      "전후 보기: 수정된 항목의 고치기 전 내용과 지금 내용",
+      "비교 불가 안내: 승인본이 없거나 비교할 수 없을 때 그 사실과 이유를 알리는 말"
+    ],
+    "example": "확정된 개념의 금지 항목 하나를 고쳐 검토 중으로 내려가면, 그 개념을 열었을 때 그 항목에 수정이라는 글자가 붙고 고치기 전 문장과 고친 뒤 문장이 나란히 보인다. 이 기능이 생기기 전에 내려간 개념을 열면 비교할 승인본이 없다고 알려준다."
+  },
+  "state": {
+    "managed": [
+      "확정 개념이 검토 중으로 내려가기 직전의 승인본"
+    ]
+  },
+  "purpose": {
+    "reason": "검토 중인 개념을 다시 확정하려면 무엇이 바뀌었는지 알아야 하는데, 지금 내용만 보아서는 어느 문장이 달라졌는지 알 수 없다. 기억에 기대거나 지난 기록을 따로 뒤져야 하면 확인이 건성이 되고, 달라진 줄 모르는 규칙이 그대로 확정될 수 있다. 개념을 연 그 자리에서 달라진 곳을 볼 수 있어야 사람이 제대로 판단하고 확정할 수 있다.",
+    "benefits": [
+      "다시 확정하기 전에 무엇이 달라졌는지 그 자리에서 확인한다",
+      "수정된 문장의 전과 후를 나란히 보고 뜻이 어떻게 바뀌었는지 판단한다"
+    ],
+    "vision": "검토 중인 개념을 열면 무엇을 확인해야 하는지 바로 보이게.",
+    "painPoints": [
+      "지금 내용만 보여서 어느 문장이 달라졌는지 알 수 없는 문제",
+      "달라진 곳을 찾으려고 지난 기록을 따로 뒤져야 하는 문제"
+    ]
+  },
+  "actions": {
+    "allow": [
+      "항목마다 추가·삭제·수정을 구분해 보여주는 것",
+      "수정된 항목의 전과 후를 나란히 보여주는 것"
+    ],
+    "restrict": [
+      "비교하면서 개념 내용이나 상태를 바꾸는 것"
+    ],
+    "interaction": "승인본이 보관되고 정리되는 계기인 상태 변화와 다시 확정하는 절차는 개념 상태(settled-status)가 정하고, 이 개념은 그 절차에 끼어들지 않고 차이만 보여준다. 확정 개념을 고쳐 검토 중으로 내려보내는 일은 뷰어에서 개념 고치기(concept-inline-edit)가 맡는다. 추가·삭제·수정 표시를 색을 못 보는 사람도 같은 품으로 읽게 하는 기준은 누구나 같은 품으로 읽기(viewer-readability)와 같은 결이다."
+  },
+  "principle": {
+    "immutableRules": [
+      "검토 중인 개념에만 나타난다",
+      "추가·삭제·수정은 색 없이도 글자로 구분된다",
+      "승인본이 없으면 비교할 승인본이 없다고 알린다",
+      "비교할 수 없으면 이유를 알리고, 달라진 것이 없다고 말하지 않는다"
+    ],
+    "operationalPrinciple": "확정 개념을 고쳐 검토 중으로 내려간 뒤 그 개념을 열면, 마지막 승인본과 지금 내용의 차이가 항목마다 추가·삭제·수정으로 표시된다.",
+    "tradeoffs": "승인본을 따로 보관해야 해서 관리할 것이 하나 늘어난다. 이 기능이 생기기 전에 이미 검토 중으로 내려간 개념은 승인본이 없어 비교할 수 없다. 그 대신 앞으로 내려가는 개념은 무엇이 달라졌는지 확인한 뒤에 다시 확정할 수 있다.",
+    "lifecycle": [
+      "확정 개념이 검토 중으로 내려가는 순간 승인본이 보관된다",
+      "검토 중인 동안에는 내용을 더 고쳐도 승인본은 그대로 남는다",
+      "다시 확정되면 승인본은 정리된다",
+      "개념이 사라지면 승인본도 함께 정리된다"
+    ]
+  },
+  "relations": {
+    "prev": "",
+    "next": "",
+    "related": [
+      "settled-status",
+      "concept-inline-edit",
+      "viewer-readability"
+    ]
+  },
+  "codeLinks": [
+    "src/store/approvedSnapshot.ts",
+    "src/store/conceptStore.ts",
+    "src/drift/reconcile.ts",
+    "src/viewer/approvedApi.ts",
+    "src/viewer/serve.ts",
+    "assets/conceptDiff.js",
+    "assets/viewer.js"
+  ],
+  "sources": [
+    {
+      "kind": "code",
+      "path": "src/store/approvedSnapshot.ts",
+      "locator": "saveApprovedSnapshot(), readApprovedSnapshot(), removeApprovedSnapshot(), pruneApprovedSnapshots()",
+      "supports": "승인본은 개념 목록과 떨어진 자리에 개념마다 한 건씩, 저장 시각과 함께 통째로 보관된다 / 읽을 때 승인본이 없으면 없음으로, 내용이 깨졌으면 오류로 구분한다 / 정리할 때는 사라진 개념과 지금 확정 상태인 개념의 승인본을 지우고 나머지는 남긴다"
+    },
+    {
+      "kind": "code",
+      "path": "src/store/conceptStore.ts",
+      "locator": "editConceptContent(), setConceptStatus()",
+      "supports": "확정 개념을 고쳐 검토 중으로 내려갈 때 고치기 직전 내용을 승인본으로 먼저 저장하고, 새 내용 쓰기가 실패하면 승인본을 직전 상태로 되돌린다 / 이미 검토 중인 개념을 더 고칠 때는 승인본을 건드리지 않는다 / 확정 상태로 바뀌면 승인본을 지우고, 검토 중에서 미승인으로 바뀔 때는 그대로 둔다"
+    },
+    {
+      "kind": "code",
+      "path": "src/drift/reconcile.ts",
+      "locator": "pruneTargets(), pruneStaleRecords(), reconcileAfterCommit()",
+      "supports": "커밋 뒤 결산 때 승인본 정리를 함께 돌려, 사라진 개념의 승인본과 지금 확정 상태인 개념에 남은 승인본을 지운다 / 정리에 실패해도 결산은 끝까지 가고 실패는 따로 알린다"
+    },
+    {
+      "kind": "code",
+      "path": "src/viewer/approvedApi.ts",
+      "locator": "handleApprovedApi()",
+      "supports": "승인본을 읽어 주기만 하고 파일이나 개념 상태를 쓰지 않으며, 읽기 외의 요청은 거절한다 / 없는 개념은 찾을 수 없다고, 승인본이 없으면 없다고 답한다 / 승인본을 읽지 못하면 내부 사정을 드러내지 않고 읽을 수 없다고만 답한다"
+    },
+    {
+      "kind": "code",
+      "path": "src/viewer/serve.ts",
+      "locator": "handleApi()",
+      "supports": "뷰어 서버가 승인본을 묻는 요청을 읽기 전용 통로로 넘긴다"
+    },
+    {
+      "kind": "code",
+      "path": "assets/conceptDiff.js",
+      "locator": "diffConcepts(), diffText(), diffList(), pairBySimilarity(), similarity()",
+      "supports": "상태를 뺀 항목들을 승인본과 지금 내용으로 견주며 내용을 바꾸지 않는다 / 글 한 칸이 달라지면 수정으로, 고치기 전과 지금을 함께 담는다 / 목록 칸은 값이 같은 항목을 개수까지 먼저 짝짓고, 남은 없어진 문장과 생긴 문장 가운데 글자 유사도가 기준 이상인 쌍을 더 비슷한 것부터 한 번씩만 이어 수정으로 내며 고치기 전과 지금을 함께 담는다 / 기준에 못 미쳐 짝이 되지 않은 문장은 삭제와 추가로 남는다 / 순서만 바뀌면 수정으로 표시한다"
+    },
+    {
+      "kind": "code",
+      "path": "assets/viewer.js",
+      "locator": "pendingDiffSection(), diffBoxContent(), diffItem(), fetchApproved()",
+      "supports": "비교 칸은 검토 중인 개념의 상세 화면에만 놓인다 / 추가·삭제·수정은 글자 표시로 구분되고, 수정 건은 고치기 전과 지금을 나란히 보여준다 / 승인본이 없으면 비교할 승인본이 없다고 알린다 / 불러오지 못하면 비교하지 못했다는 말과 이유를 보여주고, 내용이 같다는 말은 승인본이 있고 차이가 없을 때만 한다"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-11-18 세션의 사용자 결정",
+      "supports": "검토 중인 개념에서 마지막 승인본과의 차이를 보여주기로 하고 정의·허용·금지·불변 규칙 문구를 사용자가 보고 승인함"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ var __export = (target, all) => {
 };
 
 // src/hooks/postToolUse.ts
-import { readFile as readFile13 } from "node:fs/promises";
+import { readFile as readFile14 } from "node:fs/promises";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir2, writeFile as writeFile2, access } from "node:fs/promises";
@@ -31,6 +31,8 @@ function cpPaths(root) {
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    // 확정 개념이 검토 중으로 내려가기 직전의 승인본 보관소(개념 목록 data/와 섞이지 않게 따로 둔다)
+    approvedDir: join(base, "concepts", ".approved"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
@@ -4198,8 +4200,8 @@ var REFERENCE_PATHS_EN = [
 ].join("\n");
 
 // src/store/conceptStore.ts
-import { readFile as readFile2 } from "node:fs/promises";
-import { join as join3, relative as relative2, resolve as resolve2 } from "node:path";
+import { readFile as readFile3 } from "node:fs/promises";
+import { join as join4, relative as relative2, resolve as resolve2 } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -4453,6 +4455,38 @@ async function walkJson(dir) {
   return out;
 }
 
+// src/store/approvedSnapshot.ts
+import { readFile as readFile2, readdir as readdir2, rm as rm2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
+function isMissing(error) {
+  return error?.code === "ENOENT";
+}
+async function pruneApprovedSnapshots(root, liveSlugs, greenSlugs) {
+  const dir = cpPaths(root).approvedDir;
+  let names;
+  try {
+    names = await readdir2(dir);
+  } catch (error) {
+    if (isMissing(error)) return [];
+    throw error;
+  }
+  const removed = [];
+  const failures = [];
+  for (const name of names) {
+    if (!name.endsWith(".json")) continue;
+    const slug3 = name.slice(0, -".json".length);
+    if (liveSlugs.has(slug3) && !greenSlugs.has(slug3)) continue;
+    try {
+      await rm2(join3(dir, name));
+      removed.push(slug3);
+    } catch (error) {
+      failures.push(`${name}: ${error.message}`);
+    }
+  }
+  if (failures.length > 0) throw new Error(`Failed to prune approved snapshots \u2014 ${failures.join("; ")}`);
+  return removed;
+}
+
 // src/store/conceptStore.ts
 async function listConceptEntries(root) {
   const files = await walkJson(cpPaths(root).conceptsData);
@@ -4460,7 +4494,7 @@ async function listConceptEntries(root) {
   for (const f of files) {
     try {
       entries.push({
-        concept: parseConcept(JSON.parse(await readFile2(f, "utf8"))),
+        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
         rel: relative2(root, f)
       });
     } catch (error) {
@@ -4474,7 +4508,7 @@ async function listConcepts(root) {
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 
 // src/schema/feature.ts
 var slug2 = SlugSchema;
@@ -4497,7 +4531,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4506,8 +4540,8 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { readFile as readFile5 } from "node:fs/promises";
+import { join as join5 } from "node:path";
 
 // src/mapping/leadingComment.ts
 var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
@@ -4654,7 +4688,7 @@ async function scanTags(root, files, ignoreGlobs = [], opts = {}) {
     if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
-      content = await readFile4(join4(root, rel), "utf8");
+      content = await readFile5(join5(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -4677,17 +4711,17 @@ async function buildMapping(root, files, ignoreGlobs = [], opts = {}) {
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    const raw = await readFile6(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -4719,10 +4753,10 @@ async function isInitialized(root) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile7 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile6(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile7(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -4733,11 +4767,11 @@ async function writeLock(root, lock) {
 
 // src/drift/history.ts
 import { createHash as createHash2 } from "node:crypto";
-import { readdir as readdir2, readFile as readFile7 } from "node:fs/promises";
-import { join as join5 } from "node:path";
+import { readdir as readdir3, readFile as readFile8 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 async function readLegacyHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile7(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile8(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -4746,14 +4780,14 @@ async function readRecordFiles(root) {
   const dir = cpPaths(root).alignmentHistoryDir;
   let names;
   try {
-    names = (await readdir2(dir)).filter((name) => name.endsWith(".json")).sort();
+    names = (await readdir3(dir)).filter((name) => name.endsWith(".json")).sort();
   } catch {
     return [];
   }
   const entries = await Promise.all(
     names.map(async (name) => {
       try {
-        return HistoryEntry.parse(JSON.parse(await readFile7(join5(dir, name), "utf8")));
+        return HistoryEntry.parse(JSON.parse(await readFile8(join6(dir, name), "utf8")));
       } catch {
         return null;
       }
@@ -4793,7 +4827,7 @@ async function appendHistoryMany(root, inputs) {
     const entry = toEntry(input, lastHash.get(input.slug) ?? "");
     lastHash.set(entry.slug, entry.hash);
     await writeFileAtomic(
-      join5(dir, recordFileName(entry, order)),
+      join6(dir, recordFileName(entry, order)),
       JSON.stringify(entry, null, 2) + "\n"
     );
     added.push(entry);
@@ -4803,12 +4837,12 @@ async function appendHistoryMany(root, inputs) {
 
 // src/drift/follow.ts
 import { stat } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join7, relative as relative3, resolve as resolve3 } from "node:path";
+import { isAbsolute as isAbsolute2, join as join8, relative as relative3, resolve as resolve3 } from "node:path";
 
 // src/audit/gaps.ts
-import { readFile as readFile8 } from "node:fs/promises";
-import { join as join6, extname } from "node:path";
-var diskReader = (root) => (rel) => readFile8(join6(root, rel), "utf8").catch(() => null);
+import { readFile as readFile9 } from "node:fs/promises";
+import { join as join7, extname } from "node:path";
+var diskReader = (root) => (rel) => readFile9(join7(root, rel), "utf8").catch(() => null);
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -4875,7 +4909,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat(join7(root, rel))).isFile();
+    return (await stat(join8(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -4984,10 +5018,10 @@ async function pendingConceptDocs(root) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile9 } from "node:fs/promises";
+import { readFile as readFile10 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile9(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile10(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -5004,11 +5038,11 @@ async function pruneTestReviewLog(root, liveSlugs) {
 }
 
 // src/drift/noCode.ts
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 import { relative as relative5, sep as sep2 } from "node:path";
 async function readNoCodeLog(root) {
   try {
-    return NoCodeLog.parse(JSON.parse(await readFile10(cpPaths(root).noCodeFile, "utf8")));
+    return NoCodeLog.parse(JSON.parse(await readFile11(cpPaths(root).noCodeFile, "utf8")));
   } catch {
     return {};
   }
@@ -5039,17 +5073,19 @@ function freshNoCode(log, slug3, currentHash) {
 }
 
 // src/drift/reconcile.ts
-function pruneTargets(root) {
+function pruneTargets(root, greenSlugs) {
   const p = cpPaths(root);
   return [
     [pruneAttestLog, p.attestFile],
     [pruneTestReviewLog, p.testReviewFile],
     [prunePendingConflicts, p.pendingConflicts],
-    [pruneNoCodeLog, p.noCodeFile]
+    [pruneNoCodeLog, p.noCodeFile],
+    // 승인본: 사라진 개념, 또는 지금 green인 개념(손으로 다시 정착한 뒤 남은 낡은 승인본)의 것을 지운다.
+    [(r, live) => pruneApprovedSnapshots(r, live, greenSlugs), p.approvedDir]
   ];
 }
-async function pruneStaleRecords(root, slugs) {
-  const targets = pruneTargets(root);
+async function pruneStaleRecords(root, slugs, greenSlugs) {
+  const targets = pruneTargets(root, greenSlugs);
   const settled = await Promise.allSettled(targets.map(([prune]) => prune(root, slugs)));
   const pruned = new Set(settled.flatMap((r) => r.status === "fulfilled" ? r.value : []));
   const failures = settled.flatMap(
@@ -5119,7 +5155,11 @@ async function reconcileAfterCommit(root, committedFiles2, at) {
   );
   await appendHistoryMany(root, entries);
   await writeLock(root, cleaned);
-  const { pruned, failures } = await pruneStaleRecords(root, slugs);
+  const { pruned, failures } = await pruneStaleRecords(
+    root,
+    slugs,
+    new Set(concepts.filter((c) => c.status === "green").map((c) => c.slug))
+  );
   return { aligned, ignored, pruned, pruneFailures: failures };
 }
 
@@ -5159,19 +5199,19 @@ async function findHookRoot(src) {
 var hookRootOf = (payloadCwd) => findHookRoot({ cwd: payloadCwd, env: process.env, processCwd: process.cwd() });
 
 // src/hooks/command/unreconciled.ts
-import { readFile as readFile11, rm as rm2 } from "node:fs/promises";
-import { join as join8 } from "node:path";
-var RECORD = join8("conceptpowers", "unreconciled.json");
+import { readFile as readFile12, rm as rm3 } from "node:fs/promises";
+import { join as join9 } from "node:path";
+var RECORD = join9("conceptpowers", "unreconciled.json");
 var SHA = /^[0-9a-f]{7,64}$/;
 async function recordPath(root) {
   const gitDir = await tryGit(root, ["rev-parse", "--absolute-git-dir"]);
-  return gitDir ? join8(gitDir.trim(), RECORD) : null;
+  return gitDir ? join9(gitDir.trim(), RECORD) : null;
 }
 async function readUnreconciled(root) {
   const path = await recordPath(root);
   if (!path) return [];
   try {
-    const parsed = JSON.parse(await readFile11(path, "utf8"));
+    const parsed = JSON.parse(await readFile12(path, "utf8"));
     return Array.isArray(parsed) ? parsed.filter((s) => typeof s === "string" && SHA.test(s)) : [];
   } catch {
     return [];
@@ -5185,7 +5225,7 @@ async function addUnreconciled(root, shas) {
 }
 async function clearUnreconciled(root) {
   const path = await recordPath(root);
-  if (path) await rm2(path, { force: true });
+  if (path) await rm3(path, { force: true });
 }
 
 // src/i18n/commitReasons.ts
@@ -6106,10 +6146,10 @@ function scanList(segs, k) {
 function effectAt(segs, k, inBlock) {
   const seg = segs[k];
   if (seg.connector === "|" || seg.connector === "&") return NONE;
-  const join10 = seg.opened ? "(" : seg.joinedBy;
-  if (join10 === "|") return UNKNOWN;
+  const join11 = seg.opened ? "(" : seg.joinedBy;
+  if (join11 === "|") return UNKNOWN;
   const { andEnd, end } = scanList(segs, k);
-  if (inBlock || AND_OR.has(join10) || end === "&") return { kind: "conditional", until: andEnd };
+  if (inBlock || AND_OR.has(join11) || end === "&") return { kind: "conditional", until: andEnd };
   return APPLY;
 }
 function dirEffects(segs) {
@@ -6414,13 +6454,13 @@ function readGitGlobals(args, dyn, cmd, state, aliases) {
   };
 }
 function gitDirs(state, dirs) {
-  const join10 = (base, list) => list.reduce((b, dir) => joinPath(b, dir), base);
+  const join11 = (base, list) => list.reduce((b, dir) => joinPath(b, dir), base);
   if (!state.atTop || dirs.length === 0) {
-    return { cwd: join10(state.cwd, dirs), atTop: state.atTop, unknownLocation: false };
+    return { cwd: join11(state.cwd, dirs), atTop: state.atTop, unknownLocation: false };
   }
   const lastAbs = dirs.map((d) => d.startsWith("/")).lastIndexOf(true);
   if (lastAbs < 0) return { cwd: state.cwd, atTop: true, unknownLocation: true };
-  return { cwd: join10(void 0, dirs.slice(lastAbs)), atTop: false, unknownLocation: false };
+  return { cwd: join11(void 0, dirs.slice(lastAbs)), atTop: false, unknownLocation: false };
 }
 async function visitGit(args, dyn, cmd, ctx, aliases) {
   const { state } = ctx;
@@ -6561,16 +6601,16 @@ function createAliasResolver(root) {
 }
 
 // src/hooks/command/headWatch.ts
-import { mkdir as mkdir3, readdir as readdir3, readFile as readFile12, rm as rm3, stat as stat2 } from "node:fs/promises";
-import { join as join9 } from "node:path";
-var RECORD_DIR = join9("conceptpowers", "head-before");
+import { mkdir as mkdir3, readdir as readdir4, readFile as readFile13, rm as rm4, stat as stat2 } from "node:fs/promises";
+import { join as join10 } from "node:path";
+var RECORD_DIR = join10("conceptpowers", "head-before");
 var STALE_MS = 24 * 60 * 60 * 1e3;
 var MAX_ENTRIES = 50;
 var SWEEP_EVERY_MS = 60 * 60 * 1e3;
 var COMMIT_ENTRY = /^(commit( \([a-z]+\))?|cherry-pick|revert|am|rebase \(continue\)):/;
 async function recordDir(root) {
   const gitDir = await tryGit(root, ["rev-parse", "--absolute-git-dir"]);
-  return gitDir ? join9(gitDir.trim(), RECORD_DIR) : null;
+  return gitDir ? join10(gitDir.trim(), RECORD_DIR) : null;
 }
 function recordName(toolUseId) {
   const safe = toolUseId.replace(/[^A-Za-z0-9_-]/g, "");
@@ -6590,14 +6630,14 @@ async function takeUngatedCommits(root, toolUseId) {
   const name = recordName(toolUseId);
   const dir = name ? await recordDir(root) : null;
   if (!name || !dir) return [];
-  const path = join9(dir, name);
+  const path = join10(dir, name);
   let before;
   try {
-    before = (await readFile12(path, "utf8")).replace(/\n$/, "");
+    before = (await readFile13(path, "utf8")).replace(/\n$/, "");
   } catch {
     return [];
   }
-  await rm3(path, { force: true }).catch(() => void 0);
+  await rm4(path, { force: true }).catch(() => void 0);
   const [top] = await reflogLines(root, 1);
   if ((top ?? "") === before) return [];
   const lines = await reflogLines(root, MAX_ENTRIES);
@@ -6658,7 +6698,7 @@ async function committedFiles(root, rev = "HEAD") {
 }
 async function readLastCommit(root) {
   try {
-    return (await readFile13(cpPaths(root).alignmentLastCommit, "utf8")).trim();
+    return (await readFile14(cpPaths(root).alignmentLastCommit, "utf8")).trim();
   } catch {
     return "";
   }

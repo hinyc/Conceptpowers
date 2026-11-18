@@ -1,4 +1,4 @@
-// @concept:concept-inline-edit @concept:human-owns-contract
+// @concept:concept-inline-edit @concept:human-owns-contract @concept:pending-diff
 // src/viewer/serve.ts — Conceptpowers 뷰어 로컬 서버.
 // 빌드 시 esbuild가 엔진(zod 포함)을 인라인 번들해 assets/serve.mjs로 출력한다.
 // 따라서 배포본은 런타임 의존성 0이면서 실제 엔진 가드 로직을 그대로 사용한다(드리프트 없음).
@@ -14,6 +14,7 @@ import { ALLOWED_STATUS_TRANSITIONS, editConceptContent } from '../store/concept
 import { refreshManifestData } from './render.js';
 import { SLUG_RE } from '../schema/concept.js';
 import { handleStatusApi, engineErrorStatus } from './statusApi.js';
+import { handleApprovedApi } from './approvedApi.js';
 import { readProjectLocale } from '../init/readConfig.js';
 import { SERVER_MESSAGES } from './i18n.js';
 
@@ -172,6 +173,10 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
   // POST /api/concept/:slug/status  { status }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
   if (statusMatch) return handleStatusApi(projectRoot, req.method, statusMatch[1], req.body);
+
+  // GET /api/concept/:slug/approved — 마지막 승인본(읽기 전용, pending-diff)
+  const approvedMatch = path.match(/^\/api\/concept\/([^/]+)\/approved$/);
+  if (approvedMatch) return handleApprovedApi(projectRoot, req.method, approvedMatch[1]);
 
   // PUT /api/concept/:slug  { patch }
   const editMatch = path.match(/^\/api\/concept\/([^/]+)$/);

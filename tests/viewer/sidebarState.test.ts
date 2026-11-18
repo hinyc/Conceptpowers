@@ -11,9 +11,9 @@
 //  - viewer-navigation 불변 "선택을 기록하는 것은 사람이 직접 조작했을 때뿐이다 — 상황 변화로는
 //    기록하지 않는다"
 //    → 저장 경로를 타는 것은 setOpen(사람의 조작)뿐이다
-//  - list-filter 불변 "좁히기는 이미 떠 있는 목록 안에서만 걸러낸다 — 목록에 없는 것을 새로
-//    데려오지 않는다" → matchesQuery: 빈 검색어는 항상 true / 대소문자 무시 부분일치 /
-//    앞뒤 공백 무시 / text가 없어도 예외 없이 false
+//  - list-filter 불변 "대소문자를 가리지 않고, 입력한 말이 일부만 맞아도 남는다"
+//    → matchesQuery: 빈 검색어는 항상 true / 대소문자 무시 부분일치 / 앞뒤 공백 무시 /
+//    text가 없어도 예외 없이 false (모든 묶음으로 넓히는 동작 자체는 sidebarSearch.test.ts)
 //  - output-locale 불변 "사람이 읽을 산출물은 프로젝트에 설정된 언어로 쓴다"
 //    → ko/en 번역에 sidebarSearchPh 키가 있다
 import { describe, it, expect } from 'vitest';

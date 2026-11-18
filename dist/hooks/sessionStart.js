@@ -31,6 +31,8 @@ function cpPaths(root) {
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    // 확정 개념이 검토 중으로 내려가기 직전의 승인본 보관소(개념 목록 data/와 섞이지 않게 따로 둔다)
+    approvedDir: join(base, "concepts", ".approved"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
@@ -4842,6 +4844,7 @@ async function renderViewerToDisk(root, stampVersion, opts = {}) {
   await copyAsset("index.html", join5(p.conceptsViewer, "index.html"));
   await copyAsset("viewer.js", join5(p.conceptsViewer, "assets", "viewer.js"));
   await copyAsset("sidebar.js", join5(p.conceptsViewer, "assets", "sidebar.js"));
+  await copyAsset("conceptDiff.js", join5(p.conceptsViewer, "assets", "conceptDiff.js"));
   await copyAsset("topnav.js", join5(p.conceptsViewer, "assets", "topnav.js"));
   await copyAsset("serve.mjs", join5(p.conceptsViewer, "serve.mjs"));
   await copyAsset("concept.css", p.cssTarget);

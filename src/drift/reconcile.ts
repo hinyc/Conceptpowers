@@ -1,4 +1,4 @@
-// @concept:drift-reconcile
+// @concept:drift-reconcile @concept:pending-diff
 import { listConcepts } from '../store/conceptStore.js';
 import { readLock, writeLock } from './lock.js';
 import { appendHistoryMany, type HistoryInput } from './history.js';
@@ -15,6 +15,7 @@ import {
 } from './follow.js';
 import { pendingConceptDocs } from './pendingDocs.js';
 import { readInitConfig } from '../init/readConfig.js';
+import { pruneApprovedSnapshots } from '../store/approvedSnapshot.js';
 import { pruneAttestLog } from '../concept/attest.js';
 import { pruneTestReviewLog } from '../concept/testReview.js';
 import { readCommittedNoCodeLog, freshNoCode, pruneNoCodeLog } from './noCode.js';
@@ -40,22 +41,25 @@ export interface PruneFailure {
 type Pruner = (root: string, liveSlugs: ReadonlySet<string>) => Promise<string[]>;
 
 // 정리 대상 기록과 그 파일 자리. 정리는 결산에 딸린 일이라, 하나가 깨져도 나머지와 결산은 계속한다.
-function pruneTargets(root: string): Array<[Pruner, string]> {
+function pruneTargets(root: string, greenSlugs: ReadonlySet<string>): Array<[Pruner, string]> {
   const p = cpPaths(root);
   return [
     [pruneAttestLog, p.attestFile],
     [pruneTestReviewLog, p.testReviewFile],
     [prunePendingConflicts, p.pendingConflicts],
     [pruneNoCodeLog, p.noCodeFile],
+    // 승인본: 사라진 개념, 또는 지금 green인 개념(손으로 다시 정착한 뒤 남은 낡은 승인본)의 것을 지운다.
+    [(r, live) => pruneApprovedSnapshots(r, live, greenSlugs), p.approvedDir],
   ];
 }
 
 // 각 정리를 따로 실행해 지운 slug와 실패한 기록 파일을 모은다. 깨진 파일은 엄격 판독에서 멈추므로 덮어쓰지 않는다.
 async function pruneStaleRecords(
   root: string,
-  slugs: ReadonlySet<string>
+  slugs: ReadonlySet<string>,
+  greenSlugs: ReadonlySet<string>
 ): Promise<{ pruned: string[]; failures: PruneFailure[] }> {
-  const targets = pruneTargets(root);
+  const targets = pruneTargets(root, greenSlugs);
   const settled = await Promise.allSettled(targets.map(([prune]) => prune(root, slugs)));
   const pruned = new Set(settled.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])));
   const failures = settled.flatMap((r, i): PruneFailure[] =>
@@ -158,6 +162,10 @@ export async function reconcileAfterCommit(
   await writeLock(root, cleaned);
   // 기준선 밖의 기록도 같은 잣대로 정리한다. 각 정리는 지울 것이 없으면 파일에 손대지 않는다.
   // 이력·기준선은 이미 썼으므로 정리 실패는 결산 실패가 아니다 — 따로 담아 알린다.
-  const { pruned, failures } = await pruneStaleRecords(root, slugs);
+  const { pruned, failures } = await pruneStaleRecords(
+    root,
+    slugs,
+    new Set(concepts.filter((c) => c.status === 'green').map((c) => c.slug))
+  );
   return { aligned, ignored, pruned, pruneFailures: failures };
 }

@@ -34,6 +34,7 @@
 //    → 기본값 보충뿐이어도 init.json이 커밋에 들어오면(미리 스테이징했거나, 명령이 그 경로·넓은 범위를 직접 담으면)
 //      명령 모양과 무관하게 묻는다 — 확정된 커밋의 판정과 같다
 import { describe, it, expect, beforeEach } from 'vitest';
+import { checkGovernanceFiles } from '../../src/hooks/gates/governanceFilesGate.js';
 import {
   mkdtempSync,
   mkdirSync,
@@ -464,5 +465,17 @@ describe('커밋에 들어가지 않는 설정 기본값 보충은 묻지 않는
     await ensureInitConfigDefaults(root);
     const finding = await checkPendingGovernance(root, { includeWorktree: true }, 'ko');
     expect(finding?.reason ?? '').not.toContain('init.json');
+  });
+});
+
+// 승인본 폴더(.approved/)는 거버넌스 기록도 개념 문서도 아니다 — 커밋에 추가·삭제가 들어와도 묻지 않는다.
+// (pending-diff: 승인본은 상태 변화에 따라 엔진이 보관·정리한다. 실제 훅 확인은 릴리스 뒤.)
+describe('승인본 경로(.approved/)', () => {
+  const rel = 'docs/conceptpowers/concepts/.approved/admin-role.json';
+  it('추가·삭제 경로를 넣어도 질문/거부가 없다', () => {
+    for (const locale of ['ko', 'en'] as const) {
+      expect(checkGovernanceFiles([rel], [], locale)).toBeNull();
+      expect(checkGovernanceFiles([], [rel], locale)).toBeNull();
+    }
   });
 });
