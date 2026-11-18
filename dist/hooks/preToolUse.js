@@ -65,6 +65,8 @@ function cpPaths(root) {
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    // 확정 개념이 검토 중으로 내려가기 직전의 승인본 보관소(개념 목록 data/와 섞이지 않게 따로 둔다)
+    approvedDir: join(base, "concepts", ".approved"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.

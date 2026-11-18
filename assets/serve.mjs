@@ -6,15 +6,15 @@ var __export = (target, all) => {
 
 // src/viewer/serve.ts
 import { createServer } from "node:http";
-import { readFile as readFile8, realpath } from "node:fs/promises";
+import { readFile as readFile9, realpath } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, normalize, resolve as resolve3, sep as sep2 } from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
-import { readFile as readFile2 } from "node:fs/promises";
-import { join as join3, relative as relative2, resolve as resolve2 } from "node:path";
+import { readFile as readFile3 } from "node:fs/promises";
+import { join as join4, relative as relative2, resolve as resolve2 } from "node:path";
 
 // src/paths.ts
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -34,6 +34,8 @@ function cpPaths(root) {
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    // 확정 개념이 검토 중으로 내려가기 직전의 승인본 보관소(개념 목록 data/와 섞이지 않게 따로 둔다)
+    approvedDir: join(base, "concepts", ".approved"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
@@ -4449,6 +4451,64 @@ async function walkJson(dir) {
   return out;
 }
 
+// src/store/approvedSnapshot.ts
+import { readFile as readFile2, readdir as readdir2, rm as rm2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
+function fileOf(root, slug3) {
+  const safe = SlugSchema.parse(slug3);
+  return join3(cpPaths(root).approvedDir, `${safe}.json`);
+}
+function isMissing(error) {
+  return error?.code === "ENOENT";
+}
+async function saveApprovedSnapshot(root, concept) {
+  const snapshot = {
+    slug: concept.slug,
+    savedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    concept
+  };
+  await writeFileAtomic(fileOf(root, concept.slug), JSON.stringify(snapshot, null, 2) + "\n");
+}
+async function readApprovedSnapshot(root, slug3) {
+  const file = fileOf(root, slug3);
+  let text;
+  try {
+    text = await readFile2(file, "utf8");
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw error;
+  }
+  try {
+    const raw = JSON.parse(text);
+    if (raw === null || typeof raw !== "object" || raw.slug !== slug3) {
+      throw new Error("slug does not match the file");
+    }
+    if (typeof raw.savedAt !== "string" || Number.isNaN(Date.parse(raw.savedAt))) {
+      throw new Error("savedAt is not an ISO time");
+    }
+    const concept = parseConcept(raw.concept);
+    if (concept.slug !== slug3) throw new Error("concept slug does not match the file");
+    return { slug: slug3, savedAt: raw.savedAt, concept };
+  } catch (error) {
+    throw new Error(`Malformed approved snapshot for ${slug3}: ${error.message}`);
+  }
+}
+async function removeApprovedSnapshot(root, slug3) {
+  await rm2(fileOf(root, slug3), { force: true });
+}
+async function readApprovedRaw(root, slug3) {
+  try {
+    return await readFile2(fileOf(root, slug3), "utf8");
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw error;
+  }
+}
+async function restoreApprovedRaw(root, slug3, previous) {
+  if (previous === null) await removeApprovedSnapshot(root, slug3);
+  else await writeFileAtomic(fileOf(root, slug3), previous);
+}
+
 // src/store/conceptStore.ts
 function assertAliasesFree(concept, existing, target, root) {
   const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((e) => e.concept.slug)]);
@@ -4478,7 +4538,7 @@ async function listConceptEntries(root) {
   for (const f of files) {
     try {
       entries.push({
-        concept: parseConcept(JSON.parse(await readFile2(f, "utf8"))),
+        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
         rel: relative2(root, f)
       });
     } catch (error) {
@@ -4499,13 +4559,16 @@ function duplicateError(slug3, root, paths) {
     `Duplicate slug: ${slug3} exists in more than one file (${where}) \u2014 globally unique; merge them into one file before writing`
   );
 }
-async function persistConcept(root, concept, target, entries) {
+function assertWritable(root, concept, target, entries) {
   const all = locationsOf(root, entries, concept.slug);
   if (all.length > 1) throw duplicateError(concept.slug, root, all);
   if (all.length === 1 && all[0] !== target) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
   assertAliasesFree(concept, entries, target, root);
+}
+async function persistConcept(root, concept, target, entries) {
+  assertWritable(root, concept, target, entries);
   await writeFileAtomic(target, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }
@@ -4519,6 +4582,9 @@ async function readSingleEntry(root, slug3) {
 async function rewriteConcept(root, found, input) {
   const target = resolve2(root, found.entry.rel);
   return persistConcept(root, parseConcept(input), target, found.entries);
+}
+async function readConcept(root, slug3) {
+  return (await listConcepts(root)).find((c) => c.slug === slug3) ?? null;
 }
 var ALLOWED_STATUS_TRANSITIONS = {
   red: ["red", "green"],
@@ -4550,7 +4616,10 @@ async function setConceptStatus(root, slug3, status) {
     }
   }
   const updated = await rewriteConcept(root, found, { ...concept, status });
-  if (status === "green") await clearPendingConflict(root, slug3);
+  if (status === "green") {
+    await removeApprovedSnapshot(root, slug3);
+    await clearPendingConflict(root, slug3);
+  }
   return updated;
 }
 var EDITABLE_FIELDS = [
@@ -4578,19 +4647,35 @@ async function editConceptContent(root, slug3, patch) {
   }
   const downgradedToPending = concept.status === "green";
   const nextStatus = downgradedToPending ? "pending" : concept.status;
-  const saved = await rewriteConcept(root, found, {
+  const next = parseConcept({
     ...concept,
     ...safe,
     slug: concept.slug,
     group: concept.group,
     status: nextStatus
   });
-  return { concept: saved, downgradedToPending };
+  const target = resolve2(root, found.entry.rel);
+  assertWritable(root, next, target, found.entries);
+  if (!downgradedToPending) {
+    return {
+      concept: await persistConcept(root, next, target, found.entries),
+      downgradedToPending
+    };
+  }
+  const previous = await readApprovedRaw(root, slug3);
+  await saveApprovedSnapshot(root, concept);
+  try {
+    const saved = await persistConcept(root, next, target, found.entries);
+    return { concept: saved, downgradedToPending };
+  } catch (error) {
+    await restoreApprovedRaw(root, slug3, previous).catch(() => void 0);
+    throw error;
+  }
 }
 
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
-import { join as join5, dirname as dirname4 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile8 } from "node:fs/promises";
+import { join as join6, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -4671,7 +4756,7 @@ function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 
 // src/schema/feature.ts
 var slug2 = SlugSchema;
@@ -4694,7 +4779,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -4703,18 +4788,18 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4 } from "node:fs/promises";
+import { readFile as readFile5 } from "node:fs/promises";
 var MappingSchema = external_exports.record(external_exports.string(), external_exports.array(external_exports.string()));
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 
 // src/schema/initConfig.ts
 var LocaleSchema = external_exports.enum(["ko", "en"]);
@@ -4768,7 +4853,7 @@ var InitConfigSchema = external_exports.object({
 // src/init/readConfig.ts
 async function readProjectLocale(root) {
   try {
-    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const raw = JSON.parse(await readFile6(cpPaths(root).initFile, "utf8"));
     const parsed = LocaleSchema.safeParse(raw?.locale);
     return parsed.success ? parsed.data : LEGACY_LOCALE;
   } catch {
@@ -4778,14 +4863,14 @@ async function readProjectLocale(root) {
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
-import { readFile as readFile6, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
-import { join as join4, dirname as dirname3 } from "node:path";
+import { readFile as readFile7, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
+import { join as join5, dirname as dirname3 } from "node:path";
 var MAX_PLUGIN_ROOT_DEPTH = 6;
 function findPluginRoot(startDir) {
   let dir = startDir;
   for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
     try {
-      readFileSync(join4(dir, ".claude-plugin", "plugin.json"));
+      readFileSync(join5(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
       const parent = dirname3(dir);
@@ -4797,7 +4882,7 @@ function findPluginRoot(startDir) {
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile6(join4(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile7(join5(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -4822,14 +4907,14 @@ async function writeManifest(root, stampVersion) {
     generatorVersion: stampVersion === void 0 ? await readPluginVersion() : stampVersion
   };
   await writeFile3(
-    join5(p.conceptsViewer, "manifest.json"),
+    join6(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }
 async function readExistingStamp(root) {
   try {
-    const raw = await readFile7(join5(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
+    const raw = await readFile8(join6(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
     const stamp = JSON.parse(raw).generatorVersion;
     return typeof stamp === "string" && stamp !== "" ? stamp : null;
   } catch {
@@ -4862,6 +4947,31 @@ async function handleStatusApi(projectRoot, method, rawSlug, body) {
     return { status: 200, json: { ok: true, concept } };
   } catch (error) {
     return { status: engineErrorStatus(error), json: { error: error.message } };
+  }
+}
+
+// src/viewer/approvedApi.ts
+async function handleApprovedApi(projectRoot, method, rawSlug) {
+  if (method !== "GET") return { status: 405, json: { error: "method not allowed" } };
+  let slug3;
+  try {
+    slug3 = decodeURIComponent(rawSlug);
+  } catch {
+    return { status: 400, json: { error: "invalid slug" } };
+  }
+  if (!SLUG_RE.test(slug3)) return { status: 400, json: { error: "invalid slug" } };
+  try {
+    if (!await readConcept(projectRoot, slug3)) {
+      return { status: 404, json: { error: "not found" } };
+    }
+    const snapshot = await readApprovedSnapshot(projectRoot, slug3);
+    if (!snapshot) return { status: 200, json: { approved: null } };
+    return {
+      status: 200,
+      json: { approved: { savedAt: snapshot.savedAt, concept: snapshot.concept } }
+    };
+  } catch {
+    return { status: 500, json: { error: "approved snapshot is unreadable" } };
   }
 }
 
@@ -4980,6 +5090,8 @@ async function handleApi(projectRoot, req) {
   }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
   if (statusMatch) return handleStatusApi(projectRoot, req.method, statusMatch[1], req.body);
+  const approvedMatch = path.match(/^\/api\/concept\/([^/]+)\/approved$/);
+  if (approvedMatch) return handleApprovedApi(projectRoot, req.method, approvedMatch[1]);
   const editMatch = path.match(/^\/api\/concept\/([^/]+)$/);
   if (editMatch) {
     if (req.method !== "PUT") return { status: 405, json: { error: "method not allowed" } };
@@ -5117,7 +5229,7 @@ async function handle(root, projectRoot, req, res) {
     return;
   }
   try {
-    const file = await readFile8(real);
+    const file = await readFile9(real);
     res.writeHead(200, { "Content-Type": contentType(real), ...STATIC_SECURITY_HEADERS });
     res.end(file);
   } catch {

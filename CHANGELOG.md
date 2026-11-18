@@ -7,6 +7,17 @@ Versions before 1.14.0 are not summarized here; see the git history and tags.
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-11-18
+
+### Added
+
+- The detail view of a concept under review (pending) now shows what differs from its last approved version, marking each change as Added, Removed, or Changed with a background tint.
+- When an approved concept is edited, its approved version is kept in `docs/conceptpowers/concepts/.approved/` and cleaned up once the concept is approved again. Concepts that became pending before this feature have no approved version to compare against.
+
+### Changed
+
+- The sidebar search in the concept detail view now searches the concepts of every group while you type.
+
 ## [1.19.0] - 2026-11-11
 
 ### Added

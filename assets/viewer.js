@@ -1,4 +1,4 @@
-// @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-spec-bridge @concept:globally-unique-slug @concept:concept-provenance
+// @concept:pending-diff @concept:home-search @concept:knowledge-graph-view @concept:concept-inline-edit @concept:settled-status @concept:viewer-readability @concept:feature-spec-bridge @concept:globally-unique-slug @concept:concept-provenance
 // assets/viewer.js — Conceptpowers 단일 뷰어(SPA). 의존성 0.
 // manifest.json을 읽고, 개념/기능 본문은 원본 data/*.json을 fetch해 렌더한다.
 // 해시 라우트: #/ (목록) · #/group/:g(/:featureSlug) (목록의 그룹 위치·기능 색인 줄) ·
@@ -92,6 +92,25 @@ var I18N = {
     closeSidebar: '닫기',
     sidebarSearchPh: '개념 검색',
     topnavLabel: '묶음 메뉴',
+    diffTitle: '승인본과 달라진 점',
+    diffLoading: '승인본과 비교하는 중…',
+    diffAdded: '추가',
+    diffRemoved: '삭제',
+    diffChanged: '수정',
+    diffReordered: '순서 변경',
+    diffBefore: '고치기 전',
+    diffAfter: '지금',
+    diffPrev: '이전 개념',
+    diffNext: '다음 개념',
+    diffSavedAt: '승인본 저장',
+    diffSummary: '추가 {added}건 · 삭제 {removed}건 · 수정 {changed}건',
+    diffNoApproved:
+      '비교할 승인본이 없습니다. 처음 작성 중이거나 이 기능이 생기기 전에 수정된 개념입니다.',
+    diffUnavailable: '지금은 승인본을 불러올 수 없어 비교하지 못했습니다.',
+    diffReasonServer: '뷰어 서버에 연결되지 않았습니다(정적 배포이거나 서버가 꺼져 있습니다).',
+    diffReasonUnreadable: '승인본 파일을 읽을 수 없습니다.',
+    diffReasonOther: '서버가 오류를 돌려주었습니다.',
+    diffSame: '승인본과 내용이 같습니다.',
   },
   en: {
     appTitle: 'Concepts',
@@ -179,6 +198,25 @@ var I18N = {
     closeSidebar: 'Close',
     sidebarSearchPh: 'Search concepts',
     topnavLabel: 'Group menu',
+    diffTitle: 'Changes from the approved version',
+    diffLoading: 'Comparing with the approved version…',
+    diffAdded: 'Added',
+    diffRemoved: 'Removed',
+    diffChanged: 'Changed',
+    diffReordered: 'Order changed',
+    diffBefore: 'Before',
+    diffAfter: 'Now',
+    diffPrev: 'Previous concept',
+    diffNext: 'Next concept',
+    diffSavedAt: 'Approved version saved',
+    diffSummary: '{added} added · {removed} removed · {changed} changed',
+    diffNoApproved:
+      'There is no approved version to compare. This concept is still being drafted, or was edited before this feature existed.',
+    diffUnavailable: 'The approved version could not be loaded, so no comparison was made.',
+    diffReasonServer: 'The viewer server is not reachable (static deployment or server stopped).',
+    diffReasonUnreadable: 'The approved version file cannot be read.',
+    diffReasonOther: 'The server returned an error.',
+    diffSame: 'The content is the same as the approved version.',
   },
 };
 
@@ -192,6 +230,7 @@ var state = {
   current: null,
   transitions: null,
 };
+var diffGen = 0; // 개념 상세를 그릴 때마다 증가 → 뒤늦게 도착한 승인본 응답이 다른 화면에 그려지지 않게 한다
 var renderGen = 0; // 라우트가 바뀌면 증가 → 그래프 애니메이션 루프 종료 신호
 
 // ---- DOM 헬퍼: 텍스트는 textContent로만 넣어 XSS를 차단한다 ----
@@ -1069,8 +1108,171 @@ function relatedFeaturesSection(related) {
   ]);
 }
 
+
+// ---- 승인본과 달라진 점(pending-diff) ----
+var DIFF_FIELD_LABEL = {
+  title: 'title',
+  group: 'colGroup',
+  'description.definition': 'definition',
+  'description.analogy': 'analogy',
+  'description.example': 'example',
+  'description.components': 'components',
+  'state.managed': 'managedState',
+  'purpose.reason': 'reason',
+  'purpose.benefits': 'benefits',
+  'purpose.vision': 'vision',
+  'purpose.painPoints': 'painPoints',
+  'actions.allow': 'allow',
+  'actions.restrict': 'restrict',
+  'actions.interaction': 'interaction',
+  'principle.immutableRules': 'immutableRules',
+  'principle.operationalPrinciple': 'operationalPrinciple',
+  'principle.tradeoffs': 'tradeoffs',
+  'principle.lifecycle': 'lifecycle',
+  'relations.prev': 'diffPrev',
+  'relations.next': 'diffNext',
+  'relations.related': 'relatedSlugs',
+  aliases: 'aliases',
+  category: 'category',
+  codeLinks: 'codeLinksLabel',
+  sources: 'sourcesLabel',
+};
+var DIFF_KIND_LABEL = { added: 'diffAdded', removed: 'diffRemoved', changed: 'diffChanged' };
+
+function diffTextNode(kind, side, value) {
+  var tag = kind === 'added' ? 'ins' : kind === 'removed' ? 'del' : 'span';
+  return h(tag, { class: 'diff-text diff-text--' + side }, value);
+}
+function diffSide(label, side, value) {
+  var body = Array.isArray(value)
+    ? h(
+        'ol',
+        { class: 'diff-list' },
+        value.map(function (v) {
+          return h('li', null, diffTextNode('changed', side, v));
+        })
+      )
+    : diffTextNode('changed', side, value);
+  return h('div', { class: 'diff-side diff-side--' + side }, [
+    h('span', { class: 'diff-side__label' }, label),
+    body,
+  ]);
+}
+function diffItem(t, d) {
+  var fieldLabel = t[DIFF_FIELD_LABEL[d.field]] || d.field;
+  var head = [
+    h('span', { class: 'diff-tag diff-tag--' + d.kind }, t[DIFF_KIND_LABEL[d.kind]]),
+    h('span', { class: 'diff-field' }, fieldLabel),
+  ];
+  if (d.reordered) head.push(h('span', { class: 'diff-note' }, t.diffReordered));
+  var body;
+  if (d.kind === 'changed') {
+    body = h('div', { class: 'diff-pair' }, [
+      diffSide(t.diffBefore, 'before', d.before),
+      diffSide(t.diffAfter, 'after', d.after),
+    ]);
+  } else if (d.kind === 'added') {
+    body = h('div', { class: 'diff-body' }, diffTextNode('added', 'added', d.after));
+  } else {
+    body = h('div', { class: 'diff-body' }, diffTextNode('removed', 'removed', d.before));
+  }
+  return h('li', { class: 'diff-item diff-item--' + d.kind }, [
+    h('div', { class: 'diff-item__head' }, head),
+    body,
+  ]);
+}
+function formatSavedAt(iso) {
+  var d = new Date(iso);
+  return isNaN(d.getTime()) ? String(iso) : d.toLocaleString();
+}
+function diffNotice(text, reason) {
+  return [h('p', { class: 'diff-notice' }, text), reason ? h('p', { class: 'muted' }, reason) : null];
+}
+// 승인본 응답 → 상자 안 내용. 달라진 것이 없다고 말하는 것은 승인본이 있고 차이가 0건일 때뿐이다.
+function diffBoxContent(t, result, current) {
+  if (result.error) {
+    var reason =
+      result.error === 500
+        ? t.diffReasonUnreadable
+        : typeof result.error === 'number' && result.error !== 404
+          ? t.diffReasonOther
+          : t.diffReasonServer;
+    return diffNotice(t.diffUnavailable, reason);
+  }
+  var approved = result.approved;
+  if (approved === null) return diffNotice(t.diffNoApproved);
+  var changes = CPConceptDiff.diffConcepts(approved.concept, current);
+  if (!changes.length) return diffNotice(t.diffSame);
+  var count = { added: 0, removed: 0, changed: 0 };
+  changes.forEach(function (d) {
+    count[d.kind] += 1;
+  });
+  return [
+    h(
+      'p',
+      { class: 'diff-summary' },
+      t.diffSavedAt + ': ' + formatSavedAt(approved.savedAt) + ' · ' +
+        t.diffSummary
+          .replace('{added}', count.added)
+          .replace('{removed}', count.removed)
+          .replace('{changed}', count.changed)
+    ),
+    h(
+      'ul',
+      { class: 'diff-items' },
+      changes.map(function (d) {
+        return diffItem(t, d);
+      })
+    ),
+  ];
+}
+// 서버 응답을 { approved } | { error }로 정리한다(어떤 실패도 "달라진 것 없음"으로 읽히지 않게).
+function fetchApproved(slug) {
+  var url = '/api/concept/' + encodeURIComponent(slug) + '/approved';
+  return fetch(url, { cache: 'no-store' })
+    .then(function (r) {
+      if (!r.ok) return { error: r.status };
+      return r.json().then(
+        function (j) {
+          var a = j && j.approved;
+          if (a === null) return { approved: null };
+          if (a && typeof a === 'object' && a.concept && typeof a.concept === 'object') {
+            return { approved: a };
+          }
+          return { error: 'shape' };
+        },
+        function () {
+          return { error: 'shape' };
+        }
+      );
+    })
+    .catch(function () {
+      return { error: 'network' };
+    });
+}
+// pending 개념 상세 위쪽 칸. 상자를 먼저 놓고 응답이 오면 그 자리만 채운다(재렌더 없음).
+function pendingDiffSection(slug, c) {
+  if (!c || c.status !== 'pending') return null;
+  var t = state.t;
+  var token = diffGen;
+  var box = h('section', { class: 'section diff-box', 'aria-live': 'polite' }, [
+    h('h2', null, t.diffTitle),
+    h('p', { class: 'muted' }, t.diffLoading),
+  ]);
+  function fill(result) {
+    // 그 사이 다른 개념·다시 그리기가 있었으면 이 응답은 버린다.
+    if (token !== diffGen || state.current !== c) return;
+    box.textContent = '';
+    append(box, [h('h2', null, t.diffTitle)].concat(diffBoxContent(t, result, c)));
+  }
+  if (!state.editable) fill({ error: 'network' });
+  else fetchApproved(slug).then(fill);
+  return box;
+}
+
 // 읽기 모드.
 function renderConceptRead(slug) {
+  diffGen += 1;
   var t = state.t;
   var c = state.current;
   var entry = conceptEntry(slug);
@@ -1098,6 +1300,7 @@ function renderConceptRead(slug) {
     ]),
     conceptHero(slug, c),
     editBar,
+    pendingDiffSection(slug, c),
     // 정의는 hero(제목 아래)에서 이미 보여주므로 여기서 반복하지 않는다.
     c.description.analogy || (c.description.components || []).length || c.description.example
       ? h('section', { class: 'section' }, [
@@ -1224,6 +1427,7 @@ function area(value, rows) {
 
 // 편집 모드: 화이트리스트 필드만 폼으로. 저장 시 섹션 전체를 patch로 보낸다.
 function renderConceptEdit(slug) {
+  diffGen++;
   var t = state.t;
   var c = state.current;
   var f = {};
@@ -1999,6 +2203,7 @@ function renderMissing() {
 // ---- 라우터 ----
 function route() {
   renderGen++; // 이전 그래프 루프 중단
+  diffGen++; // 다른 화면으로 가면 늦게 온 승인본 응답을 버린다
   var hash = window.location.hash.replace(/^#/, '') || '/';
   var parts = hash.split('/').filter(Boolean); // ['concept','slug'] 등
   if (parts[0] === 'concept' && parts[1]) return viewConcept(decodeURIComponent(parts[1]));

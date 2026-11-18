@@ -3048,13 +3048,13 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile21, stat as stat7 } from "node:fs/promises";
-import { dirname as dirname5, isAbsolute as isAbsolute4, join as join24, relative as relative5, resolve as resolve4 } from "node:path";
+import { readFile as readFile22, stat as stat7 } from "node:fs/promises";
+import { dirname as dirname5, isAbsolute as isAbsolute4, join as join25, relative as relative5, resolve as resolve4 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
 import { mkdir as mkdir9, writeFile as writeFile8, access as access5 } from "node:fs/promises";
-import { join as join17 } from "node:path";
+import { join as join18 } from "node:path";
 
 // src/paths.ts
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -3074,6 +3074,8 @@ function cpPaths(root) {
     infra: join(base, "infra"),
     mappingCache: join(base, ".cache", "mapping.json"),
     cssTarget: join(base, "concepts", "viewer", "assets", "concept.css"),
+    // 확정 개념이 검토 중으로 내려가기 직전의 승인본 보관소(개념 목록 data/와 섞이지 않게 따로 둔다)
+    approvedDir: join(base, "concepts", ".approved"),
     alignmentDir: join(base, "concepts", ".alignment"),
     alignmentLock: join(base, "concepts", ".alignment", "alignment.lock.json"),
     // 예전 한 파일 이력(읽기 전용) — 새 기록은 alignmentHistoryDir에 기록마다 파일로 더한다.
@@ -7352,12 +7354,12 @@ function buildInitHint(locale, opts) {
 }
 
 // src/init/syncGenerated.ts
-import { readdir as readdir3, rm as rm2, rmdir } from "node:fs/promises";
-import { join as join16 } from "node:path";
+import { readdir as readdir4, rm as rm3, rmdir } from "node:fs/promises";
+import { join as join17 } from "node:path";
 
 // src/viewer/render.ts
-import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile7 } from "node:fs/promises";
-import { join as join7, dirname as dirname4 } from "node:path";
+import { mkdir as mkdir3, writeFile as writeFile3, readFile as readFile8 } from "node:fs/promises";
+import { join as join8, dirname as dirname4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/viewer/graph.ts
@@ -7438,8 +7440,8 @@ function buildManifest(concepts, features, locale, codeLinksBySlug = {}) {
 }
 
 // src/store/conceptStore.ts
-import { readFile as readFile2 } from "node:fs/promises";
-import { join as join3, relative as relative2, resolve as resolve2 } from "node:path";
+import { readFile as readFile3 } from "node:fs/promises";
+import { join as join4, relative as relative2, resolve as resolve2 } from "node:path";
 
 // src/util/atomicWrite.ts
 import { writeFile, rename, mkdir, rm } from "node:fs/promises";
@@ -7822,6 +7824,40 @@ async function walkJson(dir) {
   return out;
 }
 
+// src/store/approvedSnapshot.ts
+import { readFile as readFile2, readdir as readdir2, rm as rm2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
+function fileOf(root, slug3) {
+  const safe = SlugSchema.parse(slug3);
+  return join3(cpPaths(root).approvedDir, `${safe}.json`);
+}
+function isMissing(error) {
+  return error?.code === "ENOENT";
+}
+async function saveApprovedSnapshot(root, concept) {
+  const snapshot = {
+    slug: concept.slug,
+    savedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    concept
+  };
+  await writeFileAtomic(fileOf(root, concept.slug), JSON.stringify(snapshot, null, 2) + "\n");
+}
+async function removeApprovedSnapshot(root, slug3) {
+  await rm2(fileOf(root, slug3), { force: true });
+}
+async function readApprovedRaw(root, slug3) {
+  try {
+    return await readFile2(fileOf(root, slug3), "utf8");
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw error;
+  }
+}
+async function restoreApprovedRaw(root, slug3, previous) {
+  if (previous === null) await removeApprovedSnapshot(root, slug3);
+  else await writeFileAtomic(fileOf(root, slug3), previous);
+}
+
 // src/store/conceptStore.ts
 function assertAliasesFree(concept, existing, target2, root) {
   const slugs = /* @__PURE__ */ new Set([concept.slug, ...existing.map((e) => e.concept.slug)]);
@@ -7851,7 +7887,7 @@ async function listConceptEntries(root) {
   for (const f of files) {
     try {
       entries.push({
-        concept: parseConcept(JSON.parse(await readFile2(f, "utf8"))),
+        concept: parseConcept(JSON.parse(await readFile3(f, "utf8"))),
         rel: relative2(root, f)
       });
     } catch (error) {
@@ -7872,13 +7908,16 @@ function duplicateError(slug3, root, paths) {
     `Duplicate slug: ${slug3} exists in more than one file (${where}) \u2014 globally unique; merge them into one file before writing`
   );
 }
-async function persistConcept(root, concept, target2, entries) {
+function assertWritable(root, concept, target2, entries) {
   const all = locationsOf(root, entries, concept.slug);
   if (all.length > 1) throw duplicateError(concept.slug, root, all);
   if (all.length === 1 && all[0] !== target2) {
     throw new Error(`Duplicate slug: ${concept.slug} already exists (globally unique)`);
   }
   assertAliasesFree(concept, entries, target2, root);
+}
+async function persistConcept(root, concept, target2, entries) {
+  assertWritable(root, concept, target2, entries);
   await writeFileAtomic(target2, JSON.stringify(concept, null, 2) + "\n");
   return concept;
 }
@@ -7933,7 +7972,10 @@ async function setConceptStatus(root, slug3, status) {
     }
   }
   const updated = await rewriteConcept(root, found, { ...concept, status });
-  if (status === "green") await clearPendingConflict(root, slug3);
+  if (status === "green") {
+    await removeApprovedSnapshot(root, slug3);
+    await clearPendingConflict(root, slug3);
+  }
   return updated;
 }
 var EDITABLE_FIELDS = [
@@ -7961,19 +8003,35 @@ async function editConceptContent(root, slug3, patch) {
   }
   const downgradedToPending = concept.status === "green";
   const nextStatus = downgradedToPending ? "pending" : concept.status;
-  const saved = await rewriteConcept(root, found, {
+  const next = parseConcept({
     ...concept,
     ...safe,
     slug: concept.slug,
     group: concept.group,
     status: nextStatus
   });
-  return { concept: saved, downgradedToPending };
+  const target2 = resolve2(root, found.entry.rel);
+  assertWritable(root, next, target2, found.entries);
+  if (!downgradedToPending) {
+    return {
+      concept: await persistConcept(root, next, target2, found.entries),
+      downgradedToPending
+    };
+  }
+  const previous = await readApprovedRaw(root, slug3);
+  await saveApprovedSnapshot(root, concept);
+  try {
+    const saved = await persistConcept(root, next, target2, found.entries);
+    return { concept: saved, downgradedToPending };
+  } catch (error) {
+    await restoreApprovedRaw(root, slug3, previous).catch(() => void 0);
+    throw error;
+  }
 }
 
 // src/store/featureStore.ts
-import { readFile as readFile3 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { readFile as readFile4 } from "node:fs/promises";
+import { join as join5 } from "node:path";
 
 // src/schema/feature.ts
 var slug2 = SlugSchema;
@@ -7993,7 +8051,7 @@ function parseFeature(input) {
 // src/store/featureStore.ts
 function fileFor(root, f) {
   const dir = cpPaths(root).features;
-  return f.group ? join4(dir, f.group, `${f.slug}.json`) : join4(dir, `${f.slug}.json`);
+  return f.group ? join5(dir, f.group, `${f.slug}.json`) : join5(dir, `${f.slug}.json`);
 }
 async function writeFeature(root, input) {
   const feature = parseFeature(input);
@@ -8011,7 +8069,7 @@ async function listFeatures(root) {
   const features = [];
   for (const file of files) {
     try {
-      features.push(parseFeature(JSON.parse(await readFile3(file, "utf8"))));
+      features.push(parseFeature(JSON.parse(await readFile4(file, "utf8"))));
     } catch (error) {
       throw new Error(`Failed to parse feature file: ${file} \u2014 ${error.message}`);
     }
@@ -8020,8 +8078,8 @@ async function listFeatures(root) {
 }
 
 // src/mapping/scan.ts
-import { readFile as readFile4 } from "node:fs/promises";
-import { join as join5 } from "node:path";
+import { readFile as readFile5 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 
 // src/mapping/leadingComment.ts
 var LEADING_COMMENT_LINE_RE = /^\s*(\/\/|\/\*|#|<!--)/;
@@ -8141,7 +8199,7 @@ async function scanTags(root, files, ignoreGlobs = [], opts = {}) {
     if (matchesAny(rel, ignoreGlobs)) continue;
     let content;
     try {
-      content = await readFile4(join5(root, rel), "utf8");
+      content = await readFile5(join6(root, rel), "utf8");
     } catch {
       continue;
     }
@@ -8182,17 +8240,17 @@ async function updateMappingCache(root, files, ignoreGlobs = []) {
 }
 async function readMappingCache(root) {
   try {
-    return MappingSchema.parse(JSON.parse(await readFile4(cpPaths(root).mappingCache, "utf8")));
+    return MappingSchema.parse(JSON.parse(await readFile5(cpPaths(root).mappingCache, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/init/readConfig.ts
-import { readFile as readFile5 } from "node:fs/promises";
+import { readFile as readFile6 } from "node:fs/promises";
 async function readInitConfig(root) {
   try {
-    const raw = await readFile5(cpPaths(root).initFile, "utf8");
+    const raw = await readFile6(cpPaths(root).initFile, "utf8");
     return parseInitConfig(JSON.parse(raw));
   } catch {
     return null;
@@ -8200,7 +8258,7 @@ async function readInitConfig(root) {
 }
 async function readProjectLocale(root) {
   try {
-    const raw = JSON.parse(await readFile5(cpPaths(root).initFile, "utf8"));
+    const raw = JSON.parse(await readFile6(cpPaths(root).initFile, "utf8"));
     const parsed = LocaleSchema.safeParse(raw?.locale);
     return parsed.success ? parsed.data : LEGACY_LOCALE;
   } catch {
@@ -8210,8 +8268,8 @@ async function readProjectLocale(root) {
 
 // src/version/checkUpdate.ts
 import { readFileSync } from "node:fs";
-import { readFile as readFile6, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
-import { join as join6, dirname as dirname3 } from "node:path";
+import { readFile as readFile7, writeFile as writeFile2, mkdir as mkdir2 } from "node:fs/promises";
+import { join as join7, dirname as dirname3 } from "node:path";
 
 // src/version/compareSemver.ts
 var SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
@@ -8237,7 +8295,7 @@ function findPluginRoot(startDir) {
   let dir = startDir;
   for (let i = 0; i < MAX_PLUGIN_ROOT_DEPTH; i++) {
     try {
-      readFileSync(join6(dir, ".claude-plugin", "plugin.json"));
+      readFileSync(join7(dir, ".claude-plugin", "plugin.json"));
       return dir;
     } catch {
       const parent = dirname3(dir);
@@ -8249,7 +8307,7 @@ function findPluginRoot(startDir) {
 }
 async function readInstalledVersion(pluginRoot) {
   try {
-    const text = await readFile6(join6(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
+    const text = await readFile7(join7(pluginRoot, ".claude-plugin", "plugin.json"), "utf8");
     const v = JSON.parse(text)?.version;
     return typeof v === "string" ? v : null;
   } catch {
@@ -8263,7 +8321,7 @@ async function readAsset(name) {
   let dir = start;
   for (let i = 0; i < 6; i++) {
     try {
-      return await readFile7(join7(dir, "assets", name));
+      return await readFile8(join8(dir, "assets", name));
     } catch {
       const parent = dirname4(dir);
       if (parent === dir) break;
@@ -8292,14 +8350,14 @@ async function writeManifest(root, stampVersion) {
     generatorVersion: stampVersion === void 0 ? await readPluginVersion() : stampVersion
   };
   await writeFile3(
-    join7(p.conceptsViewer, "manifest.json"),
+    join8(p.conceptsViewer, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf8"
   );
 }
 async function readExistingStamp(root) {
   try {
-    const raw = await readFile7(join7(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
+    const raw = await readFile8(join8(cpPaths(root).conceptsViewer, "manifest.json"), "utf8");
     const stamp = JSON.parse(raw).generatorVersion;
     return typeof stamp === "string" && stamp !== "" ? stamp : null;
   } catch {
@@ -8310,18 +8368,19 @@ async function renderViewerToDisk(root, stampVersion, opts = {}) {
   const p = cpPaths(root);
   const shouldStamp = opts.stamp ?? stampVersion !== void 0;
   const stamp = shouldStamp ? stampVersion : await readExistingStamp(root);
-  await copyAsset("index.html", join7(p.conceptsViewer, "index.html"));
-  await copyAsset("viewer.js", join7(p.conceptsViewer, "assets", "viewer.js"));
-  await copyAsset("sidebar.js", join7(p.conceptsViewer, "assets", "sidebar.js"));
-  await copyAsset("topnav.js", join7(p.conceptsViewer, "assets", "topnav.js"));
-  await copyAsset("serve.mjs", join7(p.conceptsViewer, "serve.mjs"));
+  await copyAsset("index.html", join8(p.conceptsViewer, "index.html"));
+  await copyAsset("viewer.js", join8(p.conceptsViewer, "assets", "viewer.js"));
+  await copyAsset("sidebar.js", join8(p.conceptsViewer, "assets", "sidebar.js"));
+  await copyAsset("conceptDiff.js", join8(p.conceptsViewer, "assets", "conceptDiff.js"));
+  await copyAsset("topnav.js", join8(p.conceptsViewer, "assets", "topnav.js"));
+  await copyAsset("serve.mjs", join8(p.conceptsViewer, "serve.mjs"));
   await copyAsset("concept.css", p.cssTarget);
   await writeManifest(root, stamp);
 }
 
 // src/init/packageScript.ts
-import { readFile as readFile8 } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { readFile as readFile9 } from "node:fs/promises";
+import { join as join9 } from "node:path";
 var VIEWER_SCRIPT_NAME = "concepts:view";
 var VIEWER_INDEX = "docs/conceptpowers/concepts/viewer/index.html";
 var VIEWER_SERVE = "docs/conceptpowers/concepts/viewer/serve.mjs";
@@ -8339,10 +8398,10 @@ function serializeLike(raw, value) {
   return JSON.stringify(value, null, detectIndent(raw)) + eol;
 }
 async function upsertViewerScript(root) {
-  const pkgPath = join8(root, "package.json");
+  const pkgPath = join9(root, "package.json");
   let raw;
   try {
-    raw = await readFile8(pkgPath, "utf8");
+    raw = await readFile9(pkgPath, "utf8");
   } catch {
     return "no-package";
   }
@@ -8366,11 +8425,11 @@ async function upsertViewerScript(root) {
 
 // src/init/reference.ts
 import { mkdir as mkdir4, writeFile as writeFile4, access } from "node:fs/promises";
-import { join as join10, relative as relative3 } from "node:path";
+import { join as join11, relative as relative3 } from "node:path";
 
 // src/init/referenceWalk.ts
-import { readdir as readdir2, stat } from "node:fs/promises";
-import { join as join9 } from "node:path";
+import { readdir as readdir3, stat } from "node:fs/promises";
+import { join as join10 } from "node:path";
 var SCAN_LIMIT = 5e3;
 async function statUsableFile(path) {
   try {
@@ -8388,7 +8447,7 @@ async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
     const current = queue.shift();
     let entries;
     try {
-      entries = await readdir2(current, { withFileTypes: true });
+      entries = await readdir3(current, { withFileTypes: true });
     } catch {
       if (current === dir) return "unreadable";
       continue;
@@ -8396,7 +8455,7 @@ async function walkUsableFiles(dir, visit, limit = SCAN_LIMIT) {
     for (const entry of entries) {
       if (++visited > limit) return "capped";
       if (entry.name.startsWith(".")) continue;
-      const full = join9(current, entry.name);
+      const full = join10(current, entry.name);
       if (entry.isDirectory()) {
         queue.push(full);
         continue;
@@ -8414,7 +8473,7 @@ var SEED_README = "README.md";
 async function ensureReference(root) {
   const dir = cpPaths(root).reference;
   await mkdir4(dir, { recursive: true });
-  const readme = join10(dir, SEED_README);
+  const readme = join11(dir, SEED_README);
   try {
     await access(readme);
     return false;
@@ -8440,13 +8499,13 @@ async function listReferenceFiles(root) {
 }
 
 // src/init/referencePaths.ts
-import { readFile as readFile9, stat as stat2, access as access2, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
+import { readFile as readFile10, stat as stat2, access as access2, mkdir as mkdir5, writeFile as writeFile5 } from "node:fs/promises";
 import { homedir } from "node:os";
-import { isAbsolute as isAbsolute2, join as join11 } from "node:path";
+import { isAbsolute as isAbsolute2, join as join12 } from "node:path";
 var PATHS_FILE = "paths.md";
 async function ensureReferencePaths(root) {
   const dir = cpPaths(root).reference;
-  const target2 = join11(dir, PATHS_FILE);
+  const target2 = join12(dir, PATHS_FILE);
   try {
     await access2(target2);
     return false;
@@ -8461,9 +8520,9 @@ function parseReferencePaths(content) {
   return content.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#")).map((line) => line.replace(/^[-*]\s+/, "").trim()).filter((line) => line !== "");
 }
 function resolveReferencePath(root, raw) {
-  if (raw === "~" || raw.startsWith("~/")) return join11(homedir(), raw.slice(1));
+  if (raw === "~" || raw.startsWith("~/")) return join12(homedir(), raw.slice(1));
   if (isAbsolute2(raw)) return raw;
-  return join11(root, raw);
+  return join12(root, raw);
 }
 async function dirHasUsableContent(dir) {
   return await walkUsableFiles(dir, () => false) !== "done";
@@ -8471,7 +8530,7 @@ async function dirHasUsableContent(dir) {
 async function checkReferencePaths(root) {
   let content;
   try {
-    content = await readFile9(join11(cpPaths(root).reference, PATHS_FILE), "utf8");
+    content = await readFile10(join12(cpPaths(root).reference, PATHS_FILE), "utf8");
   } catch {
     return [];
   }
@@ -8493,10 +8552,10 @@ async function checkReferencePaths(root) {
 
 // src/init/alignmentGitignore.ts
 import { access as access3, mkdir as mkdir6, writeFile as writeFile6 } from "node:fs/promises";
-import { join as join12 } from "node:path";
+import { join as join13 } from "node:path";
 var CONTENT = "# plugin-managed local state (rewritten by hooks on every commit)\nlast-commit\n";
 async function ensureAlignmentGitignore(root) {
-  const target2 = join12(cpPaths(root).alignmentDir, ".gitignore");
+  const target2 = join13(cpPaths(root).alignmentDir, ".gitignore");
   try {
     await access3(target2);
     return false;
@@ -8509,7 +8568,7 @@ async function ensureAlignmentGitignore(root) {
 
 // src/init/referenceGitignore.ts
 import { access as access4, mkdir as mkdir7, writeFile as writeFile7 } from "node:fs/promises";
-import { join as join13 } from "node:path";
+import { join as join14 } from "node:path";
 var CONTENT2 = [
   "# reference material stays local by default (may contain confidential documents)",
   "# only the external-path list (paths.md) is shared; README is regenerated locally",
@@ -8519,7 +8578,7 @@ var CONTENT2 = [
   ""
 ].join("\n");
 async function ensureReferenceGitignore(root) {
-  const target2 = join13(cpPaths(root).reference, ".gitignore");
+  const target2 = join14(cpPaths(root).reference, ".gitignore");
   try {
     await access4(target2);
     return false;
@@ -8531,12 +8590,12 @@ async function ensureReferenceGitignore(root) {
 }
 
 // src/init/ensureConfigDefaults.ts
-import { readFile as readFile10 } from "node:fs/promises";
+import { readFile as readFile11 } from "node:fs/promises";
 async function ensureInitConfigDefaults(root) {
   const target2 = cpPaths(root).initFile;
   let current;
   try {
-    const parsed = JSON.parse(await readFile10(target2, "utf8"));
+    const parsed = JSON.parse(await readFile11(target2, "utf8"));
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
     current = parsed;
   } catch {
@@ -8561,11 +8620,11 @@ async function ensureInitConfigDefaults(root) {
 }
 
 // src/reference/lock.ts
-import { readFile as readFile12, mkdir as mkdir8 } from "node:fs/promises";
+import { readFile as readFile13, mkdir as mkdir8 } from "node:fs/promises";
 
 // src/init/referenceLockIgnore.ts
-import { readFile as readFile11 } from "node:fs/promises";
-import { join as join14 } from "node:path";
+import { readFile as readFile12 } from "node:fs/promises";
+import { join as join15 } from "node:path";
 var LOCK_LINE = "reference.lock.json";
 function withLine(lines) {
   return lines.includes(LOCK_LINE) ? [...lines] : [...lines, LOCK_LINE];
@@ -8575,8 +8634,8 @@ function withoutLine(lines) {
 }
 async function applyReferenceLockIgnore(root, mode) {
   await ensureAlignmentGitignore(root);
-  const target2 = join14(cpPaths(root).alignmentDir, ".gitignore");
-  const lines = (await readFile11(target2, "utf8")).replace(/\n$/, "").split("\n");
+  const target2 = join15(cpPaths(root).alignmentDir, ".gitignore");
+  const lines = (await readFile12(target2, "utf8")).replace(/\n$/, "").split("\n");
   const next = mode === "local" ? withLine(lines) : withoutLine(lines);
   if (next.length === lines.length) return "unchanged";
   await writeFileAtomic(target2, next.join("\n") + "\n");
@@ -8599,7 +8658,7 @@ async function mapLimit(items, limit, fn) {
 
 // src/reference/enumerate.ts
 import { stat as stat3 } from "node:fs/promises";
-import { join as join15 } from "node:path";
+import { join as join16 } from "node:path";
 
 // src/reference/canonical.ts
 import { realpath } from "node:fs/promises";
@@ -8684,7 +8743,7 @@ async function listRepo(root, files) {
   const rels = files ?? await listReferenceFiles(root);
   const found = await Promise.all(
     rels.map(async (rel) => {
-      const abs = join15(refDir, rel);
+      const abs = join16(refDir, rel);
       const s = await statUsableFile(abs);
       return s ? target(repoKey(rel), abs, "repo", "", s) : null;
     })
@@ -8790,7 +8849,7 @@ function parseLockFiles(raw) {
 }
 async function readReferenceLock(root) {
   try {
-    const raw = JSON.parse(await readFile12(cpPaths(root).referenceLock, "utf8"));
+    const raw = JSON.parse(await readFile13(cpPaths(root).referenceLock, "utf8"));
     if (!isPlainObject(raw)) return null;
     const { files, ...rest2 } = raw;
     return { ...ReferenceLock.parse({ ...rest2, files: {} }), files: parseLockFiles(files) };
@@ -8843,25 +8902,25 @@ function formatFailedSteps(failed) {
   return failed.map((f) => `${f.step} (${f.error})`).join("; ");
 }
 async function cleanLegacyViewerHtml(viewerDir) {
-  const keep = join16(viewerDir, "index.html");
+  const keep = join17(viewerDir, "index.html");
   let removed = 0;
   async function walk(dir) {
     let entries;
     try {
-      entries = await readdir3(dir, { withFileTypes: true });
+      entries = await readdir4(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const e of entries) {
-      const full = join16(dir, e.name);
+      const full = join17(dir, e.name);
       if (e.isDirectory()) {
         await walk(full);
         try {
-          if ((await readdir3(full)).length === 0) await rmdir(full);
+          if ((await readdir4(full)).length === 0) await rmdir(full);
         } catch {
         }
       } else if (e.name.endsWith(".html") && full !== keep) {
-        await rm2(full);
+        await rm3(full);
         removed++;
       }
     }
@@ -8957,19 +9016,19 @@ async function scaffoldInit(root, opts) {
   });
   await writeFile8(p.initFile, JSON.stringify(config, null, 2) + "\n", "utf8");
   const seed = seedTemplates[locale];
-  await writeFile8(join17(p.architecture, "architecture.md"), seed.architecture, "utf8");
-  await writeFile8(join17(p.infra, "infra.md"), seed.infra, "utf8");
+  await writeFile8(join18(p.architecture, "architecture.md"), seed.architecture, "utf8");
+  await writeFile8(join18(p.infra, "infra.md"), seed.infra, "utf8");
   const synced = await syncGenerated(root);
   return { viewerScriptAdded: synced.scriptStatus !== "no-package", synced };
 }
 
 // src/version/autoSync.ts
-import { readFile as readFile13 } from "node:fs/promises";
-import { join as join18 } from "node:path";
+import { readFile as readFile14 } from "node:fs/promises";
+import { join as join19 } from "node:path";
 async function readGeneratorVersion(root) {
   try {
     const manifest = JSON.parse(
-      await readFile13(join18(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
+      await readFile14(join19(cpPaths(root).conceptsViewer, "manifest.json"), "utf8")
     );
     return typeof manifest?.generatorVersion === "string" ? manifest.generatorVersion : null;
   } catch {
@@ -9035,9 +9094,9 @@ async function auditIntegrity(root, files, ignoreGlobs = []) {
 }
 
 // src/audit/gaps.ts
-import { readFile as readFile14 } from "node:fs/promises";
-import { join as join19, extname } from "node:path";
-var diskReader = (root) => (rel) => readFile14(join19(root, rel), "utf8").catch(() => null);
+import { readFile as readFile15 } from "node:fs/promises";
+import { join as join20, extname } from "node:path";
+var diskReader = (root) => (rel) => readFile15(join20(root, rel), "utf8").catch(() => null);
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -9072,8 +9131,8 @@ async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [
 }
 
 // src/audit/codeCoordinates.ts
-import { readFile as readFile15, stat as stat5 } from "node:fs/promises";
-import { join as join20 } from "node:path";
+import { readFile as readFile16, stat as stat5 } from "node:fs/promises";
+import { join as join21 } from "node:path";
 var BACKTICKED = /`\s*([A-Za-z_$][\w$]*)\s*(?:\(\s*\))?\s*`/g;
 var CALL = /(?<![\w$-])([A-Za-z_$][\w$]*)\((?![^)]*[가-힣])/g;
 var CONSTANT = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9])\b/g;
@@ -9105,9 +9164,9 @@ var containsSymbol = (text, symbol) => new RegExp(`(?<![\\w$])${escapeRegExp2(sy
 var cleanPath2 = (path) => path.split("#")[0].trim();
 async function readTarget(root, path) {
   try {
-    const info = await stat5(join20(root, path));
+    const info = await stat5(join21(root, path));
     if (info.isDirectory()) return "dir";
-    return await readFile15(join20(root, path), "utf8");
+    return await readFile16(join21(root, path), "utf8");
   } catch {
     return null;
   }
@@ -9137,10 +9196,10 @@ async function findBrokenCodeCoordinates(root, concepts) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile16 } from "node:fs/promises";
+import { readFile as readFile17 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile16(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile17(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
@@ -9148,11 +9207,11 @@ async function readLock(root) {
 
 // src/drift/history.ts
 import { createHash as createHash3 } from "node:crypto";
-import { readdir as readdir4, readFile as readFile17 } from "node:fs/promises";
-import { join as join21 } from "node:path";
+import { readdir as readdir5, readFile as readFile18 } from "node:fs/promises";
+import { join as join22 } from "node:path";
 async function readLegacyHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile17(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile18(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -9161,14 +9220,14 @@ async function readRecordFiles(root) {
   const dir = cpPaths(root).alignmentHistoryDir;
   let names;
   try {
-    names = (await readdir4(dir)).filter((name) => name.endsWith(".json")).sort();
+    names = (await readdir5(dir)).filter((name) => name.endsWith(".json")).sort();
   } catch {
     return [];
   }
   const entries = await Promise.all(
     names.map(async (name) => {
       try {
-        return HistoryEntry.parse(JSON.parse(await readFile17(join21(dir, name), "utf8")));
+        return HistoryEntry.parse(JSON.parse(await readFile18(join22(dir, name), "utf8")));
       } catch {
         return null;
       }
@@ -9208,7 +9267,7 @@ async function appendHistoryMany(root, inputs) {
     const entry = toEntry(input, lastHash.get(input.slug) ?? "");
     lastHash.set(entry.slug, entry.hash);
     await writeFileAtomic(
-      join21(dir, recordFileName(entry, order)),
+      join22(dir, recordFileName(entry, order)),
       JSON.stringify(entry, null, 2) + "\n"
     );
     added.push(entry);
@@ -9221,7 +9280,7 @@ async function appendHistory(root, input) {
 
 // src/drift/follow.ts
 import { stat as stat6 } from "node:fs/promises";
-import { isAbsolute as isAbsolute3, join as join22, relative as relative4, resolve as resolve3 } from "node:path";
+import { isAbsolute as isAbsolute3, join as join23, relative as relative4, resolve as resolve3 } from "node:path";
 function isInsideRoot(root, rel) {
   const r = relative4(resolve3(root), resolve3(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute3(r);
@@ -9229,7 +9288,7 @@ function isInsideRoot(root, rel) {
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat6(join22(root, rel))).isFile();
+    return (await stat6(join23(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -9397,10 +9456,10 @@ function resolveComparedScope(slug3, requested, knownSlugs) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile18 } from "node:fs/promises";
+import { readFile as readFile19 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile18(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile19(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -9419,10 +9478,10 @@ async function recordTestReview(root, concept, result, evidence = {}) {
 }
 
 // src/drift/noCode.ts
-import { readFile as readFile19 } from "node:fs/promises";
+import { readFile as readFile20 } from "node:fs/promises";
 async function readNoCodeLog(root) {
   try {
-    return NoCodeLog.parse(JSON.parse(await readFile19(cpPaths(root).noCodeFile, "utf8")));
+    return NoCodeLog.parse(JSON.parse(await readFile20(cpPaths(root).noCodeFile, "utf8")));
   } catch {
     return {};
   }
@@ -9439,8 +9498,8 @@ async function recordNoCode(root, concept, note) {
 }
 
 // src/init/addReferencePath.ts
-import { readFile as readFile20 } from "node:fs/promises";
-import { join as join23 } from "node:path";
+import { readFile as readFile21 } from "node:fs/promises";
+import { join as join24 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -9448,10 +9507,10 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target2 = join23(cpPaths(root).reference, PATHS_FILE);
+  const target2 = join24(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile20(target2, "utf8");
+    existing = await readFile21(target2, "utf8");
   } catch (error) {
     throw new Error(
       `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target2}): ${error.message}`
@@ -9738,7 +9797,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       code = 1;
       return;
     }
-    const patch = JSON.parse(await readFile21(o.file, "utf8"));
+    const patch = JSON.parse(await readFile22(o.file, "utf8"));
     const { concept, downgradedToPending } = await editConceptWithNote(
       o.root,
       slug3,
@@ -9757,7 +9816,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile21(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile22(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -9922,7 +9981,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     for (const t of tests) {
       const rel = normalizeRel(relative5(resolve4(o.root), resolve4(o.root, t)));
       const inside = rel !== "" && rel !== ".." && !rel.startsWith("../") && !isAbsolute4(rel);
-      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join24(o.root, rel));
+      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join25(o.root, rel));
       if (!ok) invalid.push(t);
     }
     if (invalid.length > 0) {
