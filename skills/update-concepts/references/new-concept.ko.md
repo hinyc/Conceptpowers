@@ -13,4 +13,6 @@
 - 말하지 않았으면 묻는다: ① 전체 일괄 정의(`references/batch.md`) ② 특정 개념 하나(단일 흐름).
 - 저장 전 **중복 확인**과 **자격 관문**(define.md)을 반드시 거친다 — 목적이 같은 개념이 있으면 새로 세우지 않고
   그 개념을 `references/edit.md`로 넓힌다.
+- 저장 승인과 정착 확정은 별개다: 개념을 `pending`으로 저장하고 검사한 뒤에야 뷰어 링크와 함께 확정을 묻는다
+  (define.md step 6-9, 또는 batch.md의 checkpoint 2-3).
 - 기능 명세(`features/`)가 없으면 함께 만든다(define.md step 1) — 개념은 기능이 가리켜야 지식 지도에 연결된다.

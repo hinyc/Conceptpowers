@@ -61,8 +61,8 @@
    기록** 절차로 만든다. 이것이 `#/graph`를 연결된 상태로 유지한다. 버튼·모달 같은 공통 UI 요소 하나하나에
    명세를 만들지 않는다 — 명세는 기능 단위다.
 4. **red / pending (상태)**:
-   - 🔴 red(자동 추론, 미승인) → 목록을 보이고 사용자가 검토·승인을 원하면 `conceptpowers:update-concepts`(계기 D)로.
-     **scan이 스스로 승인하지 않는다.**
+   - 🔴 red(자동 추론, 미승인) → 목록을 보인다. 사용자가 승인을 요청할 때만 `conceptpowers:update-concepts`(계기 D)로.
+     **scan이 스스로 승인을 권하거나 승인하지 않는다.**
    - 🟡 pending(사람이 쓴 초안, 미정착) → 목록을 보이고 `update-concepts`(계기 G, 정합성 재검사·정착)를 권한다.
      pending을 "미승인"이라 부르지 않는다 — 초안이지 추론이 아니다.
 5. **green 품질 최소치**: `node "<cli>" quality --root .`(slug 없이 전수). 결격이 있으면 보고하고 사용자와 함께
@@ -111,7 +111,7 @@
 - incremental: 격차만 보고하고 점진적 보충을 권한다 — 기능 명세와 링크 누락 포함.
 - strict: 모든 격차를 즉시 해소하도록 밀어붙인다(init strict 또는 사용자 요청).
 
-## 뷰어 안내 (마지막 단계 — 생략 금지)
+## 뷰어 링크 (마지막 단계 — 생략 금지)
 
-`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
-있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.
+`render` 뒤에는 `conceptpowers:update-concepts`의 「뷰어 링크 절차」(Viewer link procedure)를 따라 클릭 가능한 뷰어
+링크로 끝낸다.

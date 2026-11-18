@@ -57,7 +57,9 @@ Identify it in three steps, in order.
    - `unlocked: true` (no reference snapshot) → ① pick candidates from the material no concept cites (B, batch)
      ② only record the snapshot (A step 4, with the user's confirmation)
    - `changed`/`removed` present → A. Only `added` → A (new-material candidates + snapshot)
-   - red present → D, pending present → G, reference material empty (no files + no entries in `paths.md`) → E
+   - pending present → G, reference material empty (no files + no entries in `paths.md`) → E
+   - red present → list it as unapproved proposals the user may review. D applies only if the user then asks to
+     approve one.
    - If there is no candidate at all, ask between B (new concept) and C (edit).
 
 **Announce**: state the chosen trigger in one line and proceed (e.g. "Trigger C (editing a concept) — target `x`,
@@ -78,14 +80,23 @@ trigger changes mid-flow is written in each procedure document.
 1. **Consistency check**: for every concept written or changed, run `references/consistency.md` and leave the
    attestation (`attest-consistency`). On a conflict, record the reason with `note-conflict` and keep it pending.
    Exception: the "only fields outside the contract fingerprint changed" case in `references/edit.md` (all three
-   conditions met) is covered by the existing pass attestation.
-2. **Settle to green (pending only)**: a pending concept that passed the check is settled to `status: green` **after
-   the user confirms** (edit `status` in the JSON + `render`, or the viewer's status control). If a conflict was
-   recorded, run `resolve-conflict <slug>`. **A red concept stays red even after edits** — to become green the user
-   must request approval and go through D (`approve`). Never hand-edit a red concept's status to green.
+   conditions met) is covered by the existing pass attestation. A new concept has already done this in its own flow
+   (`references/define.md` step 8), so do not repeat it.
+2. **Settle to green (pending only)**: ask the user to confirm a pending concept that passed the check, following the
+   "Viewer link procedure" below. Until the user answers, call it under review — never settled or confirmed.
+   - Confirmed → set `status: green` (edit `status` in the JSON + `render`). If a conflict was recorded, run
+     `resolve-conflict <slug>`. The user may instead use the viewer's status control; that is their own action, so
+     re-read the status rather than asking again.
+   - Declined → ask whether to revise it (`references/edit.md`), leave it under review, or delete it. Delete only on
+     the user's explicit approval, by the delete path in Step 0 — never silently.
+   - No clear answer → it stays pending.
+
+   **A red concept stays red even after edits** — to become green the user must request approval and go through D
+   (`approve`). Never hand-edit a red concept's status to green.
+
 3. **Code wiring**: for a new concept, guide the user to put `@concept:<slug>` at the top of the implementing files
    and refresh the mapping with `node "<cli>" map --root . <files...>`.
-4. After `node "<cli>" render --root .`, hand over the viewer link.
+4. After `node "<cli>" render --root .`, hand over the viewer link by the "Viewer link procedure" below.
 5. **Snapshot check**: after a flow that read reference material (B, C, F), if `reference-diff --quick` still shows
    `added`/`changed`, propose A's snapshot recording (`references/reference-change.md` step 4) — citing new material
    does not clear `added`, so the change notice would reappear every session.
@@ -100,12 +111,38 @@ trigger changes mid-flow is written in each procedure document.
 - Recording `reference-snapshot --reviewed` without a review, or moving the snapshot at session start or in the
   middle of a check.
 - Editing a concept or approving a red concept to make code pass.
+- Treating approval to save a draft as confirmation to settle it, or describing a pending concept as settled or
+  confirmed.
+- Prompting the user to approve a red concept — D starts only from the user's own request.
 
-## Viewer handoff (last step — never skip)
+## Viewer link procedure (never skip)
 
-This section is the authority for handing over the viewer link — other skills and this skill's procedure documents
-point here.
+This section is the only authority for preparing the viewer and showing its link — other skills and this skill's
+procedure documents point here. Use it **every time you ask the user to confirm a saved concept** (settling a pending
+concept, or a red approval the user requested through D) and as the last step after `render`. The last step need not
+repeat a link this flow already showed for the same concept.
 
-After `render`, always end with a clickable viewer link (render prints the path + serve command).
-Reuse the running server's URL if one is up — deep-link `#/concept/<slug>` / `#/group/__features/<slug>` / `#/architecture` —
-otherwise start `concepts:view` in the background (fallback: `node docs/conceptpowers/concepts/viewer/serve.mjs`) and print its URL.
+1. **Prepare the link.** For each concept in question, run:
+   ```
+   node "<cli>" viewer-link <slug> --root .
+   ```
+   This redraws the viewer, reuses this project's running viewer or starts one **without opening a browser**, and
+   prints one JSON line. It changes no concept. For the last-step link with no single concept in focus, omit `<slug>`
+   to get the viewer home; to point at something else, replace the part after `#` with `/group/__features/<slug>`,
+   `/architecture` or `/infra`.
+2. **Read the output.**
+   - `{"ok":true,"url":…,"started":…,"port":…}` → write `url` in your message as a Markdown link,
+     `[<slug>](<url>)`. When you ask through a choice or question tool, **also put the `url` in the question text** —
+     the user may see only the dialog.
+   - `{"ok":false,"reason":…}` → tell the user the `reason` (it is already in the project's output language) and
+     continue in text: show the content to be confirmed in your message and ask there. If you still use a choice or
+     question tool, put the `reason` in the question text too.
+   - The command fails or prints no such JSON → say the viewer could not be prepared and why, then continue in text
+     the same way.
+3. **Several concepts** → one command and one link per concept, so each answer is tied to the concept it confirms.
+4. **Only the user's answer confirms.** A link shown, `started: true`, a running viewer, the user saying they opened
+   the page, or silence is not confirmation — the status stays as it is until the user answers.
+5. **Leave the viewer running**, and do not open a browser yourself. If the user wants it off, run
+   `node "<cli>" viewer-stop --root .`, which stops this project's viewers and prints `{"ok":true,"stopped":[…]}`. An
+   empty `stopped` means nothing was stopped; a viewer started by an older plugin version is not recognized, so tell
+   the user to close that one themselves.

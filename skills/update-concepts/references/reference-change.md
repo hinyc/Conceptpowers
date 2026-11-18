@@ -15,7 +15,8 @@ prohibitions stay in the skill's `SKILL.md`.
    disagree.
    - No disagreement → leave it as is (if only the source locator is stale, fix just `sources`).
    - Disagreement → propose the sentence to change to the user and, **after approval**, apply it with the
-     `edit-concept` procedure of `references/edit.md`.
+     `edit-concept` procedure of `references/edit.md`. Re-settling it then follows common wrap-up 2 of `SKILL.md`,
+     which asks with the viewer link.
    - If the material was deleted, propose removing that source or turning it into a `decision`.
    - If reference material **disagrees with a green concept, the concept wins** — report which part of which
      document differs from which rule, and do not edit the concept until the human decides.

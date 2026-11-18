@@ -32,4 +32,4 @@
 5. **적용** — 승인된 문장을 `references/edit.md`에 적힌 대로 `edit-concept --reason "<해소한 모호성 / 반영한 자료 변경>"`으로
    적용한다(green → pending). 지문이 바뀌어 옛 증빙·테스트 검토 기록은 자동으로 실효된다.
 6. **공통 마무리** — `SKILL.md`의 공통 마무리: `references/consistency.md` + `attest-consistency`, 테스트 검토
-   (`attest-test-review` 또는 수정), 사용자 확인 후 green 재정착, `render`.
+   (`attest-test-review` 또는 수정), `SKILL.md`의 「뷰어 링크 절차」로 확인 요청, 사용자 확인 후 green 재정착, `render`.

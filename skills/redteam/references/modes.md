@@ -26,8 +26,9 @@ the chosen mode. The flow and the prohibitions stay in the skill's `SKILL.md`.
 ## ② One concept
 
 1. Collect the targets exactly as the "② Concept → files" lookup of `conceptpowers:review` — do not redefine it here.
-2. If the concept is not green (red/pending), do not review it — it is a concept that does not govern code. Recommend
-   settling it first (`conceptpowers:update-concepts`).
+2. If the concept is not green (red/pending), do not review it — it is a concept that does not govern code. If it is
+   pending, recommend settling it first (`conceptpowers:update-concepts`). If it is red, say it is an unapproved
+   proposal and stop — approval happens only if the user asks for it.
 3. The purpose of the work is that concept's `purpose`.
 
 ## ③ Whole project

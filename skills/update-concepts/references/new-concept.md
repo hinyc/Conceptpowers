@@ -13,5 +13,7 @@ prohibitions stay in the skill's `SKILL.md`.
 - If not, ask: ① define everything at once (`references/batch.md`) ② one specific concept (single flow).
 - Before saving, always go through the **duplicate check** and the **qualification gate** (define.md) — if a
   concept with the same purpose exists, do not create a new one; widen that concept through `references/edit.md`.
+- Approval to save and confirmation to settle are separate: the concept is saved as `pending`, checked, and only then
+  offered for confirmation with its viewer link (define.md steps 6-9, or checkpoints 2-3 of batch.md).
 - If there is no feature spec (`features/`), create it together (define.md step 1) — a concept is connected to the
   knowledge map only when a feature points at it.

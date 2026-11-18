@@ -17,14 +17,15 @@ Run **only when the user explicitly asked** — never edit a concept on your own
      `--reason` is required — if empty, the engine changes nothing. The reason stays as is in the drift notice and
      history. A green concept drops to `pending` (`"downgradedToPending": true`) and the viewer is redrawn.
      red and pending keep their status (`"downgradedToPending": false`) — red is still an unapproved proposal after
-     the edit, so point to D (approval) at the end; pending settles after a consistency check, as in G.
+     the edit, so say so at the end (D runs only if the user asks for approval); pending settles after a consistency
+     check, as in G.
    - **Never hand-edit the JSON to keep it green.** Go through the common wrap-up of `SKILL.md` (consistency check
-     → attestation → re-settle to green after the user confirms).
+     → attestation → ask with the viewer link → re-settle to green after the user confirms).
    - **When only fields outside the contract fingerprint changed** (`sources`, `codeLinks`, `title`, `aliases`,
      `actions.interaction` — e.g. a broken source locator handed over by `scan`): **only if it was green before the
      edit, its last consistency attestation is pass, and it has no conflict reason**, the fingerprint is unchanged
-     and the existing pass attestation stays valid. In that case do not re-run the consistency check; re-settle to
-     green after the user confirms (the fingerprint is unchanged, so code and tests are not required to follow
+     and the existing pass attestation stays valid. In that case do not re-run the consistency check; ask by the "Viewer link
+     procedure" of `SKILL.md` and re-settle to green after the user confirms (the fingerprint is unchanged, so code and tests are not required to follow
      either). If any one of the three does not hold, go through the common wrap-up as usual.
    - When a concept changes, report the code impact (`@concept` tags, feature `codePaths`). If related code must
      change too, put it in the same commit; if truly no code change is needed, record that after the user
@@ -42,4 +43,5 @@ Run **only when the user explicitly asked** — never edit a concept on your own
 3. **When editing a feature spec, architecture or infra** — the top-level baseline documents constrain the concepts below them,
    so review with the user which concepts must change along with it. Save only after the user confirms.
 4. Report a summary and **restate the current status of the edited concept** — if pending, it governs no code until
-   it re-settles to green via a passing consistency check + the user's confirmation; if red, until D (approval).
+   it re-settles to green via a passing consistency check + the user's confirmation; if red, until the user requests
+   and completes D.

@@ -70,7 +70,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 개념이 없거나 적으면 **계기 B 일괄 정의(batch)**. 실행 전 reference가 비었으면 그 스킬의 안내대로 ① 진행 ② 파일
   추가 ③ 바깥 경로 등록을 묻는다 — 조용히 건너뛰지 않는다. 개념 정의가 reference를 읽는 **유일한** 시점이다.
 - `unlocked`(기준점 없음)이고 개념이 이미 있으면, 정의·검토가 끝난 뒤 기준점을 한 번 찍자고 제안한다.
-- 스킬 안의 체크포인트(후보 범위 확정, 일괄 리뷰, 정합성 검사)는 그 스킬 규칙 그대로 — auto가 대신 답하지 않는다.
+- 스킬 안의 체크포인트(후보 범위 확정, 일괄 리뷰, 정합성 검사, 정착)는 그 스킬 규칙 그대로 — auto가 대신 답하지 않는다.
 
 ## Stage 3 — 상태 탐색
 
@@ -78,7 +78,8 @@ architecture.md / infra.md가 아직 템플릿이면:
 항목마다 어떻게 처리할지 묻는다:
 
 - 개념 없는 코드 → 기존 개념 태그 / `update-concepts`(계기 B)로 정의(Stage 2 루프백) / `@concept:none` / 보류.
-- 🔴 red → 사용자가 원하면 `update-concepts`(D) 승인 흐름(사용자 게이트 — auto가 스스로 승인하지 않는다).
+- 🔴 red → 미승인 제안으로 목록을 보인다. 사용자가 승인을 요청할 때만 `update-concepts`(D) 흐름으로 간다(사용자 게이트 —
+  auto가 스스로 승인을 권하거나 승인하지 않는다).
 - 🟡 pending → `update-concepts`(G) 재검사로 정착 시도 / 수정·분리 논의(C) / 보류.
 - 품질 미달 green → 사용자에게 물어 채운다(자동 채움 금지).
 - 태그 달기 + `map` + `render`는 scan 안에서 마친다.
@@ -99,7 +100,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 단계별 결과: 완료 / 건너뜀(사용자 선택) / 보류 항목.
 - 남은 일: 어긋남 목록, 미승인 🔴, 미정착 🟡, 보류한 격차, 아직 안 찍은 기준점 — 각각 어느 스킬로 이어가면 되는지.
 - `/conceptpowers:auto`는 언제든 재실행해 남은 단계부터 이어갈 수 있다고 안내.
-- 뷰어 확인: `npm run concepts:view`.
+- 뷰어 확인: 아래 마지막 단계의 링크.
 
 ## 금지
 
@@ -108,7 +109,7 @@ architecture.md / infra.md가 아직 템플릿이면:
 - 🔴 red 개념을 auto가 스스로 승인하는 것.
 - 검토 없이 기준점(`reference-snapshot`)을 찍는 것.
 
-## 뷰어 안내 (마지막 단계 — 생략 금지)
+## 뷰어 링크 (마지막 단계 — 생략 금지)
 
-`render` 뒤에는 render가 출력한 뷰어 경로·serve 명령으로 클릭 가능한 뷰어 링크를 건네고 끝낸다(실행 중인 서버가
-있으면 그 URL을 재사용). 딥링크 형식과 대체 실행 방법은 `conceptpowers:update-concepts`의 「Viewer handoff」 절이 기준이다.
+`render` 뒤에는 `conceptpowers:update-concepts`의 「뷰어 링크 절차」(Viewer link procedure)를 따라 클릭 가능한 뷰어
+링크로 끝낸다.

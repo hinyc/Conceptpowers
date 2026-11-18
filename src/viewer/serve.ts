@@ -17,6 +17,7 @@ import { handleStatusApi, engineErrorStatus } from './statusApi.js';
 import { handleApprovedApi } from './approvedApi.js';
 import { readProjectLocale } from '../init/readConfig.js';
 import { SERVER_MESSAGES } from './i18n.js';
+import { readProjectIdentity, VIEWER_PORTS } from './projectIdentity.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -149,6 +150,7 @@ export interface ApiRequest {
 export interface ApiResult {
   status: number;
   json: unknown;
+  shutdown?: boolean; // true면 응답을 끝까지 보낸 뒤 서버를 닫는다
 }
 
 // 쓰기 API 라우터(순수 로직: req 유사 객체 → {status, json}). 소켓과 무관해 테스트 가능.
@@ -163,11 +165,35 @@ export async function handleApi(projectRoot: string, req: ApiRequest): Promise<A
 
   if (req.method === 'GET' && path === '/api/health') {
     // 상태 전이표는 엔진의 것을 그대로 싣는다 — 뷰어가 손으로 베껴 두면 어긋난다.
-    return { status: 200, json: { editable: true, transitions: ALLOWED_STATUS_TRANSITIONS } };
+    // project: 같은 프로젝트의 뷰어를 찾고 화면 최상단에 이름을 보이기 위한 식별 정보(전체 경로는 싣지 않는다).
+    const { id, name } = readProjectIdentity(projectRoot);
+    return {
+      status: 200,
+      json: {
+        editable: true,
+        transitions: ALLOWED_STATUS_TRANSITIONS,
+        project: { id, name },
+      },
+    };
   }
 
   if (req.method !== 'GET' && !isSameOriginWrite(req.headers)) {
     return { status: 403, json: { error: 'forbidden: write must come from this viewer as JSON' } };
+  }
+
+  // 이 프로젝트의 뷰어 끄기(viewer-stop). 응답에서 받은 pid로 신호를 보내지 않고 서버 스스로 닫게 한다.
+  // 본문의 projectId가 자기 id와 같을 때만 — 다른 프로젝트의 끄기 요청은 거절한다.
+  if (req.method === 'POST' && path === '/api/shutdown') {
+    let requested: unknown;
+    try {
+      requested = (JSON.parse(req.body || '{}') as { projectId?: unknown } | null)?.projectId;
+    } catch {
+      return { status: 400, json: { error: 'invalid JSON body' } };
+    }
+    if (requested !== readProjectIdentity(projectRoot).id) {
+      return { status: 403, json: { error: 'forbidden: project mismatch' } };
+    }
+    return { status: 200, json: { ok: true }, shutdown: true };
   }
 
   // POST /api/concept/:slug/status  { status }
@@ -280,7 +306,8 @@ async function handle(
   root: string,
   projectRoot: string | undefined,
   req: IncomingMessage,
-  res: ServerResponse
+  res: ServerResponse,
+  onShutdown: () => void
 ): Promise<void> {
   const url = req.url || '/';
   // 모든 요청은 내 컴퓨터 주소로 온 것만 — 주소 바꿔치기(DNS 리바인딩)로 파일을 읽어 가는 것을 막는다.
@@ -311,6 +338,7 @@ async function handle(
         headers: req.headers,
         body,
       });
+      if (result.shutdown) res.once('finish', onShutdown);
       sendJson(res, result.status, result.json);
     } catch (error) {
       if (error instanceof BodyTooLargeError)
@@ -358,12 +386,23 @@ async function handle(
   }
 }
 
+// 이 포트를 못 쓰는 사정(이미 사용 중·권한 없음)이면 다음 포트로 넘어간다.
+export function isSkippablePortError(code: string | undefined): boolean {
+  return code === 'EADDRINUSE' || code === 'EACCES';
+}
+
+// 명령행에 --no-open이 있으면 브라우저를 열지 않는다.
+export function shouldOpenBrowser(args: readonly string[]): boolean {
+  return !args.includes('--no-open');
+}
+
 export interface StartServerOptions {
   root: string;
   projectRoot?: string;
   entry?: string;
   ports?: number[];
   open?: boolean;
+  onShutdown?: () => void; // /api/shutdown으로 서버가 닫힌 뒤(프로세스 종료는 직접 실행 쪽이 맡는다)
 }
 
 // 사용 가능한 포트를 찾을 때까지 순차 시도하며 서버를 띄운다.
@@ -373,8 +412,9 @@ export function startServer({
   root,
   projectRoot,
   entry = '',
-  ports = [4173, 4174, 4175, 4176, 4177],
+  ports = [...VIEWER_PORTS],
   open = false,
+  onShutdown,
 }: StartServerOptions): Promise<{
   server: ReturnType<typeof createServer>;
   port: number;
@@ -382,7 +422,11 @@ export function startServer({
 }> {
   return new Promise((resolvePromise, reject) => {
     const server = createServer((req, res) => {
-      handle(root, projectRoot, req, res).catch(() => {
+      const closeServer = () => {
+        server.close(() => onShutdown?.());
+        server.closeAllConnections();
+      };
+      handle(root, projectRoot, req, res, closeServer).catch(() => {
         try {
           res.writeHead(500);
           res.end('Internal Server Error');
@@ -394,7 +438,7 @@ export function startServer({
     let i = 0;
     const tryListen = () => server.listen(ports[i], '127.0.0.1');
     server.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE' && i < ports.length - 1) {
+      if (isSkippablePortError(err.code) && i < ports.length - 1) {
         i += 1;
         tryListen();
       } else reject(err);
@@ -429,7 +473,13 @@ if (isMain) {
   const root = fileURLToPath(new URL('../../', import.meta.url));
   const projectRoot = fileURLToPath(new URL('../../../../', import.meta.url));
   const messages = readProjectLocale(projectRoot).then((locale) => SERVER_MESSAGES[locale]);
-  startServer({ root, projectRoot, entry: 'concepts/viewer/index.html', open: true })
+  startServer({
+    root,
+    projectRoot,
+    entry: 'concepts/viewer/index.html',
+    open: shouldOpenBrowser(process.argv.slice(2)),
+    onShutdown: () => process.exit(0),
+  })
     .then(async ({ url }) => {
       // eslint-disable-next-line no-console
       console.log((await messages).started(url));

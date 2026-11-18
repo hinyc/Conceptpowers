@@ -86,7 +86,9 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    When such conceptless files share a folder — e.g. a shared UI kit — suggest the user declare it once as a
    no-concept area in `init.json` `noConceptGlobs` instead of tagging each file; the user edits that file.)
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
-   (red) concepts + the wired graph, and tell the user to review and approve the red concepts.
+   (red) concepts + the wired graph. Say the red concepts are unapproved proposals that govern no code, and leave any
+   review to the user — approval happens only if they ask for it (the approve flow D of
+   `conceptpowers:update-concepts`). Include the viewer link by the "Viewer link procedure" of that skill.
 
 ## Notes
 

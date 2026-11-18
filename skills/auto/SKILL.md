@@ -88,7 +88,7 @@ Call `conceptpowers:update-concepts`. The diagnosis decides the trigger:
   **only** time reference is read.
 - If `unlocked` (no reference snapshot) and concepts already exist, propose recording the snapshot once after
   definition and review are done.
-- Checkpoints inside the skill (confirming candidate scope, batch review, consistency check) follow that skill's rules
+- Checkpoints inside the skill (confirming candidate scope, batch review, consistency check, settling) follow that skill's rules
   as written — auto does not answer them on the user's behalf.
 
 ## Stage 3 — Scan
@@ -98,7 +98,8 @@ concepts and quality deficiencies, and ask how to handle each item:
 
 - Concept-less code → tag with an existing concept / define one with `update-concepts` (trigger B) (loop back to
   Stage 2) / `@concept:none` / defer.
-- 🔴 red → if the user wants, the `update-concepts` (D) approval flow (a user gate — auto never approves on its own).
+- 🔴 red → list it as unapproved proposals. Only if the user asks to approve one, the `update-concepts` (D) flow (a
+  user gate — auto neither suggests nor grants approval on its own).
 - 🟡 pending → try to settle with an `update-concepts` (G) re-check / discuss editing or splitting (C) / defer.
 - Green below the quality floor → ask the user and fill it in together (no automatic filling).
 - Tagging + `map` + `render` finish inside scan.
@@ -128,7 +129,7 @@ Compare the diagnosis (Stage 0) snapshot with the current state and report:
 - Remaining work: mismatch list, unapproved 🔴, unsettled 🟡, deferred gaps, a reference snapshot not yet recorded —
   and for each, which skill to continue with.
 - Tell the user `/conceptpowers:auto` can be re-run at any time to resume from the remaining stages.
-- Viewer check: `npm run concepts:view`.
+- Viewer check: the link from the last step below.
 
 ## Prohibited
 
@@ -138,8 +139,7 @@ Compare the diagnosis (Stage 0) snapshot with the current state and report:
 - auto approving a 🔴 red concept on its own.
 - Recording a reference snapshot (`reference-snapshot`) without review.
 
-## Viewer handoff (last step — never skip)
+## Viewer link (last step — never skip)
 
-After `render`, end by handing over a clickable viewer link built from the viewer path and serve command that render
-printed (reuse the running server's URL if one is up). The deep-link format and fallback launch method are defined in
-the "Viewer handoff" section of `conceptpowers:update-concepts`.
+After `render`, end with a clickable viewer link by following the "Viewer link procedure" section of
+`conceptpowers:update-concepts`.
