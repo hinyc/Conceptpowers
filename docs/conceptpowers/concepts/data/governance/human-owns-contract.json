@@ -34,7 +34,8 @@
   "actions": {
     "allow": [
       "AI가 개념 초안을 만들어 사람에게 보여주는 것",
-      "부족한 부분을 구체적인 질문으로 사람에게 되묻는 것"
+      "부족한 부분을 구체적인 질문으로 사람에게 되묻는 것",
+      "사람에게 개념 확정을 물을 때, 그 개념을 바로 열어 볼 수 있는 링크를 함께 주는 것"
     ],
     "restrict": [],
     "interaction": "개념 신호등(settled-status)의 승인 절차와 짝을 이룬다: 내용은 사람이 쓰고, 승격도 사람의 확인 뒤에만 이뤄진다."
@@ -44,9 +45,12 @@
       "개념 문서의 내용 변경은 반드시 사람의 확인을 거친다",
       "AI는 개념의 규칙을 스스로 만들어 저장하지 않는다 — 부족하면 채우는 게 아니라 사람에게 묻는다",
       "명령으로 개념 내용을 고칠 때는 왜 고치는지 사유가 함께 있어야 한다 — 사유가 비어 있으면 고치지 않는다. 화면에서 사람이 직접 고칠 때는 고치는 사람이 곧 사유의 주인이므로 따로 요구하지 않는다",
-      "자동 추론한 red 제안은 규칙이 아니다 — 사용자가 승인해야만 개념의 규칙이 되고, 승인 전에는 코드를 다스리지 않는다"
+      "자동 추론한 red 제안은 규칙이 아니다 — 사용자가 승인해야만 개념의 규칙이 되고, 승인 전에는 코드를 다스리지 않는다",
+      "저장된 개념의 확정을 물을 때는 그 개념을 열어 볼 수 있는 링크를 함께 보여준다",
+      "링크를 보여주거나 뷰어를 띄운 것은 사람의 확인으로 치지 않는다",
+      "뷰어를 열 수 없으면 이유를 알리고, 확인은 글로 이어 간다"
     ],
-    "operationalPrinciple": "AI가 개념 초안을 만들어 사람에게 보여주면, 사람이 읽고 확정했을 때에만 그 내용이 개념으로 저장된다.",
+    "operationalPrinciple": "AI가 개념 초안을 만들어 사람에게 보여주고, 사람이 저장을 승인하면 검토 중으로 저장된다. 사람이 그 내용을 열어 보고 확정했을 때에만 코드가 따를 약속이 된다.",
     "tradeoffs": "사람의 확인이 병목이 될 수 있지만, 그 병목이 바로 이 도구의 존재 이유다.",
     "lifecycle": []
   },
@@ -66,20 +70,53 @@
     "skills/update-concepts/references/upgrade.md",
     "src/cli.ts",
     "skills/init/SKILL.md",
-    "skills/update-concepts/references/batch.md"
+    "skills/update-concepts/references/batch.md",
+    "src/concept/viewerLink.ts",
+    "src/viewer/projectIdentity.ts",
+    "src/viewer/serve.ts"
   ],
   "sources": [
     {
       "kind": "code",
       "path": "skills/auto/SKILL.md",
-      "locator": "## Prohibited 절 — \"기준 문서(baseline)·개념 내용을 사용자 확인 없이 저장하는 것 (human-owns-contract — 초안을 만들어 보여주는 것은 허용, 확정은 언제나 사람)\"",
-      "supports": "\"개념 문서의 내용 변경은 반드시 사람의 확인을 거친다\" — 이 문서가 개념 slug를 직접 인용하며 금지 행동으로 명시"
+      "locator": "## Prohibited 절의 사용자 확인 없는 저장 금지 항목",
+      "supports": "\"개념 문서의 내용 변경은 반드시 사람의 확인을 거친다\" — 상위 기준 문서와 개념 내용을 사람의 확인 없이 저장하는 일을 금지 행동으로 적었고, 초안을 보여주는 것은 허용하며 확정은 언제나 사람의 몫으로 둔다"
     },
     {
       "kind": "code",
       "path": "skills/update-concepts/references/define.md",
-      "locator": "Step 7 — \"Auto-inferred during a full scan → status: red (unapproved; user approves later)\"",
-      "supports": "\"AI는 개념의 규칙을 스스로 만들어 저장하지 않는다\" — 에이전트가 자동 추론한 개념은 곧바로 확정(green)되지 않고 항상 사람의 승인을 기다리는 red로 태어남"
+      "locator": "### Steps (one new concept)의 6~9단계",
+      "supports": "초안 전체를 보여주고 저장 승인을 받기 전에는 아무것도 쓰지 않는다 / 승인되면 검토 중으로 저장하고, 저장이 곧 확정이 아니라고 알린다 / 검사를 통과한 뒤 따로 확정을 묻고, 사람이 확인한 뒤에만 확정으로 올린다 / 전체 탐색에서 자동으로 추론한 개념은 미승인으로 저장하며, 사람이 요청할 때만 승인 절차로 간다"
+    },
+    {
+      "kind": "code",
+      "path": "skills/update-concepts/SKILL.md",
+      "locator": "## Viewer link procedure",
+      "supports": "저장된 개념의 확정을 물을 때마다 개념별 링크를 준비해 함께 보여준다 / 링크를 보여준 것, 뷰어가 뜬 것, 열어 봤다는 말, 침묵은 확인이 아니며 사람의 답만 확인이다 / 뷰어를 열 수 없으면 이유를 알리고 확인할 내용을 글로 보여주며 이어 간다"
+    },
+    {
+      "kind": "code",
+      "path": "src/concept/viewerLink.ts",
+      "locator": "viewerLink(), viewerStop()",
+      "supports": "개념의 상태와 내용을 바꾸지 않고 뷰어를 다시 만든 뒤, 같은 프로젝트의 뷰어가 떠 있으면 다시 쓰고 없으면 브라우저를 열지 않은 채 띄워 그 개념으로 바로 가는 링크를 돌려준다 / 뷰어를 열 수 없으면 이유를 돌려준다 / 뷰어 끄기는 이 프로젝트의 뷰어만 대상으로 한다"
+    },
+    {
+      "kind": "code",
+      "path": "src/viewer/projectIdentity.ts",
+      "locator": "readProjectIdentity(), VIEWER_PORTS",
+      "supports": "같은 폴더는 어떤 경로로 들어와도 같은 프로젝트로 알아보도록 식별값을 만들고, 뷰어가 쓸 수 있는 포트 범위를 정한다"
+    },
+    {
+      "kind": "code",
+      "path": "src/viewer/serve.ts",
+      "locator": "handleApi(), shouldOpenBrowser(), isSkippablePortError()",
+      "supports": "뷰어 서버가 상태 응답에 프로젝트 식별 정보를 싣되 전체 경로는 싣지 않는다 / 브라우저를 열지 않는 실행을 지원한다 / 쓸 수 없는 포트는 건너뛰고 다음 포트를 쓴다"
+    },
+    {
+      "kind": "code",
+      "path": "src/cli.ts",
+      "locator": "viewer-link 명령, viewer-stop 명령",
+      "supports": "링크 준비와 뷰어 끄기를 명령으로 제공하고, 뷰어를 열 수 없어도 명령을 실패로 끝내지 않고 결과를 그대로 내보내 절차가 글로 이어 가게 한다"
     },
     {
       "kind": "decision",
@@ -104,6 +141,12 @@
       "path": "",
       "locator": "2026-10-14 사용자 결정",
       "supports": "레드팀 점검에서 사유 없는 개념 수정이 어긋남 안내에 빈 사유로 남는다는 지적에 따라, 에이전트가 명령으로 고칠 때는 사유를 필수로 했다"
+    },
+    {
+      "kind": "decision",
+      "path": "",
+      "locator": "2026-11-18 세션의 사용자 결정",
+      "supports": "개념 확정을 물을 때 그 개념을 열어 볼 수 있는 링크를 함께 주고, 링크나 뷰어 실행은 확인으로 치지 않으며, 뷰어를 열 수 없으면 이유를 알리고 글로 확인을 이어 가기로 사용자가 문구를 보고 승인함"
     }
   ]
 }

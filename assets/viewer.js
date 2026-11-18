@@ -92,6 +92,7 @@ var I18N = {
     closeSidebar: '닫기',
     sidebarSearchPh: '개념 검색',
     topnavLabel: '묶음 메뉴',
+    projectBarLabel: '프로젝트',
     diffTitle: '승인본과 달라진 점',
     diffLoading: '승인본과 비교하는 중…',
     diffAdded: '추가',
@@ -198,6 +199,7 @@ var I18N = {
     closeSidebar: 'Close',
     sidebarSearchPh: 'Search concepts',
     topnavLabel: 'Group menu',
+    projectBarLabel: 'Project',
     diffTitle: 'Changes from the approved version',
     diffLoading: 'Comparing with the approved version…',
     diffAdded: 'Added',
@@ -229,6 +231,7 @@ var state = {
   editing: false,
   current: null,
   transitions: null,
+  projectName: null, // /api/health의 project.name — 쓰기 서버가 아니거나 실패하면 null(표시 없음)
 };
 var diffGen = 0; // 개념 상세를 그릴 때마다 증가 → 뒤늦게 도착한 승인본 응답이 다른 화면에 그려지지 않게 한다
 var renderGen = 0; // 라우트가 바뀌면 증가 → 그래프 애니메이션 루프 종료 신호
@@ -378,7 +381,20 @@ function setApp(node, opts) {
   document.body.className = opts && opts.graph ? 'viewing-graph' : '';
   var app = document.getElementById('app');
   app.textContent = '';
+  var bar = projectBar();
+  if (bar) app.appendChild(bar);
   app.appendChild(node);
+}
+
+// 모든 화면 최상단의 프로젝트 이름 띠 — 여러 프로젝트의 뷰어를 한눈에 구별하기 위함.
+// 이름은 textContent로만 넣고, 길면 CSS로 줄이되 전체 이름은 title로 보인다. 이름이 없으면 그리지 않는다.
+function projectBar() {
+  var name = state.projectName;
+  if (typeof name !== 'string' || !name) return null;
+  return h('div', { class: 'projectbar', title: name, role: 'note' }, [
+    h('span', { class: 'projectbar__label' }, state.t.projectBarLabel),
+    h('span', { class: 'projectbar__name' }, name),
+  ]);
 }
 function pagenav() {
   var t = state.t;
@@ -2233,10 +2249,13 @@ function detectEditable() {
     .then(function (j) {
       state.editable = !!(j && j.editable);
       state.transitions = (j && j.transitions) || null;
+      var pn = j && j.project && j.project.name;
+      state.projectName = typeof pn === 'string' && pn ? pn : null;
     })
     .catch(function () {
       state.editable = false;
       state.transitions = null;
+      state.projectName = null;
     });
 }
 

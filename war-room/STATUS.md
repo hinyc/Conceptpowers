@@ -2,7 +2,7 @@
 
 > 매니저가 작업이 끝날 때마다 바뀐 절만 고친다. 통째로 다시 쓰지 않는다. 끝난 내용은 최근 완료에 한 줄만 남긴다.
 
-갱신: 2026-11-18 14:47
+갱신: 2026-11-18 16:04
 
 ## 진행 중 (형식: `롤 · 작업 · 등급 · 시도 n/최대 · 남은 실패 기준 · 기준이 적힌 곳(계획·설계 문서 경로)`)
 
@@ -11,8 +11,8 @@
 
 ## 다음 할 일
 
-- release · v1.20.0 릴리즈 진행 (사용자 요청, minor, 뷰어 곁 목록 전체 검색·승인본 비교 포함). 커밋과 annotated 태그까지, push는 사용자가 직접
-- 릴리즈 뒤 사용자가 push하고 plugin update를 해야 다른 프로젝트에 반영됨
+- release · v1.21.0 릴리즈 진행 (사용자 요청, minor, 승인 요청 시 뷰어 링크 포함, human-owns-contract는 사용자 확인 뒤 green). 커밋과 annotated 태그까지, push는 사용자가 직접
+- 릴리즈 뒤 사용자가 push하고 plugin update를 해야 설치판에 반영됨
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
 - 사용자 확인: GitHub 저장소 설정에서 Private vulnerability reporting 켜기 (SECURITY.md가 의존)
@@ -31,6 +31,11 @@
 
 ## 점검할 결정 (중·상 일에서 매니저가 정한 결정. 형식: 날짜 · 작업 · 결정 · 이유 · 되돌리는 법. 점검이 끝나면 지우고, 다시 쓸 때도 이어서 남긴다. 10KB를 넘겨도 옮기거나 자르지 않는다)
 
+- 2026-11-18 · 뷰어 링크 · 프로젝트 구별값은 실제 경로 sha256 앞 16자 · 경로를 노출하지 않음 · projectIdentity.ts 수정
+- 2026-11-18 · 뷰어 링크 · 포트 4173~4192 · 서버를 유지하므로 범위 확대 · VIEWER_PORTS 수정
+- 2026-11-18 · 뷰어 링크 · 뷰어 실패도 exit 0과 ok:false · 스킬이 이유를 알리고 글로 계속 · viewerLink.ts 수정
+- 2026-11-18 · 뷰어 링크 · 종료는 프로젝트 id와 같은 출처 보호를 거친 로컬 요청으로 처리 · 응답의 pid를 믿지 않음 · /api/shutdown 수정
+- 2026-11-18 · 뷰어 링크 · 링크 의무는 확정 질문에만 적용 · 수정 문구 승인은 제외 · update-concepts 절차 수정
 - 2026-11-18 · 뷰어 비교 · 승인본 폴더를 `.alignment` 밖 `concepts/.approved`에 둠 · 정리 때 거버넌스 삭제 질문을 피함 · 경로 상수와 저장 함수 변경
 - 2026-11-18 · 뷰어 비교 · 승인본은 커밋 대상이나 게이트로 강제하지 않음 · 빠져도 비교 불가 안내만 뜸 · 게이트 규칙 추가
 - 2026-11-18 · 뷰어 비교 · pending→red 때 승인본 유지 · green이 되면 정리됨 · setConceptStatus 수정
@@ -39,6 +44,7 @@
 
 ## 최근 완료 (STATUS.md 전체 10KB 이하, 넘치면 오래된 것부터 archive/로)
 
+- 2026-11-18 · concept-steward+viewer+engine+skill-author · 개념 확정 요청 시 뷰어 자동 실행·개념 링크, viewer-stop, 프로젝트 이름 띠, 새 개념 저장 승인 흐름 (검증 2회째 통과, 테스트 1927개 통과, 브라우저 확인, 커밋 전)
 - 2026-11-18 · concept-steward+engine+viewer · 곁 목록 전체 개념 검색, pending 개념의 승인본 비교(추가·삭제·수정 음영), 승인본 저장, 개념 3개 사용자 확인 후 green 재정착 (독립 검증 통과, 테스트 1879개 통과, 브라우저 확인, develop 커밋, push 안 함)
 - 2026-11-11 · release · 아이콘(.claude-plugin/icon.png) 추가, 첫 main 릴리스 v1.19.0 커밋·태그 (시도 1회, main 172개 파일, directory strict validate 통과, push는 사용자)
 - 2026-11-11 · engine+release+manager · 레드팀 지적 수정: locale 폴백 단일화(readProjectLocale), 커밋 제목 정제, 릴리스 --resume·원상복구·main 뒤처짐 검사·--atomic·description 검사, README 링크·뷰어·PRIVACY 문서 (검증 19/21 → 문서 2건 매니저 수정)

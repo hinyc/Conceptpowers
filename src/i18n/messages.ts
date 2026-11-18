@@ -217,3 +217,33 @@ export function buildInitHint(locale: Locale, opts: InitHintOptions): string {
     '',
   ].join('\n');
 }
+
+// viewer-link / viewer-stop 실패 문구. 개념 확정을 물을 때 뷰어를 못 열면 스킬이 이 이유를 사용자에게 알리고
+// 확인을 글로 이어 간다(human-owns-contract). 내부 경로·원본 오류 문구는 싣지 않는다.
+export interface ViewerLinkStrings {
+  conceptNotFound: (slug: string) => string;
+  renderFailed: string;
+  portsExhausted: string;
+  startFailed: string;
+  startTimeout: string;
+  lockTimeout: string;
+}
+
+export const viewerLinkStrings: Record<Locale, ViewerLinkStrings> = {
+  ko: {
+    conceptNotFound: (slug) => `개념 "${slug}"을(를) 찾을 수 없어 링크를 만들지 못했습니다.`,
+    renderFailed: '뷰어를 최신 개념으로 다시 만들지 못했습니다.',
+    portsExhausted: '뷰어가 쓸 수 있는 포트가 모두 사용 중이라 뷰어를 띄우지 못했습니다.',
+    startFailed: '뷰어가 시작되자마자 종료되어 열 수 없습니다.',
+    startTimeout: '뷰어가 제한 시간 안에 준비되지 않았습니다.',
+    lockTimeout: '다른 뷰어 시작이 끝나기를 기다리다 제한 시간이 지났습니다.',
+  },
+  en: {
+    conceptNotFound: (slug) => `Concept "${slug}" was not found, so no link was created.`,
+    renderFailed: 'Could not rebuild the viewer with the latest concepts.',
+    portsExhausted: 'Every port the viewer may use is in use, so the viewer could not be started.',
+    startFailed: 'The viewer exited right after starting, so it cannot be opened.',
+    startTimeout: 'The viewer was not ready within the time limit.',
+    lockTimeout: 'Timed out waiting for another viewer start to finish.',
+  },
+};

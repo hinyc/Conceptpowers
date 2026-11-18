@@ -26,8 +26,8 @@
 ## ② 개념 하나
 
 1. 대상은 `conceptpowers:review`의 「② 개념 → 파일」 찾기 그대로 모은다 — 여기서 다시 정의하지 않는다.
-2. 개념이 green이 아니면(red/pending) 점검하지 않는다 — 코드를 다스리지 않는 개념이다. 정착부터 권한다
-   (`conceptpowers:update-concepts`).
+2. 개념이 green이 아니면(red/pending) 점검하지 않는다 — 코드를 다스리지 않는 개념이다. pending이면 정착부터
+   권하고(`conceptpowers:update-concepts`), red면 미승인 제안이라고 알리고 멈춘다 — 승인은 사용자가 요청할 때만 한다.
 3. 작업 목적은 그 개념의 `purpose`다.
 
 ## ③ 전체

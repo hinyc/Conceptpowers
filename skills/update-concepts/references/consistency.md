@@ -27,7 +27,7 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    - **green ↔ green conflict → stop and ask the user.** Two user-approved concepts contradicting each
      other is a real contradiction the agent must not auto-resolve. Present both and the conflict.
    - **red ↔ red conflict** → report both as unresolved proposals; resolve when the user approves one.
-   - Pending(🟡) concepts are user-authored drafts under check. On a clean result, the caller settles them to green after the user confirms; on a conflict, they stay pending and the reason is recorded via
+   - Pending(🟡) concepts are user-authored drafts under check. On a clean result, the caller asks for confirmation by the "Viewer link procedure" of `SKILL.md` and settles them to green after the user confirms; on a conflict, they stay pending and the reason is recorded via
      `note-conflict`. Settled green/red concepts are never auto-changed by this check.
 4. **Record the attestation (always, regardless of outcome):**
    `node "<cli>" attest-consistency <slug> --result pass|conflict --compared all --root .`
@@ -41,9 +41,10 @@ When adding or modifying a concept, verify there is no conflict or violation aga
    `test-review.json` / `no-code.json` when you recorded those) go into the **same commit** as the
    concept change — the commit gate (`evidence-staged`) catches a record left unstaged. A record that
    exists only on disk is not evidence.
-6. Proceed with save/commit only when there are zero unresolved conflicts. Green promotion
+6. Settle or commit only when there are zero unresolved conflicts. A new concept is already saved as `pending` when
+   this check runs, and it stays pending while a conflict remains. Green promotion
    through the engine (`approve` / `setConceptStatus`) requires a fresh `pass` attestation for that
-   concept; a concept written to disk as `green` directly (define.md step 7) skips that check and is
+   concept; a concept edited directly to `green` on disk (define.md step 9) skips that check and is
    backstopped at the commit gate instead.
 
 ## Commit gate (D17)

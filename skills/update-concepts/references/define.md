@@ -20,8 +20,8 @@ Write the concept content in the project's output language (the `locale` from `i
 
 Batch mode → read `references/batch.md` **next to this file** and follow it. It enumerates
 candidates from reference docs + UI surfaces + domain logic, puts every candidate through the
-qualification gate below, runs two user checkpoints (scope, review), then loops the single-flow
-steps 5-9 per confirmed concept. Surfaces that fail the gate become feature specs or lines in the
+qualification gate below, runs three user checkpoints (scope, draft review, settling), and follows
+single-flow steps 5-10 for each concept approved for saving. Surfaces that fail the gate become feature specs or lines in the
 top-level baseline document — never a concept per button.
 
 ## Steps (interactive, single flow)
@@ -63,7 +63,7 @@ Also check **every time**:
 - **Duplicate check (required)**: before setting up a new concept, **first look for an existing concept with the
   same purpose.** If one exists, do not create a new one — **widen that concept with `edit-concept --reason` from
   `references/edit.md`** — the reason record and the pending demotion happen together, so do not call
-  `note-change` separately. The consistency check (step 6) is where conflicts are caught, not where purpose
+  `note-change` separately. The consistency check (step 8) is where conflicts are caught, not where purpose
   duplicates are absorbed — finish the duplicate check here.
 - **Exclude UI elements**: a rule that only fixes the look, placement or wording of a specific screen element is
   not kept as a concept.
@@ -194,28 +194,37 @@ A redefinition (sharpening an existing concept after an undecidable report or a 
      concept). The same command's `warnings` list flags implementation notation left in the body —
      warnings never block a commit.
 5. Decide the slug (kebab-case, globally unique) and group (domain).
-6. **Consistency check**: follow `references/consistency.md` (next to this file) to confirm no conflict or
-   violation against existing concepts.
-7. **Set the `status` — born `pending`; promote to `green` only after the step-6 consistency check passes (attested) and the user confirms (never default to green).**
-   The agent only ever _promotes_ a user-authored pending to green after a passing consistency check (step 6) and the user's confirmation. Auto-inferred concepts (full scan) are born `red`, not pending.
-   - **No conflict** (step 6 passed) → show the result and, **on the user's confirmation**, set `status: green`
-     (an Edit/Write of the concept file asks for permission; Bash writes do not). The user authored it, it is consistent, and the user
-     confirmed it, so it becomes the settled contract — a requirement the code must meet, not a description of it.
-     - Engine-side promotion (`setConceptStatus`/`approve`) **refuses** without the quality floor
-       passing AND a fresh passing attestation (recorded in step 6 via `attest-consistency`).
-       Concepts written directly to disk as `green` (this step's normal path) bypass that check —
-       they are backstopped at the commit gate instead, which reports quality-floor failures or a missing attestation per the enforcement level
-       (strict denies, standard asks, light warns).
+6. **Approval to save**: show the whole draft with its slug and group, and ask whether to save it **as under review
+   (`pending`)**. Say that saving does not settle it: it governs no code until a separate confirmation in step 9.
+   Write nothing before this approval. If the user wants changes, revise and ask again; if they drop it, do not save.
+7. **Save as `pending`**: write the concept data file with `"status": "pending"` stated explicitly — the schema turns
+   a missing `status` into `red`, which would mark a human-authored concept as an unapproved proposal. Then regenerate
+   the viewer: `node "<cli>" render --root .`
+   - **Auto-inferred during a full scan** → save as `status: red` instead (unapproved; the auto-inference mode of
+     `references/batch.md`). Steps 6, 8 and 9 do not apply; approval happens only if the user requests it (trigger D).
+8. **Check**: run `node "<cli>" quality <slug> --root .`, then follow `references/consistency.md` (next to this file)
+   and record the result with `attest-consistency`.
+   - **`deficiencies`** → tell the user and complete the concept together. Revisions now go through
+     `references/edit.md` (`edit-concept --reason`); repeat this step afterwards, because an edit voids the attestation.
    - **Conflict** → keep `status: pending` and record why it cannot settle:
      `node "<cli>" note-conflict <slug> --reason "<which concept it conflicts with and how>" --root .`
-     Surface the conflict to the user (revise or split); do not force green.
-   - **Auto-inferred during a full scan** → `status: red` (unapproved; user approves later).
-8. Save as JSON (include the `status` field). Write the concept data file directly, then regenerate
-   the viewer: `node "<cli>" render --root .`
-   - If a previously-recorded conflict for this slug is now resolved (status set to green),
-     clear it: `node "<cli>" resolve-conflict <slug> --root .`
-9. Guide the user to link the concept to code with a `@concept:<slug>` tag.
-10. Steps 5-9 save **brand-new** concepts only. An **existing** concept is never saved through this flow —
+     Surface the conflict to the user (revise or split). Do not ask for confirmation and do not force green.
+9. **Ask for confirmation** (no `deficiencies`, attested `pass`): report the result, say the concept is saved and still
+   under review, and ask whether to settle it by the "Viewer link procedure" of `SKILL.md`. The agent only ever
+   _promotes_ a user-authored pending to green, and only after this confirmation.
+   - **Confirmed** → set `status: green` (an Edit/Write of the concept file asks for permission; Bash writes do not),
+     then `node "<cli>" render --root .`. The user authored it, it is consistent, and the user confirmed it, so it
+     becomes the settled contract — a requirement the code must meet, not a description of it. If a conflict was
+     recorded for this slug and is now resolved, clear it: `node "<cli>" resolve-conflict <slug> --root .`
+     - Engine-side promotion (`setConceptStatus`/`approve`) **refuses** without the quality floor
+       passing AND a fresh passing attestation (recorded in step 8 via `attest-consistency`).
+       Concepts edited directly to `green` on disk (this step's normal path) bypass that check —
+       they are backstopped at the commit gate instead, which reports quality-floor failures or a missing attestation per the enforcement level
+       (strict denies, standard asks, light warns).
+   - **Declined or no clear answer** → common wrap-up 2 of `SKILL.md`: revise, leave under review, or delete on
+     explicit approval. Never delete silently.
+10. Guide the user to link the concept to code with a `@concept:<slug>` tag.
+11. Steps 5-10 save **brand-new** concepts only. An **existing** concept is never saved through this flow —
     redefinitions go through `references/edit.md` (`edit-concept --reason`), which records why it changed and
     demotes green → pending. Do not write its JSON directly or add a separate `note-change`.
 
@@ -224,6 +233,6 @@ A redefinition (sharpening an existing concept after an undecidable report or a 
 - `docs/conceptpowers/concepts/data/<group>/<slug>.json` (schema-compliant)
 - Updated viewer HTML
 
-## Viewer handoff
+## Viewer link
 
-Follow the "Viewer handoff" section of `SKILL.md` (never skip).
+Follow the "Viewer link procedure" section of `SKILL.md` (never skip).

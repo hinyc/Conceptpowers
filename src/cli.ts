@@ -11,6 +11,7 @@ import { VIEWER_SCRIPT_NAME, VIEWER_INDEX } from './init/packageScript.js';
 import { buildInitHint } from './i18n/messages.js';
 import type { Locale } from './schema/initConfig.js';
 import { renderViewerToDisk } from './viewer/render.js';
+import { viewerLink, viewerStop } from './concept/viewerLink.js';
 import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
 import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
@@ -188,6 +189,24 @@ export async function runCli(
     .action(async (o) => {
       await renderViewerToDisk(o.root);
       out(JSON.stringify({ ok: true, ...viewerHint() }));
+    });
+
+  // 개념 확정을 물을 때 스킬이 호출한다. 뷰어를 열 수 없어도 exit 0 — 스킬이 이유를 알리고 글로 이어 간다.
+  program
+    .command('viewer-link')
+    .description('이 프로젝트의 뷰어(없으면 브라우저 없이 실행)와 개념 링크를 JSON으로 돌려준다')
+    .argument('[slug]')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (slug, o) => {
+      out(JSON.stringify(await viewerLink(o.root, slug)));
+    });
+
+  program
+    .command('viewer-stop')
+    .description('이 프로젝트의 뷰어 서버를 모두 끈다(다른 프로젝트 뷰어는 건드리지 않는다)')
+    .option('--root <dir>', 'project root', process.cwd())
+    .action(async (o) => {
+      out(JSON.stringify(await viewerStop(o.root)));
     });
 
   program
@@ -558,5 +577,6 @@ export async function runCli(
 
 const isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
-  runCli(process.argv.slice(2)).then((c) => process.exit(c));
+  // stdout JSON이 파이프에서 잘리지 않게 쓰기가 끝난 뒤 종료한다(exitAfterWrite와 같은 방식 — 앞선 write가 모두 비워진 뒤 콜백).
+  runCli(process.argv.slice(2)).then((c) => process.stdout.write('', () => process.exit(c)));
 }

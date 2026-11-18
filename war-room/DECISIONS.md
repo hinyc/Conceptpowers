@@ -10,6 +10,12 @@
 - 영향: 관련 롤·파일
 -->
 
+## 2026-11-18 · 개념 확정 요청 때 뷰어 링크 제공
+- 결정: 저장된 개념의 확정을 물을 때 `viewer-link`로 이 프로젝트의 뷰어를 재사용하거나 브라우저 없이 띄우고 링크를 함께 보여준다. 서버는 `viewer-stop`으로 끌 때까지 유지한다. 새 개념은 저장 승인 뒤 검토 중으로 저장하고 검사 뒤 확정을 묻는다. 뷰어 최상단에 프로젝트 이름을 표시한다
+- 이유: 사람이 확정 전에 실제 내용을 바로 보게 한다. 링크와 뷰어 실행은 승인이 아니다
+- 정한 사람: 사용자 (구별값·포트 범위·종료 방식은 매니저 판단)
+- 영향: human-owns-contract, viewer · engine · skill-author 롤, README, PRIVACY, infra, architecture
+
 ## 2026-11-18 · war-room 템플릿 1 → 3 반영
 - 결정: roles/manager.md 공통 부분, config.json templateVersion, STATUS.md 절 설명, .gitignore의 war-room/.eval/을 갱신했다. 옮긴 사용자 문장은 0줄이고 프로젝트별 규칙은 유지했다
 - 이유: armory 0.8.1의 새 war-room 규칙에 프로젝트 파일을 맞춘다

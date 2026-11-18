@@ -28,8 +28,8 @@
    - **green ↔ green 충돌 → 멈추고 사용자에게 묻는다.** 사용자가 승인한 두 개념이 서로 모순되는 것은
      에이전트가 스스로 풀면 안 되는 진짜 모순이다. 두 개념과 충돌을 함께 보인다.
    - **red ↔ red 충돌** → 둘 다 미해결 제안으로 보고하고, 사용자가 하나를 승인할 때 푼다.
-   - pending(🟡) 개념은 검사 중인 사람이 쓴 초안이다. 결과가 깨끗하면 부른 쪽이 사용자 확인 뒤 green으로
-     정착시키고, 충돌이면 pending에 둔 채 `note-conflict`로 사유를 기록한다. 이미 정착한 green/red 개념은
+   - pending(🟡) 개념은 검사 중인 사람이 쓴 초안이다. 결과가 깨끗하면 부른 쪽이 `SKILL.md`의 「뷰어 링크 절차」로 확정을 묻고
+     사용자 확인 뒤 green으로 정착시키고, 충돌이면 pending에 둔 채 `note-conflict`로 사유를 기록한다. 이미 정착한 green/red 개념은
      이 검사가 저절로 바꾸지 않는다.
 4. **증빙을 기록한다 (결과와 상관없이 항상):**
    `node "<cli>" attest-consistency <slug> --result pass|conflict --compared all --root .`
@@ -40,8 +40,9 @@
 5. **기록을 개념과 함께 스테이징한다.** `docs/conceptpowers/concepts/.alignment/attest.json`(그리고 남겼다면
    `test-review.json` / `no-code.json`)은 개념 변경과 **같은 커밋**에 들어간다 — 스테이징하지 않은 기록은 커밋
    게이트(`evidence-staged`)가 잡는다. 디스크에만 있는 기록은 증빙이 아니다.
-6. 미해결 충돌이 하나도 없을 때만 저장·커밋으로 나아간다. 엔진을 통한 green 승격(`approve` / `setConceptStatus`)에는
-   그 개념의 신선한 `pass` 증빙이 필요하다. 디스크에 `green`으로 바로 쓴 개념(define.md step 7)은 그 확인을 건너뛰고
+6. 미해결 충돌이 하나도 없을 때만 정착·커밋으로 나아간다. 새 개념은 이 검사 때 이미 `pending`으로 저장돼 있고,
+   충돌이 남아 있는 동안 pending에 머문다. 엔진을 통한 green 승격(`approve` / `setConceptStatus`)에는
+   그 개념의 신선한 `pass` 증빙이 필요하다. 디스크에서 `green`으로 바로 고친 개념(define.md step 9)은 그 확인을 건너뛰고
    대신 커밋 게이트에서 막힌다.
 
 ## 커밋 게이트 (D17)

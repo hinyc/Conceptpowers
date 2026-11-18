@@ -244,6 +244,34 @@ body {
   }
 }
 
+/* 모든 화면 최상단의 프로젝트 이름 띠 — 글자색은 --fg on --surface(라이트·다크 모두 4.5:1 이상) */
+.projectbar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 8px 16px;
+  background: var(--surface);
+  color: var(--fg);
+  border-bottom: 2px solid var(--link);
+  font-size: 15px;
+  font-weight: 700;
+}
+.projectbar__label {
+  flex: 0 0 auto;
+  color: var(--fg-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+.projectbar__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 상단 묶음 메뉴(viewer-navigation) — 묶음 이름 한 줄 + 본문 위에 뜨는 펼침 목록 */
 .topnav {
   display: flex;
@@ -962,9 +990,16 @@ body.viewing-graph {
 }
 body.viewing-graph #app,
 body.viewing-graph .graph-shell {
-  height: 100vh;
   display: flex;
   flex-direction: column;
+}
+body.viewing-graph #app {
+  height: 100vh;
+}
+/* 최상단 프로젝트 띠가 있으면 그만큼 뺀 나머지를 채운다 */
+body.viewing-graph .graph-shell {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 /* 지식 그래프 페이지 */

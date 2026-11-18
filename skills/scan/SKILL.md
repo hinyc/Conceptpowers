@@ -77,8 +77,8 @@ needed, hand off to `conceptpowers:update-concepts`.
    **Recording a feature spec** procedure below. This keeps `#/graph` connected. Do not create a spec for each shared
    UI element such as a button or modal — specs are per feature.
 4. **red / pending (status)**:
-   - 🔴 red (auto-inferred, unapproved) → show the list, and if the user wants to review and approve, go to
-     `conceptpowers:update-concepts` (trigger D). **scan never approves on its own.**
+   - 🔴 red (auto-inferred, unapproved) → show the list. Only if the user asks to approve one, go to
+     `conceptpowers:update-concepts` (trigger D). **scan neither suggests nor grants approval on its own.**
    - 🟡 pending (user-authored draft, not yet settled) → show the list and recommend `update-concepts` (trigger G,
      consistency re-check and settling). Do not call pending "unapproved" — it is a draft, not an inference.
 5. **Green quality floor**: `node "<cli>" quality --root .` (no slug — every concept). If there are deficiencies,
@@ -137,8 +137,7 @@ needed, hand off to `conceptpowers:update-concepts`.
 - incremental: report gaps only and recommend gradual backfill — including missing feature specs and links.
 - strict: push to resolve every gap immediately (init strict or at the user's request).
 
-## Viewer handoff (last step — never skip)
+## Viewer link (last step — never skip)
 
-After `render`, end by handing over a clickable viewer link built from the viewer path and serve command that render
-printed (reuse the running server's URL if one is up). The deep-link format and fallback launch method are defined in
-the "Viewer handoff" section of `conceptpowers:update-concepts`.
+After `render`, end with a clickable viewer link by following the "Viewer link procedure" section of
+`conceptpowers:update-concepts`.

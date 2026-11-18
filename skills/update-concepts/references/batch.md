@@ -8,7 +8,7 @@ concept defined here.
 ## Batch flow (define everything at once)
 
 Human-owns-contract still applies: the AI drafts and asks; the user confirms. Batch reduces the
-interaction to two checkpoints, not zero.
+interaction to three checkpoints, not zero.
 
 **The qualification gate applies unchanged** (the "Qualification gate" section of `define.md`, concept
 `concept-scope`). Batch definition means **gathering many candidates**, not turning every candidate into a
@@ -50,15 +50,19 @@ confirms that verdict at checkpoint 1.
    Depth follows weight: a concept with a broad promise fills definition, analogy, allow/restrict and immutable
    rules; a concept with a narrow promise may be short (see below) — a brief definition plus one or two
    decidable rules is a complete draft, not a lazy one.
-5. **Batch review (checkpoint 2)**: the user confirms / edits / drops each draft.
-   - **Confirmed** drafts of **new** concepts → continue with the single-flow steps 5-9 per concept (quality self-check
-     already done in drafting; run consistency check across the whole batch at once, attest each,
-     then promote to `green`).
-   - Drafts the user wants to **keep but not review now** → keep them `pending` (a human-written draft is born
-     yellow — concept `settled-status`). `red` is reserved for proposals the full scan **auto-inferred**, so never
-     put it on a human-written draft. Settle to green once the consistency check passes and the user confirms.
+5. **Batch review (checkpoint 2)**: the user approves saving / edits / drops each draft. Approval here means **save as
+   under review**, not settle (define.md step 6).
+   - Drafts of **new** concepts approved for saving → decide slugs and save **all** of them with
+     `"status": "pending"` (define.md steps 5 and 7), then `render` — saving first lets `--compared all` cover the
+     whole batch. Then run define.md step 8: `quality` per concept, one consistency check across the batch, and an
+     attestation for each. `red` is reserved for proposals the full scan **auto-inferred**, so never put it on a
+     human-written draft (concept `settled-status`).
    - Dropped drafts → do not save.
-6. Wire each saved concept to a feature spec (single-flow step 1) and `@concept` tags, then
+6. **Settling (checkpoint 3)**: for the concepts that passed, ask for confirmation by the "Viewer link procedure" of
+   `SKILL.md`, with one link per concept. The choices may include "All that passed"; list every link in that question
+   too. Answers follow define.md step 9 per concept. Concepts the user wants to keep without deciding now stay
+   `pending`, and concepts with a conflict stay `pending` with their reason reported.
+7. Wire each saved concept to a feature spec (single-flow step 1) and `@concept` tags, then
    regenerate the viewer once at the end: `node "<cli>" render --root .`
    Record the candidates that **moved down to feature specs** at the gate at this point too (the "Recording a
    feature spec" procedure of `conceptpowers:scan`) — not becoming a concept must not make them vanish from the
@@ -105,7 +109,7 @@ its own. Never use this for a batch definition the user chose directly.
    material (concept `reference-first-duty`).
 2. Do step 2 (qualification gate) as is. Leave the verdict and grounds on the candidate line.
 3. Draft only the new candidates that passed the gate, run them through the quality self-check of `define.md`, and
-   save them as `status: red` (define.md step 8). Leave the reference locators in the sources (`sources`).
+   save them as `status: red` (define.md step 7). Leave the reference locators in the sources (`sources`).
 4. Candidates **absorbed into an existing concept** do not change that concept — only write its slug into the
    feature spec's `concepts`. If the existing concept seems to need widening, leave it in the report list for the
    user to decide later through trigger C.

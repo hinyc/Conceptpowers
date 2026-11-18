@@ -7,9 +7,9 @@ var __export = (target, all) => {
 // src/viewer/serve.ts
 import { createServer } from "node:http";
 import { readFile as readFile9, realpath } from "node:fs/promises";
-import { realpathSync } from "node:fs";
+import { realpathSync as realpathSync2 } from "node:fs";
 import { spawn } from "node:child_process";
-import { extname, normalize, resolve as resolve3, sep as sep2 } from "node:path";
+import { extname, normalize, resolve as resolve4, sep as sep2 } from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
 // src/store/conceptStore.ts
@@ -4987,6 +4987,41 @@ var SERVER_MESSAGES = {
   }
 };
 
+// src/viewer/projectIdentity.ts
+import { createHash as createHash2 } from "node:crypto";
+import { readFileSync as readFileSync2, realpathSync } from "node:fs";
+import { basename as basename2, join as join7, resolve as resolve3 } from "node:path";
+var VIEWER_PORT_FIRST = 4173;
+var VIEWER_PORT_LAST = 4192;
+var VIEWER_PORTS = Object.freeze(
+  Array.from({ length: VIEWER_PORT_LAST - VIEWER_PORT_FIRST + 1 }, (_, i) => VIEWER_PORT_FIRST + i)
+);
+var ID_LENGTH = 16;
+function canonicalPath(root) {
+  let real;
+  try {
+    real = realpathSync.native(root);
+  } catch {
+    real = resolve3(root);
+  }
+  return process.platform === "win32" ? real.toLowerCase() : real;
+}
+function packageName(root) {
+  try {
+    const parsed = JSON.parse(readFileSync2(join7(root, "package.json"), "utf8"));
+    const name = parsed?.name;
+    return typeof name === "string" && name.trim() !== "" ? name.trim() : null;
+  } catch {
+    return null;
+  }
+}
+function readProjectIdentity(root) {
+  const canonical = canonicalPath(root);
+  const id = createHash2("sha256").update(canonical).digest("hex").slice(0, ID_LENGTH);
+  const name = packageName(canonical) ?? (basename2(canonical) || canonical);
+  return { id, name };
+}
+
 // src/viewer/serve.ts
 var MIME = {
   ".html": "text/html; charset=utf-8",
@@ -5009,7 +5044,7 @@ function contentType(pathname) {
   return MIME[extname(pathname).toLowerCase()] ?? "application/octet-stream";
 }
 function safeResolve(root, urlPath) {
-  const base = resolve3(root);
+  const base = resolve4(root);
   let p;
   try {
     p = decodeURIComponent((urlPath || "/").split("?")[0].split("#")[0]);
@@ -5019,7 +5054,7 @@ function safeResolve(root, urlPath) {
   if (p.includes("\0")) return null;
   if (p === "/" || p === "") p = "/index.html";
   if (p.split("/").some((seg) => seg.startsWith("."))) return null;
-  const resolved = normalize(resolve3(base, "." + p));
+  const resolved = normalize(resolve4(base, "." + p));
   return isServable(base, resolved) ? resolved : null;
 }
 function isServable(base, target) {
@@ -5083,10 +5118,30 @@ async function handleApi(projectRoot, req) {
     return { status: 403, json: { error: "forbidden: non-local request" } };
   }
   if (req.method === "GET" && path === "/api/health") {
-    return { status: 200, json: { editable: true, transitions: ALLOWED_STATUS_TRANSITIONS } };
+    const { id, name } = readProjectIdentity(projectRoot);
+    return {
+      status: 200,
+      json: {
+        editable: true,
+        transitions: ALLOWED_STATUS_TRANSITIONS,
+        project: { id, name }
+      }
+    };
   }
   if (req.method !== "GET" && !isSameOriginWrite(req.headers)) {
     return { status: 403, json: { error: "forbidden: write must come from this viewer as JSON" } };
+  }
+  if (req.method === "POST" && path === "/api/shutdown") {
+    let requested;
+    try {
+      requested = JSON.parse(req.body || "{}")?.projectId;
+    } catch {
+      return { status: 400, json: { error: "invalid JSON body" } };
+    }
+    if (requested !== readProjectIdentity(projectRoot).id) {
+      return { status: 403, json: { error: "forbidden: project mismatch" } };
+    }
+    return { status: 200, json: { ok: true }, shutdown: true };
   }
   const statusMatch = path.match(/^\/api\/concept\/([^/]+)\/status$/);
   if (statusMatch) return handleStatusApi(projectRoot, req.method, statusMatch[1], req.body);
@@ -5170,7 +5225,7 @@ function sendJson(res, status, json) {
   });
   res.end(JSON.stringify(json));
 }
-async function handle(root, projectRoot, req, res) {
+async function handle(root, projectRoot, req, res, onShutdown) {
   const url = req.url || "/";
   if (!isLocalRequest(req.headers) || !isLoopbackAddress(req.socket?.remoteAddress)) {
     res.writeHead(403);
@@ -5196,6 +5251,7 @@ async function handle(root, projectRoot, req, res) {
         headers: req.headers,
         body
       });
+      if (result.shutdown) res.once("finish", onShutdown);
       sendJson(res, result.status, result.json);
     } catch (error) {
       if (error instanceof BodyTooLargeError)
@@ -5237,16 +5293,27 @@ async function handle(root, projectRoot, req, res) {
     res.end("Not found");
   }
 }
+function isSkippablePortError(code) {
+  return code === "EADDRINUSE" || code === "EACCES";
+}
+function shouldOpenBrowser(args) {
+  return !args.includes("--no-open");
+}
 function startServer({
   root,
   projectRoot,
   entry = "",
-  ports = [4173, 4174, 4175, 4176, 4177],
-  open = false
+  ports = [...VIEWER_PORTS],
+  open = false,
+  onShutdown
 }) {
   return new Promise((resolvePromise, reject) => {
     const server = createServer((req, res) => {
-      handle(root, projectRoot, req, res).catch(() => {
+      const closeServer = () => {
+        server.close(() => onShutdown?.());
+        server.closeAllConnections();
+      };
+      handle(root, projectRoot, req, res, closeServer).catch(() => {
         try {
           res.writeHead(500);
           res.end("Internal Server Error");
@@ -5257,7 +5324,7 @@ function startServer({
     let i = 0;
     const tryListen = () => server.listen(ports[i], "127.0.0.1");
     server.on("error", (err) => {
-      if (err.code === "EADDRINUSE" && i < ports.length - 1) {
+      if (isSkippablePortError(err.code) && i < ports.length - 1) {
         i += 1;
         tryListen();
       } else reject(err);
@@ -5276,7 +5343,7 @@ function runAsMain() {
   const argv = process.argv[1];
   if (!argv) return false;
   try {
-    return realpathSync(fileURLToPath2(import.meta.url)) === realpathSync(argv);
+    return realpathSync2(fileURLToPath2(import.meta.url)) === realpathSync2(argv);
   } catch {
     return import.meta.url === pathToFileURL(argv).href;
   }
@@ -5286,7 +5353,13 @@ if (isMain) {
   const root = fileURLToPath2(new URL("../../", import.meta.url));
   const projectRoot = fileURLToPath2(new URL("../../../../", import.meta.url));
   const messages = readProjectLocale(projectRoot).then((locale) => SERVER_MESSAGES[locale]);
-  startServer({ root, projectRoot, entry: "concepts/viewer/index.html", open: true }).then(async ({ url }) => {
+  startServer({
+    root,
+    projectRoot,
+    entry: "concepts/viewer/index.html",
+    open: shouldOpenBrowser(process.argv.slice(2)),
+    onShutdown: () => process.exit(0)
+  }).then(async ({ url }) => {
     console.log((await messages).started(url));
   }).catch(async (err) => {
     console.error((await messages).startFailed, err.message);
@@ -5300,6 +5373,8 @@ export {
   isLocalRequest,
   isLoopbackAddress,
   isSameOriginWrite,
+  isSkippablePortError,
   safeResolve,
+  shouldOpenBrowser,
   startServer
 };

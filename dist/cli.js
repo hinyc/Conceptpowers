@@ -3048,8 +3048,8 @@ var {
 } = import_index.default;
 
 // src/cli.ts
-import { readFile as readFile22, stat as stat7 } from "node:fs/promises";
-import { dirname as dirname5, isAbsolute as isAbsolute4, join as join25, relative as relative5, resolve as resolve4 } from "node:path";
+import { readFile as readFile23, stat as stat8 } from "node:fs/promises";
+import { dirname as dirname5, isAbsolute as isAbsolute4, join as join27, relative as relative5, resolve as resolve5 } from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/init/scaffold.ts
@@ -7352,6 +7352,24 @@ function buildInitHint(locale, opts) {
     ""
   ].join("\n");
 }
+var viewerLinkStrings = {
+  ko: {
+    conceptNotFound: (slug3) => `\uAC1C\uB150 "${slug3}"\uC744(\uB97C) \uCC3E\uC744 \uC218 \uC5C6\uC5B4 \uB9C1\uD06C\uB97C \uB9CC\uB4E4\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.`,
+    renderFailed: "\uBDF0\uC5B4\uB97C \uCD5C\uC2E0 \uAC1C\uB150\uC73C\uB85C \uB2E4\uC2DC \uB9CC\uB4E4\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    portsExhausted: "\uBDF0\uC5B4\uAC00 \uC4F8 \uC218 \uC788\uB294 \uD3EC\uD2B8\uAC00 \uBAA8\uB450 \uC0AC\uC6A9 \uC911\uC774\uB77C \uBDF0\uC5B4\uB97C \uB744\uC6B0\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    startFailed: "\uBDF0\uC5B4\uAC00 \uC2DC\uC791\uB418\uC790\uB9C8\uC790 \uC885\uB8CC\uB418\uC5B4 \uC5F4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    startTimeout: "\uBDF0\uC5B4\uAC00 \uC81C\uD55C \uC2DC\uAC04 \uC548\uC5D0 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    lockTimeout: "\uB2E4\uB978 \uBDF0\uC5B4 \uC2DC\uC791\uC774 \uB05D\uB098\uAE30\uB97C \uAE30\uB2E4\uB9AC\uB2E4 \uC81C\uD55C \uC2DC\uAC04\uC774 \uC9C0\uB0AC\uC2B5\uB2C8\uB2E4."
+  },
+  en: {
+    conceptNotFound: (slug3) => `Concept "${slug3}" was not found, so no link was created.`,
+    renderFailed: "Could not rebuild the viewer with the latest concepts.",
+    portsExhausted: "Every port the viewer may use is in use, so the viewer could not be started.",
+    startFailed: "The viewer exited right after starting, so it cannot be opened.",
+    startTimeout: "The viewer was not ready within the time limit.",
+    lockTimeout: "Timed out waiting for another viewer start to finish."
+  }
+};
 
 // src/init/syncGenerated.ts
 import { readdir as readdir4, rm as rm3, rmdir } from "node:fs/promises";
@@ -9062,6 +9080,264 @@ async function syncIfStale(root, pluginRoot) {
   }
 }
 
+// src/concept/viewerLink.ts
+import { spawn } from "node:child_process";
+import { mkdir as mkdir10, readFile as readFile15, rename as rename2, rm as rm4, stat as stat5, writeFile as writeFile9 } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { createServer } from "node:net";
+import { tmpdir } from "node:os";
+import { join as join21 } from "node:path";
+
+// src/viewer/projectIdentity.ts
+import { createHash as createHash3 } from "node:crypto";
+import { readFileSync as readFileSync2, realpathSync } from "node:fs";
+import { basename as basename2, join as join20, resolve as resolve3 } from "node:path";
+var VIEWER_PORT_FIRST = 4173;
+var VIEWER_PORT_LAST = 4192;
+var VIEWER_PORTS = Object.freeze(
+  Array.from({ length: VIEWER_PORT_LAST - VIEWER_PORT_FIRST + 1 }, (_, i) => VIEWER_PORT_FIRST + i)
+);
+var ID_LENGTH = 16;
+function canonicalPath2(root) {
+  let real;
+  try {
+    real = realpathSync.native(root);
+  } catch {
+    real = resolve3(root);
+  }
+  return process.platform === "win32" ? real.toLowerCase() : real;
+}
+function packageName(root) {
+  try {
+    const parsed = JSON.parse(readFileSync2(join20(root, "package.json"), "utf8"));
+    const name = parsed?.name;
+    return typeof name === "string" && name.trim() !== "" ? name.trim() : null;
+  } catch {
+    return null;
+  }
+}
+function readProjectIdentity(root) {
+  const canonical = canonicalPath2(root);
+  const id = createHash3("sha256").update(canonical).digest("hex").slice(0, ID_LENGTH);
+  const name = packageName(canonical) ?? (basename2(canonical) || canonical);
+  return { id, name };
+}
+
+// src/concept/viewerLink.ts
+var HEALTH_REQUEST_TIMEOUT_MS = 800;
+var VIEWER_START_TIMEOUT_MS = 1e4;
+var VIEWER_POLL_INTERVAL_MS = 100;
+var STOP_CONFIRM_TIMEOUT_MS = 3e3;
+var VIEWER_SERVE_FLAG = "--no-open";
+var RECOVER_RETRY_MS = 20;
+var START_LOCK_STALE_MS = 3e4;
+var sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function probePort(port, projectId, timeoutMs) {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/api/health`, {
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return body?.project?.id === projectId ? { port } : null;
+  } catch {
+    return null;
+  }
+}
+async function findViewers(projectId, ports, timeoutMs) {
+  const found = await Promise.all(ports.map((p) => probePort(p, projectId, timeoutMs)));
+  return found.filter((f) => f !== null);
+}
+function isPortFree(port) {
+  return new Promise((resolve6) => {
+    const server = createServer();
+    server.once("error", () => resolve6(false));
+    server.once("listening", () => server.close(() => resolve6(true)));
+    server.listen(port, "127.0.0.1");
+  });
+}
+async function anyPortFree(ports) {
+  for (const port of ports) if (await isPortFree(port)) return true;
+  return false;
+}
+function isAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === "EPERM";
+  }
+}
+async function acquireLock(dir, deadline, intervalMs) {
+  const owner = join21(dir, "owner");
+  for (; ; ) {
+    try {
+      await mkdir10(dir);
+      await writeFile9(owner, String(process.pid));
+      return () => rm4(dir, { recursive: true, force: true });
+    } catch (e) {
+      if (e.code !== "EEXIST") return null;
+    }
+    if (await recoverStaleLock(dir, owner)) continue;
+    if (Date.now() >= deadline) return null;
+    await sleep(intervalMs);
+  }
+}
+async function recoverStaleLock(dir, owner) {
+  if (!await isStaleLock(dir, owner)) return false;
+  const guard = `${dir}.recover`;
+  try {
+    await mkdir10(guard);
+  } catch {
+    const age = await stat5(guard).then(
+      (st) => Date.now() - st.mtimeMs,
+      () => 0
+    );
+    if (age > START_LOCK_STALE_MS) await rm4(guard, { recursive: true, force: true });
+    await sleep(RECOVER_RETRY_MS);
+    return true;
+  }
+  try {
+    if (await isStaleLock(dir, owner)) {
+      const claimed = `${dir}.stale-${process.pid}-${randomUUID()}`;
+      await rename2(dir, claimed).catch(() => void 0);
+      await rm4(claimed, { recursive: true, force: true });
+    }
+  } finally {
+    await rm4(guard, { recursive: true, force: true });
+  }
+  return true;
+}
+async function isStaleLock(dir, owner) {
+  try {
+    const age = Date.now() - (await stat5(dir)).mtimeMs;
+    if (age > START_LOCK_STALE_MS) return true;
+    const pid = Number(await readFile15(owner, "utf8"));
+    return Number.isInteger(pid) && pid > 0 && !isAlive(pid);
+  } catch {
+    return false;
+  }
+}
+function lockPath(projectId, lockDir) {
+  return join21(lockDir ?? tmpdir(), `conceptpowers-viewer-${projectId}.lock`);
+}
+function buildUrl(port, slug3) {
+  const base = `http://localhost:${port}/concepts/viewer/index.html`;
+  return slug3 ? `${base}#/concept/${encodeURIComponent(slug3)}` : base;
+}
+async function launchAndWait(root, projectId, ports, o, script, deadline) {
+  let exited = false;
+  let child;
+  try {
+    child = spawn(process.execPath, [script, VIEWER_SERVE_FLAG], {
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true,
+      cwd: root
+    });
+  } catch {
+    return { failure: "startFailed" };
+  }
+  child.once("exit", () => {
+    exited = true;
+  });
+  child.once("error", () => {
+    exited = true;
+  });
+  child.unref();
+  while (Date.now() < deadline) {
+    const [mine] = await findViewers(projectId, ports, o.healthTimeoutMs);
+    if (mine) return { port: mine.port };
+    if (exited) return { failure: "startFailed" };
+    await sleep(o.pollIntervalMs);
+  }
+  if (child.pid && !exited) {
+    try {
+      process.kill(child.pid, "SIGTERM");
+    } catch {
+    }
+  }
+  return { failure: "startTimeout" };
+}
+var linkOk = (port, slug3, started) => ({
+  ok: true,
+  url: buildUrl(port, slug3),
+  started,
+  port
+});
+async function startUnderLock(root, id, slug3, t, cfg, opts) {
+  const raced = (await findViewers(id, cfg.ports, cfg.healthTimeoutMs))[0];
+  if (raced) return linkOk(raced.port, slug3, false);
+  if (!await anyPortFree(cfg.ports)) return { ok: false, reason: t.portsExhausted };
+  const script = opts.serveScript ?? join21(cpPaths(root).conceptsViewer, "serve.mjs");
+  const outcome = await launchAndWait(root, id, cfg.ports, cfg, script, cfg.deadline);
+  if ("failure" in outcome) return { ok: false, reason: t[outcome.failure] };
+  return linkOk(outcome.port, slug3, true);
+}
+async function viewerLink(root, slug3, opts = {}) {
+  const t = viewerLinkStrings[await readProjectLocale(root)];
+  const startTimeoutMs = opts.startTimeoutMs ?? VIEWER_START_TIMEOUT_MS;
+  const cfg = {
+    ports: opts.ports ?? VIEWER_PORTS,
+    startTimeoutMs,
+    healthTimeoutMs: opts.healthTimeoutMs ?? HEALTH_REQUEST_TIMEOUT_MS,
+    pollIntervalMs: opts.pollIntervalMs ?? VIEWER_POLL_INTERVAL_MS,
+    deadline: Date.now() + startTimeoutMs
+  };
+  try {
+    if (slug3 !== void 0 && await readConcept(root, slug3) === null) {
+      return { ok: false, reason: t.conceptNotFound(slug3) };
+    }
+    try {
+      await renderViewerToDisk(root);
+    } catch {
+      return { ok: false, reason: t.renderFailed };
+    }
+    const { id } = readProjectIdentity(root);
+    const existing = (await findViewers(id, cfg.ports, cfg.healthTimeoutMs))[0];
+    if (existing) return linkOk(existing.port, slug3, false);
+    const release = await acquireLock(lockPath(id, opts.lockDir), cfg.deadline, cfg.pollIntervalMs);
+    if (!release) return { ok: false, reason: t.lockTimeout };
+    try {
+      return await startUnderLock(root, id, slug3, t, cfg, opts);
+    } finally {
+      await release();
+    }
+  } catch {
+    return { ok: false, reason: t.startFailed };
+  }
+}
+async function requestShutdown(port, projectId, timeoutMs) {
+  const origin = `http://localhost:${port}`;
+  try {
+    await fetch(`${origin}/api/shutdown`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: origin },
+      body: JSON.stringify({ projectId }),
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+  } catch {
+  }
+}
+async function viewerStop(root, opts = {}) {
+  const ports = opts.ports ?? VIEWER_PORTS;
+  const healthTimeoutMs = opts.healthTimeoutMs ?? HEALTH_REQUEST_TIMEOUT_MS;
+  const confirmTimeoutMs = opts.confirmTimeoutMs ?? STOP_CONFIRM_TIMEOUT_MS;
+  const pollIntervalMs = opts.pollIntervalMs ?? 50;
+  const { id } = readProjectIdentity(root);
+  const targets = await findViewers(id, ports, healthTimeoutMs);
+  const stopped = [];
+  for (const { port } of targets) {
+    await requestShutdown(port, id, healthTimeoutMs);
+    const deadline = Date.now() + confirmTimeoutMs;
+    while (Date.now() < deadline && await probePort(port, id, healthTimeoutMs)) {
+      await sleep(pollIntervalMs);
+    }
+    if (!await probePort(port, id, healthTimeoutMs)) stopped.push(port);
+  }
+  return { ok: true, stopped };
+}
+
 // src/audit/audit.ts
 async function auditIntegrity(root, files, ignoreGlobs = []) {
   const [concepts, duplicateSlugs] = await Promise.all([
@@ -9094,9 +9370,9 @@ async function auditIntegrity(root, files, ignoreGlobs = []) {
 }
 
 // src/audit/gaps.ts
-import { readFile as readFile15 } from "node:fs/promises";
-import { join as join20, extname } from "node:path";
-var diskReader = (root) => (rel) => readFile15(join20(root, rel), "utf8").catch(() => null);
+import { readFile as readFile16 } from "node:fs/promises";
+import { join as join22, extname } from "node:path";
+var diskReader = (root) => (rel) => readFile16(join22(root, rel), "utf8").catch(() => null);
 var CODE_EXT = /* @__PURE__ */ new Set([
   ".ts",
   ".tsx",
@@ -9131,8 +9407,8 @@ async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [
 }
 
 // src/audit/codeCoordinates.ts
-import { readFile as readFile16, stat as stat5 } from "node:fs/promises";
-import { join as join21 } from "node:path";
+import { readFile as readFile17, stat as stat6 } from "node:fs/promises";
+import { join as join23 } from "node:path";
 var BACKTICKED = /`\s*([A-Za-z_$][\w$]*)\s*(?:\(\s*\))?\s*`/g;
 var CALL = /(?<![\w$-])([A-Za-z_$][\w$]*)\((?![^)]*[가-힣])/g;
 var CONSTANT = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9])\b/g;
@@ -9164,9 +9440,9 @@ var containsSymbol = (text, symbol) => new RegExp(`(?<![\\w$])${escapeRegExp2(sy
 var cleanPath2 = (path) => path.split("#")[0].trim();
 async function readTarget(root, path) {
   try {
-    const info = await stat5(join21(root, path));
+    const info = await stat6(join23(root, path));
     if (info.isDirectory()) return "dir";
-    return await readFile16(join21(root, path), "utf8");
+    return await readFile17(join23(root, path), "utf8");
   } catch {
     return null;
   }
@@ -9196,22 +9472,22 @@ async function findBrokenCodeCoordinates(root, concepts) {
 }
 
 // src/drift/lock.ts
-import { readFile as readFile17 } from "node:fs/promises";
+import { readFile as readFile18 } from "node:fs/promises";
 async function readLock(root) {
   try {
-    return AlignmentLock.parse(JSON.parse(await readFile17(cpPaths(root).alignmentLock, "utf8")));
+    return AlignmentLock.parse(JSON.parse(await readFile18(cpPaths(root).alignmentLock, "utf8")));
   } catch {
     return {};
   }
 }
 
 // src/drift/history.ts
-import { createHash as createHash3 } from "node:crypto";
-import { readdir as readdir5, readFile as readFile18 } from "node:fs/promises";
-import { join as join22 } from "node:path";
+import { createHash as createHash4 } from "node:crypto";
+import { readdir as readdir5, readFile as readFile19 } from "node:fs/promises";
+import { join as join24 } from "node:path";
 async function readLegacyHistory(root) {
   try {
-    return History.parse(JSON.parse(await readFile18(cpPaths(root).alignmentHistory, "utf8")));
+    return History.parse(JSON.parse(await readFile19(cpPaths(root).alignmentHistory, "utf8")));
   } catch {
     return [];
   }
@@ -9227,7 +9503,7 @@ async function readRecordFiles(root) {
   const entries = await Promise.all(
     names.map(async (name) => {
       try {
-        return HistoryEntry.parse(JSON.parse(await readFile18(join22(dir, name), "utf8")));
+        return HistoryEntry.parse(JSON.parse(await readFile19(join24(dir, name), "utf8")));
       } catch {
         return null;
       }
@@ -9254,7 +9530,7 @@ function toEntry(input, prevHash) {
 }
 function recordFileName(entry, order) {
   const stamp = entry.at.replace(/[^0-9A-Za-z]/g, "") || "unknown";
-  const digest = createHash3("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
+  const digest = createHash4("sha256").update(JSON.stringify(entry)).digest("hex").slice(0, 10);
   return `${stamp}-${String(order).padStart(3, "0")}-${entry.slug}-${digest}.json`;
 }
 async function appendHistoryMany(root, inputs) {
@@ -9267,7 +9543,7 @@ async function appendHistoryMany(root, inputs) {
     const entry = toEntry(input, lastHash.get(input.slug) ?? "");
     lastHash.set(entry.slug, entry.hash);
     await writeFileAtomic(
-      join22(dir, recordFileName(entry, order)),
+      join24(dir, recordFileName(entry, order)),
       JSON.stringify(entry, null, 2) + "\n"
     );
     added.push(entry);
@@ -9279,16 +9555,16 @@ async function appendHistory(root, input) {
 }
 
 // src/drift/follow.ts
-import { stat as stat6 } from "node:fs/promises";
-import { isAbsolute as isAbsolute3, join as join23, relative as relative4, resolve as resolve3 } from "node:path";
+import { stat as stat7 } from "node:fs/promises";
+import { isAbsolute as isAbsolute3, join as join25, relative as relative4, resolve as resolve4 } from "node:path";
 function isInsideRoot(root, rel) {
-  const r = relative4(resolve3(root), resolve3(root, rel));
+  const r = relative4(resolve4(root), resolve4(root, rel));
   return r !== "" && !r.startsWith("..") && !isAbsolute3(r);
 }
 async function isRelatedFile(root, rel) {
   if (!isInsideRoot(root, rel)) return false;
   try {
-    return (await stat6(join23(root, rel))).isFile();
+    return (await stat7(join25(root, rel))).isFile();
   } catch (error) {
     const code = error.code;
     return !(code === "ENOENT" || code === "ENOTDIR");
@@ -9389,12 +9665,12 @@ async function listTrackedFiles(root) {
 }
 
 // src/util/isMain.ts
-import { realpathSync } from "node:fs";
+import { realpathSync as realpathSync2 } from "node:fs";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 function isMainModule(moduleUrl, argv1) {
   if (!argv1) return false;
   try {
-    return realpathSync(fileURLToPath2(moduleUrl)) === realpathSync(argv1);
+    return realpathSync2(fileURLToPath2(moduleUrl)) === realpathSync2(argv1);
   } catch {
     return moduleUrl === pathToFileURL(argv1).href;
   }
@@ -9456,10 +9732,10 @@ function resolveComparedScope(slug3, requested, knownSlugs) {
 }
 
 // src/concept/testReview.ts
-import { readFile as readFile19 } from "node:fs/promises";
+import { readFile as readFile20 } from "node:fs/promises";
 async function readTestReviewLog(root) {
   try {
-    return TestReviewLog.parse(JSON.parse(await readFile19(cpPaths(root).testReviewFile, "utf8")));
+    return TestReviewLog.parse(JSON.parse(await readFile20(cpPaths(root).testReviewFile, "utf8")));
   } catch {
     return {};
   }
@@ -9478,10 +9754,10 @@ async function recordTestReview(root, concept, result, evidence = {}) {
 }
 
 // src/drift/noCode.ts
-import { readFile as readFile20 } from "node:fs/promises";
+import { readFile as readFile21 } from "node:fs/promises";
 async function readNoCodeLog(root) {
   try {
-    return NoCodeLog.parse(JSON.parse(await readFile20(cpPaths(root).noCodeFile, "utf8")));
+    return NoCodeLog.parse(JSON.parse(await readFile21(cpPaths(root).noCodeFile, "utf8")));
   } catch {
     return {};
   }
@@ -9498,8 +9774,8 @@ async function recordNoCode(root, concept, note) {
 }
 
 // src/init/addReferencePath.ts
-import { readFile as readFile21 } from "node:fs/promises";
-import { join as join24 } from "node:path";
+import { readFile as readFile22 } from "node:fs/promises";
+import { join as join26 } from "node:path";
 function normalizeEntry(raw) {
   const trimmed = raw.trim().replace(/^[-*]\s+/, "").trim();
   const quoted = /^(['"])(.*)\1$/.exec(trimmed);
@@ -9507,10 +9783,10 @@ function normalizeEntry(raw) {
 }
 async function addReferencePath(root, raws) {
   await ensureReferencePaths(root);
-  const target2 = join24(cpPaths(root).reference, PATHS_FILE);
+  const target2 = join26(cpPaths(root).reference, PATHS_FILE);
   let existing;
   try {
-    existing = await readFile21(target2, "utf8");
+    existing = await readFile22(target2, "utf8");
   } catch (error) {
     throw new Error(
       `\uCC38\uACE0\uC790\uB8CC \uACBD\uB85C \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 (${target2}): ${error.message}`
@@ -9551,12 +9827,12 @@ async function addReferencePath(root, raws) {
 }
 
 // src/reference/affected.ts
-import { basename as basename2 } from "node:path/posix";
+import { basename as basename3 } from "node:path/posix";
 var relCanon = (p) => normalizeRel(p).replace(/\/+$/, "");
 var referencePaths = (concept) => concept.sources.filter((s) => s.kind === "reference" && s.path !== "").map((s) => s.path);
 function matches(p, k) {
   if (p === "" || p === ".") return false;
-  return k === p || basename2(k) === p || k.endsWith(`/${p}`);
+  return k === p || basename3(k) === p || k.endsWith(`/${p}`);
 }
 function citedMatcher(concepts, canon = relCanon) {
   const cited = new Set(
@@ -9684,7 +9960,7 @@ async function diffReference(root, mode = "full", inputs = {}) {
 // src/cli.ts
 var isFile = async (p) => {
   try {
-    return (await stat7(p)).isFile();
+    return (await stat8(p)).isFile();
   } catch {
     return false;
   }
@@ -9780,6 +10056,12 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     await renderViewerToDisk(o.root);
     out(JSON.stringify({ ok: true, ...viewerHint() }));
   });
+  program2.command("viewer-link").description("\uC774 \uD504\uB85C\uC81D\uD2B8\uC758 \uBDF0\uC5B4(\uC5C6\uC73C\uBA74 \uBE0C\uB77C\uC6B0\uC800 \uC5C6\uC774 \uC2E4\uD589)\uC640 \uAC1C\uB150 \uB9C1\uD06C\uB97C JSON\uC73C\uB85C \uB3CC\uB824\uC900\uB2E4").argument("[slug]").option("--root <dir>", "project root", process.cwd()).action(async (slug3, o) => {
+    out(JSON.stringify(await viewerLink(o.root, slug3)));
+  });
+  program2.command("viewer-stop").description("\uC774 \uD504\uB85C\uC81D\uD2B8\uC758 \uBDF0\uC5B4 \uC11C\uBC84\uB97C \uBAA8\uB450 \uB048\uB2E4(\uB2E4\uB978 \uD504\uB85C\uC81D\uD2B8 \uBDF0\uC5B4\uB294 \uAC74\uB4DC\uB9AC\uC9C0 \uC54A\uB294\uB2E4)").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
+    out(JSON.stringify(await viewerStop(o.root)));
+  });
   program2.command("approve").option("--root <dir>", "project root", process.cwd()).argument("<slug>").action(async (slug3, o) => {
     await approveConcept(o.root, slug3);
     await renderViewerToDisk(o.root);
@@ -9797,7 +10079,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       code = 1;
       return;
     }
-    const patch = JSON.parse(await readFile22(o.file, "utf8"));
+    const patch = JSON.parse(await readFile23(o.file, "utf8"));
     const { concept, downgradedToPending } = await editConceptWithNote(
       o.root,
       slug3,
@@ -9816,7 +10098,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     );
   });
   program2.command("feature").description("feature \uBA85\uC138\uB97C \uAC80\uC99D\uD574 features/\uC5D0 \uAE30\uB85D (\uAE30\uB2A5\u2194\uAC1C\uB150\xB7\uAE30\uB2A5\u2194\uCF54\uB4DC \uBC30\uC120)").requiredOption("--file <path>", "feature JSON \uD30C\uC77C \uACBD\uB85C").option("--root <dir>", "project root", process.cwd()).action(async (o) => {
-    const feature = await writeFeature(o.root, JSON.parse(await readFile22(o.file, "utf8")));
+    const feature = await writeFeature(o.root, JSON.parse(await readFile23(o.file, "utf8")));
     out(JSON.stringify({ ok: true, slug: feature.slug, group: feature.group }));
   });
   program2.command("map").option("--root <dir>", "project root", process.cwd()).option("--full", "rebuild the cache from only the given files (discard existing entries)").argument("<files...>").action(async (files, o) => {
@@ -9979,9 +10261,9 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
     const testGlobs = (await readInitConfig(o.root))?.testGlobs ?? [];
     const invalid = [];
     for (const t of tests) {
-      const rel = normalizeRel(relative5(resolve4(o.root), resolve4(o.root, t)));
+      const rel = normalizeRel(relative5(resolve5(o.root), resolve5(o.root, t)));
       const inside = rel !== "" && rel !== ".." && !rel.startsWith("../") && !isAbsolute4(rel);
-      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join25(o.root, rel));
+      const ok = inside && matchesAny(rel, testGlobs) && await isFile(join27(o.root, rel));
       if (!ok) invalid.push(t);
     }
     if (invalid.length > 0) {
@@ -10013,7 +10295,7 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
 }
 var isMain = isMainModule(import.meta.url, process.argv[1]);
 if (isMain) {
-  runCli(process.argv.slice(2)).then((c) => process.exit(c));
+  runCli(process.argv.slice(2)).then((c) => process.stdout.write("", () => process.exit(c)));
 }
 export {
   runCli

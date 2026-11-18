@@ -36,4 +36,5 @@ edit the concept until the human decides.
    `--reason "<the ambiguity resolved / the material change applied>"` (green → pending). The
    fingerprint changes, so old attestations and test-review records lapse automatically.
 6. **Common wrap-up** — the common wrap-up of `SKILL.md`: `references/consistency.md` + `attest-consistency`, test
-   review (`attest-test-review` or fixing the tests), re-settle to green after the user confirms, `render`.
+   review (`attest-test-review` or fixing the tests), ask by the "Viewer link procedure" of `SKILL.md`, re-settle to
+   green after the user confirms, `render`.

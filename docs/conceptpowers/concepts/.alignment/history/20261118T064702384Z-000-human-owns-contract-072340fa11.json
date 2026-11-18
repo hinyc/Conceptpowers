@@ -1,0 +1,11 @@
+{
+  "slug": "human-owns-contract",
+  "hash": "3:e25c7ac1f12a",
+  "prevHash": "3:e25c7ac1f12a",
+  "reason": "사용자가 2026-11-18 세션에서 선택지로 보고 승인한 문구 추가: 개념 확정 요청 시 뷰어 링크, 새 개념은 저장 승인 뒤 검토 중으로 저장. 이어서 구현에 맞춰 코드 연결과 코드 근거를 갱신함",
+  "at": "2026-11-18T06:47:02.384Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}
