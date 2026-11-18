@@ -11,8 +11,7 @@
 
 ## 다음 할 일
 
-- release · v1.21.0 릴리즈 진행 (사용자 요청, minor, 승인 요청 시 뷰어 링크 포함, human-owns-contract는 사용자 확인 뒤 green). 커밋과 annotated 태그까지, push는 사용자가 직접
-- 릴리즈 뒤 사용자가 push하고 plugin update를 해야 설치판에 반영됨
+- v1.21.0 push 완료(2026-11-18, develop·main·태그). plugin update로 설치판 반영 필요
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
 - 사용자 확인: GitHub 저장소 설정에서 Private vulnerability reporting 켜기 (SECURITY.md가 의존)
