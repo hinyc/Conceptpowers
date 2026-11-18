@@ -285,7 +285,10 @@ export async function editConceptContent(
   // 쓰기 전 검증(별칭·중복 이름표)을 모두 통과한 뒤에야 승인본을 만든다.
   assertWritable(root, next, target, found.entries);
   if (!downgradedToPending) {
-    return { concept: await persistConcept(root, next, target, found.entries), downgradedToPending };
+    return {
+      concept: await persistConcept(root, next, target, found.entries),
+      downgradedToPending,
+    };
   }
   // 승인본 저장 → 개념 쓰기 순서. 승인본 저장이 실패하면 개념은 그대로다.
   const previous = await readApprovedRaw(root, slug);

@@ -113,6 +113,7 @@ export async function pruneApprovedSnapshots(
       failures.push(`${name}: ${(error as Error).message}`);
     }
   }
-  if (failures.length > 0) throw new Error(`Failed to prune approved snapshots — ${failures.join('; ')}`);
+  if (failures.length > 0)
+    throw new Error(`Failed to prune approved snapshots — ${failures.join('; ')}`);
   return removed;
 }

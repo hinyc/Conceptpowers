@@ -102,8 +102,10 @@ var CPConceptDiff = (function () {
     var b = textOf(before);
     var a = textOf(after);
     if (b === a) return [];
-    if (b === null) return [{ field: field, kind: 'added', before: null, after: a, reordered: false }];
-    if (a === null) return [{ field: field, kind: 'removed', before: b, after: null, reordered: false }];
+    if (b === null)
+      return [{ field: field, kind: 'added', before: null, after: a, reordered: false }];
+    if (a === null)
+      return [{ field: field, kind: 'removed', before: b, after: null, reordered: false }];
     return [{ field: field, kind: 'changed', before: b, after: a, reordered: false }];
   }
 
@@ -205,7 +207,13 @@ var CPConceptDiff = (function () {
     });
     removed.forEach(function (v, i) {
       if (matched.usedR[i]) return;
-      out.push({ field: field, kind: 'removed', before: itemText(v), after: null, reordered: false });
+      out.push({
+        field: field,
+        kind: 'removed',
+        before: itemText(v),
+        after: null,
+        reordered: false,
+      });
     });
     added.forEach(function (v, j) {
       if (matched.usedA[j]) return;

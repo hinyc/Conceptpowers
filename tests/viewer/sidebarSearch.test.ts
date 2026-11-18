@@ -29,7 +29,14 @@ const viewerSrc = read('viewer.js').replace(/\nboot\(\);?\s*$/, '\n');
 const MANIFEST = {
   concepts: [
     { slug: 'a-one', title: '첫째 Alpha', group: 'alpha', category: ['feature'], status: 'green' },
-    { slug: 'a-two', title: '둘째', group: 'alpha', category: [], status: 'pending', aliases: ['별명씀'] },
+    {
+      slug: 'a-two',
+      title: '둘째',
+      group: 'alpha',
+      category: [],
+      status: 'pending',
+      aliases: ['별명씀'],
+    },
     { slug: 'b-one', title: 'Beta Thing', group: 'beta', category: [], status: 'red' },
     { slug: 'c-one', title: '셋째', group: 'gamma', category: [], status: 'green' },
   ],
@@ -89,7 +96,19 @@ function setup() {
       .filter(visible)
       .map((g) => g.querySelectorAll('h2')[0].textContent);
   const reopen = (slug: string) => c.CPSidebar.shell(slug, wrap);
-  return { reopen, stored, shell, wrap, search, current, all, noResults, type, shownSlugs, shownGroups };
+  return {
+    reopen,
+    stored,
+    shell,
+    wrap,
+    search,
+    current,
+    all,
+    noResults,
+    type,
+    shownSlugs,
+    shownGroups,
+  };
 }
 
 describe('곁 목록 검색 (list-filter)', () => {
@@ -185,7 +204,9 @@ describe('곁 목록 검색 (list-filter)', () => {
   it('입력을 저장하지 않고 본문은 그대로다', () => {
     const s = setup();
     s.type('beta');
-    expect(Object.keys(s.stored).some((k) => k.includes('search') || k.includes('filter'))).toBe(false);
+    expect(Object.keys(s.stored).some((k) => k.includes('search') || k.includes('filter'))).toBe(
+      false
+    );
     expect(s.wrap.textContent).toBe('body');
     expect(everyNode(s.shell).includes(s.wrap)).toBe(true);
   });
@@ -196,6 +217,11 @@ describe('곁 목록 검색 (list-filter)', () => {
       .querySelectorAll('a')
       .map((a) => a.getAttribute('href'))
       .sort();
-    expect(hrefs).toEqual(['#/concept/a-one', '#/concept/a-two', '#/concept/b-one', '#/concept/c-one']);
+    expect(hrefs).toEqual([
+      '#/concept/a-one',
+      '#/concept/a-two',
+      '#/concept/b-one',
+      '#/concept/c-one',
+    ]);
   });
 });

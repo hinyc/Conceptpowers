@@ -63,7 +63,13 @@ describe('diffConcepts', () => {
     const cur = base();
     (cur.description as Record<string, unknown>).analogy = '비유';
     expect(diff(base(), cur)).toEqual([
-      { field: 'description.analogy', kind: 'added', before: null, after: '비유', reordered: false },
+      {
+        field: 'description.analogy',
+        kind: 'added',
+        before: null,
+        after: '비유',
+        reordered: false,
+      },
     ]);
   });
 
@@ -103,26 +109,39 @@ describe('diffConcepts', () => {
   });
 
   it('한글 문장 수정도 수정으로 짝짓는다 / 전혀 다른 문장 교체는 삭제+추가', () => {
-    const b = { ...base(), actions: { allow: [], restrict: ['개념이 아닌 기능·파일 경로까지 찾아오는 것'] } };
-    const near = { ...base(), actions: { allow: [], restrict: ['개념이 아닌 기능·파일 경로까지 데려오는 것'] } };
+    const b = {
+      ...base(),
+      actions: { allow: [], restrict: ['개념이 아닌 기능·파일 경로까지 찾아오는 것'] },
+    };
+    const near = {
+      ...base(),
+      actions: { allow: [], restrict: ['개념이 아닌 기능·파일 경로까지 데려오는 것'] },
+    };
     const far = { ...base(), actions: { allow: [], restrict: ['입력한 말을 저장해 두는 것'] } };
     expect(diff(b, near).map((d) => d.kind)).toEqual(['changed']);
-    expect(diff(b, far).map((d) => d.kind).sort()).toEqual(['added', 'removed']);
+    expect(
+      diff(b, far)
+        .map((d) => d.kind)
+        .sort()
+    ).toEqual(['added', 'removed']);
   });
 
   it('유사도 기준(0.5)의 근거: 한두 단어 고침은 0.5를 넘고 무관한 문장은 한참 못 미친다', () => {
     const one = (x: string, y: string) =>
-      diff(
-        { actions: { restrict: [x] } },
-        { actions: { restrict: [y] } }
-      ).map((d) => d.kind);
-    expect(one('파일을 읽을 수 없으면 알린다', '파일을 읽을 수 없으면 사유를 알린다')).toEqual(['changed']);
+      diff({ actions: { restrict: [x] } }, { actions: { restrict: [y] } }).map((d) => d.kind);
+    expect(one('파일을 읽을 수 없으면 알린다', '파일을 읽을 수 없으면 사유를 알린다')).toEqual([
+      'changed',
+    ]);
     expect(one('abcdef', 'abcxyz')).toEqual(['removed', 'added']); // Dice 0.2
   });
 
   it('여러 건을 동시에 고쳐도 올바른 짝끼리 수정이 된다', () => {
-    const b = { actions: { restrict: ['사과를 먹는 것은 금지한다', '바나나를 먹는 것은 금지한다'] } };
-    const a = { actions: { restrict: ['바나나를 먹는 것은 매우 금지한다', '사과를 먹는 것은 매우 금지한다'] } };
+    const b = {
+      actions: { restrict: ['사과를 먹는 것은 금지한다', '바나나를 먹는 것은 금지한다'] },
+    };
+    const a = {
+      actions: { restrict: ['바나나를 먹는 것은 매우 금지한다', '사과를 먹는 것은 매우 금지한다'] },
+    };
     const out = diff(b, a);
     expect(out).toHaveLength(2);
     expect(out.every((d) => d.kind === 'changed')).toBe(true);
@@ -135,7 +154,9 @@ describe('diffConcepts', () => {
   it('한 항목은 한 번만 짝이 된다 — 남는 것은 삭제/추가', () => {
     const b = { actions: { restrict: ['같은 문장을 조금 고친다', '같은 문장을 조금 고친다 둘'] } };
     const a = { actions: { restrict: ['같은 문장을 조금 고친다 셋'] } };
-    const kinds = diff(b, a).map((d) => d.kind).sort();
+    const kinds = diff(b, a)
+      .map((d) => d.kind)
+      .sort();
     expect(kinds).toEqual(['changed', 'removed']);
   });
 

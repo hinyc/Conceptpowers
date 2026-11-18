@@ -135,7 +135,9 @@ describe('안내 분기 — 달라진 것이 없다고 말하면 안 되는 경�
 
   it('승인본 없음(approved:null) → 비교할 승인본이 없다는 안내', async () => {
     const text = await answer(json({ approved: null }));
-    expect(text).toContain('비교할 승인본이 없습니다. 처음 작성 중이거나 이 기능이 생기기 전에 수정된 개념입니다.');
+    expect(text).toContain(
+      '비교할 승인본이 없습니다. 처음 작성 중이거나 이 기능이 생기기 전에 수정된 개념입니다.'
+    );
     expect(text).not.toContain(t().diffSame);
   });
 
@@ -176,7 +178,9 @@ describe('안내 분기 — 달라진 것이 없다고 말하면 안 되는 경�
 
   it('승인본이 있고 차이가 0건일 때만 "승인본과 내용이 같습니다."', async () => {
     const text = await answer(
-      json({ approved: { savedAt: '2026-11-18T01:00:00.000Z', concept: concept('p-one', 'green') } })
+      json({
+        approved: { savedAt: '2026-11-18T01:00:00.000Z', concept: concept('p-one', 'green') },
+      })
     );
     expect(text).toContain('승인본과 내용이 같습니다.');
   });
@@ -292,7 +296,9 @@ describe('뒤늦게 도착한 응답', () => {
     // 이전 개념(0번) 응답이 나중에 도착
     s.pending[1](json({ approved: null }));
     s.pending[0](
-      json({ approved: { savedAt: '2026-11-18T01:00:00.000Z', concept: concept('p-one', 'green') } })
+      json({
+        approved: { savedAt: '2026-11-18T01:00:00.000Z', concept: concept('p-one', 'green') },
+      })
     );
     await s.flush();
     await s.flush();
@@ -316,7 +322,10 @@ describe('뒤늦게 도착한 응답', () => {
 
 describe('음영 색 (viewer-readability: 색 외 단서 + 4.5:1)', () => {
   const css = read('concept.css');
-  const rootBlock = css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-color-scheme: dark)'));
+  const rootBlock = css.slice(
+    css.indexOf(':root {'),
+    css.indexOf('@media (prefers-color-scheme: dark)')
+  );
   const darkBlock = css.slice(
     css.indexOf('@media (prefers-color-scheme: dark)'),
     css.indexOf('* {')
