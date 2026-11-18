@@ -4483,7 +4483,8 @@ async function pruneApprovedSnapshots(root, liveSlugs, greenSlugs) {
       failures.push(`${name}: ${error.message}`);
     }
   }
-  if (failures.length > 0) throw new Error(`Failed to prune approved snapshots \u2014 ${failures.join("; ")}`);
+  if (failures.length > 0)
+    throw new Error(`Failed to prune approved snapshots \u2014 ${failures.join("; ")}`);
   return removed;
 }
 

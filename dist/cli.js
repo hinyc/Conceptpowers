@@ -8013,7 +8013,10 @@ async function editConceptContent(root, slug3, patch) {
   const target2 = resolve2(root, found.entry.rel);
   assertWritable(root, next, target2, found.entries);
   if (!downgradedToPending) {
-    return { concept: await persistConcept(root, next, target2, found.entries), downgradedToPending };
+    return {
+      concept: await persistConcept(root, next, target2, found.entries),
+      downgradedToPending
+    };
   }
   const previous = await readApprovedRaw(root, slug3);
   await saveApprovedSnapshot(root, concept);

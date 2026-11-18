@@ -78,7 +78,11 @@ var CPSidebar = (function () {
     var sections = conceptListSections(active, true, activeGroup);
     var body = sections.length ? sections : [h('p', { class: 'muted' }, t.empty)];
     var current = h('div', { class: 'side__current' }, body);
-    var all = h('div', { class: 'side__all', style: 'display:none' }, conceptListSections(active, true));
+    var all = h(
+      'div',
+      { class: 'side__all', style: 'display:none' },
+      conceptListSections(active, true)
+    );
     return { wrap: h('div', { class: 'side__list' }, [current, all]), current: current, all: all };
   }
 
