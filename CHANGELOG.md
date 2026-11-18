@@ -7,6 +7,20 @@ Versions before 1.14.0 are not summarized here; see the git history and tags.
 
 ## [Unreleased]
 
+## [1.21.0] - 2026-11-18
+
+### Added
+
+- When asking the user to approve a concept, `viewer-link` reuses this project's viewer or starts one without opening a browser, and returns a link to the concept.
+- `viewer-stop` shuts down this project's viewer without touching other projects' viewers.
+- Every viewer screen now shows the project name at the top.
+
+### Changed
+
+- A new concept is saved as pending after the user approves saving it, then checked and offered for approval with a viewer link.
+- The viewer port range is now 4173 to 4192.
+- An automatically started viewer stays up until it is turned off.
+
 ## [1.20.0] - 2026-11-18
 
 ### Added
