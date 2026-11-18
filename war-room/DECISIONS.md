@@ -10,6 +10,12 @@
 - 영향: 관련 롤·파일
 -->
 
+## 2026-11-18 · war-room 템플릿 1 → 3 반영
+- 결정: roles/manager.md 공통 부분, config.json templateVersion, STATUS.md 절 설명, .gitignore의 war-room/.eval/을 갱신했다. 옮긴 사용자 문장은 0줄이고 프로젝트별 규칙은 유지했다
+- 이유: armory 0.8.1의 새 war-room 규칙에 프로젝트 파일을 맞춘다
+- 정한 사람: 사용자
+- 영향: manager 롤, war-room 문서
+
 ## 2026-11-18 · 뷰어 곁 목록 전체 검색과 승인본 보관
 - 결정: 곁 목록은 글자를 넣는 동안만 모든 묶음의 개념에서 걸러낸다. 승인본은 green→pending 편집 때 `docs/conceptpowers/concepts/.approved/<slug>.json`에 보관하고 커밋 대상으로 두며, green 복귀·개념 삭제 때 정리한다
 - 이유: 평소 곁 목록의 짧음은 유지하면서 다른 묶음도 찾게 한다. git 이력 조회 대신 저장 방식을 사용자가 골랐다. `.alignment` 밖에 두어 정리할 때마다 거버넌스 삭제 질문이 뜨지 않게 했다
