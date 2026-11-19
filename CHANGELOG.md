@@ -7,6 +7,12 @@ Versions before 1.14.0 are not summarized here; see the git history and tags.
 
 ## [Unreleased]
 
+## [1.21.1] - 2026-11-19
+
+### Changed
+
+- Maintenance release with no user-facing changes.
+
 ## [1.21.0] - 2026-11-18
 
 ### Added
