@@ -41,8 +41,10 @@ refs:
 - 커밋 게이트는 PreToolUse에서 돈다. `git add`와 `git commit`은 반드시 별도 명령으로 실행한다.
 - Codex 마켓플레이스 source는 url `"./"`만 동작한다. 설치 검증은 `CODEX_HOME`을 격리해서 한다.
 - 훅 수정은 릴리스 뒤 plugin update를 해야 반영된다고 보고에 적는다.
+- 전체 테스트·타입 검사·빌드를 따로 돌릴지는 무조건 정하지 않고 커밋 내용을 보고 정한다. develop의 직전 `chore(release)` 커밋 이후 바뀐 파일을 `git diff --name-only <그 커밋>..HEAD`로 보고 (릴리스 태그는 main 커밋을 가리키므로 태그와 비교하지 않는다), 바뀐 파일이 `CHANGELOG.md`와 `war-room/` 안에만 있으면 돌리지 않고, 그 밖의 파일(`src/`, `assets/`, `scripts/`, `skills/`, `hooks/`, `package.json`, README 등. `skills/`·README는 `.md`여도 테스트 대상이다)이 하나라도 바뀌었으면 돌린다. 애매하면 돌린다. 어느 쪽으로 정했는지와 근거(바뀐 파일)를 보고에 적는다.
+- `pnpm release` 안의 검증(typecheck·test:coverage·format:check)과 빌드·렌더는 스크립트의 일부라 위 판단과 상관없이 그대로 두고, 우회하지 않는다.
 
 # 완료 기준
 
-- `pnpm typecheck`, `pnpm test`, `pnpm build` 통과
+- 따로 돌리기로 정한 경우: `pnpm typecheck`, `pnpm test`, `pnpm build` 통과. 돌리지 않기로 정한 경우: 그 근거를 보고에 적고, `pnpm release` 안의 검증 통과로 갈음한다
 - 릴리스 커밋과 annotated 태그 생성, 작업 트리에 남은 변경 없음

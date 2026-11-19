@@ -8,11 +8,10 @@
 
 - 공식 디렉터리 배포 준비 (develop 브랜치). 단계: 1 개념(concept-steward) → 2 게이트 문구·기본 locale(engine) → 3 스킬 영어화(skill-author) → 4 뷰어(viewer) → 5 배포 준비 → 6 릴리스 흐름 develop→main(release) → 7 레드팀·directory strict validate
 - 지금: v1.19.0 push 완료(2026-11-11, develop·main·태그). 다음: 사용자가 claude.ai/directory/manage 포털 제출, Private vulnerability reporting 켜기
-- release · v1.21.1 패치 릴리스 진행 (정형, 사용자 요청 2026-11-19) · 상 · 시도 1/1 · 커밋·태그까지, push는 사용자
 
 ## 다음 할 일
 
-- war-room/config.json 템플릿 4 반영분 커밋 여부는 사용자가 정함 (아직 커밋 안 함)
+- v1.21.2 릴리스 진행 (release 롤, 문서만 바뀐 정형 릴리즈). 끝나면 push는 사용자: `git push --atomic origin develop main refs/tags/v1.21.2`
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
 - 사용자 확인: GitHub 저장소 설정에서 Private vulnerability reporting 켜기 (SECURITY.md가 의존)
@@ -35,6 +34,9 @@
 
 ## 최근 완료 (STATUS.md 전체 10KB 이하, 넘치면 오래된 것부터 archive/로)
 
+- 2026-11-19 · manager · v1.21.1 push 완료 (develop bf052f6, main 748c06f, 태그 v1.21.1, 사용자 요청으로 계정 전환 후 push, 플러그인 1.21.1 업데이트 확인)
+- 2026-11-19 · manager · release 롤에 "직전 릴리스 이후 바뀐 파일로 별도 전체 테스트·빌드 여부 결정" 규칙 추가 (중, 검증 통과 1회, 결정 3개 점검 통과, 커밋 전)
+- 2026-11-19 · release · v1.21.1 패치 릴리스 (정형, 문서만 바뀌어 별도 테스트·빌드 생략, 스크립트 검증 통과, develop 72a08e6·bf052f6, main 748c06f, 태그 v1.21.1, push 안 함)
 - 2026-11-19 · manager · war-room 템플릿 3 → 4 반영, maxAttempts 1 (하 등급, 파일 1개, upgrade 검사 통과, 커밋 전)
 - 2026-11-18 · concept-steward+viewer+engine+skill-author · 개념 확정 요청 시 뷰어 자동 실행·개념 링크, viewer-stop, 프로젝트 이름 띠, 새 개념 저장 승인 흐름 (검증 2회째 통과, 테스트 1927개 통과, 브라우저 확인, 커밋 전)
 - 2026-11-18 · concept-steward+engine+viewer · 곁 목록 전체 개념 검색, pending 개념의 승인본 비교(추가·삭제·수정 음영), 승인본 저장, 개념 3개 사용자 확인 후 green 재정착 (독립 검증 통과, 테스트 1879개 통과, 브라우저 확인, develop 커밋, push 안 함)
