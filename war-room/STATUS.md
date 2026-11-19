@@ -11,7 +11,6 @@
 
 ## 다음 할 일
 
-- v1.21.2 릴리스 진행 (release 롤, 문서만 바뀐 정형 릴리즈). 끝나면 push는 사용자: `git push --atomic origin develop main refs/tags/v1.21.2`
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
 - 사용자 확인: GitHub 저장소 설정에서 Private vulnerability reporting 켜기 (SECURITY.md가 의존)
@@ -34,6 +33,7 @@
 
 ## 최근 완료 (STATUS.md 전체 10KB 이하, 넘치면 오래된 것부터 archive/로)
 
+- 2026-11-19 · release · v1.21.2 패치 릴리스 (정형, 문서만 바뀌어 별도 테스트·빌드 생략, 스크립트 검증 통과, develop 878dfc5, main 713edc6, 태그 v1.21.2, push 완료)
 - 2026-11-19 · manager · v1.21.1 push 완료 (develop bf052f6, main 748c06f, 태그 v1.21.1, 사용자 요청으로 계정 전환 후 push, 플러그인 1.21.1 업데이트 확인)
 - 2026-11-19 · manager · release 롤에 "직전 릴리스 이후 바뀐 파일로 별도 전체 테스트·빌드 여부 결정" 규칙 추가 (중, 검증 통과 1회, 결정 3개 점검 통과, 커밋 전)
 - 2026-11-19 · release · v1.21.1 패치 릴리스 (정형, 문서만 바뀌어 별도 테스트·빌드 생략, 스크립트 검증 통과, develop 72a08e6·bf052f6, main 748c06f, 태그 v1.21.1, push 안 함)
