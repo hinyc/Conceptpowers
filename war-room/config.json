@@ -1,7 +1,7 @@
 {
   "enabled": true,
-  "templateVersion": 3,
-  "maxAttempts": 3,
+  "templateVersion": 4,
+  "maxAttempts": 1,
   "suggestRoles": true,
   "roles": {
     "manager": true,
