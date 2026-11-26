@@ -85,6 +85,11 @@ knowledge graph — enumerate features, infer concepts, and wire all three links
    real concept. `ignoreGlobs` auto-excludes only regenerated/external code — `dist/**`, `**/*.generated.*`, etc.
    When such conceptless files share a folder — e.g. a shared UI kit — suggest the user declare it once as a
    no-concept area in `init.json` `noConceptGlobs` instead of tagging each file; the user edits that file.)
+   Exception: where a person has already set `allowUntagged` (default `false`) to `true` in `init.json`, a code file
+   with no marker counts as `none` — not a warning or a gap, so do not force a tag on it. A file that carries a marker
+   follows it, tags pointing at undefined concepts are still checked, and the test-file rules do not change.
+   `noConceptGlobs` covers folders; `allowUntagged` covers the whole project. **Never turn it on yourself or edit
+   `init.json` for it** — only a person does.
 6. **Regenerate and report**: `node "<cli>" render --root .`, then report the feature list + inferred
    (red) concepts + the wired graph. Say the red concepts are unapproved proposals that govern no code, and leave any
    review to the user — approval happens only if they ask for it (the approve flow D of

@@ -1,7 +1,7 @@
 // @concept:governance-mode
 // src/hooks/gates/conceptlessGate.ts
 import { defaultIgnoreGlobs } from '../../schema/initConfig.js';
-import { findConceptlessFiles } from '../../audit/gaps.js';
+import { effectiveTestGlobs, findConceptlessFiles } from '../../audit/gaps.js';
 import { sanitizeText } from '../../drift/safe.js';
 import { commitReader } from '../command/commitTree.js';
 import { gateText } from '../../i18n/gateMessages.js';
@@ -10,6 +10,7 @@ import type { GateCheck } from './types.js';
 // 개념 없는 코드: 거버넌스 대상 코드 파일에 @concept 마커가 하나도 없으면 경고.
 // (한 파일이 여러 개념을 가질 수 있으므로 '존재 여부'만 본다. `@concept:none`도 존재로 인정.)
 // init.json이 없거나 깨졌으면(cfg=null) 스키마 기본 ignoreGlobs로 폴백한다.
+// 사람이 표시 생략 허용(allowUntagged)을 켠 프로젝트도 표식 없는 검사 파일은 허용 대상이 아니라 이 항목에 나온다(꺼진 때와 같다).
 // 표식은 커밋될 내용(commit)에서 읽는다 — 커밋에 실제로 들어갈 파일 기준(governance-mode).
 export const checkConceptless: GateCheck = async ({ root, files, cfg, locale, commit }) => {
   const ignoreGlobs = cfg?.ignoreGlobs ?? defaultIgnoreGlobs();
@@ -18,7 +19,9 @@ export const checkConceptless: GateCheck = async ({ root, files, cfg, locale, co
     files,
     ignoreGlobs,
     cfg?.noConceptGlobs ?? [],
-    commitReader(commit)
+    commitReader(commit),
+    cfg?.allowUntagged ?? false,
+    effectiveTestGlobs(cfg)
   );
   if (conceptless.length === 0) return null;
   const list = conceptless.map((f) => sanitizeText(f)).join(', ');

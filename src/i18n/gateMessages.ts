@@ -86,7 +86,7 @@ const ko = {
 
   // --- 거버넌스 파일 -------------------------------------------------------------------
   govConfigCommit: (rel: string, removed: boolean) =>
-    `[GOVERNANCE CONFIG] 거버넌스 설정(${rel})이 ${removed ? '삭제됩니다' : '바뀌어 커밋에 들어옵니다'} — 문지기 강도·검사 범위·무시 목록을 정하는 파일입니다. 사용자가 직접 승인한 변경인지 확인하세요.`,
+    `[GOVERNANCE CONFIG] 거버넌스 설정(${rel})이 ${removed ? '삭제됩니다' : '바뀌어 커밋에 들어옵니다'} — 문지기 강도·검사 범위·무시 목록·표식 생략 허용을 정하는 파일입니다. 사용자가 직접 승인한 변경인지 확인하세요.`,
   govConceptDelete: (list: string) =>
     `[CONCEPT DELETE] 개념 문서 삭제 — ${list}. 개념을 지우면 그 규칙과 증빙·기준선 기록이 함께 사라지고, 그 개념을 가리키던 코드 표식은 미지 표식이 됩니다. 사용자가 직접 요청한 삭제인지 확인하세요.`,
   govRecordDelete: (list: string) =>
@@ -95,9 +95,9 @@ const ko = {
   govHumanRecord: (list: string) =>
     `[HUMAN RECORD] 바뀐 개념을 코드 변경 없이(no-code) 또는 검사 검토로(test-review) 통과시키는 판단 기록이 커밋에 들어옵니다 — ${list}. 사람의 확인을 거친 기록인지 확인하세요.`,
   govConfigUncommitted: (rel: string) =>
-    `[GOVERNANCE CONFIG] 거버넌스 설정(${rel})이 마지막 커밋과 다른데 이번 커밋에 들어오지 않습니다 — 문지기는 이 커밋되지 않은 설정(강도·검사 범위·무시 목록)으로 판정합니다. 사용자가 직접 바꾼 설정인지 확인하세요.`,
+    `[GOVERNANCE CONFIG] 거버넌스 설정(${rel})이 마지막 커밋과 다른데 이번 커밋에 들어오지 않습니다 — 문지기는 이 커밋되지 않은 설정(강도·검사 범위·무시 목록·표식 생략 허용)으로 판정합니다. 사용자가 직접 바꾼 설정인지 확인하세요.`,
   govEditConfig: (shown: string) =>
-    `[GOVERNANCE CONFIG] 거버넌스 설정 파일(${shown})을 직접 고치려 합니다 — 문지기 강도·검사 범위·무시 목록은 사용자만 바꿉니다.`,
+    `[GOVERNANCE CONFIG] 거버넌스 설정 파일(${shown})을 직접 고치려 합니다 — 문지기 강도·검사 범위·무시 목록·표식 생략 허용은 사용자만 바꿉니다.`,
   govEditRecord: (shown: string) =>
     `[GOVERNANCE RECORD] 증빙·기준선 기록(${shown})을 직접 고치려 합니다 — 기록은 정식 명령(attest-consistency·attest-test-review·attest-no-code)과 커밋 뒤 결산만 씁니다.`,
   govEditConceptDoc: (shown: string) =>
@@ -180,7 +180,7 @@ const en: GateText = {
     `[CONCEPT DRIFT] ${detail}${more}. The concept document is in this commit, but none of its linked code came along. Stage the code you changed for the concept change — the files you actually edited, not every linked file. If the concept edit truly needs no code change, confirm with the user, record it, and commit again: attest-no-code <slug> --note "<reason>" (bound to the concept's current fingerprint; the reason is kept in the reconcile history).`,
 
   govConfigCommit: (rel, removed) =>
-    `[GOVERNANCE CONFIG] The governance settings (${rel}) ${removed ? 'will be deleted' : 'changed and are part of this commit'} — this file sets the gate strength, check scope and ignore list. Confirm the change was approved by the user.`,
+    `[GOVERNANCE CONFIG] The governance settings (${rel}) ${removed ? 'will be deleted' : 'changed and are part of this commit'} — this file sets the gate strength, check scope, ignore list and untagged-code allowance. Confirm the change was approved by the user.`,
   govConceptDelete: (list) =>
     `[CONCEPT DELETE] Concept documents deleted — ${list}. Deleting a concept removes its rules along with its evidence and baseline records, and code markers pointing at it become unknown markers. Confirm the user asked for this deletion.`,
   govRecordDelete: (list) =>
@@ -189,9 +189,9 @@ const en: GateText = {
   govHumanRecord: (list) =>
     `[HUMAN RECORD] Judgment records that let a changed concept pass without code changes (no-code) or via test review (test-review) are in this commit — ${list}. Confirm they were recorded with a person's confirmation.`,
   govConfigUncommitted: (rel) =>
-    `[GOVERNANCE CONFIG] The governance settings (${rel}) differ from the last commit but are not part of this commit — the gate judges by these uncommitted settings (strength, check scope, ignore list). Confirm the user changed them.`,
+    `[GOVERNANCE CONFIG] The governance settings (${rel}) differ from the last commit but are not part of this commit — the gate judges by these uncommitted settings (strength, check scope, ignore list, untagged-code allowance). Confirm the user changed them.`,
   govEditConfig: (shown) =>
-    `[GOVERNANCE CONFIG] About to edit the governance settings file (${shown}) directly — only the user changes the gate strength, check scope and ignore list.`,
+    `[GOVERNANCE CONFIG] About to edit the governance settings file (${shown}) directly — only the user changes the gate strength, check scope, ignore list and untagged-code allowance.`,
   govEditRecord: (shown) =>
     `[GOVERNANCE RECORD] About to edit the evidence/baseline record (${shown}) directly — records are written only by the official commands (attest-consistency, attest-test-review, attest-no-code) and the post-commit reconcile.`,
   govEditConceptDoc: (shown) =>

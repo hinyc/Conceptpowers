@@ -6,6 +6,7 @@ import { join, extname } from 'node:path';
 import { matchesAny } from '../util/glob.js';
 import { leadingCommentBlock } from '../mapping/leadingComment.js';
 import { conceptTagSlugs, NO_CONCEPT_TAG } from '../mapping/scan.js';
+import { InitConfigSchema } from '../schema/initConfig.js';
 
 /** 파일 내용을 읽는 함수 — 없거나 읽을 수 없으면 null. 넘기지 않으면 디스크에서 읽는다. */
 export type ReadContent = (rel: string) => Promise<string | null>;
@@ -36,6 +37,11 @@ const CODE_EXT = new Set([
   '.swift',
 ]);
 
+// 검사 파일을 가르는 이름 규칙 — 설정에 없거나 비었으면 스키마 기본값(testScopeGate와 같은 방식).
+export function effectiveTestGlobs(cfg: { testGlobs?: string[] } | null | undefined): string[] {
+  return cfg?.testGlobs?.length ? cfg.testGlobs : InitConfigSchema.shape.testGlobs.parse(undefined);
+}
+
 // 거버넌스 대상 코드 파일인지 판단한다 (확장자 기준).
 // gap 탐지뿐 아니라 태그 정합성 전체 스캔에서도 비코드 파일(.md 등)을
 // 제외하는 데 재사용된다.
@@ -46,6 +52,8 @@ export function isCodeFile(rel: string): boolean {
 // 주어진 파일들 중 @concept 태그가 없는 코드 파일 경로를 반환한다.
 // - 비코드 확장자, ignoreGlobs 매칭 파일은 대상에서 제외한다.
 // - 개념 없음 영역(noConceptGlobs) 안의 파일은 표식이 없어도 `@concept:none`을 단 것으로 친다.
+// - allowUntagged(사람이 켠 표시 생략 허용)면 검사 파일이 아닌 표식 없는 코드 파일은 "없음"이므로 격차가 아니다.
+//   검사 파일(testGlobs 매칭)은 허용과 무관하게 어떤 개념을 가리켜야 하므로 꺼진 때와 똑같이 격차로 본다.
 // - 읽을 수 없는 파일(삭제/부재)은 개념 없음으로 보지 않고 건너뛴다.
 // - read를 넘기면 디스크 대신 그 내용으로 판정한다(문지기: 커밋될 내용 기준).
 export async function findConceptlessFiles(
@@ -53,12 +61,18 @@ export async function findConceptlessFiles(
   files: string[],
   ignoreGlobs: string[],
   noConceptGlobs: string[] = [],
-  read: ReadContent = diskReader(root)
+  read: ReadContent = diskReader(root),
+  allowUntagged = false,
+  testGlobs: string[] = []
 ): Promise<string[]> {
   const conceptless: string[] = [];
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
+    if (allowUntagged && !matchesAny(rel, testGlobs)) {
+      // 허용 대상(검사 파일이 아닌 코드): 표식이 없으면 "없음"이라 격차가 아니므로 읽을 필요도 없다.
+      continue;
+    }
     const content = await read(rel);
     if (content === null) continue;
     if (conceptTagSlugs(leadingCommentBlock(content)).length === 0) conceptless.push(rel);
@@ -77,12 +91,16 @@ export interface NoConceptCount {
 // 표식은 개념 없음을 명시하는 정당한 장치지만, 커밋의 코드 파일 다수가 그것이면 개념 정의를
 // 건너뛰는 통로가 되므로 안내의 재료로 쓴다(concept-code-mapping). 대상 판정은 findConceptlessFiles와 같다.
 // 개념 없음 영역은 사람이 이미 정한 판단이므로 영역 안의 파일은 세지 않는다(파일마다 다는 "없음"만 센다).
+// 표시 생략 허용(allowUntagged)도 같은 이유로 검사 파일이 아닌 표식 없는 파일은 none·total 어디에도 세지 않는다.
+// 검사 파일(testGlobs 매칭)은 허용이 미치지 않으므로 표식이 없으면 꺼진 때처럼 total에 센다.
 export async function findNoConceptFiles(
   root: string,
   files: string[],
   ignoreGlobs: string[],
   noConceptGlobs: string[] = [],
-  read: ReadContent = diskReader(root)
+  read: ReadContent = diskReader(root),
+  allowUntagged = false,
+  testGlobs: string[] = []
 ): Promise<NoConceptCount> {
   const none: string[] = [];
   let total = 0;
@@ -91,8 +109,9 @@ export async function findNoConceptFiles(
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
     const content = await read(rel);
     if (content === null) continue;
-    total++;
     const slugs = conceptTagSlugs(leadingCommentBlock(content));
+    if (allowUntagged && slugs.length === 0 && !matchesAny(rel, testGlobs)) continue;
+    total++;
     if (slugs.length > 0 && slugs.every((s) => s === NO_CONCEPT_TAG)) none.push(rel);
   }
   return { none, total };

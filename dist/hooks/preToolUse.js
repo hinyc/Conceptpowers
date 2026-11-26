@@ -4152,8 +4152,9 @@ var InitConfigSchema = external_exports.object({
   // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
   referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 마커가 있어야 하며, 개념이 없으면
+  // `@concept:none`을 명시한다(조용히 건너뛰지 않는다). 마커를 생략할 수 있는 길은 사람이 이 설정에
+  // 적는 두 가지뿐이다 — noConceptGlobs(폴더 단위)와 allowUntagged(프로젝트 전체).
   ignoreGlobs: external_exports.array(external_exports.string()).default([
     "docs/conceptpowers/**",
     // 플러그인 생성물(뷰어 등)
@@ -4168,7 +4169,11 @@ var InitConfigSchema = external_exports.object({
   // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
+  // 표시 생략 허용(concept-code-mapping) — 켜면 표식 없는 코드 파일을 프로젝트 전체에서 "없음"으로 친다.
+  // 기본은 꺼짐이고 사람만 켠다(도구·에이전트는 켜지 않는다). 감사에서 빼지는 않으므로 단 표식은 그대로
+  // 검사하며, 검사 파일은 이 값과 무관하게 실제 개념을 가리켜야 한다(concept-driven-tests).
+  allowUntagged: external_exports.boolean().default(false)
 });
 function defaultIgnoreGlobs() {
   return InitConfigSchema.shape.ignoreGlobs.parse(void 0);
@@ -4919,13 +4924,13 @@ var ko = {
   driftMissingDoc: (detail, more) => `[CONCEPT DRIFT] \uC218\uC815\uB41C \uAC1C\uB150\uACFC \uB9F5\uD551\uB41C \uCF54\uB4DC\uAC00 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC654\uB294\uB370 \uAC1C\uB150 \uBB38\uC11C\uAC00 \uD568\uAED8 \uC624\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4 \u2014 ${detail}${more}. \uD45C\uC2DC\uB41C \uAC1C\uB150 \uBB38\uC11C\uB97C \uAC19\uC740 \uCEE4\uBC0B\uC5D0 \uC2A4\uD14C\uC774\uC9D5\uD558\uC138\uC694.`,
   driftMissingCode: (detail, more) => `[CONCEPT DRIFT] ${detail}${more}. \uAC1C\uB150 \uBB38\uC11C\uAC00 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC654\uB294\uB370 \uC5F0\uACB0\uB41C \uCF54\uB4DC\uAC00 \uD558\uB098\uB3C4 \uC548 \uB530\uB77C\uC654\uC2B5\uB2C8\uB2E4. \uAC1C\uB150 \uBCC0\uACBD\uC5D0 \uB9DE\uCDB0 \uACE0\uCE5C \uCF54\uB4DC\uB97C \uD568\uAED8 \uC2A4\uD14C\uC774\uC9D5\uD558\uC138\uC694 \u2014 \uC5F0\uACB0 \uCF54\uB4DC \uC804\uBD80\uAC00 \uC544\uB2C8\uB77C \uC2E4\uC81C\uB85C \uACE0\uCE5C \uD30C\uC77C\uC774\uBA74 \uB429\uB2C8\uB2E4. \uCF54\uB4DC \uBCC0\uACBD\uC774 \uC815\uB9D0 \uD544\uC694 \uC5C6\uB294 \uAC1C\uB150 \uC218\uC815\uC774\uBA74 \uC0AC\uC6A9\uC790 \uD655\uC778 \uD6C4 \uAE30\uB85D\uD558\uACE0 \uB2E4\uC2DC \uCEE4\uBC0B\uD558\uC138\uC694: attest-no-code \uC2AC\uB7EC\uADF8 --note "\uC0AC\uC720" (\uAC1C\uB150\uC758 \uD604\uC7AC \uC9C0\uBB38\uC5D0 \uBB36\uC774\uBA70, \uACB0\uC0B0 \uC774\uB825\uC5D0 \uC0AC\uC720\uAC00 \uD568\uAED8 \uB0A8\uC2B5\uB2C8\uB2E4).`,
   // --- 거버넌스 파일 -------------------------------------------------------------------
-  govConfigCommit: (rel, removed) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815(${rel})\uC774 ${removed ? "\uC0AD\uC81C\uB429\uB2C8\uB2E4" : "\uBC14\uB00C\uC5B4 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC635\uB2C8\uB2E4"} \u2014 \uBB38\uC9C0\uAE30 \uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D\uC744 \uC815\uD558\uB294 \uD30C\uC77C\uC785\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC2B9\uC778\uD55C \uBCC0\uACBD\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
+  govConfigCommit: (rel, removed) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815(${rel})\uC774 ${removed ? "\uC0AD\uC81C\uB429\uB2C8\uB2E4" : "\uBC14\uB00C\uC5B4 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC635\uB2C8\uB2E4"} \u2014 \uBB38\uC9C0\uAE30 \uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D\xB7\uD45C\uC2DD \uC0DD\uB7B5 \uD5C8\uC6A9\uC744 \uC815\uD558\uB294 \uD30C\uC77C\uC785\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC2B9\uC778\uD55C \uBCC0\uACBD\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
   govConceptDelete: (list) => `[CONCEPT DELETE] \uAC1C\uB150 \uBB38\uC11C \uC0AD\uC81C \u2014 ${list}. \uAC1C\uB150\uC744 \uC9C0\uC6B0\uBA74 \uADF8 \uADDC\uCE59\uACFC \uC99D\uBE59\xB7\uAE30\uC900\uC120 \uAE30\uB85D\uC774 \uD568\uAED8 \uC0AC\uB77C\uC9C0\uACE0, \uADF8 \uAC1C\uB150\uC744 \uAC00\uB9AC\uD0A4\uB358 \uCF54\uB4DC \uD45C\uC2DD\uC740 \uBBF8\uC9C0 \uD45C\uC2DD\uC774 \uB429\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC694\uCCAD\uD55C \uC0AD\uC81C\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
   govRecordDelete: (list) => `[GOVERNANCE RECORD] \uC99D\uBE59\xB7\uAE30\uC900\uC120 \uAE30\uB85D \uD30C\uC77C \uC0AD\uC81C \u2014 ${list}. \uAE30\uB85D\uC744 \uC9C0\uC6B0\uBA74 \uC9C0\uB09C \uD310\uC815\uC758 \uADFC\uAC70\uAC00 \uC0AC\uB77C\uC9D1\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC694\uCCAD\uD55C \uC0AD\uC81C\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
   govUnreadable: (label) => `${label}(\uC77D\uC744 \uC218 \uC5C6\uC74C)`,
   govHumanRecord: (list) => `[HUMAN RECORD] \uBC14\uB010 \uAC1C\uB150\uC744 \uCF54\uB4DC \uBCC0\uACBD \uC5C6\uC774(no-code) \uB610\uB294 \uAC80\uC0AC \uAC80\uD1A0\uB85C(test-review) \uD1B5\uACFC\uC2DC\uD0A4\uB294 \uD310\uB2E8 \uAE30\uB85D\uC774 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC635\uB2C8\uB2E4 \u2014 ${list}. \uC0AC\uB78C\uC758 \uD655\uC778\uC744 \uAC70\uCE5C \uAE30\uB85D\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
-  govConfigUncommitted: (rel) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815(${rel})\uC774 \uB9C8\uC9C0\uB9C9 \uCEE4\uBC0B\uACFC \uB2E4\uB978\uB370 \uC774\uBC88 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC624\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 \uBB38\uC9C0\uAE30\uB294 \uC774 \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC740 \uC124\uC815(\uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D)\uC73C\uB85C \uD310\uC815\uD569\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uBC14\uAFBC \uC124\uC815\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
-  govEditConfig: (shown) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815 \uD30C\uC77C(${shown})\uC744 \uC9C1\uC811 \uACE0\uCE58\uB824 \uD569\uB2C8\uB2E4 \u2014 \uBB38\uC9C0\uAE30 \uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D\uC740 \uC0AC\uC6A9\uC790\uB9CC \uBC14\uAFC9\uB2C8\uB2E4.`,
+  govConfigUncommitted: (rel) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815(${rel})\uC774 \uB9C8\uC9C0\uB9C9 \uCEE4\uBC0B\uACFC \uB2E4\uB978\uB370 \uC774\uBC88 \uCEE4\uBC0B\uC5D0 \uB4E4\uC5B4\uC624\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 \uBB38\uC9C0\uAE30\uB294 \uC774 \uCEE4\uBC0B\uB418\uC9C0 \uC54A\uC740 \uC124\uC815(\uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D\xB7\uD45C\uC2DD \uC0DD\uB7B5 \uD5C8\uC6A9)\uC73C\uB85C \uD310\uC815\uD569\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uBC14\uAFBC \uC124\uC815\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694.`,
+  govEditConfig: (shown) => `[GOVERNANCE CONFIG] \uAC70\uBC84\uB10C\uC2A4 \uC124\uC815 \uD30C\uC77C(${shown})\uC744 \uC9C1\uC811 \uACE0\uCE58\uB824 \uD569\uB2C8\uB2E4 \u2014 \uBB38\uC9C0\uAE30 \uAC15\uB3C4\xB7\uAC80\uC0AC \uBC94\uC704\xB7\uBB34\uC2DC \uBAA9\uB85D\xB7\uD45C\uC2DD \uC0DD\uB7B5 \uD5C8\uC6A9\uC740 \uC0AC\uC6A9\uC790\uB9CC \uBC14\uAFC9\uB2C8\uB2E4.`,
   govEditRecord: (shown) => `[GOVERNANCE RECORD] \uC99D\uBE59\xB7\uAE30\uC900\uC120 \uAE30\uB85D(${shown})\uC744 \uC9C1\uC811 \uACE0\uCE58\uB824 \uD569\uB2C8\uB2E4 \u2014 \uAE30\uB85D\uC740 \uC815\uC2DD \uBA85\uB839(attest-consistency\xB7attest-test-review\xB7attest-no-code)\uACFC \uCEE4\uBC0B \uB4A4 \uACB0\uC0B0\uB9CC \uC501\uB2C8\uB2E4.`,
   govEditConceptDoc: (shown) => `[CONCEPT DOC] \uAC1C\uB150 \uBB38\uC11C(${shown})\uB97C \uC9C1\uC811 \uACE0\uCE58\uB824 \uD569\uB2C8\uB2E4 \u2014 \uAC1C\uB150 \uBB38\uC11C\uC758 \uB0B4\uC6A9 \uBCC0\uACBD\uC740 \uC0AC\uB78C\uC758 \uD655\uC778\uC744 \uAC70\uCE69\uB2C8\uB2E4.`
 };
@@ -4967,13 +4972,13 @@ var en = {
   driftDocLabel: (slug3, docPath, label) => `${slug3} (doc: ${docPath}) <- ${label}`,
   driftMissingDoc: (detail, more) => `[CONCEPT DRIFT] Code mapped to a modified concept is in this commit, but the concept document did not come along \u2014 ${detail}${more}. Stage the listed concept documents in the same commit.`,
   driftMissingCode: (detail, more) => `[CONCEPT DRIFT] ${detail}${more}. The concept document is in this commit, but none of its linked code came along. Stage the code you changed for the concept change \u2014 the files you actually edited, not every linked file. If the concept edit truly needs no code change, confirm with the user, record it, and commit again: attest-no-code <slug> --note "<reason>" (bound to the concept's current fingerprint; the reason is kept in the reconcile history).`,
-  govConfigCommit: (rel, removed) => `[GOVERNANCE CONFIG] The governance settings (${rel}) ${removed ? "will be deleted" : "changed and are part of this commit"} \u2014 this file sets the gate strength, check scope and ignore list. Confirm the change was approved by the user.`,
+  govConfigCommit: (rel, removed) => `[GOVERNANCE CONFIG] The governance settings (${rel}) ${removed ? "will be deleted" : "changed and are part of this commit"} \u2014 this file sets the gate strength, check scope, ignore list and untagged-code allowance. Confirm the change was approved by the user.`,
   govConceptDelete: (list) => `[CONCEPT DELETE] Concept documents deleted \u2014 ${list}. Deleting a concept removes its rules along with its evidence and baseline records, and code markers pointing at it become unknown markers. Confirm the user asked for this deletion.`,
   govRecordDelete: (list) => `[GOVERNANCE RECORD] Evidence/baseline record files deleted \u2014 ${list}. Deleting records removes the basis of past judgments. Confirm the user asked for this deletion.`,
   govUnreadable: (label) => `${label} (unreadable)`,
   govHumanRecord: (list) => `[HUMAN RECORD] Judgment records that let a changed concept pass without code changes (no-code) or via test review (test-review) are in this commit \u2014 ${list}. Confirm they were recorded with a person's confirmation.`,
-  govConfigUncommitted: (rel) => `[GOVERNANCE CONFIG] The governance settings (${rel}) differ from the last commit but are not part of this commit \u2014 the gate judges by these uncommitted settings (strength, check scope, ignore list). Confirm the user changed them.`,
-  govEditConfig: (shown) => `[GOVERNANCE CONFIG] About to edit the governance settings file (${shown}) directly \u2014 only the user changes the gate strength, check scope and ignore list.`,
+  govConfigUncommitted: (rel) => `[GOVERNANCE CONFIG] The governance settings (${rel}) differ from the last commit but are not part of this commit \u2014 the gate judges by these uncommitted settings (strength, check scope, ignore list, untagged-code allowance). Confirm the user changed them.`,
+  govEditConfig: (shown) => `[GOVERNANCE CONFIG] About to edit the governance settings file (${shown}) directly \u2014 only the user changes the gate strength, check scope, ignore list and untagged-code allowance.`,
   govEditRecord: (shown) => `[GOVERNANCE RECORD] About to edit the evidence/baseline record (${shown}) directly \u2014 records are written only by the official commands (attest-consistency, attest-test-review, attest-no-code) and the post-commit reconcile.`,
   govEditConceptDoc: (shown) => `[CONCEPT DOC] About to edit the concept document (${shown}) directly \u2014 changes to a concept document's content go through a person's confirmation.`
 };
@@ -5086,21 +5091,27 @@ var CODE_EXT = /* @__PURE__ */ new Set([
   ".kt",
   ".swift"
 ]);
+function effectiveTestGlobs(cfg) {
+  return cfg?.testGlobs?.length ? cfg.testGlobs : InitConfigSchema.shape.testGlobs.parse(void 0);
+}
 function isCodeFile(rel) {
   return CODE_EXT.has(extname(rel).toLowerCase());
 }
-async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root)) {
+async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root), allowUntagged = false, testGlobs = []) {
   const conceptless = [];
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
+    if (allowUntagged && !matchesAny(rel, testGlobs)) {
+      continue;
+    }
     const content = await read(rel);
     if (content === null) continue;
     if (conceptTagSlugs(leadingCommentBlock(content)).length === 0) conceptless.push(rel);
   }
   return conceptless;
 }
-async function findNoConceptFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root)) {
+async function findNoConceptFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root), allowUntagged = false, testGlobs = []) {
   const none = [];
   let total = 0;
   for (const rel of files) {
@@ -5108,8 +5119,9 @@ async function findNoConceptFiles(root, files, ignoreGlobs, noConceptGlobs = [],
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
     const content = await read(rel);
     if (content === null) continue;
-    total++;
     const slugs = conceptTagSlugs(leadingCommentBlock(content));
+    if (allowUntagged && slugs.length === 0 && !matchesAny(rel, testGlobs)) continue;
+    total++;
     if (slugs.length > 0 && slugs.every((s) => s === NO_CONCEPT_TAG)) none.push(rel);
   }
   return { none, total };
@@ -5248,7 +5260,9 @@ var checkConceptless = async ({ root, files, cfg, locale, commit }) => {
     files,
     ignoreGlobs,
     cfg?.noConceptGlobs ?? [],
-    commitReader(commit)
+    commitReader(commit),
+    cfg?.allowUntagged ?? false,
+    effectiveTestGlobs(cfg)
   );
   if (conceptless.length === 0) return null;
   const list = conceptless.map((f) => sanitizeText(f)).join(", ");
@@ -5798,6 +5812,7 @@ function mergeAlwaysAsk(...findings) {
 
 // src/hooks/gates/governanceFilesGate.ts
 var INIT_REL = `${CP_REL}/init.json`;
+var USER_OWNED_SETTINGS = "enforcement level, ignoreGlobs, noConceptGlobs, testGlobs, allowUntagged (lets code files without a marker count as marked none; test files (testGlobs) are excluded \u2014 they are handled as if the option were off) and the concept-driven-tests switch";
 var DATA_PREFIX = `${CP_REL}/concepts/data/`;
 var ALIGN_PREFIX = `${CP_REL}/concepts/.alignment/`;
 var HUMAN_RECORD_FILES = [
@@ -5820,7 +5835,7 @@ function checkGovernanceFiles(files, deleted, locale) {
   if (configRemoved || changed.includes(INIT_REL)) {
     reasons.push(t.govConfigCommit(INIT_REL, configRemoved));
     contexts.push(
-      "The governance settings file (init.json) is changed or deleted in this commit. It controls enforcement level, ignoreGlobs, testGlobs and the concept-driven-tests switch \u2014 only the user may change these. Confirm with the user that every change in this file is theirs before proceeding."
+      "The governance settings file (init.json) is changed or deleted in this commit. It controls " + USER_OWNED_SETTINGS + " \u2014 only the user may change these. Confirm with the user that every change in this file is theirs before proceeding."
     );
   }
   const removedConcepts = stagedConceptSlugs(removed);
@@ -5940,7 +5955,7 @@ async function checkUncommittedConfig(root, files, locale) {
   return {
     gate: "governance-files",
     reason: gateText[locale].govConfigUncommitted(INIT_REL),
-    context: "Governance-files gate (asks in every enforcement mode): init.json on disk differs from the last commit and is not part of this commit, yet the gate reads enforcement level, ignoreGlobs, testGlobs and the concept-driven-tests switch from disk. Only the user may change these settings. Confirm with the user that the uncommitted change is theirs (and consider committing it) before proceeding."
+    context: "Governance-files gate (asks in every enforcement mode): init.json on disk differs from the last commit and is not part of this commit, yet the gate reads " + USER_OWNED_SETTINGS + " from disk. Only the user may change these settings. Confirm with the user that the uncommitted change is theirs (and consider committing it) before proceeding."
   };
 }
 function configDiffers(config, headConfig, allowDefaults) {
@@ -5992,7 +6007,7 @@ function governedEditFinding(root, filePath, locale) {
     return {
       gate: "governance-files",
       reason: t.govEditConfig(shown),
-      context: "The agent is about to edit init.json directly. Enforcement level, ignoreGlobs, testGlobs and conceptDrivenTests are user-owned settings; the agent must not change them on its own. Proceed only if the user explicitly asked for this exact change."
+      context: "The agent is about to edit init.json directly. " + USER_OWNED_SETTINGS + " are user-owned settings (conceptDrivenTests is the concept-driven-tests switch); the agent must not change them on its own. Proceed only if the user explicitly asked for this exact change."
     };
   }
   if (rel.startsWith(foldCase(ALIGN_PREFIX))) {
@@ -6027,7 +6042,9 @@ async function noConceptReviewNote({
     files,
     ignoreGlobs,
     cfg?.noConceptGlobs ?? [],
-    commitReader(commit)
+    commitReader(commit),
+    cfg?.allowUntagged ?? false,
+    effectiveTestGlobs(cfg)
   );
   if (none.length < MIN_NONE || none.length * 2 < total) return null;
   const shown = none.slice(0, MAX_LISTED2).map((p) => sanitizeText(p));

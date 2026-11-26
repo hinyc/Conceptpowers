@@ -69,8 +69,9 @@ needed, hand off to `conceptpowers:update-concepts`.
      the top-level baseline documents, not to concepts.
    - The commit gate also catches code with no marker (`[WARNING] Code without a concept`, shown in the project's `locale`). `@concept:none` counts as
      a marker. Only regenerated or external code matching `ignoreGlobs` in `init.json` (`dist/**`,
-     `**/*.generated.*` …) is exempt, and unmarked files inside `noConceptGlobs` count as `none`. At no enforcement
-     level does this warning alone block a commit.
+     `**/*.generated.*` …) is exempt, and unmarked files inside `noConceptGlobs` — or anywhere in the project when
+     `allowUntagged` is on (tag rules below; test files (`testGlobs`) are excluded — they are handled as if it were off) — count as `none`. At no enforcement level does this warning alone block
+     a commit.
 3. **Feature coverage (knowledge graph)**: for every entry point through which the user uses a feature (form submit,
    menu, route, command, etc. — per feature), check that `features/` has a feature spec with `concepts`
    (feature → concept) and `codePaths` (feature → code) filled in. If missing or empty, create it with the
@@ -91,15 +92,24 @@ needed, hand off to `conceptpowers:update-concepts`.
 
 ## Tag rules and mapping refresh
 
-1. **Every governed code file carries an explicit `@concept` marker at the top** — no silent gaps.
+1. **Every governed code file carries an explicit `@concept` marker at the top** — no silent gaps. The project-wide
+   exception is `allowUntagged` below.
+   - **`allowUntagged`** (`init.json`, default `false`): when a person has turned it on, a code file with no marker
+     counts as `none` — it is not a warning or a gap, so do not require or push a tag on it (this also applies to the
+     Steps above). A file that does carry a marker follows that marker, and a tag pointing at an undefined concept is
+     still checked (`unknownTags`). The test-file rules do not change. `noConceptGlobs` covers folders;
+     `allowUntagged` covers the whole project. Only a person turns it on, by editing the config file — **never turn
+     it on yourself and never edit `init.json` for it.**
    - If a concept applies, put `@concept:<slug>` **inside the top comment block, before the first line of code**.
      The engine scans only that block — if `'use client';`, a docstring or `<template>` comes first, the marker is
      not seen. The slug must match the concept slug exactly. If a file spans several concepts, add several tags
      (after the split review of concept `concept-code-binding`).
    - If no concept applies, put **`@concept:none`** in the same place. It is a reserved word: it passes the gate but
      is not treated as a concept.
-   - `ignoreGlobs` auto-excludes only regenerated and external code. Hand-written code needs a marker — inside a
-     no-concept area the user declared with `noConceptGlobs`, it counts as `none` without a marker.
+   - `ignoreGlobs` auto-excludes only regenerated and external code. Unless `allowUntagged` is on, hand-written code
+     needs a marker — inside a no-concept area the user declared with `noConceptGlobs`, it counts as `none` without a
+     marker. Even when `allowUntagged` is on, test files (`testGlobs`) are excluded — they are handled as if the option
+     were off, so they still need a marker.
      Add a path to `ignoreGlobs` only when it is truly generated — never widen it to dodge the audit.
 2. Refresh the mapping cache:
    `node "<cli>" map --root . <changed files...>`
