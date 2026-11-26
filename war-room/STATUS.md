@@ -6,11 +6,15 @@
 
 ## 진행 중 (형식: `롤 · 작업 · 등급 · 시도 n/최대 · 남은 실패 기준 · 기준이 적힌 곳(계획·설계 문서 경로)`)
 
+- release · 패치 릴리스 (allowUntagged 참고 지적 반영분) · 상(정형) · 시도 1 · 아직 확인 없음 · 기준: war-room/roles/release.md. push는 사용자 확인
+
 - 공식 디렉터리 배포 준비 (develop 브랜치). 단계: 1 개념(concept-steward) → 2 게이트 문구·기본 locale(engine) → 3 스킬 영어화(skill-author) → 4 뷰어(viewer) → 5 배포 준비 → 6 릴리스 흐름 develop→main(release) → 7 레드팀·directory strict validate
 - 지금: v1.19.0 push 완료(2026-11-11, develop·main·태그). 다음: 사용자가 claude.ai/directory/manage 포털 제출, Private vulnerability reporting 켜기
 
 ## 다음 할 일
 
+- engine 후속(선택): `src/hooks/gates/governanceFilesGate.ts:336` 편집 안내의 "(conceptDrivenTests is the concept-driven-tests switch)" 괄호가 USER_OWNED_SETTINGS 목록과 겹침 — 정리
+- skill-author 후속(선택): init·scan 스킬의 "test-file rules do not change"를 "검사 파일은 허용이 켜져도 마커가 필요하다"처럼 직접적인 표현으로
 - engine 후속(선택): `src/hooks/sessionStart.ts:104-107` 검사 파일 표식 안내가 conceptDrivenTests 켜짐일 때만 붙음. 게이트·감사는 스위치와 무관하게 표식 없는 검사 파일을 잡으므로 조건 맞출지 검토
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
@@ -31,10 +35,13 @@
 ## 점검할 결정 (중·상 일에서 매니저가 정한 결정. 형식: 날짜 · 작업 · 결정 · 이유 · 되돌리는 법. 점검이 끝나면 지우고, 다시 쓸 때도 이어서 남긴다. 10KB를 넘겨도 옮기거나 자르지 않는다)
 
 - 2026-11-26 · allowUntagged · 검사 파일 판별은 testGlobs(비면 스키마 기본값), conceptDrivenTests와 무관하게 허용에서 제외 · 개념 불변 "허용과 무관하게 검사 파일은 개념을 가리켜야" · gaps.ts의 testGlobs 인자 제거
+- 2026-11-26 · allowUntagged 참고 지적 · 게이트 사람용 ko/en 문구에는 "표식 생략 허용"만 넣고 검사 파일 예외 단서는 에이전트용 안내에만 둠 · 사람용 한 줄 문구가 길어지지 않게, 판정 에이전트 동의 · gateMessages.ts에 단서 추가
+- 2026-11-26 · allowUntagged 참고 지적 · init·scan의 "test-file rules do not change"는 같은 문단에 예외가 있어 고치지 않음 · 뜻이 맞음, 판정 에이전트 동의 · 해당 문장 교체
 - 2026-11-26 · allowUntagged · 허용이 켜져도 표식 없는 검사 파일은 게이트 "개념 없는 코드" 항목에도 나옴(꺼진 때와 동일) · 꺼진 때와 같게 다룬다는 규칙 · testScopeGate.test.ts 단정과 gaps.ts 조건 되돌리기
 
 ## 최근 완료 (STATUS.md 전체 10KB 이하, 넘치면 오래된 것부터 archive/로)
 
+- 2026-11-26 · skill-author+engine+manager · allowUntagged 참고 지적 반영: redteam·scan 스킬·README에 검사 파일 예외, governanceFilesGate 안내에 allowUntagged·noConceptGlobs (상 병렬, 판정 3회: S1 실패 → scan 수정 → README ignoreGlobs 행 2줄 매니저 직접 수정 후 통과, 테스트 1959개·typecheck·build 통과)
 - 2026-11-26 · concept-steward+engine+skill-author · @concept 표식 생략 허용 옵션(allowUntagged) (상, 시도 2/2 통과: 검사 파일은 허용에서 제외, 테스트 1957개 통과, typecheck·build 통과, develop 46fdb5d, .approved/ 제외, push 안 함)
 - 2026-11-26 · manager · war-room 템플릿 4 → 8 반영 (하, 스크립트 검사 ✓, PLACES.md 생성, 사용자 문장 0줄)
 - 2026-11-19 · release · v1.21.2 패치 릴리스 (정형, 문서만 바뀌어 별도 테스트·빌드 생략, 스크립트 검증 통과, develop 878dfc5, main 713edc6, 태그 v1.21.2, push 완료)

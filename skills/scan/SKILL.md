@@ -70,7 +70,7 @@ needed, hand off to `conceptpowers:update-concepts`.
    - The commit gate also catches code with no marker (`[WARNING] Code without a concept`, shown in the project's `locale`). `@concept:none` counts as
      a marker. Only regenerated or external code matching `ignoreGlobs` in `init.json` (`dist/**`,
      `**/*.generated.*` …) is exempt, and unmarked files inside `noConceptGlobs` — or anywhere in the project when
-     `allowUntagged` is on (tag rules below) — count as `none`. At no enforcement level does this warning alone block
+     `allowUntagged` is on (tag rules below; test files (`testGlobs`) are excluded — they are handled as if it were off) — count as `none`. At no enforcement level does this warning alone block
      a commit.
 3. **Feature coverage (knowledge graph)**: for every entry point through which the user uses a feature (form submit,
    menu, route, command, etc. — per feature), check that `features/` has a feature spec with `concepts`
@@ -108,7 +108,8 @@ needed, hand off to `conceptpowers:update-concepts`.
      is not treated as a concept.
    - `ignoreGlobs` auto-excludes only regenerated and external code. Unless `allowUntagged` is on, hand-written code
      needs a marker — inside a no-concept area the user declared with `noConceptGlobs`, it counts as `none` without a
-     marker.
+     marker. Even when `allowUntagged` is on, test files (`testGlobs`) are excluded — they are handled as if the option
+     were off, so they still need a marker.
      Add a path to `ignoreGlobs` only when it is truly generated — never widen it to dodge the audit.
 2. Refresh the mapping cache:
    `node "<cli>" map --root . <changed files...>`

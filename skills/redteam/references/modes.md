@@ -35,7 +35,8 @@ the chosen mode. The flow and the prohibitions stay in the skill's `SKILL.md`.
 
 1. The concept-side targets and the sample-checking rule follow the "③ Whole project" collection of
    `conceptpowers:review` as is. On top of that, add the redteam-only targets: files with `@concept:none` and files in
-   a no-concept area (`noConceptGlobs`), plus files with no marker when `allowUntagged` is `true` in `init.json`.
+   a no-concept area (`noConceptGlobs`), plus files with no marker when `allowUntagged` is `true` in `init.json` (test files (`testGlobs`) are excluded
+   from that — they are handled as if the option were off).
 2. Before starting, state the scale (number of concepts and files), and record in the report the files that were only
    sampled rather than read in full.
 3. In this mode the duplication axis looks across concept boundaries (whether files of different concepts do the

@@ -13,7 +13,8 @@ see `SKILL.md`, so every rule they must follow is written here.
 | No marker                               | —                                       | —                                                                                                                                                      | Not judged                                   |
 
 - When `allowUntagged` is `true` in `init.json` (default `false`; only a person turns it on), a file with no marker
-  counts as `none`: use the `@concept:none` row for it, not the "No marker" row.
+  counts as `none`: use the `@concept:none` row for it, not the "No marker" row. Test files (`testGlobs`) are
+  excluded from this — they are handled as if the option were off.
 - Do not call `@concept:none` code overreach solely because "no concept requires it". Having no concept is an
   allowed state.
 - Code marked `none` that actually carries a promise (rule) to the user is only reported as a **`none`

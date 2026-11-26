@@ -23,6 +23,9 @@ import type { Locale } from '../../schema/initConfig.js';
 import type { GateFinding } from './types.js';
 
 const INIT_REL = `${CP_REL}/init.json`;
+// 사람만 정하는 init.json 설정 안내 — 판정에는 쓰이지 않는 안내 문구다. 표식 생략 길(noConceptGlobs·allowUntagged)도 포함한다.
+const USER_OWNED_SETTINGS =
+  'enforcement level, ignoreGlobs, noConceptGlobs, testGlobs, allowUntagged (lets code files without a marker count as marked none; test files (testGlobs) are excluded — they are handled as if the option were off) and the concept-driven-tests switch';
 const DATA_PREFIX = `${CP_REL}/concepts/data/`;
 const ALIGN_PREFIX = `${CP_REL}/concepts/.alignment/`;
 export const HUMAN_RECORD_FILES = [
@@ -53,7 +56,9 @@ export function checkGovernanceFiles(
   if (configRemoved || changed.includes(INIT_REL)) {
     reasons.push(t.govConfigCommit(INIT_REL, configRemoved));
     contexts.push(
-      'The governance settings file (init.json) is changed or deleted in this commit. It controls enforcement level, ignoreGlobs, testGlobs and the concept-driven-tests switch — only the user may change these. Confirm with the user that every change in this file is theirs before proceeding.'
+      'The governance settings file (init.json) is changed or deleted in this commit. It controls ' +
+        USER_OWNED_SETTINGS +
+        ' — only the user may change these. Confirm with the user that every change in this file is theirs before proceeding.'
     );
   }
   const removedConcepts = stagedConceptSlugs(removed);
@@ -234,7 +239,9 @@ export async function checkUncommittedConfig(
     gate: 'governance-files',
     reason: gateText[locale].govConfigUncommitted(INIT_REL),
     context:
-      'Governance-files gate (asks in every enforcement mode): init.json on disk differs from the last commit and is not part of this commit, yet the gate reads enforcement level, ignoreGlobs, testGlobs and the concept-driven-tests switch from disk. Only the user may change these settings. Confirm with the user that the uncommitted change is theirs (and consider committing it) before proceeding.',
+      'Governance-files gate (asks in every enforcement mode): init.json on disk differs from the last commit and is not part of this commit, yet the gate reads ' +
+      USER_OWNED_SETTINGS +
+      ' from disk. Only the user may change these settings. Confirm with the user that the uncommitted change is theirs (and consider committing it) before proceeding.',
   };
 }
 
@@ -324,7 +331,9 @@ export function governedEditFinding(
       gate: 'governance-files',
       reason: t.govEditConfig(shown),
       context:
-        'The agent is about to edit init.json directly. Enforcement level, ignoreGlobs, testGlobs and conceptDrivenTests are user-owned settings; the agent must not change them on its own. Proceed only if the user explicitly asked for this exact change.',
+        'The agent is about to edit init.json directly. ' +
+        USER_OWNED_SETTINGS +
+        ' are user-owned settings (conceptDrivenTests is the concept-driven-tests switch); the agent must not change them on its own. Proceed only if the user explicitly asked for this exact change.',
     };
   }
   if (rel.startsWith(fold(ALIGN_PREFIX))) {

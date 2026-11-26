@@ -83,7 +83,8 @@ Sort each target file into one of three by the `@concept` marker at its top (con
 no-concept area / no marker). The yardstick per branch is the classification table in `references/axes.md`. Do not
 judge unmarked code — only pass the list to `conceptpowers:scan`. When `allowUntagged` is `true` in `init.json`
 (default `false`; only a person turns it on — never do it yourself), a file with no marker belongs to the `none`
-branch instead.
+branch instead — except test files (`testGlobs`): they are excluded from this and are handled as if the option were
+off.
 
 ### Step 3 — Per-axis reviewers (parallel)
 

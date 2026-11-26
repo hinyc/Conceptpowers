@@ -116,6 +116,15 @@ describe('거버넌스 설정 변경이 커밋에 들어오면 [규칙: 강도�
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('ghost');
   });
+  it('사람이 정하는 설정 안내에 표식 생략 길(allowUntagged·noConceptGlobs)이 나온다 [제한: 도구나 에이전트가 스스로 표식 생략 허용을 켜는 것]', async () => {
+    setEnforcement('standard');
+    const r = await commit([INIT]);
+    const context = r!.hookSpecificOutput.additionalContext ?? '';
+    expect(context).toContain('allowUntagged');
+    expect(context).toContain('noConceptGlobs');
+    expect(context).toContain('test files (testGlobs) are excluded');
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('표식 생략 허용');
+  });
   it('설정 변경도 삭제도 없는 커밋은 묻지 않는다', async () => {
     setEnforcement('strict');
     writeFileSync(join(root, 'src/a.ts'), '// @concept:none\nexport const a = 1;\n');
@@ -223,6 +232,11 @@ describe('도구로 거버넌스 파일을 직접 고치려 하면 [규칙: 개�
     const r = await edit('Edit', INIT);
     expect(r!.hookSpecificOutput.permissionDecision).toBe('ask');
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+  it('init.json 직접 편집 안내에 allowUntagged가 사람 소유 설정으로 나온다 [제한: 도구나 에이전트가 스스로 표식 생략 허용을 켜는 것]', async () => {
+    const r = await edit('Edit', INIT);
+    expect(r!.hookSpecificOutput.additionalContext).toContain('allowUntagged');
+    expect(r!.hookSpecificOutput.additionalContext).toContain('noConceptGlobs');
   });
   it('증빙·검토·코드무관 기록과 기준선 파일 편집은 ask다', async () => {
     for (const f of [
