@@ -11,7 +11,6 @@
 
 ## 다음 할 일
 
-- allowUntagged 커밋(사용자 요청 시): `docs/conceptpowers/concepts/.approved/`는 낡은 승인본이라 빼는 것이 권장됨. 커밋 뒤 war-room 템플릿 4→8 반영(`upgrade.py apply`, 미커밋 변경 때문에 멈췄음)
 - engine 후속(선택): `src/hooks/sessionStart.ts:104-107` 검사 파일 표식 안내가 conceptDrivenTests 켜짐일 때만 붙음. 게이트·감사는 스위치와 무관하게 표식 없는 검사 파일을 잡으므로 조건 맞출지 검토
 - 단계마다 검증 통과 후 develop에 커밋. main 정리·릴리스는 마지막에 사용자 확인
 - push는 사용자가 직접
@@ -36,7 +35,8 @@
 
 ## 최근 완료 (STATUS.md 전체 10KB 이하, 넘치면 오래된 것부터 archive/로)
 
-- 2026-11-26 · concept-steward+engine+skill-author · @concept 표식 생략 허용 옵션(allowUntagged) (상, 시도 2/2 통과: 검사 파일은 허용에서 제외, 테스트 1957개 통과, typecheck·build 통과, 커밋 전)
+- 2026-11-26 · concept-steward+engine+skill-author · @concept 표식 생략 허용 옵션(allowUntagged) (상, 시도 2/2 통과: 검사 파일은 허용에서 제외, 테스트 1957개 통과, typecheck·build 통과, develop 46fdb5d, .approved/ 제외, push 안 함)
+- 2026-11-26 · manager · war-room 템플릿 4 → 8 반영 (하, 스크립트 검사 ✓, PLACES.md 생성, 사용자 문장 0줄)
 - 2026-11-19 · release · v1.21.2 패치 릴리스 (정형, 문서만 바뀌어 별도 테스트·빌드 생략, 스크립트 검증 통과, develop 878dfc5, main 713edc6, 태그 v1.21.2, push 완료)
 - 2026-11-19 · manager · v1.21.1 push 완료 (develop bf052f6, main 748c06f, 태그 v1.21.1, 사용자 요청으로 계정 전환 후 push, 플러그인 1.21.1 업데이트 확인)
 - 2026-11-19 · manager · release 롤에 "직전 릴리스 이후 바뀐 파일로 별도 전체 테스트·빌드 여부 결정" 규칙 추가 (중, 검증 통과 1회, 결정 3개 점검 통과, 커밋 전)

@@ -75,3 +75,7 @@
 - 이유: 개념 concept-code-mapping 불변 규칙 "표식 생략 허용은 검사 파일에 미치지 않는다"
 - 정한 사람: 사용자 (개념 예외 추가 승인). 검사 파일 판별 방식은 매니저 (STATUS 점검할 결정)
 - 영향: engine (src/audit/gaps.ts, 게이트 2개, cli audit)
+
+## 2026-11-26 · war-room 템플릿 4 → 8 반영
+- 결정: templateVersion 8, PLACES.md 새로 만듦. 옮긴 사용자 문장 0개
+- 정한 사람: 사용자
