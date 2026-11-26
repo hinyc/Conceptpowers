@@ -30,5 +30,6 @@
     "**/test_*.py"
   ],
   "referenceLock": "shared",
-  "noConceptGlobs": []
+  "noConceptGlobs": [],
+  "allowUntagged": false
 }
