@@ -6,7 +6,7 @@
 
 ## 진행 중 (형식: `롤 · 작업 · 등급 · 시도 n/최대 · 남은 실패 기준 · 기준이 적힌 곳(계획·설계 문서 경로)`)
 
-- release · 패치 릴리스 (allowUntagged 참고 지적 반영분) · 상(정형) · 시도 1 · 아직 확인 없음 · 기준: war-room/roles/release.md. push는 사용자 확인
+- release · v1.22.0 릴리스 (allowUntagged feat 46fdb5d 포함이라 minor, 수정 3e67fc0) · 상(정형) · 시도 1 · 아직 확인 없음 · 기준: war-room/roles/release.md. push는 사용자 확인
 
 - 공식 디렉터리 배포 준비 (develop 브랜치). 단계: 1 개념(concept-steward) → 2 게이트 문구·기본 locale(engine) → 3 스킬 영어화(skill-author) → 4 뷰어(viewer) → 5 배포 준비 → 6 릴리스 흐름 develop→main(release) → 7 레드팀·directory strict validate
 - 지금: v1.19.0 push 완료(2026-11-11, develop·main·태그). 다음: 사용자가 claude.ai/directory/manage 포털 제출, Private vulnerability reporting 켜기

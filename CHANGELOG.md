@@ -7,6 +7,16 @@ Versions before 1.14.0 are not summarized here; see the git history and tags.
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-11-26
+
+### Added
+
+- New `init.json` option `allowUntagged` (default `false`, only a human turns it on). When on, a code file without an `@concept` tag is treated as `@concept:none`. Test files (`testGlobs`) are excluded from this allowance and are handled as if the option were off.
+
+### Changed
+
+- The commit gate's notice about human-owned settings now also lists `allowUntagged` and `noConceptGlobs`.
+
 ## [1.21.2] - 2026-11-19
 
 ### Changed
