@@ -27,7 +27,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { effectiveTestGlobs, findConceptlessFiles, findNoConceptFiles } from '../../src/audit/gaps.js';
+import {
+  effectiveTestGlobs,
+  findConceptlessFiles,
+  findNoConceptFiles,
+} from '../../src/audit/gaps.js';
 
 let root: string;
 beforeEach(() => {
@@ -161,7 +165,12 @@ describe('표시 생략 허용 [규칙: 사람이 켠 프로젝트는 표시 없
 
 describe('표시 생략 허용은 검사 파일에 미치지 않는다 [규칙: 검사 파일은 허용과 무관하게 어떤 개념을 가리켜야 한다]', () => {
   const testGlobs = effectiveTestGlobs(null);
-  const files = ['src/plain.ts', 'tests/naked.test.ts', 'tests/tagged.test.ts', 'tests/none.test.ts'];
+  const files = [
+    'src/plain.ts',
+    'tests/naked.test.ts',
+    'tests/tagged.test.ts',
+    'tests/none.test.ts',
+  ];
   beforeEach(() => {
     mkdirSync(join(root, 'tests'), { recursive: true });
     writeFileSync(join(root, 'src/plain.ts'), 'export const p = 1\n');
