@@ -178,9 +178,9 @@
     "note": "8단계 규칙 추가(이력은 더하기만) — 다른 25개 개념과 대조. 무시함 기록 의무·기준선 규칙과 같은 방향, 허용·제한·불변 충돌 없음"
   },
   "concept-code-mapping": {
-    "hash": "3:71cf0d064b26",
+    "hash": "3:5eb7ff2fac8c",
     "result": "pass",
-    "at": "2026-10-28T06:12:05.669Z",
+    "at": "2026-11-26T05:37:25.878Z",
     "compared": [
       "concept-code-binding",
       "concept-driven-tests",
@@ -206,6 +206,7 @@
       "home-search",
       "knowledge-graph-view",
       "list-filter",
+      "pending-diff",
       "viewer-navigation",
       "viewer-readability"
     ]

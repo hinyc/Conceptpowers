@@ -81,7 +81,9 @@ If the user, looking at the concept summary, points out that it is stale, ask (a
 
 Sort each target file into one of three by the `@concept` marker at its top (concept tag present / `none` or
 no-concept area / no marker). The yardstick per branch is the classification table in `references/axes.md`. Do not
-judge unmarked code — only pass the list to `conceptpowers:scan`.
+judge unmarked code — only pass the list to `conceptpowers:scan`. When `allowUntagged` is `true` in `init.json`
+(default `false`; only a person turns it on — never do it yourself), a file with no marker belongs to the `none`
+branch instead.
 
 ### Step 3 — Per-axis reviewers (parallel)
 

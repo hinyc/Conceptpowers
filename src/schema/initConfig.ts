@@ -44,8 +44,9 @@ export const InitConfigSchema = z.object({
   // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
   referenceLock: z.enum(['local', 'shared']).default('shared'),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 마커가 있어야 하며, 개념이 없으면
+  // `@concept:none`을 명시한다(조용히 건너뛰지 않는다). 마커를 생략할 수 있는 길은 사람이 이 설정에
+  // 적는 두 가지뿐이다 — noConceptGlobs(폴더 단위)와 allowUntagged(프로젝트 전체).
   ignoreGlobs: z.array(z.string()).default([
     'docs/conceptpowers/**', // 플러그인 생성물(뷰어 등)
     'dist/**',
@@ -57,6 +58,10 @@ export const InitConfigSchema = z.object({
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
   noConceptGlobs: z.array(z.string()).default([]),
+  // 표시 생략 허용(concept-code-mapping) — 켜면 표식 없는 코드 파일을 프로젝트 전체에서 "없음"으로 친다.
+  // 기본은 꺼짐이고 사람만 켠다(도구·에이전트는 켜지 않는다). 감사에서 빼지는 않으므로 단 표식은 그대로
+  // 검사하며, 검사 파일은 이 값과 무관하게 실제 개념을 가리켜야 한다(concept-driven-tests).
+  allowUntagged: z.boolean().default(false),
 });
 // 모르는 키는 거부하지 않고 버린다(zod 기본 strip) — 읽히지 않아 빠진 옛 키
 // (backfillMode·enforceScope·project)가 기존 init.json에 남아 있어도 검증은 통과한다.

@@ -63,6 +63,22 @@ describe('ensureInitConfigDefaults', () => {
     expect(cfg.locale).toBe('en');
   });
 
+  // 규칙 검증: 빠진 항목만 기본값(꺼짐)으로 채운다 — 도구는 표시 생략 허용·개념 없음 영역을 켜지 않는다
+  it('allowUntagged가 없으면 꺼진 값으로 채운다', async () => {
+    writeConfig(minimal);
+    expect(await ensureInitConfigDefaults(root)).toContain('allowUntagged');
+    expect(readConfig().allowUntagged).toBe(false);
+  });
+
+  it('사람이 적은 allowUntagged·noConceptGlobs를 보존한다', async () => {
+    writeConfig({ ...minimal, allowUntagged: true, noConceptGlobs: ['src/ui/**'] });
+    const added = await ensureInitConfigDefaults(root);
+    expect(added).not.toContain('allowUntagged');
+    expect(added).not.toContain('noConceptGlobs');
+    expect(readConfig().allowUntagged).toBe(true);
+    expect(readConfig().noConceptGlobs).toEqual(['src/ui/**']);
+  });
+
   // 규칙 검증: "도구가 모르는 항목도 지우지 않는다" (immutableRule)
   it('도구가 모르는 항목을 지우지 않는다', async () => {
     writeConfig({ ...minimal, myCustomField: { keep: 'me' } });

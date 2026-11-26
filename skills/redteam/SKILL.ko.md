@@ -73,6 +73,8 @@
 
 대상 파일마다 첫머리 `@concept` 표식으로 셋 중 하나로 나눈다(개념 태그 있음 / `none`·개념 없음 영역 / 표식
 없음). 갈래별 기준은 `references/axes.md`의 분류표. 표식 없는 코드는 판단하지 않고 목록만 `conceptpowers:scan`으로.
+`init.json`의 `allowUntagged`가 `true`면(기본 `false`, 사람만 켠다 — 스스로 켜지 않는다) 표식 없는 파일은 대신 `none`
+갈래에 넣는다.
 
 ### 3단계 — 축별 리뷰어 (병렬)
 

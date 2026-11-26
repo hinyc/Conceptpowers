@@ -407,6 +407,12 @@ describe('커밋에 들어가지 않는 설정 기본값 보충은 묻지 않는
     expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
   });
 
+  it('표시 생략 허용을 켠 변경은 기본값 보충으로 보지 않고 묻는다 [제한: 도구·에이전트는 켜지 않는다]', async () => {
+    writeCfg({ ...readCfg(), noConceptGlobs: [], allowUntagged: true });
+    const r = await commit(['src/a.ts']);
+    expect(r!.hookSpecificOutput.permissionDecisionReason).toContain('init.json');
+  });
+
   it('기본값 보충과 함께 기존 항목 값이 바뀌었으면 묻는다', async () => {
     writeCfg({ ...readCfg(), noConceptGlobs: [], enforcement: 'light' });
     const r = await commit(['src/a.ts']);

@@ -14,7 +14,7 @@ import { renderViewerToDisk } from './viewer/render.js';
 import { viewerLink, viewerStop } from './concept/viewerLink.js';
 import { buildMapping, writeMappingCache, updateMappingCache } from './mapping/scan.js';
 import { auditIntegrity } from './audit/audit.js';
-import { findConceptlessFiles, isCodeFile } from './audit/gaps.js';
+import { effectiveTestGlobs, findConceptlessFiles, isCodeFile } from './audit/gaps.js';
 import { findBrokenCodeCoordinates } from './audit/codeCoordinates.js';
 import { findUnlinkedConcepts } from './audit/unlinked.js';
 import { listTrackedFiles } from './audit/tracked.js';
@@ -317,7 +317,10 @@ export async function runCli(
         o.root,
         scanned,
         ignoreGlobs,
-        cfg?.noConceptGlobs ?? []
+        cfg?.noConceptGlobs ?? [],
+        undefined,
+        cfg?.allowUntagged ?? false,
+        effectiveTestGlobs(cfg)
       );
       const concepts = await listConcepts(o.root);
       // 개념의 근거·코드 연결 목록이 가리키는 코드 자리가 지금도 실재하는지(파일·짚은 심볼·줄 범위).

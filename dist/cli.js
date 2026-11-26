@@ -7162,8 +7162,9 @@ var InitConfigSchema = external_exports.object({
   // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
   referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 마커가 있어야 하며, 개념이 없으면
+  // `@concept:none`을 명시한다(조용히 건너뛰지 않는다). 마커를 생략할 수 있는 길은 사람이 이 설정에
+  // 적는 두 가지뿐이다 — noConceptGlobs(폴더 단위)와 allowUntagged(프로젝트 전체).
   ignoreGlobs: external_exports.array(external_exports.string()).default([
     "docs/conceptpowers/**",
     // 플러그인 생성물(뷰어 등)
@@ -7178,7 +7179,11 @@ var InitConfigSchema = external_exports.object({
   // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
+  // 표시 생략 허용(concept-code-mapping) — 켜면 표식 없는 코드 파일을 프로젝트 전체에서 "없음"으로 친다.
+  // 기본은 꺼짐이고 사람만 켠다(도구·에이전트는 켜지 않는다). 감사에서 빼지는 않으므로 단 표식은 그대로
+  // 검사하며, 검사 파일은 이 값과 무관하게 실제 개념을 가리켜야 한다(concept-driven-tests).
+  allowUntagged: external_exports.boolean().default(false)
 });
 function defaultIgnoreGlobs() {
   return InitConfigSchema.shape.ignoreGlobs.parse(void 0);
@@ -9391,14 +9396,20 @@ var CODE_EXT = /* @__PURE__ */ new Set([
   ".kt",
   ".swift"
 ]);
+function effectiveTestGlobs(cfg) {
+  return cfg?.testGlobs?.length ? cfg.testGlobs : InitConfigSchema.shape.testGlobs.parse(void 0);
+}
 function isCodeFile(rel) {
   return CODE_EXT.has(extname(rel).toLowerCase());
 }
-async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root)) {
+async function findConceptlessFiles(root, files, ignoreGlobs, noConceptGlobs = [], read = diskReader(root), allowUntagged = false, testGlobs = []) {
   const conceptless = [];
   for (const rel of files) {
     if (!isCodeFile(rel)) continue;
     if (matchesAny(rel, ignoreGlobs) || matchesAny(rel, noConceptGlobs)) continue;
+    if (allowUntagged && !matchesAny(rel, testGlobs)) {
+      continue;
+    }
     const content = await read(rel);
     if (content === null) continue;
     if (conceptTagSlugs(leadingCommentBlock(content)).length === 0) conceptless.push(rel);
@@ -10126,7 +10137,10 @@ async function runCli(argv, out = (s) => process.stdout.write(s), err = (s) => p
       o.root,
       scanned,
       ignoreGlobs,
-      cfg?.noConceptGlobs ?? []
+      cfg?.noConceptGlobs ?? [],
+      void 0,
+      cfg?.allowUntagged ?? false,
+      effectiveTestGlobs(cfg)
     );
     const concepts = await listConcepts(o.root);
     const brokenCodeLinks = await findBrokenCodeCoordinates(o.root, concepts);

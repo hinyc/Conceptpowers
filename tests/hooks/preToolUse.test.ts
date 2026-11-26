@@ -13,6 +13,8 @@
 //  - concept-code-mapping 제한 "표식이 없다는 이유만으로 커밋을 막는 것" → 표식 없음은 deny가 아니라 ask다
 //  - concept-code-mapping 구성요소 "개념 없음 영역: … 그 안에서 표식이 없는 파일은 \"없음\" 표식을 단 것으로 친다"
 //    → 사람이 정한 영역(noConceptGlobs) 안의 표식 없는 파일은 경고하지 않는다
+//  - concept-code-mapping 표시 생략 허용(사람이 켠 프로젝트만) → 켜면 개념 없는 코드 항목이 없다 /
+//    꺼두거나 설정이 깨졌으면 기존처럼 묻는다
 //  - concept-code-mapping 구성요소 "대상: … 무시 목록에 등록된 생성물·외부 코드는 대상이 아니다"
 //    → ignoreGlobs 경로(docs/conceptpowers/** 등)에 실려 온 태그는 unknown으로 잡지 않는다
 //  - settled-status 구성요소 "빨강(red): AI 추측 또는 미승인"
@@ -247,6 +249,26 @@ describe('decidePreToolUse', () => {
     });
     expect(r!.hookSpecificOutput.permissionDecisionReason ?? '').not.toContain('개념 없는 코드');
   });
+  for (const [label, patch, warns] of [
+    ['켜면 경고하지 않는다', { allowUntagged: true }, false],
+    ['꺼두면 경고한다', { allowUntagged: false }, true],
+    ['설정 항목이 없으면 경고한다', { allowUntagged: undefined }, true],
+    ['불리언이 아니면(설정 깨짐) 경고한다', { allowUntagged: 'yes' }, true],
+  ] as const) {
+    it(`표시 생략 허용을 ${label} [규칙: 사람이 켠 프로젝트만 표시 없는 파일을 "없음"으로 친다]`, async () => {
+      await scaffoldInit(root, { locale: 'ko' });
+      const p = join(root, 'docs/conceptpowers/init.json');
+      writeFileSync(p, JSON.stringify({ ...JSON.parse(readFileSync(p, 'utf8')), ...patch }));
+      writeFileSync(join(root, 'src/foo.ts'), 'export const foo = 1\n');
+      const r = await decidePreToolUse(root, {
+        tool: 'Bash',
+        input: { command: 'git commit -m x' },
+        changedFiles: ['src/foo.ts'],
+      });
+      const reason = r?.hookSpecificOutput.permissionDecisionReason ?? '';
+      expect(reason.includes('개념 없는 코드')).toBe(warns);
+    });
+  }
   it('재생성물 경로(dist/**)는 마커 없어도 경고하지 않는다', async () => {
     await scaffoldInit(root, { locale: 'ko' });
     mkdirSync(join(root, 'dist'), { recursive: true });

@@ -34,6 +34,8 @@
 //    → 어긋난 개념이 많아도 상한까지만 싣고 나머지는 개수와 전체 목록 명령으로 알린다 / 연결 코드도 개념마다 상한까지만
 //  - settled-status 불변 "작업 시작 안내에 싣는 빨강·노랑 개념 목록은 상한을 두고 넘치는 수는 개수로만 알린다 — …"
 //    → 노랑 개념이 많아도 상한까지만 싣는다 / 개념이 많아져도 세션 주입 크기가 일정한 범위에 머문다
+//  - concept-code-mapping 표시 생략 허용(사람이 켠 프로젝트만, 도구·에이전트는 켜지 않는다)
+//    → 켜면 표시를 달 필요가 없고 검사 파일 규칙은 그대로이며 에이전트가 설정을 바꾸지 않는다는 안내 / 꺼져 있으면 안내가 없다
 //  - governance-mode 제한 "도구나 에이전트가 스스로 강도를 바꾸는 것"
 //    → strict면 우회 금지 지침을 주입한다
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -545,5 +547,30 @@ describe('작업 시작 안내의 목록 상한', () => {
       (await buildSessionStartOutput(root, '/plugin'))!.hookSpecificOutput.additionalContext
     );
     expect(large - small).toBeLessThan(2000);
+  });
+});
+
+describe('표시 생략 허용 안내 [규칙: 사람이 켠 프로젝트만, 도구·에이전트는 켜지 않는다]', () => {
+  const contextWith = async (patch: Record<string, unknown>) => {
+    await scaffoldInit(root, { locale: 'ko' });
+    const p = join(root, 'docs/conceptpowers/init.json');
+    writeFileSync(p, JSON.stringify({ ...JSON.parse(readFileSync(p, 'utf8')), ...patch }));
+    const o = await buildSessionStartOutput(root, '/plugin');
+    return o!.hookSpecificOutput.additionalContext;
+  };
+  it('켜면 표시 없는 코드 파일은 "없음"이고 검사 파일 규칙은 그대로이며 스스로 바꾸지 말라고 알린다', async () => {
+    const ctx = await contextWith({ allowUntagged: true });
+    expect(ctx).toContain('allowUntagged is on');
+    expect(ctx).toContain('Test files still need');
+    expect(ctx).toContain('Never turn this setting on or off yourself');
+  });
+  it('검사 개념 스위치가 꺼져 있으면 검사 파일 문장은 싣지 않는다', async () => {
+    const ctx = await contextWith({ allowUntagged: true, conceptDrivenTests: false });
+    expect(ctx).toContain('allowUntagged is on');
+    expect(ctx).not.toContain('Test files still need');
+  });
+  it('꺼져 있으면(기본) 안내가 없다', async () => {
+    const ctx = await contextWith({});
+    expect(ctx).not.toContain('allowUntagged');
   });
 });

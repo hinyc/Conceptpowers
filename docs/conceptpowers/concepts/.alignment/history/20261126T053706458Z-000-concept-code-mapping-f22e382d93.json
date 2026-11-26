@@ -1,0 +1,11 @@
+{
+  "slug": "concept-code-mapping",
+  "hash": "3:5eb7ff2fac8c",
+  "prevHash": "3:71cf0d064b26",
+  "reason": "사용자 승인(2026-11-26): 사람이 설정에서 켠 프로젝트는 표식 없는 코드 파일을 '없음'으로 치는 표식 생략 허용 예외 추가(기본 꺼짐, 도구·에이전트는 켜지 않음)",
+  "at": "2026-11-26T05:37:06.458Z",
+  "ignored": false,
+  "aligned": false,
+  "noCode": false,
+  "note": ""
+}

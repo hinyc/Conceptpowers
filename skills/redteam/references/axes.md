@@ -12,6 +12,8 @@ see `SKILL.md`, so every rule they must follow is written here.
 | `@concept:none` / no-concept area       | Not applicable — this is a normal state | Anything excessive for the **purpose of the work** — exports or options nobody uses, abstraction that the purpose of the work does not need (needless) | All apply                                    |
 | No marker                               | —                                       | —                                                                                                                                                      | Not judged                                   |
 
+- When `allowUntagged` is `true` in `init.json` (default `false`; only a person turns it on), a file with no marker
+  counts as `none`: use the `@concept:none` row for it, not the "No marker" row.
 - Do not call `@concept:none` code overreach solely because "no concept requires it". Having no concept is an
   allowed state.
 - Code marked `none` that actually carries a promise (rule) to the user is only reported as a **`none`

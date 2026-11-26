@@ -16,13 +16,18 @@
 //  - 구성요소 "개념 없음 영역: 사람이 설정에 적어 둔 폴더 — 그 안에서 표식이 없는 파일은 \"없음\" 표식을 단 것으로 친다"
 //    → 영역 안의 표식 없는 파일은 격차가 아니다 / 영역 밖은 그대로 격차
 //    → '없음' 다수 안내는 사람이 정한 영역 안의 파일을 세지 않는다(파일마다 단 '없음'만 센다)
+//  - concept-code-mapping 표시 생략 허용: 사람이 켠 프로젝트는 표시 없는 코드 파일을 "없음"으로 친다
+//    → 켜면 격차가 아니고 '없음' 다수 안내의 none·total에서도 빠진다 / 명시한 @concept:none은 그대로 센다
+//    → 끄면 기존과 같다
+//  - concept-code-mapping 불변 "표식 생략 허용은 검사 파일에 미치지 않는다 — 검사 파일은 허용과 무관하게 어떤 개념을
+//    가리켜야 한다" → 켜도 표식 없는 검사 파일(testGlobs 매칭)은 격차이고 '없음' 안내의 total에 센다(꺼진 때와 같다)
 //  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
 //    → 내용 읽기 함수를 넘기면 디스크 대신 그 내용(커밋될 내용)으로 표식을 판정한다
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findConceptlessFiles, findNoConceptFiles } from '../../src/audit/gaps.js';
+import { effectiveTestGlobs, findConceptlessFiles, findNoConceptFiles } from '../../src/audit/gaps.js';
 
 let root: string;
 beforeEach(() => {
@@ -122,5 +127,72 @@ describe('커밋될 내용으로 판정 [규칙: 커밋에 실제로 들어갈 �
       none: ['src/a.ts'],
       total: 1,
     });
+  });
+});
+
+describe('표시 생략 허용 [규칙: 사람이 켠 프로젝트는 표시 없는 코드 파일을 "없음"으로 친다]', () => {
+  const files = ['src/plain.ts', 'src/glue.ts', 'src/pay.ts'];
+  beforeEach(() => {
+    writeFileSync(join(root, 'src/plain.ts'), 'export const p = 1\n');
+    writeFileSync(join(root, 'src/glue.ts'), '// @concept:none\nexport const g = 1\n');
+    writeFileSync(join(root, 'src/pay.ts'), '// @concept:pay-rule\nexport const pay = 1\n');
+  });
+  it('켜면 표시 없는 파일은 격차가 아니다', async () => {
+    expect(await findConceptlessFiles(root, files, [], [], undefined, true)).toEqual([]);
+  });
+  it('끄면 표시 없는 파일은 격차다', async () => {
+    expect(await findConceptlessFiles(root, files, [], [], undefined, false)).toEqual([
+      'src/plain.ts',
+    ]);
+  });
+  it("켜면 표시 없는 파일은 '없음' 안내의 none·total에서 빠지고 명시한 none은 센다", async () => {
+    expect(await findNoConceptFiles(root, files, [], [], undefined, true)).toEqual({
+      none: ['src/glue.ts'],
+      total: 2,
+    });
+  });
+  it("끄면 표시 없는 파일은 '없음' 안내의 total에 든다", async () => {
+    expect(await findNoConceptFiles(root, files, [], [])).toEqual({
+      none: ['src/glue.ts'],
+      total: 3,
+    });
+  });
+});
+
+describe('표시 생략 허용은 검사 파일에 미치지 않는다 [규칙: 검사 파일은 허용과 무관하게 어떤 개념을 가리켜야 한다]', () => {
+  const testGlobs = effectiveTestGlobs(null);
+  const files = ['src/plain.ts', 'tests/naked.test.ts', 'tests/tagged.test.ts', 'tests/none.test.ts'];
+  beforeEach(() => {
+    mkdirSync(join(root, 'tests'), { recursive: true });
+    writeFileSync(join(root, 'src/plain.ts'), 'export const p = 1\n');
+    writeFileSync(join(root, 'tests/naked.test.ts'), 'it()\n');
+    writeFileSync(join(root, 'tests/tagged.test.ts'), '// @concept:pay-rule\nit()\n');
+    writeFileSync(join(root, 'tests/none.test.ts'), '// @concept:none\nit()\n');
+  });
+  it('켜도 표식 없는 검사 파일은 격차이고 표식 없는 일반 코드는 격차가 아니다', async () => {
+    expect(await findConceptlessFiles(root, files, [], [], undefined, true, testGlobs)).toEqual([
+      'tests/naked.test.ts',
+    ]);
+  });
+  it('켠 결과가 끈 결과와 검사 파일에 대해 같다', async () => {
+    const on = await findConceptlessFiles(root, files, [], [], undefined, true, testGlobs);
+    const off = await findConceptlessFiles(root, files, [], [], undefined, false, testGlobs);
+    expect(on).toEqual(off.filter((f) => f.startsWith('tests/')));
+  });
+  it("켜도 '없음' 안내의 total에 표식 없는 검사 파일은 세고 표식 없는 일반 파일만 건너뛴다", async () => {
+    expect(await findNoConceptFiles(root, files, [], [], undefined, true, testGlobs)).toEqual({
+      none: ['tests/none.test.ts'],
+      total: 3,
+    });
+  });
+  it('개념 없음 영역 안의 검사 파일은 기존대로 영역이 우선한다', async () => {
+    expect(
+      await findConceptlessFiles(root, files, [], ['tests/**'], undefined, true, testGlobs)
+    ).toEqual([]);
+  });
+  it('testGlobs가 없거나 비면 스키마 기본 규칙을 쓴다', () => {
+    expect(effectiveTestGlobs(null)).toContain('tests/**');
+    expect(effectiveTestGlobs({ testGlobs: [] })).toContain('tests/**');
+    expect(effectiveTestGlobs({ testGlobs: ['spec/**'] })).toEqual(['spec/**']);
   });
 });

@@ -6,6 +6,8 @@
 //    → 이름표가 있는 검사 파일은 통과
 //  - concept-driven-tests 제한 "검사 파일에 '해당 개념 없음' 표시를 달거나 아무 개념도 가리키지 않은
 //    채 두는 것" → @concept:none인 검사 파일도, 이름표가 없는 검사 파일도 붙잡는다
+//    → 코드 파일의 표시 생략 허용(allowUntagged)을 켜도 표식 없는 검사 파일은 그대로 붙잡고,
+//      "개념 없는 코드" 항목에도 꺼진 때와 똑같이 나온다(허용은 검사 파일에 미치지 않는다)
 //  - concept-driven-tests 정의 "이 동작은 시작 설정의 스위치로 끌 수 있다"
 //    → conceptDrivenTests: false면 아무 말도 하지 않는다
 //  - untrusted-text-sanitization 불변 "사람이 자유롭게 쓴 문장은 걷어내는 과정을 거치지 않고 AI에게
@@ -13,9 +15,10 @@
 //  - governance-mode 불변 "문지기는 커밋에 실제로 들어갈 파일을 기준으로 검사한다"
 //    → 디스크가 아니라 커밋될 내용(input.commit)에서 이름표를 읽는다(부분 스테이징·스테이징 뒤 수정)
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
+import { decidePreToolUse } from '../../src/hooks/preToolUse.js';
 import { checkTestScope } from '../../src/hooks/gates/testScopeGate.js';
 import { scaffoldInit } from '../../src/init/scaffold.js';
 import { readInitConfig } from '../../src/init/readConfig.js';
@@ -102,5 +105,28 @@ describe('concept-test-scope 문지기', () => {
       read: async () => '// @concept:pay-rule\nit()\n',
     };
     expect(await checkTestScope({ ...(await input(['tests/pay.test.ts'])), commit })).toBeNull();
+  });
+});
+
+describe('표시 생략 허용과 검사 파일 [규칙: 검사는 반드시 어떤 개념을 가리켜야 한다]', () => {
+  it('allowUntagged를 켜도 표식 없는 검사 파일은 concept-test-scope에 걸린다', async () => {
+    const abs = join(root, 'docs/conceptpowers/init.json');
+    const cfg = JSON.parse(await readFile(abs, 'utf8'));
+    await writeFile(abs, JSON.stringify({ ...cfg, allowUntagged: true }), 'utf8');
+    await touch('tests/pay.test.ts', 'import { it } from "vitest"\n');
+    const gateInput = await input(['tests/pay.test.ts']);
+    expect(gateInput.cfg?.allowUntagged).toBe(true);
+    expect((await checkTestScope(gateInput))?.gate).toBe('concept-test-scope');
+    const r = await decidePreToolUse(root, {
+      tool: 'Bash',
+      input: { command: 'git commit -m x' },
+      changedFiles: ['tests/pay.test.ts'],
+    });
+    // standard 모드는 첫 발견(개념 없는 코드)을 질문 사유로, 나머지(TEST SCOPE)를 같은 질문의 컨텍스트에 싣는다.
+    const out = r!.hookSpecificOutput;
+    expect(out.permissionDecisionReason ?? '').toContain('개념 없는 코드');
+    expect(`${out.permissionDecisionReason ?? ''} ${out.additionalContext ?? ''}`).toContain(
+      '[TEST SCOPE]'
+    );
   });
 });

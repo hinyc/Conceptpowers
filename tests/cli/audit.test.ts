@@ -16,6 +16,10 @@
 //    → 전체 스캔이 unlinkedConcepts로 알리되 그것만으로는 exit 1이 아니다
 //  - concept-code-mapping 불변 "개념 없음 영역 안의 파일도 표식을 달면 그 표식을 따른다" + "영역 안의 파일도
 //    손으로 쓴 코드로서 표식 검사를 받는다" → 영역 안 표식 없는 파일은 conceptless가 아니고, 영역 안의 미정의 태그는 unknownTags다
+//  - concept-code-mapping 표시 생략 허용(사람이 켠 프로젝트만) → 켜면 표시 없는 파일만으로는 exit 0,
+//    끄면 exit 1 / 켜도 미정의 태그는 unknownTags·exit 1 / 설정이 깨졌으면 꺼진 것으로 본다
+//  - concept-code-mapping 불변 "표식 생략 허용은 검사 파일에 미치지 않는다" → 켜도 표식 없는 검사 파일은
+//    conceptless에 나오고 exit 1
 //  - "파일 지정 모드는 기존 동작 그대로"는 개념 규칙이 아니라 호출 형태의 하위 호환 계약이다.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -157,5 +161,71 @@ describe('cli: audit 전체 스캔 모드', () => {
     expect(code).toBe(1);
     const r = JSON.parse(output);
     expect(r.unknownTags).toEqual([{ slug: 'ghost-doc', file: 'README.md' }]);
+  });
+});
+
+describe('cli: audit 표시 생략 허용(allowUntagged) [규칙: 사람이 켠 프로젝트는 표시 없는 파일을 "없음"으로 친다]', () => {
+  let root: string;
+  let output: string;
+  const out = (s: string) => {
+    output += s;
+  };
+  const setConfig = (patch: Record<string, unknown>) => {
+    const p = join(root, 'docs/conceptpowers/init.json');
+    writeFileSync(p, JSON.stringify({ ...JSON.parse(readFileSync(p, 'utf8')), ...patch }));
+  };
+  const audit = async () => {
+    execSync(COMMIT_ALL, { cwd: root });
+    const code = await runCli(['audit', '--root', root], out);
+    return { code, r: JSON.parse(output) };
+  };
+  beforeEach(async () => {
+    root = mkdtempSync(join(tmpdir(), 'cp-audit-untagged-'));
+    mkdirSync(join(root, 'src'), { recursive: true });
+    await scaffoldInit(root, { locale: 'ko' });
+    execSync('git init', { cwd: root });
+    execSync('git config user.email "test@test.com"', { cwd: root });
+    execSync('git config user.name "Test"', { cwd: root });
+    writeFileSync(join(root, 'src/naked.ts'), 'export const x = 1;\n');
+    output = '';
+  });
+
+  it('켜면 표시 없는 파일만 있는 프로젝트는 exit 0이다', async () => {
+    setConfig({ allowUntagged: true });
+    const { code, r } = await audit();
+    expect(code).toBe(0);
+    expect(r.conceptless).toEqual([]);
+  });
+
+  it('끄면 exit 1이고 격차로 보고한다', async () => {
+    setConfig({ allowUntagged: false });
+    const { code, r } = await audit();
+    expect(code).toBe(1);
+    expect(r.conceptless).toEqual(['src/naked.ts']);
+  });
+
+  it('켜도 정의되지 않은 개념을 가리키는 표식은 보고하고 exit 1이다 [허용: 정의되지 않은 표식 보고]', async () => {
+    setConfig({ allowUntagged: true });
+    writeFileSync(join(root, 'src/pay.ts'), '// @concept:ghost\nexport const pay = 1;\n');
+    const { code, r } = await audit();
+    expect(code).toBe(1);
+    expect(r.unknownTags).toEqual([{ slug: 'ghost', file: 'src/pay.ts' }]);
+    expect(r.conceptless).toEqual([]);
+  });
+
+  it('켜도 표식 없는 검사 파일은 conceptless에 나오고 exit 1이다 [불변: 허용은 검사 파일에 미치지 않는다]', async () => {
+    setConfig({ allowUntagged: true });
+    mkdirSync(join(root, 'tests'), { recursive: true });
+    writeFileSync(join(root, 'tests/x.test.ts'), 'it();\n');
+    const { code, r } = await audit();
+    expect(code).toBe(1);
+    expect(r.conceptless).toEqual(['tests/x.test.ts']);
+  });
+
+  it('설정이 깨졌으면(불리언 아닌 값) 꺼진 것으로 본다', async () => {
+    setConfig({ allowUntagged: 'true' });
+    const { code, r } = await audit();
+    expect(code).toBe(1);
+    expect(r.conceptless).toContain('src/naked.ts');
   });
 });

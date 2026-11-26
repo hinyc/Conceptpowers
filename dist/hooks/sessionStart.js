@@ -4118,8 +4118,9 @@ var InitConfigSchema = external_exports.object({
   // 내용은 어느 쪽에도 담기지 않는다 — 파일 이름까지 숨겨야 하면 local로 둔다.
   referenceLock: external_exports.enum(["local", "shared"]).default("shared"),
   // 커밋 게이트가 @concept 마커를 강제하지 않는 경로 글롭 — **재생성물·외부 코드만** 자동 제외한다.
-  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 예외 없이 마커가 있어야 하며,
-  // 개념이 없으면 `@concept:none`을 명시한다(조용히 건너뛰지 않는다).
+  // 손으로 쓴 코드(utils/types/config/scripts 포함)는 마커가 있어야 하며, 개념이 없으면
+  // `@concept:none`을 명시한다(조용히 건너뛰지 않는다). 마커를 생략할 수 있는 길은 사람이 이 설정에
+  // 적는 두 가지뿐이다 — noConceptGlobs(폴더 단위)와 allowUntagged(프로젝트 전체).
   ignoreGlobs: external_exports.array(external_exports.string()).default([
     "docs/conceptpowers/**",
     // 플러그인 생성물(뷰어 등)
@@ -4134,7 +4135,11 @@ var InitConfigSchema = external_exports.object({
   // 개념 없음 영역(concept-code-mapping) — 공통 UI처럼 따를 개념이 없는 손코드가 모인 폴더.
   // 그 안에서 표식이 없는 파일은 `@concept:none`을 단 것으로 친다. ignoreGlobs와 달리 감사에서
   // 빼지 않는다 — 표식을 달면 그 표식을 따르고, 태그 정합성 검사도 그대로 받는다.
-  noConceptGlobs: external_exports.array(external_exports.string()).default([])
+  noConceptGlobs: external_exports.array(external_exports.string()).default([]),
+  // 표시 생략 허용(concept-code-mapping) — 켜면 표식 없는 코드 파일을 프로젝트 전체에서 "없음"으로 친다.
+  // 기본은 꺼짐이고 사람만 켠다(도구·에이전트는 켜지 않는다). 감사에서 빼지는 않으므로 단 표식은 그대로
+  // 검사하며, 검사 파일은 이 값과 무관하게 실제 개념을 가리켜야 한다(concept-driven-tests).
+  allowUntagged: external_exports.boolean().default(false)
 });
 function parseInitConfig(input) {
   return InitConfigSchema.parse(input);
@@ -5822,6 +5827,10 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     `- When a concept changes, its tests MUST be reviewed in the same commit: update them to match the new rules and stage them (staged tests pass the gate with no record), or \u2014 only when the change genuinely needs no test change, or the concept has no tests yet \u2014 get the user's confirmation and record it: attest-test-review <slug> --result no-impact|no-tests --tests <paths> --note "<why>". The record is bound to the concept hash, so editing the concept again invalidates it (commit gate: concept-test-follow).`,
     "- Test changes must stay inside the concept: never assert behavior the concept does not state, and never weaken/delete a test just to make code pass. If the check you need lies outside the concept, stop and ask the user to change the concept first (conceptpowers:update-concepts) \u2014 the test follows the concept, never the other way around."
   ] : [];
+  const untaggedTestNote = config?.conceptDrivenTests !== false ? " Test files still need a @concept tag naming a real concept." : "";
+  const untaggedLine = config?.allowUntagged ? [
+    `- init.json allowUntagged is on: a hand-written code file with no @concept marker counts as "none", so the commit gate and audit do not ask for one. A file that implements a concept's rules should still carry @concept:<slug> \u2014 that tag is what links it to the concept for review and drift checks.${untaggedTestNote} Never turn this setting on or off yourself; only the user edits it.`
+  ] : [];
   const enforcement = config?.enforcement ?? "standard";
   const enforcementLine = enforcement === "strict" ? [
     "- Commit gate enforcement: strict \u2014 governance violations DENY the commit. Never bypass or weaken a denial (no --no-verify, no hook/config edits); resolve each violation (define/update concepts with user approval via conceptpowers:update-concepts, stage related code together, run its consistency check + attest) or report to the user. Only the user may change the enforcement level.",
@@ -5850,6 +5859,7 @@ async function buildSessionStartOutput(root, pluginRoot, deps = {}) {
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(settled contract: user-authored, consistency-checked, user-confirmed)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing, attested consistency check and the user's confirmation; it must NEVER demote or change a settled green/red \u2014 the user does that directly. Never auto-approve a red (un-authored) concept.`,
     ...conceptTestsLine,
+    ...untaggedLine,
     ...enforcementLine,
     "Commit packaging (the commit gate inspects ONLY the files this commit will actually include, counting added/copied/modified/renamed paths (`--diff-filter=ACMR`) \u2014 the staged list, plus unstaged tracked changes for `git commit -a`, or only the given paths for `git commit <paths>`; code already landed in earlier commits does NOT count):",
     "- Run staging (git add/rm/restore) and `git commit` as SEPARATE Bash commands. A commit chained after staging, builds, formatters, scripts or other file-changing commands in the same command cannot be verified beforehand \u2014 the gate treats it as unresolved (strict: deny, standard: ask, light: warn \u2014 or ask when a changed init.json, new/changed no-code or test-review records, or deleted concept docs/records could ride along).",

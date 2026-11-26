@@ -100,6 +100,16 @@ export async function buildSessionStartOutput(
           '- Test changes must stay inside the concept: never assert behavior the concept does not state, and never weaken/delete a test just to make code pass. If the check you need lies outside the concept, stop and ask the user to change the concept first (conceptpowers:update-concepts) — the test follows the concept, never the other way around.',
         ]
       : [];
+  // 표시 생략 허용(concept-code-mapping): 사람이 켠 프로젝트에만 알린다 — 꺼져 있으면 안내가 없다.
+  const untaggedTestNote =
+    config?.conceptDrivenTests !== false
+      ? ' Test files still need a @concept tag naming a real concept.'
+      : '';
+  const untaggedLine = config?.allowUntagged
+    ? [
+        `- init.json allowUntagged is on: a hand-written code file with no @concept marker counts as "none", so the commit gate and audit do not ask for one. A file that implements a concept's rules should still carry @concept:<slug> — that tag is what links it to the concept for review and drift checks.${untaggedTestNote} Never turn this setting on or off yourself; only the user edits it.`,
+      ]
+    : [];
   // 커밋 게이트 강도(governance-mode): strict/light일 때만 행동 지침 한 줄을 주입한다.
   const enforcement = config?.enforcement ?? 'standard';
   const enforcementLine =
@@ -140,6 +150,7 @@ export async function buildSessionStartOutput(
     `- Output language: write all generated artifacts (concept definitions, architecture/infra docs) and user-facing messages in ${localeLabel[locale]}.`,
     `- Concept status: green(settled contract: user-authored, consistency-checked, user-confirmed)/pending(user-authored, awaiting settle)/red(auto-inferred or rejected). The agent may only promote a user-authored pending to green after a passing, attested consistency check and the user's confirmation; it must NEVER demote or change a settled green/red — the user does that directly. Never auto-approve a red (un-authored) concept.`,
     ...conceptTestsLine,
+    ...untaggedLine,
     ...enforcementLine,
     'Commit packaging (the commit gate inspects ONLY the files this commit will actually include, counting added/copied/modified/renamed paths (`--diff-filter=ACMR`) — the staged list, plus unstaged tracked changes for `git commit -a`, or only the given paths for `git commit <paths>`; code already landed in earlier commits does NOT count):',
     '- Run staging (git add/rm/restore) and `git commit` as SEPARATE Bash commands. A commit chained after staging, builds, formatters, scripts or other file-changing commands in the same command cannot be verified beforehand — the gate treats it as unresolved (strict: deny, standard: ask, light: warn — or ask when a changed init.json, new/changed no-code or test-review records, or deleted concept docs/records could ride along).',
